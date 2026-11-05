@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -8,184 +9,222 @@
 <meta name="theme-color" content="#101010">
 <title>سيناريو وسيناريست | من الفكرة إلى الشاشة</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Tahoma,Arial,sans-serif;background:#101010;color:#f5f0e6;line-height:1.8}
-:root{--gold:#d6ad55;--panel:#1b1b1b}
-header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #493a20;background:#101010}
-.logo{font-size:22px;font-weight:bold;color:var(--gold)}
-.logo span{display:block;font-size:11px;color:#ddd;font-weight:normal}
-nav{display:flex;gap:15px;flex-wrap:wrap}
-nav a{color:#eee;text-decoration:none;font-size:13px}
-.hero{text-align:center;padding:80px 20px;background:radial-gradient(ellipse,#403018,#101010 75%)}
-.mark{font-size:48px;color:var(--gold);font-weight:bold;letter-spacing:4px}
-.hero h1{font-size:35px;color:var(--gold);margin:12px 0}
-.hero p{font-size:17px;color:#ddd;margin-bottom:25px}
-.btn{display:inline-block;background:var(--gold);color:#17130e;padding:12px 27px;border-radius:5px;text-decoration:none;font-weight:bold}
-section{padding:55px 7%}
-.section-title{text-align:center;color:var(--gold);font-size:27px;margin-bottom:12px}
-.subtitle{text-align:center;color:#aaa;margin-bottom:30px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
-.card{background:var(--panel);border:1px solid #493a20;border-radius:10px;padding:23px;text-align:center}
-.symbol{font-size:34px}
-.card h3{color:var(--gold);margin:10px 0}
-.card p{color:#bbb;font-size:14px}
-.about{background:#171717;text-align:center}
-.about p{max-width:750px;margin:15px auto;color:#ccc}
-.join{text-align:center;background:linear-gradient(135deg,#211b10,#111)}
-.join p{color:#ccc;margin:12px 0 24px}
-footer{text-align:center;padding:25px;border-top:1px solid #493a20;color:#999;font-size:13px}
-footer strong{color:var(--gold)}
-@media(max-width:650px){
-header{align-items:flex-start;gap:12px;flex-direction:column}
-.hero h1{font-size:27px}
-section{padding:40px 5%}
-}
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#eee;font-family:Tahoma,Arial,sans-serif;line-height:1.8}
+header{padding:35px 18px;text-align:center;background:linear-gradient(135deg,#171717,#292016);border-bottom:2px solid #c49a45}
+header h1{color:#d6ad59;font-size:35px;margin:0}
+header p{color:#ddd;margin:8px 0}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:15px;background:#181818;position:sticky;top:0;z-index:5}
+nav a{color:#d6ad59;text-decoration:none;padding:7px 12px;border:1px solid #574525;border-radius:20px;font-size:14px}
+nav a:hover{background:#c49a45;color:#111}
+.hero{text-align:center;padding:55px 18px 35px}
+.hero h2{color:#d6ad59;font-size:28px}
+.hero p{max-width:650px;margin:auto;color:#ccc}
+.container{max-width:1050px;margin:auto;padding:20px}
+.section-title{text-align:center;color:#d6ad59;margin:30px 0 20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:#1b1b1b;border:1px solid #514126;border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-4px);border-color:#d6ad59;background:#242019}
+.card h3{color:#d6ad59;margin:5px 0 10px}
+.card p{color:#ccc;font-size:14px}
+.card .symbol{font-size:32px}
+.about{background:#1b1b1b;border:1px solid #574525;border-radius:12px;padding:24px;margin:30px 0;text-align:center}
+.about h2{color:#d6ad59}
+footer{text-align:center;padding:25px;background:#181818;color:#bbb;border-top:1px solid #574525;margin-top:35px}
+footer strong{color:#d6ad59}
+.modal{display:none;position:fixed;inset:0;background:#000e;z-index:10;padding:18px;overflow:auto}
+.modal-box{max-width:700px;margin:35px auto;background:#1b1b1b;border:1px solid #d6ad59;border-radius:14px;padding:25px;position:relative}
+.modal-box h2{color:#d6ad59}
+.close{position:absolute;left:15px;top:10px;background:#c49a45;color:#111;border:0;border-radius:7px;padding:7px 13px;font-size:17px;cursor:pointer}
+.modal-content{color:#ddd;padding-top:15px}
+.modal-content h3{color:#d6ad59}
+.modal-content a{color:#e2bd70}
+.profile{border:1px solid #80652f;padding:20px;border-radius:12px;text-align:center;margin-top:15px}
+.profile h2{font-size:27px}
+.tag{display:inline-block;background:#332918;color:#e4c47e;padding:5px 12px;border-radius:20px;margin:5px;font-size:13px}
+button{cursor:pointer}
+@media(max-width:600px){header h1{font-size:27px}.hero h2{font-size:23px}nav{gap:6px}nav a{font-size:12px;padding:5px 9px}}
 </style>
 </head>
 <body>
+
 <header>
-<div class="logo">سيناريو وسيناريست<span>من الفكرة إلى الشاشة</span></div>
+<h1>سيناريو وسيناريست</h1>
+<p>من الفكرة إلى الشاشة</p>
+<p>منصة عربية تجمع الكُتّاب وصُنّاع الحكايات والسينما</p>
+</header>
+
 <nav>
 <a href="#home">الرئيسية</a>
 <a href="#writers">الكُتّاب</a>
 <a href="#library">المكتبة</a>
 <a href="#academy">التعليم</a>
+<a href="#stories">حكايات وقضايا</a>
 <a href="#about">عن المنصة</a>
 </nav>
-</header>
 
-<main>
-<div class="hero" id="home">
-<div class="mark">S &amp; S</div>
-<h1>كل فكرة تستحق أن تُروى</h1>
-<p>منصة عربية تجمع الكُتّاب والمبدعين وصُنّاع السينما في مكان واحد.</p>
-<a class="btn" href="#writers">اكتشف عالم الكتابة</a>
-</div>
+<main id="home" class="container">
+<section class="hero">
+<h2>أهلاً بك في عالم الحكايات</h2>
+<p>هنا تبدأ الفكرة، وتنمو الحكاية، ويجد الكاتب طريقه من الورقة إلى الشاشة. مساحة عربية مفتوحة للتعلم والإبداع والتعاون السينمائي.</p>
+</section>
 
-<section id="writers">
-<h2 class="section-title">عالم الكُتّاب والمبدعين</h2>
-<p class="subtitle">مساحة لكل موهبة وفرصة لكل صاحب فكرة</p>
+<h2 class="section-title">اكتشف عالم سيناريو وسيناريست</h2>
+
 <div class="cards">
-<div class="card"><div class="symbol">✍️</div><h3>صفحات الكُتّاب</h3><p>مساحة شخصية لكل كاتب لعرض سيرته وأعماله ومشروعاته.</p></div>
-<div class="card"><div class="symbol">📖</div><h3>الروايات والقصص</h3><p>اكتشف حكايات جديدة وأعمالًا أدبية من مختلف الكُتّاب.</p></div>
-<div class="card"><div class="symbol">🎬</div><h3>مكتبة السيناريو</h3><p>مساحة تعليمية لدراسة السيناريو وتحليل الأعمال السينمائية.</p></div>
+<div class="card" onclick="openPage('writers')">
+<div class="symbol">✍️</div>
+<h3>صفحات الكُتّاب</h3>
+<p>تعرف على الكُتّاب وأعمالهم ومشروعاتهم الإبداعية.</p>
 </div>
-</section>
 
-<section id="library" class="about">
-<h2 class="section-title">مكتبة المعرفة السينمائية</h2>
-<p>نتعلم من السينما، ونكتشف أسرار الحكاية، وبناء الشخصيات، وكتابة المشاهد والحوار. سنعمل على توفير مواد تعليمية وأعمال مسموح بنشرها قانونيًا.</p>
-</section>
-
-<section id="academy">
-<h2 class="section-title">أكاديمية سيناريو وسيناريست</h2>
-<p class="subtitle">ابدأ من الفكرة وتعلّم كيف تحولها إلى فيلم.</p>
-<div class="cards">
-<div class="card"><div class="symbol">🎓</div><h3>تعليم كتابة السيناريو</h3><p>دروس مبسطة باللغة العربية من البداية حتى الاحتراف.</p></div>
-<div class="card"><div class="symbol">💡</div><h3>تطوير الأفكار</h3><p>تعلم بناء الفكرة والشخصيات والحبكة الدرامية.</p></div>
-<div class="card"><div class="symbol">🤝</div><h3>فرص التعاون والإنتاج</h3><p>مساحة للتعارف المهني وعرض المشروعات على المهتمين.</p></div>
+<div class="card" onclick="openPage('novels')">
+<div class="symbol">📚</div>
+<h3>الروايات والقصص</h3>
+<p>مساحة لعرض الروايات والقصص والتجارب الأدبية.</p>
 </div>
-</section>
 
-<section class="about">
-<h2 class="section-title">حكايات وقضايا</h2>
-<p>قسم للقصص والملفات والتحقيقات والحكايات المصرية والعربية والعالمية، بأسلوب يحترم الحقيقة وحقوق أصحاب المحتوى.</p>
-</section>
+<div class="card" onclick="openPage('library')">
+<div class="symbol">🎬</div>
+<h3>مكتبة السيناريو</h3>
+<p>اقرأ وتعلم من نماذج سيناريوهات متاحة للنشر قانونيًا.</p>
+</div>
 
-<section class="join">
-<h2 class="section-title">موهبتك تستحق الفرصة</h2>
-<p>هدفنا بناء مجتمع عربي يدعم الكُتّاب والمبدعين، ويتيح لهم عرض أعمالهم دون اشتراك أساسي.</p>
-<a class="btn" href="#about">اكتشف رؤيتنا</a>
-</section>
+<div class="card" onclick="openPage('academy')">
+<div class="symbol">🎓</div>
+<h3>أكاديمية التعليم</h3>
+<p>تعلم كتابة السيناريو من البداية حتى تقديم مشروعك.</p>
+</div>
+
+<div class="card" onclick="openPage('stories')">
+<div class="symbol">🔎</div>
+<h3>حكايات وقضايا</h3>
+<p>قصص وأحداث غريبة وملفات تستحق البحث والكتابة.</p>
+</div>
+
+<div class="card" onclick="openPage('production')">
+<div class="symbol">🤝</div>
+<h3>التعاون والإنتاج</h3>
+<p>مساحة للتواصل بين أصحاب الأفكار والمهتمين بالإنتاج.</p>
+</div>
+
+<div class="card" onclick="openPage('ideas')">
+<div class="symbol">💡</div>
+<h3>تطوير الأفكار</h3>
+<p>حوّل فكرتك الأولى إلى مشروع درامي متكامل.</p>
+</div>
+
+<div class="card" onclick="openPage('founder')">
+<div class="symbol">⭐</div>
+<h3>مؤسس المنصة</h3>
+<p>تعرف على صاحب فكرة سيناريو وسيناريست.</p>
+</div>
+</div>
 
 <section id="about" class="about">
-<h2 class="section-title">عن سيناريو وسيناريست</h2>
-<p>مشروع ثقافي وإبداعي يهدف إلى جمع الكُتّاب والقراء وصُنّاع السينما، وتوفير مساحة للتعلم وعرض المواهب والتعاون.</p>
-<p><strong style="color:#d6ad55">تأسيس: رزق البغدادي</strong></p>
+<h2>عن سيناريو وسيناريست</h2>
+<p>منصة عربية مستقلة تهدف إلى دعم الكُتّاب والمواهب الجديدة، ونشر المعرفة السينمائية، وفتح مساحة للتعاون وتبادل الخبرات.</p>
+<p>نؤمن أن كل فيلم عظيم بدأ بفكرة، وأن كل كاتب يستحق فرصة حقيقية ليصل بصوته إلى الجمهور.</p>
+<strong style="color:#d6ad59">تأسيس وإشراف: رزق البغدادي</strong>
 </section>
 </main>
 
 <footer>
-<strong>سيناريو وسيناريست</strong><br>
-من الفكرة إلى الشاشة<br>
-جميع الحقوق محفوظة © 2026
+<p>سيناريو وسيناريست © 2026</p>
+<p>من الفكرة إلى الشاشة</p>
+<p>تأسيس وإشراف <strong>رزق البغدادي</strong></p>
 </footer>
-</body>
+
+<div class="modal" id="mainModal" onclick="closeOutside(event)">
+<div class="modal-box">
+<button class="close" onclick="closePage()">إغلاق ×</button>
+<div class="modal-content" id="modalContent"></div>
+</div>
+</div>
+
 <script>
-document.querySelectorAll('.card').forEach(card => {
-  card.style.cursor = 'pointer';
+const pages = {
+writers: `
+<h2>صفحات الكُتّاب</h2>
+<p>هنا نفتح المجال لكل كاتب لعرض نبذة عنه وأعماله ومشروعاته.</p>
+<div class="profile">
+<h2>رزق البغدادي</h2>
+<span class="tag">مؤسس المنصة</span>
+<span class="tag">كاتب</span>
+<p>كاتب ومهتم بالسيناريو والدراما، وصاحب فكرة منصة سيناريو وسيناريست.</p>
+<p>يؤمن بأهمية إتاحة فرص التعلم والتواصل أمام الكُتّاب والمواهب العربية.</p>
+<h3>من أعماله</h3>
+<p>كتاب: أغرب الجرائم والقضايا التي حدثت في مصر.</p>
+<p>مشروع: سيناريو وسيناريست.</p>
+</div>
+`,
+founder: `
+<h2>مؤسس منصة سيناريو وسيناريست</h2>
+<div class="profile">
+<h2>رزق البغدادي</h2>
+<span class="tag">المؤسس</span>
+<span class="tag">كاتب</span>
+<p>صاحب فكرة إنشاء مساحة عربية تجمع الكُتّاب والمهتمين بالسينما والدراما.</p>
+<p>هدف المنصة هو دعم المواهب، وتوفير المعرفة، وإتاحة فرص التعاون بين المبدعين.</p>
+<h3>الرؤية</h3>
+<p>أن تصبح المنصة بيتًا مفتوحًا لكل صاحب فكرة وحكاية يريد أن يراها على الشاشة.</p>
+</div>
+`,
+novels: `
+<h2>الروايات والقصص</h2>
+<p>قسم مخصص لعرض الأعمال الأدبية والقصص القصيرة والروايات.</p>
+<p>يمكن للكُتّاب تقديم أعمالهم بعد التأكد من امتلاكهم حقوق النشر أو الحصول على إذن صاحب العمل.</p>
+`,
+library: `
+<h2>مكتبة السيناريو</h2>
+<p>مكتبة تعليمية تجمع نماذج من السيناريوهات والأعمال الدرامية المتاحة للنشر القانوني.</p>
+<h3>هدف المكتبة</h3>
+<p>التعرف على بناء المشاهد والحوار والشخصيات والحبكة.</p>
+<p>لن ننشر أي سيناريو محمي بحقوق الملكية دون إذن صاحبه.</p>
+`,
+academy: `
+<h2>أكاديمية سيناريو وسيناريست</h2>
+<p>دورة مجانية لتعلم كتابة السيناريو خطوة بخطوة.</p>
+<h3>المحاضرة الأولى: ما هو السيناريو؟</h3>
+<p>مقدمة في عالم كتابة الأفلام، وكيف تتحول الفكرة إلى مشاهد مكتوبة قابلة للتنفيذ على الشاشة.</p>
+<h3>المحاضرة الثانية: الفرق بين الرواية والقصة والسيناريو</h3>
+<p>نتعرف على طبيعة كل شكل أدبي، والاختلاف في طريقة الحكي والوصف وبناء المشاهد.</p>
+<p>سيتم إضافة المحاضرات التالية تباعًا.</p>
+`,
+stories: `
+<h2>حكايات وقضايا</h2>
+<p>مساحة للحكايات والوقائع والقضايا الغريبة التي يمكن أن تلهم الكتابة الدرامية.</p>
+<p>يجب التمييز دائمًا بين الوقائع الموثقة والخيال الدرامي، واحترام حقوق الأشخاص والخصوصية.</p>
+`,
+production: `
+<h2>التعاون والإنتاج</h2>
+<p>مساحة للتعارف والتعاون بين الكُتّاب والمخرجين والمنتجين وصُنّاع الأفلام.</p>
+<p>يمكن مستقبلًا إضافة ملفات للمشروعات وطرق التواصل وتقديم الأعمال.</p>
+`,
+ideas: `
+<h2>تطوير الأفكار</h2>
+<p>كل مشروع كبير يبدأ بفكرة صغيرة.</p>
+<p>هنا نتعلم كيف نطور الفكرة إلى ملخص، ثم معالجة درامية، ثم سيناريو متكامل.</p>
+`
+};
 
-  card.addEventListener('click', () => {
-    const title = card.querySelector('h3')?.textContent || 'قسم المنصة';
-    const description = card.querySelector('p')?.textContent || '';
-
-    const modal = document.createElement('div');
-
-    modal.style.cssText = `
-      position:fixed;
-      inset:0;
-      background:#000d;
-      z-index:9999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    `;
-
-    modal.innerHTML = `
-      <div style="
-        background:#1b1b1b;
-        border:1px solid #d6ad55;
-        border-radius:12px;
-        padding:28px;
-        text-align:center;
-        max-width:420px;
-        width:100%;
-        color:#fff;
-      ">
-        <h2 style="color:#d6ad55;margin-bottom:15px">
-          ${title}
-        </h2>
-
-        <p style="line-height:2">${description}</p>
-
-        <p style="color:#d6ad55;margin:18px 0">
-          نعمل على تجهيز هذا القسم ليكون متاحًا للجميع.
-        </p>
-
-        <button id="closeModal" style="
-          background:#d6ad55;
-          border:0;
-          padding:12px 25px;
-          border-radius:6px;
-          font-weight:bold;
-        ">
-          إغلاق
-        </button>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    modal.querySelector('#closeModal').onclick = () => modal.remove();
-
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.remove();
-    });
-  });
-});
-
-document.querySelectorAll('a[href^="#"]').forEach(link => {
-  link.addEventListener('click', e => {
-    const target = document.querySelector(link.getAttribute('href'));
-
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+function openPage(name){
+const content = pages[name];
+if(!content) return;
+document.getElementById('modalContent').innerHTML = content;
+document.getElementById('mainModal').style.display='block';
+document.body.style.overflow='hidden';
+}
+function closePage(){
+document.getElementById('mainModal').style.display='none';
+document.body.style.overflow='auto';
+}
+function closeOutside(event){
+if(event.target.id==='mainModal') closePage();
+}
+document.addEventListener('keydown',function(event){
+if(event.key==='Escape') closePage();
 });
 </script>
-
+</body>
 </html>
-
