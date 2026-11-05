@@ -1,1 +1,114 @@
 
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101010">
+<title>سيناريو وسيناريست | من الفكرة إلى الشاشة</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Tahoma,Arial,sans-serif;background:#101010;color:#f5f0e6;line-height:1.8}
+:root{--gold:#d6ad55;--panel:#1b1b1b}
+header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #493a20;background:#101010}
+.logo{font-size:22px;font-weight:bold;color:var(--gold)}
+.logo span{display:block;font-size:11px;color:#ddd;font-weight:normal}
+nav{display:flex;gap:15px;flex-wrap:wrap}
+nav a{color:#eee;text-decoration:none;font-size:13px}
+.hero{text-align:center;padding:80px 20px;background:radial-gradient(ellipse,#403018,#101010 75%)}
+.mark{font-size:48px;color:var(--gold);font-weight:bold;letter-spacing:4px}
+.hero h1{font-size:35px;color:var(--gold);margin:12px 0}
+.hero p{font-size:17px;color:#ddd;margin-bottom:25px}
+.btn{display:inline-block;background:var(--gold);color:#17130e;padding:12px 27px;border-radius:5px;text-decoration:none;font-weight:bold}
+section{padding:55px 7%}
+.section-title{text-align:center;color:var(--gold);font-size:27px;margin-bottom:12px}
+.subtitle{text-align:center;color:#aaa;margin-bottom:30px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid #493a20;border-radius:10px;padding:23px;text-align:center}
+.symbol{font-size:34px}
+.card h3{color:var(--gold);margin:10px 0}
+.card p{color:#bbb;font-size:14px}
+.about{background:#171717;text-align:center}
+.about p{max-width:750px;margin:15px auto;color:#ccc}
+.join{text-align:center;background:linear-gradient(135deg,#211b10,#111)}
+.join p{color:#ccc;margin:12px 0 24px}
+footer{text-align:center;padding:25px;border-top:1px solid #493a20;color:#999;font-size:13px}
+footer strong{color:var(--gold)}
+@media(max-width:650px){
+header{align-items:flex-start;gap:12px;flex-direction:column}
+.hero h1{font-size:27px}
+section{padding:40px 5%}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">سيناريو وسيناريست<span>من الفكرة إلى الشاشة</span></div>
+<nav>
+<a href="#home">الرئيسية</a>
+<a href="#writers">الكُتّاب</a>
+<a href="#library">المكتبة</a>
+<a href="#academy">التعليم</a>
+<a href="#about">عن المنصة</a>
+</nav>
+</header>
+
+<main>
+<div class="hero" id="home">
+<div class="mark">S &amp; S</div>
+<h1>كل فكرة تستحق أن تُروى</h1>
+<p>منصة عربية تجمع الكُتّاب والمبدعين وصُنّاع السينما في مكان واحد.</p>
+<a class="btn" href="#writers">اكتشف عالم الكتابة</a>
+</div>
+
+<section id="writers">
+<h2 class="section-title">عالم الكُتّاب والمبدعين</h2>
+<p class="subtitle">مساحة لكل موهبة وفرصة لكل صاحب فكرة</p>
+<div class="cards">
+<div class="card"><div class="symbol">✍️</div><h3>صفحات الكُتّاب</h3><p>مساحة شخصية لكل كاتب لعرض سيرته وأعماله ومشروعاته.</p></div>
+<div class="card"><div class="symbol">📖</div><h3>الروايات والقصص</h3><p>اكتشف حكايات جديدة وأعمالًا أدبية من مختلف الكُتّاب.</p></div>
+<div class="card"><div class="symbol">🎬</div><h3>مكتبة السيناريو</h3><p>مساحة تعليمية لدراسة السيناريو وتحليل الأعمال السينمائية.</p></div>
+</div>
+</section>
+
+<section id="library" class="about">
+<h2 class="section-title">مكتبة المعرفة السينمائية</h2>
+<p>نتعلم من السينما، ونكتشف أسرار الحكاية، وبناء الشخصيات، وكتابة المشاهد والحوار. سنعمل على توفير مواد تعليمية وأعمال مسموح بنشرها قانونيًا.</p>
+</section>
+
+<section id="academy">
+<h2 class="section-title">أكاديمية سيناريو وسيناريست</h2>
+<p class="subtitle">ابدأ من الفكرة وتعلّم كيف تحولها إلى فيلم.</p>
+<div class="cards">
+<div class="card"><div class="symbol">🎓</div><h3>تعليم كتابة السيناريو</h3><p>دروس مبسطة باللغة العربية من البداية حتى الاحتراف.</p></div>
+<div class="card"><div class="symbol">💡</div><h3>تطوير الأفكار</h3><p>تعلم بناء الفكرة والشخصيات والحبكة الدرامية.</p></div>
+<div class="card"><div class="symbol">🤝</div><h3>فرص التعاون والإنتاج</h3><p>مساحة للتعارف المهني وعرض المشروعات على المهتمين.</p></div>
+</div>
+</section>
+
+<section class="about">
+<h2 class="section-title">حكايات وقضايا</h2>
+<p>قسم للقصص والملفات والتحقيقات والحكايات المصرية والعربية والعالمية، بأسلوب يحترم الحقيقة وحقوق أصحاب المحتوى.</p>
+</section>
+
+<section class="join">
+<h2 class="section-title">موهبتك تستحق الفرصة</h2>
+<p>هدفنا بناء مجتمع عربي يدعم الكُتّاب والمبدعين، ويتيح لهم عرض أعمالهم دون اشتراك أساسي.</p>
+<a class="btn" href="#about">اكتشف رؤيتنا</a>
+</section>
+
+<section id="about" class="about">
+<h2 class="section-title">عن سيناريو وسيناريست</h2>
+<p>مشروع ثقافي وإبداعي يهدف إلى جمع الكُتّاب والقراء وصُنّاع السينما، وتوفير مساحة للتعلم وعرض المواهب والتعاون.</p>
+<p><strong style="color:#d6ad55">تأسيس: رزق البغدادي</strong></p>
+</section>
+</main>
+
+<footer>
+<strong>سيناريو وسيناريست</strong><br>
+من الفكرة إلى الشاشة<br>
+جميع الحقوق محفوظة © 2026
+</footer>
+</body>
+</html>
