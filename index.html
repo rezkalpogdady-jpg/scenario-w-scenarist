@@ -111,4 +111,80 @@ section{padding:40px 5%}
 جميع الحقوق محفوظة © 2026
 </footer>
 </body>
+<script>
+document.querySelectorAll('.card').forEach(card => {
+  card.style.cursor = 'pointer';
+
+  card.addEventListener('click', () => {
+    const title = card.querySelector('h3')?.textContent || 'قسم المنصة';
+    const description = card.querySelector('p')?.textContent || '';
+
+    const modal = document.createElement('div');
+
+    modal.style.cssText = `
+      position:fixed;
+      inset:0;
+      background:#000d;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    `;
+
+    modal.innerHTML = `
+      <div style="
+        background:#1b1b1b;
+        border:1px solid #d6ad55;
+        border-radius:12px;
+        padding:28px;
+        text-align:center;
+        max-width:420px;
+        width:100%;
+        color:#fff;
+      ">
+        <h2 style="color:#d6ad55;margin-bottom:15px">
+          ${title}
+        </h2>
+
+        <p style="line-height:2">${description}</p>
+
+        <p style="color:#d6ad55;margin:18px 0">
+          نعمل على تجهيز هذا القسم ليكون متاحًا للجميع.
+        </p>
+
+        <button id="closeModal" style="
+          background:#d6ad55;
+          border:0;
+          padding:12px 25px;
+          border-radius:6px;
+          font-weight:bold;
+        ">
+          إغلاق
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('#closeModal').onclick = () => modal.remove();
+
+    modal.addEventListener('click', e => {
+      if (e.target === modal) modal.remove();
+    });
+  });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    const target = document.querySelector(link.getAttribute('href'));
+
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+</script>
+
 </html>
