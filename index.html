@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -11,39 +9,34 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101010;color:#eee;font-family:Tahoma,Arial,sans-serif;line-height:1.8}
-header{padding:35px 18px;text-align:center;background:linear-gradient(135deg,#171717,#292016);border-bottom:2px solid #c49a45}
-header h1{color:#d6ad59;font-size:35px;margin:0}
-header p{color:#ddd;margin:8px 0}
-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:15px;background:#181818;position:sticky;top:0;z-index:5}
-nav a{color:#d6ad59;text-decoration:none;padding:7px 12px;border:1px solid #574525;border-radius:20px;font-size:14px}
-nav a:hover{background:#c49a45;color:#111}
-.hero{text-align:center;padding:55px 18px 35px}
-.hero h2{color:#d6ad59;font-size:28px}
-.hero p{max-width:650px;margin:auto;color:#ccc}
+header{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#171717,#302415);border-bottom:2px solid #c49a45}
+header h1{color:#dfb75e;font-size:34px;margin:0}
+header p{margin:5px;color:#ddd}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;padding:14px;background:#191919;position:sticky;top:0;z-index:4}
+nav a{color:#dfb75e;text-decoration:none;border:1px solid #66502d;border-radius:20px;padding:5px 12px;font-size:14px}
+nav a:hover{background:#dfb75e;color:#111}
 .container{max-width:1050px;margin:auto;padding:20px}
-.section-title{text-align:center;color:#d6ad59;margin:30px 0 20px}
+.hero{text-align:center;padding:40px 10px}
+.hero h2,.section-title{color:#dfb75e}
+.hero p{color:#ccc;max-width:700px;margin:auto}
+.section-title{text-align:center;margin:30px 0 20px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.card{background:#1b1b1b;border:1px solid #514126;border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s}
-.card:hover{transform:translateY(-4px);border-color:#d6ad59;background:#242019}
-.card h3{color:#d6ad59;margin:5px 0 10px}
+.card{background:#1c1c1c;border:1px solid #5d4929;border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-4px);border-color:#e0b65c;background:#272116}
+.card h3{color:#dfb75e;margin:5px}
 .card p{color:#ccc;font-size:14px}
-.card .symbol{font-size:32px}
-.about{background:#1b1b1b;border:1px solid #574525;border-radius:12px;padding:24px;margin:30px 0;text-align:center}
-.about h2{color:#d6ad59}
-footer{text-align:center;padding:25px;background:#181818;color:#bbb;border-top:1px solid #574525;margin-top:35px}
-footer strong{color:#d6ad59}
-.modal{display:none;position:fixed;inset:0;background:#000e;z-index:10;padding:18px;overflow:auto}
-.modal-box{max-width:700px;margin:35px auto;background:#1b1b1b;border:1px solid #d6ad59;border-radius:14px;padding:25px;position:relative}
-.modal-box h2{color:#d6ad59}
-.close{position:absolute;left:15px;top:10px;background:#c49a45;color:#111;border:0;border-radius:7px;padding:7px 13px;font-size:17px;cursor:pointer}
-.modal-content{color:#ddd;padding-top:15px}
-.modal-content h3{color:#d6ad59}
-.modal-content a{color:#e2bd70}
-.profile{border:1px solid #80652f;padding:20px;border-radius:12px;text-align:center;margin-top:15px}
-.profile h2{font-size:27px}
-.tag{display:inline-block;background:#332918;color:#e4c47e;padding:5px 12px;border-radius:20px;margin:5px;font-size:13px}
-button{cursor:pointer}
-@media(max-width:600px){header h1{font-size:27px}.hero h2{font-size:23px}nav{gap:6px}nav a{font-size:12px;padding:5px 9px}}
+.symbol{font-size:32px}
+.about,.profile{background:#1c1c1c;border:1px solid #71582e;border-radius:12px;padding:22px;margin:25px 0;text-align:center}
+.about h2,.profile h2,.profile h3{color:#dfb75e}
+.tag{display:inline-block;background:#392d19;color:#f1d18b;padding:4px 12px;border-radius:20px;margin:4px}
+footer{text-align:center;padding:25px;background:#191919;border-top:1px solid #66502d;color:#bbb}
+footer strong{color:#dfb75e}
+.modal{display:none;position:fixed;inset:0;background:#000e;z-index:10;padding:15px;overflow:auto}
+.modal-box{max-width:720px;margin:35px auto;background:#1c1c1c;border:1px solid #dfb75e;border-radius:14px;padding:25px;position:relative}
+.modal-content h2,.modal-content h3{color:#dfb75e}
+.close{position:absolute;left:14px;top:12px;background:#dfb75e;color:#111;border:0;border-radius:7px;padding:7px 13px;font-size:16px}
+.modal-content{padding-top:20px;color:#ddd}
+@media(max-width:600px){header h1{font-size:27px}nav a{font-size:12px;padding:5px 9px}}
 </style>
 </head>
 <body>
@@ -56,10 +49,10 @@ button{cursor:pointer}
 
 <nav>
 <a href="#home">الرئيسية</a>
-<a href="#writers">الكُتّاب</a>
-<a href="#library">المكتبة</a>
-<a href="#academy">التعليم</a>
-<a href="#stories">حكايات وقضايا</a>
+<a href="#writers" onclick="openPage('writers');return false">الكُتّاب</a>
+<a href="#library" onclick="openPage('library');return false">المكتبة</a>
+<a href="#academy" onclick="openPage('academy');return false">التعليم</a>
+<a href="#stories" onclick="openPage('stories');return false">حكايات وقضايا</a>
 <a href="#about">عن المنصة</a>
 </nav>
 
@@ -73,50 +66,35 @@ button{cursor:pointer}
 
 <div class="cards">
 <div class="card" onclick="openPage('writers')">
-<div class="symbol">✍️</div>
-<h3>صفحات الكُتّاب</h3>
+<div class="symbol">✍️</div><h3>صفحات الكُتّاب</h3>
 <p>تعرف على الكُتّاب وأعمالهم ومشروعاتهم الإبداعية.</p>
 </div>
-
 <div class="card" onclick="openPage('novels')">
-<div class="symbol">📚</div>
-<h3>الروايات والقصص</h3>
+<div class="symbol">📚</div><h3>الروايات والقصص</h3>
 <p>مساحة لعرض الروايات والقصص والتجارب الأدبية.</p>
 </div>
-
 <div class="card" onclick="openPage('library')">
-<div class="symbol">🎬</div>
-<h3>مكتبة السيناريو</h3>
-<p>اقرأ وتعلم من نماذج سيناريوهات متاحة للنشر قانونيًا.</p>
+<div class="symbol">🎬</div><h3>مكتبة السيناريو</h3>
+<p>نماذج سيناريوهات متاحة للنشر قانونيًا.</p>
 </div>
-
 <div class="card" onclick="openPage('academy')">
-<div class="symbol">🎓</div>
-<h3>أكاديمية التعليم</h3>
+<div class="symbol">🎓</div><h3>أكاديمية التعليم</h3>
 <p>تعلم كتابة السيناريو من البداية حتى تقديم مشروعك.</p>
 </div>
-
 <div class="card" onclick="openPage('stories')">
-<div class="symbol">🔎</div>
-<h3>حكايات وقضايا</h3>
+<div class="symbol">🔎</div><h3>حكايات وقضايا</h3>
 <p>قصص وأحداث غريبة وملفات تستحق البحث والكتابة.</p>
 </div>
-
 <div class="card" onclick="openPage('production')">
-<div class="symbol">🤝</div>
-<h3>التعاون والإنتاج</h3>
+<div class="symbol">🤝</div><h3>التعاون والإنتاج</h3>
 <p>مساحة للتواصل بين أصحاب الأفكار والمهتمين بالإنتاج.</p>
 </div>
-
 <div class="card" onclick="openPage('ideas')">
-<div class="symbol">💡</div>
-<h3>تطوير الأفكار</h3>
+<div class="symbol">💡</div><h3>تطوير الأفكار</h3>
 <p>حوّل فكرتك الأولى إلى مشروع درامي متكامل.</p>
 </div>
-
 <div class="card" onclick="openPage('founder')">
-<div class="symbol">⭐</div>
-<h3>مؤسس المنصة</h3>
+<div class="symbol">⭐</div><h3>مؤسس المنصة</h3>
 <p>تعرف على صاحب فكرة سيناريو وسيناريست.</p>
 </div>
 </div>
@@ -125,7 +103,7 @@ button{cursor:pointer}
 <h2>عن سيناريو وسيناريست</h2>
 <p>منصة عربية مستقلة تهدف إلى دعم الكُتّاب والمواهب الجديدة، ونشر المعرفة السينمائية، وفتح مساحة للتعاون وتبادل الخبرات.</p>
 <p>نؤمن أن كل فيلم عظيم بدأ بفكرة، وأن كل كاتب يستحق فرصة حقيقية ليصل بصوته إلى الجمهور.</p>
-<strong style="color:#d6ad59">تأسيس وإشراف: رزق البغدادي</strong>
+<strong style="color:#dfb75e">تأسيس وإشراف: رزق البغدادي</strong>
 </section>
 </main>
 
@@ -146,34 +124,32 @@ button{cursor:pointer}
 const pages = {
 writers: `
 <h2>صفحات الكُتّاب</h2>
-<p>هنا نفتح المجال لكل كاتب لعرض نبذة عنه وأعماله ومشروعاته.</p>
+<p>مساحة للتعريف بالكُتّاب وأعمالهم ومشروعاتهم.</p>
 <div class="profile">
 <h2>رزق البغدادي</h2>
 <span class="tag">مؤسس المنصة</span>
 <span class="tag">كاتب</span>
 <p>كاتب ومهتم بالسيناريو والدراما، وصاحب فكرة منصة سيناريو وسيناريست.</p>
-<p>يؤمن بأهمية إتاحة فرص التعلم والتواصل أمام الكُتّاب والمواهب العربية.</p>
 <h3>من أعماله</h3>
 <p>كتاب: أغرب الجرائم والقضايا التي حدثت في مصر.</p>
 <p>مشروع: سيناريو وسيناريست.</p>
 </div>
 `,
 founder: `
-<h2>مؤسس منصة سيناريو وسيناريست</h2>
+<h2>مؤسس المنصة</h2>
 <div class="profile">
 <h2>رزق البغدادي</h2>
 <span class="tag">المؤسس</span>
 <span class="tag">كاتب</span>
 <p>صاحب فكرة إنشاء مساحة عربية تجمع الكُتّاب والمهتمين بالسينما والدراما.</p>
-<p>هدف المنصة هو دعم المواهب، وتوفير المعرفة، وإتاحة فرص التعاون بين المبدعين.</p>
 <h3>الرؤية</h3>
 <p>أن تصبح المنصة بيتًا مفتوحًا لكل صاحب فكرة وحكاية يريد أن يراها على الشاشة.</p>
 </div>
 `,
 novels: `
 <h2>الروايات والقصص</h2>
-<p>قسم مخصص لعرض الأعمال الأدبية والقصص القصيرة والروايات.</p>
-<p>يمكن للكُتّاب تقديم أعمالهم بعد التأكد من امتلاكهم حقوق النشر أو الحصول على إذن صاحب العمل.</p>
+<p>قسم لعرض الأعمال الأدبية والقصص القصيرة والروايات.</p>
+<p>تُنشر الأعمال بعد موافقة أصحاب الحقوق.</p>
 `,
 library: `
 <h2>مكتبة السيناريو</h2>
@@ -188,13 +164,12 @@ academy: `
 <h3>المحاضرة الأولى: ما هو السيناريو؟</h3>
 <p>مقدمة في عالم كتابة الأفلام، وكيف تتحول الفكرة إلى مشاهد مكتوبة قابلة للتنفيذ على الشاشة.</p>
 <h3>المحاضرة الثانية: الفرق بين الرواية والقصة والسيناريو</h3>
-<p>نتعرف على طبيعة كل شكل أدبي، والاختلاف في طريقة الحكي والوصف وبناء المشاهد.</p>
-<p>سيتم إضافة المحاضرات التالية تباعًا.</p>
+<p>نتعرف على طبيعة كل شكل أدبي والاختلاف في طريقة الحكي والوصف وبناء المشاهد.</p>
 `,
 stories: `
 <h2>حكايات وقضايا</h2>
 <p>مساحة للحكايات والوقائع والقضايا الغريبة التي يمكن أن تلهم الكتابة الدرامية.</p>
-<p>يجب التمييز دائمًا بين الوقائع الموثقة والخيال الدرامي، واحترام حقوق الأشخاص والخصوصية.</p>
+<p>نميز دائمًا بين الوقائع الموثقة والخيال الدرامي ونحترم الخصوصية.</p>
 `,
 production: `
 <h2>التعاون والإنتاج</h2>
@@ -212,18 +187,21 @@ function openPage(name){
 const content = pages[name];
 if(!content) return;
 document.getElementById('modalContent').innerHTML = content;
-document.getElementById('mainModal').style.display='block';
-document.body.style.overflow='hidden';
+document.getElementById('mainModal').style.display = 'block';
+document.body.style.overflow = 'hidden';
 }
+
 function closePage(){
-document.getElementById('mainModal').style.display='none';
-document.body.style.overflow='auto';
+document.getElementById('mainModal').style.display = 'none';
+document.body.style.overflow = 'auto';
 }
+
 function closeOutside(event){
-if(event.target.id==='mainModal') closePage();
+if(event.target.id === 'mainModal') closePage();
 }
+
 document.addEventListener('keydown',function(event){
-if(event.key==='Escape') closePage();
+if(event.key === 'Escape') closePage();
 });
 </script>
 </body>
