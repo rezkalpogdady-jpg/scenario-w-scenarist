@@ -1,411 +1,56 @@
 
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101010">
-<title>سيناريو وسيناريست | رزق البغدادي</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{--gold:#dfb75e;--bg:#101010;--panel:#1d1d1d;--border:#604b29}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#eee;font-family:Arial,Tahoma,sans-serif;line-height:1.8}
-header{padding:30px 16px;text-align:center;background:#171717;border-bottom:2px solid var(--gold)}
-header h1{color:var(--gold);margin:0;font-size:29px}
-header p{margin:5px;color:#bbb}
-nav{display:flex;gap:8px;padding:12px;overflow-x:auto;background:#191919;position:sticky;top:0;z-index:5}
-nav button{white-space:nowrap;background:#292929;color:#eee;border:1px solid var(--border);padding:9px 14px;border-radius:8px}
-button{cursor:pointer}
-button:hover{opacity:.85}
-nav button.active,.primary{background:var(--gold);color:#171717}
-main{max-width:1100px;margin:auto;padding:20px 14px}
-section{display:none}
-section.active{display:block}
-.hero{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#282016,#171717);border:1px solid var(--border);border-radius:14px;margin-bottom:22px}
-.hero h2{color:var(--gold);font-size:25px}
-h2,h3{color:var(--gold)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
-.card h3{margin-top:0}
-.card p{color:#ccc}
-input,textarea,select{width:100%;padding:12px;margin:7px 0;background:#292929;color:white;border:1px solid #66512c;border-radius:8px;font:inherit}
-textarea{min-height:110px}
-button.primary,button.secondary,button.danger{padding:10px 16px;border:0;border-radius:8px;margin:4px}
-.secondary{background:#333;color:white}
-.danger{background:#8b2929;color:white}
-.admin{border:1px solid var(--gold);padding:18px;border-radius:12px;margin-top:20px}
-.hidden{display:none!important}
-.small{font-size:13px;color:#aaa}
-footer{text-align:center;padding:25px;color:#999;border-top:1px solid var(--border);margin-top:35px}
-.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}
-.modal.show{display:flex}
-.modal-box{background:#202020;border:1px solid var(--gold);border-radius:12px;padding:22px;width:100%;max-width:500px;max-height:90vh;overflow:auto}
-a{color:var(--gold)}
-</style>
-</head>
-<body>
-
-<header>
-<h1>سيناريو وسيناريست</h1>
-<p>من الفكرة إلى الشاشة | إعداد رزق البغدادي</p>
-</header>
-
-<nav id="nav">
-<button class="active" data-page="home">الرئيسية</button>
-<button data-page="academy">الأكاديمية</button>
-<button data-page="library">المكتبة</button>
-<button data-page="writers">الكُتّاب</button>
-<button data-page="stories">الجرائم والحكايات</button>
-<button data-page="ideas">ورشة الأفكار</button>
-<button data-page="production">الإنتاج</button>
-<button data-page="about">عن المنصة</button>
-</nav>
-
-<main>
-<section id="home" class="active">
-<div class="hero">
-<h2>أهلاً بك في سيناريو وسيناريست</h2>
-<p>منصة عربية لتعليم كتابة السيناريو، وعرض الأعمال، وصناعة الحكايات.</p>
-<button class="primary" onclick="go('academy')">ابدأ التعلم</button>
-</div>
-<div class="grid">
-<div class="card"><h3>أكاديمية السيناريو</h3><p>دورة مجانية من البداية حتى كتابة مشروع فيلم.</p></div>
-<div class="card"><h3>مكتبة السيناريوهات</h3><p>نماذج وأعمال للقراءة والتعلم.</p></div>
-<div class="card"><h3>الجرائم والحكايات</h3><p>ملفات وقصص وحكايات مشوقة.</p></div>
-</div>
-</section>
-
-<section id="academy">
-<h2>أكاديمية سيناريو وسيناريست</h2>
-<p>دورة مجانية لتعلم كتابة السيناريو خطوة بخطوة.</p>
-<div id="lessons" class="grid"></div>
-</section>
-
-<section id="library">
-<h2>مكتبة السيناريوهات</h2>
-<div id="libraryItems" class="grid"></div>
-</section>
-
-<section id="writers">
-<h2>الكُتّاب والمبدعون</h2>
-<div class="card"><h3>مساحة للمبدعين</h3><p>مساحة للتعريف بالكُتّاب وأعمالهم ومشروعاتهم السينمائية.</p></div>
-<div id="writerItems" class="grid"></div>
-</section>
-
-<section id="stories">
-<h2>الجرائم والحكايات</h2>
-<p>حكايات وقضايا وألغاز من عالم الجريمة.</p>
-<div id="storyItems" class="grid"></div>
-</section>
-
-<section id="ideas">
-<h2>ورشة الأفكار</h2>
-<p>اكتب فكرتك واحفظها على هذا الجهاز.</p>
-<input id="ideaTitle" placeholder="عنوان الفكرة">
-<textarea id="ideaText" placeholder="اكتب فكرتك هنا"></textarea>
-<button class="primary" onclick="saveIdea()">حفظ الفكرة</button>
-<div id="ideasList" class="grid"></div>
-</section>
-
-<section id="production">
-<h2>الإنتاج السينمائي</h2>
-<div class="card"><h3>من الورق إلى الشاشة</h3><p>مساحة للتعريف بمشروعات الأفلام والتعاون بين الكُتّاب والمنتجين والمخرجين.</p></div>
-<div id="productionItems" class="grid"></div>
-</section>
-
-<section id="about">
-<h2>عن المنصة</h2>
-<div class="card">
-<h3>سيناريو وسيناريست</h3>
-<p>منصة عربية تهتم بتعليم كتابة السيناريو، وتقديم النماذج الإبداعية، ونشر الحكايات والجرائم، وفتح مساحة للمواهب والكتّاب.</p>
-<p>إعداد وإشراف: رزق البغدادي.</p>
-</div>
-</section>
-
-<section id="admin">
-<h2>إدارة المنصة</h2>
-<div class="admin">
-<div id="loginArea">
-<h3>دخول الإدارة</h3>
-<p>سجّل الدخول بالبريد وكلمة مرور حساب الإدارة.</p>
-<input id="email" type="email" placeholder="البريد الإلكتروني">
-<input id="password" type="password" placeholder="كلمة المرور">
-<button class="primary" onclick="login()">دخول</button>
-<p id="loginMessage" class="small"></p>
-</div>
-
-<div id="manageArea" class="hidden">
-<p id="adminWelcome"></p>
-<button class="secondary" onclick="logout()">تسجيل الخروج</button>
-<hr>
-<h3 id="formHeading">إضافة محتوى جديد</h3>
-<input type="hidden" id="editId">
-<label>القسم</label>
-<select id="category">
-<option value="academy">محاضرة</option>
-<option value="library">سيناريو / فيلم</option>
-<option value="stories">جريمة وحكاية</option>
-<option value="writers">كاتب</option>
-<option value="production">إنتاج</option>
-</select>
-<input id="materialTitle" placeholder="عنوان المحتوى">
-<textarea id="materialDescription" placeholder="وصف مختصر"></textarea>
-<textarea id="materialContent" placeholder="النص الكامل أو تفاصيل المحتوى"></textarea>
-<button class="primary" onclick="saveMaterial()">حفظ المحتوى</button>
-<button class="secondary" onclick="clearForm()">إلغاء التعديل</button>
-<p id="saveMessage" class="small"></p>
-<hr>
-<h3>المحتوى المنشور</h3>
-<div id="adminItems"></div>
-</div>
-</div>
-</section>
-</main>
-
-<footer>
-سيناريو وسيناريست © رزق البغدادي
-<p><button class="secondary" onclick="go('admin')">دخول الإدارة</button></p>
-</footer>
-
-<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
-<div class="modal-box">
-<button class="secondary" onclick="closeModal()">إغلاق</button>
-<div id="modalContent"></div>
-</div>
-</div>
-
-<script>
-const SUPABASE_URL = "https://asmxyfkmojqzrbnrovmz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_gHjeBgsJd8_8Yc149FLTWg_OiZbNrv1";
-const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-const lessonTitles = [
-"ما هو السيناريو؟",
-"الفرق بين الرواية والقصة والسيناريو",
-"الفكرة وكيف تتحول إلى فيلم",
-"الثيمة والرسالة",
-"بناء الشخصية السينمائية",
-"البطل والهدف والصراع",
-"الشخصيات الرئيسية والثانوية",
-"العالم الدرامي ومكان الأحداث",
-"الحدث المحفز",
-"بناء الحبكة",
-"البداية والوسط والنهاية",
-"الفصل الأول",
-"الفصل الثاني",
-"الفصل الثالث",
-"المشهد السينمائي",
-"كتابة الوصف والحركة",
-"كتابة الحوار",
-"الحوار الطبيعي والوظيفي",
-"الصراع الداخلي والخارجي",
-"التشويق والمفاجأة",
-"الفلاش باك",
-"الإيقاع السينمائي",
-"كتابة المشاهد",
-"المعالجة الدرامية",
-"السينوبسيس وملخص الفيلم",
-"تطوير السيناريو",
-"إعادة الكتابة والمراجعة",
-"تنسيق السيناريو الاحترافي",
-"إعداد ملف المشروع",
-"تقديم المشروع لشركات الإنتاج"
-];
-
-const lessonDescriptions = [
-"مقدمة في عالم كتابة الأفلام، وكيف تتحول الفكرة إلى مشاهد مكتوبة قابلة للتنفيذ على الشاشة.",
-"نتعرف على طبيعة كل شكل أدبي والاختلاف في طريقة الحكي والوصف وبناء الأحداث.",
-"كيف نختار فكرة تصلح لفيلم طويل؟",
-"ما الذي يريد الفيلم أن يقوله للمشاهد؟",
-"كيف نصنع شخصية لها ماضٍ وهدف وعيوب؟"
-];
-
-let materials = [];
-let currentUser = null;
-
-function esc(value){
-return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-
-function go(page){
-document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));
-document.getElementById(page).classList.add("active");
-document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
-if(page==="admin")checkSession();
-}
-
-document.getElementById("nav").addEventListener("click",e=>{
-const b=e.target.closest("button[data-page]");
-if(b)go(b.dataset.page);
-});
-
-function show(title,description,content){
-document.getElementById("modalContent").innerHTML=
-`<h2>${esc(title)}</h2><p>${esc(description)}</p><div>${esc(content).replace(/\n/g,"<br>")}</div>`;
-document.getElementById("modal").classList.add("show");
-}
-function closeModal(){document.getElementById("modal").classList.remove("show");}
-
 function renderLessons(){
-document.getElementById("lessons").innerHTML=lessonTitles.map((t,i)=>`
-<div class="card">
-<h3>المحاضرة ${i+1}: ${esc(t)}</h3>
-<p>${esc(lessonDescriptions[i]||"درس من دروس تعلم كتابة السيناريو وتطوير المهارات الدرامية.")}</p>
-<button class="primary" onclick="show(${JSON.stringify("المحاضرة "+(i+1)+": "+t)},${JSON.stringify(lessonDescriptions[i]||"درس من دروس تعلم كتابة السيناريو.")},${JSON.stringify("تدريب عملي: اكتب فكرة قصيرة، وحدد الشخصية الرئيسية والهدف والصراع والعقبة التي تواجهها.")})">فتح المحاضرة</button>
-</div>`).join("");
+  document.getElementById("lessons").innerHTML =
+    lessonTitles.map((t,i)=>`
+      <div class="card">
+        <h3>المحاضرة ${i+1}: ${esc(t)}</h3>
+        <p>${esc(lessonDescriptions[i] || "درس من دروس تعلم كتابة السيناريو وتطوير المهارات الدرامية.")}</p>
+        <button class="primary" onclick="openLesson(${i})">
+          فتح المحاضرة
+        </button>
+      </div>
+    `).join("");
+}
+
+function openLesson(i){
+  const title = lessonTitles[i];
+  const description = lessonDescriptions[i] ||
+    "درس من دروس تعلم كتابة السيناريو.";
+  const content =
+    "تدريب عملي:\nاكتب فكرة قصيرة، وحدد الشخصية الرئيسية والهدف والصراع والعقبة التي تواجهها.";
+
+  show("المحاضرة "+(i+1)+": "+title, description, content);
 }
 
 function cardHTML(item){
-return `<div class="card">
-<h3>${esc(item.title)}</h3>
-<p>${esc(item.description||"")}</p>
-<button class="primary" onclick="show(${JSON.stringify(item.title)},${JSON.stringify(item.description||"")},${JSON.stringify(item.content||"")})">قراءة المزيد</button>
-</div>`;
+  return `<div class="card">
+    <h3>${esc(item.title)}</h3>
+    <p>${esc(item.description||"")}</p>
+    <button class="primary" onclick="openMaterial('${esc(item.id)}')">
+      قراءة المزيد
+    </button>
+  </div>`;
+}
+
+function openMaterial(id){
+  const item = materials.find(x=>String(x.id)===String(id));
+  if(!item) return;
+  show(item.title,item.description||"",item.content||"");
 }
 
 function renderMaterials(){
-const map={library:"libraryItems",stories:"storyItems",writers:"writerItems",production:"productionItems"};
-Object.entries(map).forEach(([cat,id])=>{
-const list=materials.filter(x=>x.category===cat);
-document.getElementById(id).innerHTML=list.length?list.map(cardHTML).join(""):"<p>لا يوجد محتوى منشور في هذا القسم حتى الآن.</p>";
-});
-}
+  const map={
+    library:"libraryItems",
+    stories:"storyItems",
+    writers:"writerItems",
+    production:"productionItems"
+  };
 
-async function loadMaterials(){
-const {data,error}=await db.from("materials").select("*").order("created_at",{ascending:false});
-if(error){console.error(error);return;}
-materials=data||[];
-renderMaterials();
-renderAdminItems();
+  Object.entries(map).forEach(([cat,id])=>{
+    const list=materials.filter(x=>x.category===cat);
+    document.getElementById(id).innerHTML=
+      list.length
+        ? list.map(cardHTML).join("")
+        : "<p>لا يوجد محتوى منشور في هذا القسم حتى الآن.</p>";
+  });
 }
-
-async function login(){
-const email=document.getElementById("email").value.trim();
-const password=document.getElementById("password").value;
-const msg=document.getElementById("loginMessage");
-msg.textContent="جارٍ تسجيل الدخول...";
-const {data,error}=await db.auth.signInWithPassword({email,password});
-if(error){msg.textContent="تعذر الدخول: "+error.message;return;}
-currentUser=data.user;
-await checkSession();
-}
-
-async function checkSession(){
-const {data}=await db.auth.getSession();
-currentUser=data.session?.user||null;
-const allowed=currentUser&&currentUser.email==="rezkalpogdady@gmail.com";
-document.getElementById("loginArea").classList.toggle("hidden",!!allowed);
-document.getElementById("manageArea").classList.toggle("hidden",!allowed);
-if(allowed){
-document.getElementById("adminWelcome").textContent="مرحبًا بك في لوحة إدارة المنصة.";
-await loadMaterials();
-}
-}
-
-async function logout(){
-await db.auth.signOut();
-currentUser=null;
-clearForm();
-checkSession();
-}
-
-async function saveMaterial(){
-const msg=document.getElementById("saveMessage");
-const id=document.getElementById("editId").value;
-const row={
-category:document.getElementById("category").value,
-title:document.getElementById("materialTitle").value.trim(),
-description:document.getElementById("materialDescription").value.trim(),
-content:document.getElementById("materialContent").value.trim(),
-updated_at:new Date().toISOString()
-};
-if(!row.title){msg.textContent="اكتب عنوان المحتوى أولًا.";return;}
-msg.textContent="جارٍ الحفظ...";
-let result;
-if(id){
-result=await db.from("materials").update(row).eq("id",id);
-}else{
-result=await db.from("materials").insert(row);
-}
-if(result.error){msg.textContent="حدث خطأ: "+result.error.message;return;}
-msg.textContent="تم حفظ المحتوى بنجاح.";
-clearForm();
-await loadMaterials();
-}
-
-function clearForm(){
-document.getElementById("editId").value="";
-document.getElementById("materialTitle").value="";
-document.getElementById("materialDescription").value="";
-document.getElementById("materialContent").value="";
-document.getElementById("formHeading").textContent="إضافة محتوى جديد";
-}
-
-function renderAdminItems(){
-const box=document.getElementById("adminItems");
-if(!box)return;
-if(!materials.length){box.innerHTML="<p>لا يوجد محتوى مضاف بعد.</p>";return;}
-box.innerHTML=materials.map(x=>`
-<div class="card">
-<strong>${esc(x.title)}</strong>
-<p>${esc(x.description||"")}</p>
-<button class="secondary" onclick="editMaterial('${x.id}')">تعديل</button>
-<button class="danger" onclick="deleteMaterial('${x.id}')">حذف</button>
-</div>`).join("");
-}
-
-function editMaterial(id){
-const x=materials.find(m=>m.id===id);
-if(!x)return;
-document.getElementById("editId").value=x.id;
-document.getElementById("category").value=x.category;
-document.getElementById("materialTitle").value=x.title;
-document.getElementById("materialDescription").value=x.description||"";
-document.getElementById("materialContent").value=x.content||"";
-document.getElementById("formHeading").textContent="تعديل المحتوى";
-window.scrollTo({top:0,behavior:"smooth"});
-}
-
-async function deleteMaterial(id){
-if(!confirm("هل تريد حذف هذا المحتوى نهائيًا؟"))return;
-const {error}=await db.from("materials").delete().eq("id",id);
-if(error){alert("تعذر الحذف: "+error.message);return;}
-await loadMaterials();
-}
-
-function saveIdea(){
-const title=document.getElementById("ideaTitle").value.trim();
-const content=document.getElementById("ideaText").value.trim();
-if(!title||!content){alert("اكتب العنوان والفكرة.");return;}
-const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
-ideas.push({title,content});
-localStorage.setItem("sw_ideas",JSON.stringify(ideas));
-document.getElementById("ideaTitle").value="";
-document.getElementById("ideaText").value="";
-renderIdeas();
-}
-
-function renderIdeas(){
-const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
-document.getElementById("ideasList").innerHTML=ideas.map((x,i)=>`
-<div class="card"><h3>${esc(x.title)}</h3><p>${esc(x.content)}</p>
-<button class="danger" onclick="deleteIdea(${i})">حذف</button></div>`).join("");
-}
-function deleteIdea(i){
-const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
-ideas.splice(i,1);
-localStorage.setItem("sw_ideas",JSON.stringify(ideas));
-renderIdeas();
-}
-
-db.auth.onAuthStateChange((_event,session)=>{
-currentUser=session?.user||null;
-});
-
-renderLessons();
-renderIdeas();
-loadMaterials();
-</script>
-</body>
-</html>
