@@ -6,365 +6,406 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101010">
 <title>سيناريو وسيناريست | رزق البغدادي</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root{--gold:#dfb75e;--bg:#101010;--panel:#1d1d1d;--border:#604b29}
 *{box-sizing:border-box}
-body{margin:0;background:#101010;color:#eee;font-family:Tahoma,Arial;line-height:1.9}
-:root{--gold:#dfb75e;--panel:#1d1d1d;--border:#604b29}
-header{padding:45px 15px;text-align:center;background:linear-gradient(120deg,#101010,#392b17);border-bottom:2px solid var(--gold)}
-header h1{font-size:36px;color:var(--gold);margin:0}
-header p{color:#ddd}
-nav{position:sticky;top:0;z-index:5;background:#191919;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px}
-button,a{cursor:pointer}
-nav button,.btn{background:#272116;color:var(--gold);border:1px solid var(--border);padding:9px 15px;border-radius:20px;font-size:14px}
-nav button:hover,.btn:hover{background:var(--gold);color:#111}
-.container{max-width:1100px;margin:auto;padding:20px}
-.hero{padding:35px 15px;text-align:center;border-radius:15px;background:linear-gradient(120deg,#332716,#151515)}
-.hero h2{color:var(--gold);font-size:28px}
-.hero-image{width:100%;height:190px;object-fit:cover;border-radius:12px;margin-top:15px}
-h2.section{color:var(--gold);text-align:center;margin:35px 0 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;padding:18px;transition:.2s}
-.card:hover{border-color:var(--gold);transform:translateY(-3px)}
-.card h3{color:var(--gold);margin:8px 0}
-.card p{color:#ccc;font-size:14px}
-.card img{width:100%;height:130px;object-fit:cover;border-radius:8px}
-.icon{font-size:32px}
-.tag{display:inline-block;color:#f1d18b;background:#392d19;border-radius:15px;padding:3px 10px;font-size:12px}
-.panel{background:var(--panel);border:1px solid var(--border);padding:22px;border-radius:12px;margin:20px 0}
-input,textarea,select{width:100%;padding:12px;background:#111;color:white;border:1px solid #65502e;border-radius:8px;margin:7px 0;font-family:inherit}
-textarea{min-height:100px}
-footer{text-align:center;background:#191919;padding:25px;color:#bbb;margin-top:40px}
-footer strong{color:var(--gold)}
-.modal{display:none;position:fixed;inset:0;background:#000e;z-index:20;overflow:auto;padding:15px}
-.modal-box{max-width:750px;margin:30px auto;background:#202020;border:1px solid var(--gold);border-radius:14px;padding:25px;position:relative}
-.modal-box h2,.modal-box h3{color:var(--gold)}
-.close{float:left;background:var(--gold);border:0;padding:8px 14px;border-radius:7px}
-.content{clear:both;padding-top:15px;white-space:normal}
-.small{font-size:12px;color:#aaa}
-.hide{display:none}
-@media(max-width:600px){header h1{font-size:27px}.container{padding:12px}.hero h2{font-size:22px}}
+body{margin:0;background:var(--bg);color:#eee;font-family:Arial,Tahoma,sans-serif;line-height:1.8}
+header{padding:30px 16px;text-align:center;background:#171717;border-bottom:2px solid var(--gold)}
+header h1{color:var(--gold);margin:0;font-size:29px}
+header p{margin:5px;color:#bbb}
+nav{display:flex;gap:8px;padding:12px;overflow-x:auto;background:#191919;position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:#292929;color:#eee;border:1px solid var(--border);padding:9px 14px;border-radius:8px}
+button{cursor:pointer}
+button:hover{opacity:.85}
+nav button.active,.primary{background:var(--gold);color:#171717}
+main{max-width:1100px;margin:auto;padding:20px 14px}
+section{display:none}
+section.active{display:block}
+.hero{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#282016,#171717);border:1px solid var(--border);border-radius:14px;margin-bottom:22px}
+.hero h2{color:var(--gold);font-size:25px}
+h2,h3{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h3{margin-top:0}
+.card p{color:#ccc}
+input,textarea,select{width:100%;padding:12px;margin:7px 0;background:#292929;color:white;border:1px solid #66512c;border-radius:8px;font:inherit}
+textarea{min-height:110px}
+button.primary,button.secondary,button.danger{padding:10px 16px;border:0;border-radius:8px;margin:4px}
+.secondary{background:#333;color:white}
+.danger{background:#8b2929;color:white}
+.admin{border:1px solid var(--gold);padding:18px;border-radius:12px;margin-top:20px}
+.hidden{display:none!important}
+.small{font-size:13px;color:#aaa}
+footer{text-align:center;padding:25px;color:#999;border-top:1px solid var(--border);margin-top:35px}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}
+.modal.show{display:flex}
+.modal-box{background:#202020;border:1px solid var(--gold);border-radius:12px;padding:22px;width:100%;max-width:500px;max-height:90vh;overflow:auto}
+a{color:var(--gold)}
 </style>
 </head>
 <body>
 
 <header>
-<h1>🎬 سيناريو وسيناريست</h1>
-<p>من الفكرة إلى الشاشة</p>
-<p>منصة عربية للتعلم والكتابة والإبداع السينمائي</p>
-<span class="tag">تأسيس وإشراف: رزق البغدادي</span>
+<h1>سيناريو وسيناريست</h1>
+<p>من الفكرة إلى الشاشة | إعداد رزق البغدادي</p>
 </header>
 
-<nav>
-<button onclick="go('home')">الرئيسية</button>
-<button onclick="go('academy')">الأكاديمية</button>
-<button onclick="go('library')">المكتبة</button>
-<button onclick="go('writers')">الكُتّاب</button>
-<button onclick="go('stories')">الجرائم والحكايات</button>
-<button onclick="go('ideas')">ورشة الأفكار</button>
-<button onclick="go('production')">الإنتاج</button>
-<button onclick="go('about')">عن المنصة</button>
+<nav id="nav">
+<button class="active" data-page="home">الرئيسية</button>
+<button data-page="academy">الأكاديمية</button>
+<button data-page="library">المكتبة</button>
+<button data-page="writers">الكُتّاب</button>
+<button data-page="stories">الجرائم والحكايات</button>
+<button data-page="ideas">ورشة الأفكار</button>
+<button data-page="production">الإنتاج</button>
+<button data-page="about">عن المنصة</button>
 </nav>
 
-<main class="container">
-
-<section id="home" class="page">
+<main>
+<section id="home" class="active">
 <div class="hero">
-<h2>كل فيلم عظيم بدأ بفكرة</h2>
-<p>تعلم كتابة السيناريو، اكتشف عالم الحكايات، اقرأ، اكتب، وابدأ رحلتك إلى الشاشة.</p>
-<img class="hero-image" src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba" alt="قاعة سينما">
+<h2>أهلاً بك في سيناريو وسيناريست</h2>
+<p>منصة عربية لتعليم كتابة السيناريو، وعرض الأعمال، وصناعة الحكايات.</p>
+<button class="primary" onclick="go('academy')">ابدأ التعلم</button>
 </div>
-
-<h2 class="section">اكتشف أقسام المنصة</h2>
 <div class="grid">
-<div class="card" onclick="go('academy')"><div class="icon">🎓</div><h3>أكاديمية السيناريو</h3><p>30 محاضرة تعليمية مجانية.</p></div>
-<div class="card" onclick="go('library')"><div class="icon">🎬</div><h3>مكتبة السيناريو</h3><p>نماذج وأعمال أصلية وتعليمية.</p></div>
-<div class="card" onclick="go('writers')"><div class="icon">✍️</div><h3>الكُتّاب</h3><p>تعرف على أصحاب الأقلام والمشروعات.</p></div>
-<div class="card" onclick="go('stories')"><div class="icon">🔎</div><h3>حكايات وقضايا</h3><p>الجرائم والألغاز والحكايات الدرامية.</p></div>
-<div class="card" onclick="go('ideas')"><div class="icon">💡</div><h3>ورشة الأفكار</h3><p>من الفكرة إلى المعالجة والسيناريو.</p></div>
-<div class="card" onclick="go('production')"><div class="icon">🤝</div><h3>التعاون والإنتاج</h3><p>التواصل وتطوير المشروعات.</p></div>
-</div>
-<div class="panel">
-<h2 style="color:var(--gold)">ابدأ رحلتك الآن</h2>
-<p>لا يشترط أن تكون كاتبًا محترفًا. يكفي أن تمتلك فكرة تريد أن تحكيها.</p>
-<button class="btn" onclick="go('academy')">ابدأ التعليم المجاني</button>
+<div class="card"><h3>أكاديمية السيناريو</h3><p>دورة مجانية من البداية حتى كتابة مشروع فيلم.</p></div>
+<div class="card"><h3>مكتبة السيناريوهات</h3><p>نماذج وأعمال للقراءة والتعلم.</p></div>
+<div class="card"><h3>الجرائم والحكايات</h3><p>ملفات وقصص وحكايات مشوقة.</p></div>
 </div>
 </section>
 
-<section id="academy" class="page hide">
-<h2 class="section">🎓 أكاديمية سيناريو وسيناريست</h2>
-<p>دورة مجانية من المبادئ الأولى حتى إعداد مشروع سينمائي قابل للتقديم.</p>
+<section id="academy">
+<h2>أكاديمية سيناريو وسيناريست</h2>
+<p>دورة مجانية لتعلم كتابة السيناريو خطوة بخطوة.</p>
 <div id="lessons" class="grid"></div>
 </section>
 
-<section id="library" class="page hide">
-<h2 class="section">📚 مكتبة السيناريو</h2>
-<div class="panel">
-<h3>مكتبة للتعلم والقراءة</h3>
-<p>نعرض هنا الأعمال الأصلية والنماذج التي يسمح أصحاب حقوقها بالنشر، إلى جانب تطبيقات تعليمية مكتوبة خصيصًا للمنصة.</p>
-</div>
-<div class="grid" id="scripts"></div>
+<section id="library">
+<h2>مكتبة السيناريوهات</h2>
+<div id="libraryItems" class="grid"></div>
 </section>
 
-<section id="writers" class="page hide">
-<h2 class="section">✍️ صفحات الكُتّاب</h2>
-<div class="grid">
+<section id="writers">
+<h2>الكُتّاب والمبدعون</h2>
+<div class="card"><h3>مساحة للمبدعين</h3><p>مساحة للتعريف بالكُتّاب وأعمالهم ومشروعاتهم السينمائية.</p></div>
+<div id="writerItems" class="grid"></div>
+</section>
+
+<section id="stories">
+<h2>الجرائم والحكايات</h2>
+<p>حكايات وقضايا وألغاز من عالم الجريمة.</p>
+<div id="storyItems" class="grid"></div>
+</section>
+
+<section id="ideas">
+<h2>ورشة الأفكار</h2>
+<p>اكتب فكرتك واحفظها على هذا الجهاز.</p>
+<input id="ideaTitle" placeholder="عنوان الفكرة">
+<textarea id="ideaText" placeholder="اكتب فكرتك هنا"></textarea>
+<button class="primary" onclick="saveIdea()">حفظ الفكرة</button>
+<div id="ideasList" class="grid"></div>
+</section>
+
+<section id="production">
+<h2>الإنتاج السينمائي</h2>
+<div class="card"><h3>من الورق إلى الشاشة</h3><p>مساحة للتعريف بمشروعات الأفلام والتعاون بين الكُتّاب والمنتجين والمخرجين.</p></div>
+<div id="productionItems" class="grid"></div>
+</section>
+
+<section id="about">
+<h2>عن المنصة</h2>
 <div class="card">
-<div class="icon">⭐</div>
-<h3>رزق البغدادي</h3>
-<span class="tag">مؤسس المنصة</span>
-<p>كاتب ومهتم بالسيناريو والدراما والقصص الجنائية.</p>
-<p>من أعماله: كتاب أغرب الجرائم والقضايا التي حدثت في مصر.</p>
-</div>
-<div class="card">
-<div class="icon">📝</div>
-<h3>مساحة الكاتب الجديد</h3>
-<p>قسم مخصص لاستقبال التعريفات والأعمال بعد موافقة أصحابها.</p>
-</div>
+<h3>سيناريو وسيناريست</h3>
+<p>منصة عربية تهتم بتعليم كتابة السيناريو، وتقديم النماذج الإبداعية، ونشر الحكايات والجرائم، وفتح مساحة للمواهب والكتّاب.</p>
+<p>إعداد وإشراف: رزق البغدادي.</p>
 </div>
 </section>
 
-<section id="stories" class="page hide">
-<h2 class="section">🔎 حكايات السفاحين والجرائم</h2>
-<div class="panel">
-<p>قسم للقصص الجنائية والتحقيقات والحكايات الغامضة. يجب التمييز بين الوقائع الموثقة والتصورات الدرامية.</p>
+<section id="admin">
+<h2>إدارة المنصة</h2>
+<div class="admin">
+<div id="loginArea">
+<h3>دخول الإدارة</h3>
+<p>سجّل الدخول بالبريد وكلمة مرور حساب الإدارة.</p>
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+<button class="primary" onclick="login()">دخول</button>
+<p id="loginMessage" class="small"></p>
 </div>
-<div class="grid" id="crimes"></div>
-</section>
 
-<section id="ideas" class="page hide">
-<h2 class="section">💡 ورشة تطوير الأفكار</h2>
-<div class="panel">
-<h3>حوّل فكرتك إلى مشروع فيلم</h3>
-<label>عنوان الفكرة</label>
-<input id="ideaTitle" placeholder="اكتب عنوان فكرتك">
-<label>ملخص الفكرة</label>
-<textarea id="ideaText" placeholder="احكِ لنا فكرتك في بضعة أسطر"></textarea>
-<label>نوع العمل</label>
-<select id="ideaType">
-<option>دراما</option><option>تشويق</option><option>جريمة</option>
-<option>كوميديا</option><option>رومانسي</option><option>رعب</option>
+<div id="manageArea" class="hidden">
+<p id="adminWelcome"></p>
+<button class="secondary" onclick="logout()">تسجيل الخروج</button>
+<hr>
+<h3 id="formHeading">إضافة محتوى جديد</h3>
+<input type="hidden" id="editId">
+<label>القسم</label>
+<select id="category">
+<option value="academy">محاضرة</option>
+<option value="library">سيناريو / فيلم</option>
+<option value="stories">جريمة وحكاية</option>
+<option value="writers">كاتب</option>
+<option value="production">إنتاج</option>
 </select>
-<button class="btn" onclick="saveIdea()">حفظ الفكرة على جهازي</button>
-<div id="ideaResult"></div>
+<input id="materialTitle" placeholder="عنوان المحتوى">
+<textarea id="materialDescription" placeholder="وصف مختصر"></textarea>
+<textarea id="materialContent" placeholder="النص الكامل أو تفاصيل المحتوى"></textarea>
+<button class="primary" onclick="saveMaterial()">حفظ المحتوى</button>
+<button class="secondary" onclick="clearForm()">إلغاء التعديل</button>
+<p id="saveMessage" class="small"></p>
+<hr>
+<h3>المحتوى المنشور</h3>
+<div id="adminItems"></div>
+</div>
 </div>
 </section>
-
-<section id="production" class="page hide">
-<h2 class="section">🤝 التعاون والإنتاج</h2>
-<div class="grid">
-<div class="card"><div class="icon">🎥</div><h3>المخرجون</h3><p>مساحة للتعريف بالمخرجين ومشروعاتهم.</p></div>
-<div class="card"><div class="icon">💼</div><h3>المنتجون</h3><p>مساحة لعرض المشروعات القابلة للتطوير.</p></div>
-<div class="card"><div class="icon">📝</div><h3>تقديم مشروع</h3><p>تجهيز الفكرة والملخص والمعالجة والسيناريو.</p></div>
-</div>
-</section>
-
-<section id="about" class="page hide">
-<h2 class="section">عن سيناريو وسيناريست</h2>
-<div class="panel">
-<h3>رسالتنا</h3>
-<p>منصة عربية مستقلة تهدف إلى نشر ثقافة كتابة السيناريو، ودعم الكُتّاب الجدد، وإتاحة مساحة للتعلم والقراءة والتعاون.</p>
-<h3>المؤسس</h3>
-<p>رزق البغدادي</p>
-<h3>رؤيتنا</h3>
-<p>أن تصبح المنصة بيتًا لكل صاحب فكرة وحكاية يريد أن يراها على الشاشة.</p>
-</div>
-</section>
-
-<section class="panel">
-<h3 style="color:var(--gold)">إدارة المحتوى على هذا الجهاز</h3>
-<p class="small">يمكنك إضافة مواد تجريبية وحذفها من هذا المتصفح. لن تظهر الإضافات المحلية تلقائيًا عند الزوار الآخرين.</p>
-<label>نوع المادة</label>
-<select id="newCategory">
-<option value="scripts">سيناريو ونموذج</option>
-<option value="crimes">حكاية وقضية</option>
-</select>
-<label>العنوان</label>
-<input id="newTitle" placeholder="عنوان المادة">
-<label>الوصف</label>
-<textarea id="newDescription" placeholder="اكتب وصف المادة"></textarea>
-<button class="btn" onclick="addMaterial()">إضافة مادة</button>
-<div id="customItems"></div>
-</section>
-
 </main>
 
-<div class="modal" id="modal">
-<div class="modal-box">
-<button class="close" onclick="closeModal()">إغلاق ×</button>
-<div class="content" id="modalContent"></div>
-</div>
-</div>
-
 <footer>
-<p>سيناريو وسيناريست © 2026</p>
-<p>من الفكرة إلى الشاشة</p>
-<p>تأسيس وإشراف <strong>رزق البغدادي</strong></p>
+سيناريو وسيناريست © رزق البغدادي
+<p><button class="secondary" onclick="go('admin')">دخول الإدارة</button></p>
 </footer>
 
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+<div class="modal-box">
+<button class="secondary" onclick="closeModal()">إغلاق</button>
+<div id="modalContent"></div>
+</div>
+</div>
+
 <script>
-const lessonTitles=[
+const SUPABASE_URL = "https://asmxyfkmojqzrbnrovmz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_gHjeBgsJd8_8Yc149FLTWg_OiZbNrv1";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const lessonTitles = [
 "ما هو السيناريو؟",
 "الفرق بين الرواية والقصة والسيناريو",
-"الفكرة الدرامية وكيف نختارها",
+"الفكرة وكيف تتحول إلى فيلم",
 "الثيمة والرسالة",
-"أنواع الأفلام والأنواع الدرامية",
-"بناء الشخصية الرئيسية",
-"الشخصيات الثانوية",
-"الهدف والعقبة والصراع",
-"الصراع الداخلي والخارجي",
-"بناء العالم الدرامي",
-"الحدث المحرك",
-"البداية القوية",
-"بناء الفصل الأول",
-"نقطة التحول الأولى",
-"تصاعد الأحداث",
-"منتصف الفيلم",
-"الأزمة الدرامية",
-"الذروة والنهاية",
-"تقسيم الفيلم إلى مشاهد",
-"كتابة المشهد السينمائي",
+"بناء الشخصية السينمائية",
+"البطل والهدف والصراع",
+"الشخصيات الرئيسية والثانوية",
+"العالم الدرامي ومكان الأحداث",
+"الحدث المحفز",
+"بناء الحبكة",
+"البداية والوسط والنهاية",
+"الفصل الأول",
+"الفصل الثاني",
+"الفصل الثالث",
+"المشهد السينمائي",
+"كتابة الوصف والحركة",
 "كتابة الحوار",
-"الوصف البصري",
-"زمن الفيلم والإيقاع",
-"الفلاش باك والاسترجاع",
-"كتابة التشويق والغموض",
+"الحوار الطبيعي والوظيفي",
+"الصراع الداخلي والخارجي",
+"التشويق والمفاجأة",
+"الفلاش باك",
+"الإيقاع السينمائي",
+"كتابة المشاهد",
+"المعالجة الدرامية",
+"السينوبسيس وملخص الفيلم",
+"تطوير السيناريو",
 "إعادة الكتابة والمراجعة",
 "تنسيق السيناريو الاحترافي",
-"كتابة المعالجة الدرامية",
-"إعداد ملف تقديم المشروع",
-"تقديم السيناريو لشركات الإنتاج"
+"إعداد ملف المشروع",
+"تقديم المشروع لشركات الإنتاج"
 ];
 
-const lessonDescriptions=[
-"مقدمة في عالم كتابة الأفلام وكيف تتحول الفكرة إلى مشاهد قابلة للتصوير.",
-"نتعرف على الاختلاف بين السرد الروائي والحكاية المختصرة والكتابة للشاشة.",
-"كيف نعثر على فكرة تصلح لفيلم وتحتمل التطور.",
-"المعنى الأساسي الذي يمنح العمل عمقه.",
-"كيف تختار الشكل الدرامي المناسب لحكايتك.",
-"بناء إنسان حقيقي له رغبات ومخاوف وتناقضات.",
-"وظيفة الشخصيات المساعدة وعلاقتها بالبطل.",
-"كل حكاية تحتاج هدفًا وعقبة تمنع الوصول إليه.",
-"كيف نصنع صراعًا يؤثر في الشخصية والعالم حولها.",
-"اختيار الزمان والمكان والقواعد التي تحكم الحكاية.",
-"الحدث الذي يطلق رحلة الفيلم.",
-"كيف تجذب المشاهد من اللحظة الأولى.",
-"تقديم العالم والشخصيات والمشكلة.",
-"الحدث الذي يغير مسار القصة.",
-"رفع المخاطر وتعقيد المواجهة.",
-"المنتصف الذي يغير فهمنا للحكاية.",
-"أصعب لحظة يواجهها البطل.",
-"المواجهة الأخيرة والنتيجة الدرامية.",
-"تحويل الحكاية إلى وحدات تصويرية.",
-"كتابة مشهد له بداية وتطور ونهاية.",
-"الحوار الطبيعي الذي يكشف الشخصية.",
-"اكتب ما يمكن للكاميرا رؤيته وسماعه.",
-"التحكم في سرعة الأحداث.",
-"استخدام الماضي دون إرباك المشاهد.",
-"زرع الأسئلة والمفاجآت بذكاء.",
-"كيف تجعل النسخة الثانية أفضل من الأولى.",
-"الشكل المهني لصفحات السيناريو.",
-"تقديم الفيلم في صورة معالجة واضحة.",
-"الملخص والشخصيات والرؤية الفنية.",
-"كيف تعرض مشروعك بصورة احترافية."
+const lessonDescriptions = [
+"مقدمة في عالم كتابة الأفلام، وكيف تتحول الفكرة إلى مشاهد مكتوبة قابلة للتنفيذ على الشاشة.",
+"نتعرف على طبيعة كل شكل أدبي والاختلاف في طريقة الحكي والوصف وبناء الأحداث.",
+"كيف نختار فكرة تصلح لفيلم طويل؟",
+"ما الذي يريد الفيلم أن يقوله للمشاهد؟",
+"كيف نصنع شخصية لها ماضٍ وهدف وعيوب؟"
 ];
 
-const originalScripts=[
-{title:"المقعد الأخير",desc:"نموذج تعليمي أصلي لمشهد تشويق داخل دار سينما.",body:"داخلي – دار سينما – ليل\\n\\nالقاعة شبه خالية. رجل يجلس في الصف الأخير. يضيء هاتفه للحظة. رسالة واحدة تظهر: لا تلتفت.\\n\\nينظر إلى الشاشة. يختفي الصوت فجأة.\\n\\nالرجل: مين هنا؟\\n\\nلا إجابة. يسمع صوت مقعد يتحرك خلفه."},
-{title:"المكالمة",desc:"تطبيق عملي على الحوار وبناء التوتر.",body:"داخلي – غرفة صغيرة – مساء\\n\\nيرن الهاتف. تنظر سلمى إلى الرقم المجهول. تتردد ثم تجيب.\\n\\nسلمى: ألو؟\\n\\nصوت رجل: افتحي الباب.\\n\\nسلمى: إنت مين؟\\n\\nصوت الرجل: الشخص اللي نسيتيه من عشر سنين."},
-{title:"قبل الرحيل",desc:"نموذج درامي أصلي عن علاقة أم وابنها.",body:"داخلي – غرفة أم – صباح\\n\\nالأم ترتب صورة قديمة فوق الكومود. يدخل ابنها ويحمل كوب ماء.\\n\\nالابن: لسه فاكرة الصورة دي؟\\n\\nالأم: أنا فاكرة كل حاجة يا ابني... حتى الحاجات اللي إنت نسيتها."}
-];
+let materials = [];
+let currentUser = null;
 
-const crimeStories=[
-{title:"الرسالة الأخيرة",desc:"حكاية جنائية تخيلية عن رسالة تقود إلى لغز.",body:"حكاية درامية تخيلية وليست واقعة حقيقية. تبدأ الأحداث برسالة تصل إلى محقق بعد اختفاء صاحبها، وتفتح سلسلة من الأسئلة حول الأشخاص المحيطين به."},
-{title:"الشقة المغلقة",desc:"لغز بوليسي تدريبي حول مسرح جريمة غامض.",body:"حكاية تخيلية للتدريب على بناء الحبكة البوليسية. يُعثر على غرفة مغلقة، وتبدو كل الأدلة متناقضة. المطلوب من الكاتب أن يزرع القرائن دون كشف الحل مبكرًا."},
-{title:"شاهد لم يتكلم",desc:"تدريب على الشهادة والدوافع والتناقض.",body:"حكاية تخيلية عن شاهد يرفض الإدلاء بشهادته، رغم أنه الوحيد الذي يعرف ما حدث. تتكشف دوافعه تدريجيًا خلال التحقيق."}
-];
-
-function go(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.add('hide'));
-document.getElementById(id).classList.remove('hide');
-window.scrollTo({top:0,behavior:'smooth'});
+function esc(value){
+return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-function show(title,body){
-document.getElementById('modalContent').innerHTML='';
-const h=document.createElement('h2');h.textContent=title;
-const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=body;
-document.getElementById('modalContent').append(h,p);
-document.getElementById('modal').style.display='block';
+function go(page){
+document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));
+document.getElementById(page).classList.add("active");
+document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+if(page==="admin")checkSession();
 }
-function closeModal(){document.getElementById('modal').style.display='none'}
+
+document.getElementById("nav").addEventListener("click",e=>{
+const b=e.target.closest("button[data-page]");
+if(b)go(b.dataset.page);
+});
+
+function show(title,description,content){
+document.getElementById("modalContent").innerHTML=
+`<h2>${esc(title)}</h2><p>${esc(description)}</p><div>${esc(content).replace(/\n/g,"<br>")}</div>`;
+document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");}
 
 function renderLessons(){
-document.getElementById('lessons').innerHTML=lessonTitles.map((t,i)=>
-`<div class="card"><span class="tag">المحاضرة ${i+1}</span><h3>${t}</h3><p>${lessonDescriptions[i]}</p><button class="btn" onclick="showLesson(${i})">افتح المحاضرة</button></div>`
-).join('');
-}
-function showLesson(i){
-show("المحاضرة "+(i+1)+": "+lessonTitles[i],
-lessonDescriptions[i]+"\n\nأهداف المحاضرة:\n- فهم الفكرة الأساسية.\n- دراسة مثال تطبيقي.\n- تنفيذ تدريب كتابي.\n\nتدريب عملي:\nاكتب فقرة قصيرة تطبق فيها ما تعلمته، ثم راجعها وابحث عن طريقة لتحسينها.\n\nهذه بطاقة تمهيدية للمحاضرة، وسيتم توسيع محتواها التعليمي بالتدريج.");
-}
-
-function renderBase(){
-document.getElementById('scripts').innerHTML=originalScripts.map((x,i)=>
-`<div class="card"><div class="icon">🎬</div><h3>${x.title}</h3><p>${x.desc}</p><button class="btn" onclick="showScript(${i})">قراءة النموذج</button></div>`
-).join('');
-document.getElementById('crimes').innerHTML=crimeStories.map((x,i)=>
-`<div class="card"><div class="icon">🔎</div><h3>${x.title}</h3><p>${x.desc}</p><button class="btn" onclick="showCrime(${i})">قراءة الحكاية</button></div>`
-).join('');
-}
-function showScript(i){show(originalScripts[i].title,originalScripts[i].body)}
-function showCrime(i){show(crimeStories[i].title,crimeStories[i].body)}
-
-function saveIdea(){
-const title=document.getElementById('ideaTitle').value.trim();
-const body=document.getElementById('ideaText').value.trim();
-const type=document.getElementById('ideaType').value;
-if(!title||!body){alert('اكتب عنوان الفكرة والملخص أولاً');return}
-let ideas=JSON.parse(localStorage.getItem('sw_ideas')||'[]');
-ideas.push({title,body,type});
-localStorage.setItem('sw_ideas',JSON.stringify(ideas));
-document.getElementById('ideaResult').textContent='تم حفظ فكرتك على هذا الجهاز.';
-document.getElementById('ideaTitle').value='';
-document.getElementById('ideaText').value='';
+document.getElementById("lessons").innerHTML=lessonTitles.map((t,i)=>`
+<div class="card">
+<h3>المحاضرة ${i+1}: ${esc(t)}</h3>
+<p>${esc(lessonDescriptions[i]||"درس من دروس تعلم كتابة السيناريو وتطوير المهارات الدرامية.")}</p>
+<button class="primary" onclick="show(${JSON.stringify("المحاضرة "+(i+1)+": "+t)},${JSON.stringify(lessonDescriptions[i]||"درس من دروس تعلم كتابة السيناريو.")},${JSON.stringify("تدريب عملي: اكتب فكرة قصيرة، وحدد الشخصية الرئيسية والهدف والصراع والعقبة التي تواجهها.")})">فتح المحاضرة</button>
+</div>`).join("");
 }
 
-function getCustom(){
-return JSON.parse(localStorage.getItem('sw_materials')||'[]');
+function cardHTML(item){
+return `<div class="card">
+<h3>${esc(item.title)}</h3>
+<p>${esc(item.description||"")}</p>
+<button class="primary" onclick="show(${JSON.stringify(item.title)},${JSON.stringify(item.description||"")},${JSON.stringify(item.content||"")})">قراءة المزيد</button>
+</div>`;
 }
-function addMaterial(){
-const title=document.getElementById('newTitle').value.trim();
-const desc=document.getElementById('newDescription').value.trim();
-const category=document.getElementById('newCategory').value;
-if(!title||!desc){alert('اكتب العنوان والوصف');return}
-let list=getCustom();
-list.push({id:Date.now(),title,desc,category});
-localStorage.setItem('sw_materials',JSON.stringify(list));
-document.getElementById('newTitle').value='';
-document.getElementById('newDescription').value='';
-renderCustom();
-}
-function removeMaterial(id){
-let list=getCustom().filter(x=>x.id!==id);
-localStorage.setItem('sw_materials',JSON.stringify(list));
-renderCustom();
-}
-function renderCustom(){
-let list=getCustom();
-document.getElementById('customItems').innerHTML='';
-list.forEach(x=>{
-let div=document.createElement('div');div.className='card';
-let h=document.createElement('h3');h.textContent=x.title;
-let p=document.createElement('p');p.textContent=x.desc;
-let b=document.createElement('button');b.className='btn';b.textContent='حذف';
-b.onclick=()=>removeMaterial(x.id);
-div.append(h,p,b);
-document.getElementById('customItems').append(div);
+
+function renderMaterials(){
+const map={library:"libraryItems",stories:"storyItems",writers:"writerItems",production:"productionItems"};
+Object.entries(map).forEach(([cat,id])=>{
+const list=materials.filter(x=>x.category===cat);
+document.getElementById(id).innerHTML=list.length?list.map(cardHTML).join(""):"<p>لا يوجد محتوى منشور في هذا القسم حتى الآن.</p>";
 });
 }
+
+async function loadMaterials(){
+const {data,error}=await db.from("materials").select("*").order("created_at",{ascending:false});
+if(error){console.error(error);return;}
+materials=data||[];
+renderMaterials();
+renderAdminItems();
+}
+
+async function login(){
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+const msg=document.getElementById("loginMessage");
+msg.textContent="جارٍ تسجيل الدخول...";
+const {data,error}=await db.auth.signInWithPassword({email,password});
+if(error){msg.textContent="تعذر الدخول: "+error.message;return;}
+currentUser=data.user;
+await checkSession();
+}
+
+async function checkSession(){
+const {data}=await db.auth.getSession();
+currentUser=data.session?.user||null;
+const allowed=currentUser&&currentUser.email==="rezkalpogdady@gmail.com";
+document.getElementById("loginArea").classList.toggle("hidden",!!allowed);
+document.getElementById("manageArea").classList.toggle("hidden",!allowed);
+if(allowed){
+document.getElementById("adminWelcome").textContent="مرحبًا بك في لوحة إدارة المنصة.";
+await loadMaterials();
+}
+}
+
+async function logout(){
+await db.auth.signOut();
+currentUser=null;
+clearForm();
+checkSession();
+}
+
+async function saveMaterial(){
+const msg=document.getElementById("saveMessage");
+const id=document.getElementById("editId").value;
+const row={
+category:document.getElementById("category").value,
+title:document.getElementById("materialTitle").value.trim(),
+description:document.getElementById("materialDescription").value.trim(),
+content:document.getElementById("materialContent").value.trim(),
+updated_at:new Date().toISOString()
+};
+if(!row.title){msg.textContent="اكتب عنوان المحتوى أولًا.";return;}
+msg.textContent="جارٍ الحفظ...";
+let result;
+if(id){
+result=await db.from("materials").update(row).eq("id",id);
+}else{
+result=await db.from("materials").insert(row);
+}
+if(result.error){msg.textContent="حدث خطأ: "+result.error.message;return;}
+msg.textContent="تم حفظ المحتوى بنجاح.";
+clearForm();
+await loadMaterials();
+}
+
+function clearForm(){
+document.getElementById("editId").value="";
+document.getElementById("materialTitle").value="";
+document.getElementById("materialDescription").value="";
+document.getElementById("materialContent").value="";
+document.getElementById("formHeading").textContent="إضافة محتوى جديد";
+}
+
+function renderAdminItems(){
+const box=document.getElementById("adminItems");
+if(!box)return;
+if(!materials.length){box.innerHTML="<p>لا يوجد محتوى مضاف بعد.</p>";return;}
+box.innerHTML=materials.map(x=>`
+<div class="card">
+<strong>${esc(x.title)}</strong>
+<p>${esc(x.description||"")}</p>
+<button class="secondary" onclick="editMaterial('${x.id}')">تعديل</button>
+<button class="danger" onclick="deleteMaterial('${x.id}')">حذف</button>
+</div>`).join("");
+}
+
+function editMaterial(id){
+const x=materials.find(m=>m.id===id);
+if(!x)return;
+document.getElementById("editId").value=x.id;
+document.getElementById("category").value=x.category;
+document.getElementById("materialTitle").value=x.title;
+document.getElementById("materialDescription").value=x.description||"";
+document.getElementById("materialContent").value=x.content||"";
+document.getElementById("formHeading").textContent="تعديل المحتوى";
+window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function deleteMaterial(id){
+if(!confirm("هل تريد حذف هذا المحتوى نهائيًا؟"))return;
+const {error}=await db.from("materials").delete().eq("id",id);
+if(error){alert("تعذر الحذف: "+error.message);return;}
+await loadMaterials();
+}
+
+function saveIdea(){
+const title=document.getElementById("ideaTitle").value.trim();
+const content=document.getElementById("ideaText").value.trim();
+if(!title||!content){alert("اكتب العنوان والفكرة.");return;}
+const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
+ideas.push({title,content});
+localStorage.setItem("sw_ideas",JSON.stringify(ideas));
+document.getElementById("ideaTitle").value="";
+document.getElementById("ideaText").value="";
+renderIdeas();
+}
+
+function renderIdeas(){
+const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
+document.getElementById("ideasList").innerHTML=ideas.map((x,i)=>`
+<div class="card"><h3>${esc(x.title)}</h3><p>${esc(x.content)}</p>
+<button class="danger" onclick="deleteIdea(${i})">حذف</button></div>`).join("");
+}
+function deleteIdea(i){
+const ideas=JSON.parse(localStorage.getItem("sw_ideas")||"[]");
+ideas.splice(i,1);
+localStorage.setItem("sw_ideas",JSON.stringify(ideas));
+renderIdeas();
+}
+
+db.auth.onAuthStateChange((_event,session)=>{
+currentUser=session?.user||null;
+});
+
 renderLessons();
-renderBase();
-renderCustom();
+renderIdeas();
+loadMaterials();
 </script>
 </body>
 </html>
