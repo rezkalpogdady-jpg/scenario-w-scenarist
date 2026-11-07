@@ -1,19 +1,101 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101010">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
 <title>سيناريو وسيناريست | رزق البغدادي</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <style>
-:root{--gold:#dfb75e;--bg:#101010;--panel:#1d1d1d;--border:#604b29;--muted:#bbb}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eee;font-family:Arial,Tahoma,sans-serif;line-height:1.8}header{padding:26px 14px;text-align:center;background:#171717;border-bottom:2px solid var(--gold)}header h1{color:var(--gold);margin:0;font-size:clamp(24px,5vw,34px)}header p{margin:4px;color:var(--muted)}nav{display:flex;gap:7px;padding:10px;overflow-x:auto;background:#191919;position:sticky;top:0;z-index:5}nav button,.btn{white-space:nowrap;border:1px solid var(--border);border-radius:8px;padding:9px 13px;background:#292929;color:#eee;cursor:pointer;font:inherit}nav button.active,.primary{background:var(--gold);color:#171717;border-color:var(--gold)}main{max-width:1180px;margin:auto;padding:18px 13px}section{display:none}section.active{display:block}.hero{text-align:center;padding:34px 16px;background:linear-gradient(135deg,#282016,#171717);border:1px solid var(--border);border-radius:14px;margin-bottom:20px}.hero h2,h2,h3{color:var(--gold)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}.card,.adminbox{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:15px;margin:9px 0}.card h3{margin-top:0}.muted,.small{color:var(--muted);font-size:14px}input,textarea,select{width:100%;padding:11px;margin:6px 0;background:#292929;color:white;border:1px solid #66512c;border-radius:8px;font:inherit}textarea{min-height:110px}.btn{margin:4px}.danger{background:#8b2929;color:white;border:0}.secondary{background:#333;color:white}.hidden{display:none!important}.ticker{overflow:hidden;white-space:nowrap;background:#241e13;color:var(--gold);padding:7px;border-block:1px solid var(--border)}.ticker span{display:inline-block;padding-right:100%;animation:marquee 28s linear infinite}@keyframes marquee{to{transform:translateX(100%)}}footer{text-align:center;padding:22px;color:#999;border-top:1px solid var(--border);margin-top:30px}.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:14px;z-index:20}.modal.show{display:flex}.modal-box{background:#202020;border:1px solid var(--gold);border-radius:12px;padding:20px;width:100%;max-width:650px;max-height:90vh;overflow:auto}.media{max-width:100%;max-height:230px;display:block;margin:8px auto;border-radius:8px}.tabs-note{padding:10px;border-right:3px solid var(--gold);background:#211d16}.actions{display:flex;flex-wrap:wrap;gap:6px}.actions button{margin:0}
-</style></head><body>
-<header><h1>سيناريو وسيناريست</h1><p>من الفكرة إلى الشاشة | إعداد وإشراف رزق البغدادي</p></header>
-<div class="ticker"><span id="tickerText">أخبار السينما والإبداع العربي — مساحة للتعلم وعرض المواهب وصناعة الأفلام — سيناريو وسيناريست</span></div>
+:root{--gold:#dfb75e;--bg:#101010;--panel:#1d1d1d;--border:#604b29;--muted:#bbb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#eee;font-family:Arial,Tahoma,sans-serif;line-height:1.8}
+header{padding:25px 14px;text-align:center;background:#171717;border-bottom:2px solid var(--gold)}
+header h1{color:var(--gold);margin:0;font-size:clamp(24px,5vw,34px)}
+header p{margin:4px;color:var(--muted)}
+nav{display:flex;gap:7px;padding:10px;overflow-x:auto;background:#191919;position:sticky;top:0;z-index:5}
+nav button,.btn{white-space:nowrap;border:1px solid var(--border);border-radius:8px;padding:9px 13px;background:#292929;color:#eee;cursor:pointer;font:inherit}
+nav button.active,.primary{background:var(--gold);color:#171717;border-color:var(--gold)}
+main{max-width:1180px;margin:auto;padding:18px 13px}
+section{display:none}
+section.active{display:block}
+.hero{text-align:center;padding:34px 16px;background:linear-gradient(135deg,#282016,#171717);border:1px solid var(--border);border-radius:14px;margin-bottom:20px}
+.hero h2,h2,h3{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}
+.card,.adminbox{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:15px;margin:9px 0}
+.card h3{margin-top:0}
+.muted,.small{color:var(--muted);font-size:14px}
+input,textarea,select{width:100%;padding:11px;margin:6px 0;background:#292929;color:white;border:1px solid #66512c;border-radius:8px;font:inherit}
+textarea{min-height:110px}
+.btn{margin:4px}
+.danger{background:#8b2929;color:white;border:0}
+.secondary{background:#333;color:white}
+.hidden{display:none!important}
+.ticker{overflow:hidden;white-space:nowrap;background:#241e13;color:var(--gold);padding:7px;border-block:1px solid var(--border)}
+.ticker span{display:inline-block;padding-right:100%;animation:marquee 28s linear infinite}
+@keyframes marquee{to{transform:translateX(100%)}}
+footer{text-align:center;padding:22px;color:#999;border-top:1px solid var(--border);margin-top:30px}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
+.modal.show{display:flex}
+.modal-box{background:#202020;border:1px solid var(--gold);border-radius:12px;padding:20px;width:100%;max-width:720px;max-height:90vh;overflow:auto}
+.media{max-width:100%;max-height:280px;display:block;margin:8px auto;border-radius:8px}
+.tabs-note{padding:10px;border-right:3px solid var(--gold);background:#211d16}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.actions button{margin:0}
+.card img{width:100%;max-height:210px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+.player{width:100%;max-height:60vh;background:#000;border-radius:10px}
+.chess-wrap{max-width:520px;margin:15px auto}
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);border:5px solid #8b6b35;border-radius:5px;overflow:hidden;direction:ltr}
+.square{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(25px,7vw,48px);cursor:pointer;position:relative;user-select:none;border:0}
+.light{background:#ead9b5;color:#171717}
+.dark{background:#8b6740;color:#fff}
+.square.selected{outline:4px solid var(--gold);outline-offset:-4px}
+.chess-status{text-align:center;color:var(--gold);font-weight:bold}
+@media(max-width:600px){main{padding:12px 9px}.hero{padding:24px 12px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<header>
+<h1>سيناريو وسيناريست</h1>
+<p>من الفكرة إلى الشاشة | إعداد وإشراف رزق البغدادي</p>
+</header>
+<div class="ticker"><span id="tickerText">أخبار السينما والإبداع العربي — مساحة للتعلم وعرض المواهب وصناعة الأفلام</span></div>
 <nav id="nav">
-<button class="active" data-page="home">الرئيسية</button><button data-page="academy">الأكاديمية</button><button data-page="library">المكتبة</button><button data-page="writers">الكُتّاب</button><button data-page="directors">المخرجون</button><button data-page="talents">المواهب</button><button data-page="films">الأفلام والمسلسلات</button><button data-page="shorts">الأفلام القصيرة</button><button data-page="stories">الجرائم والحكايات</button><button data-page="news">أخبار فنية</button><button data-page="tv">سيناريو TV</button><button data-page="ideas">ورشة الأفكار</button><button data-page="production">الإنتاج</button><button data-page="about">عن المنصة</button>
+<button class="active" data-page="home">الرئيسية</button>
+<button data-page="academy">الأكاديمية</button>
+<button data-page="library">المكتبة</button>
+<button data-page="writers">الكُتّاب</button>
+<button data-page="directors">المخرجون</button>
+<button data-page="talents">المواهب</button>
+<button data-page="films">الأفلام والمسلسلات</button>
+<button data-page="shorts">الأفلام القصيرة</button>
+<button data-page="stories">الجرائم والحكايات</button>
+<button data-page="news">أخبار فنية</button>
+<button data-page="tv">سيناريو TV</button>
+<button data-page="radio">الراديو</button>
+<button data-page="chess">الشطرنج</button>
+<button data-page="ideas">ورشة الأفكار</button>
+<button data-page="production">الإنتاج</button>
+<button data-page="about">عن المنصة</button>
 </nav>
 <main>
-<section id="home" class="active"><div class="hero"><h2>أهلاً بك في سيناريو وسيناريست</h2><p>منصة عربية تجمع تعليم كتابة السيناريو، والكتّاب والمخرجين والمواهب، والأفلام والمشروعات الإبداعية.</p><button class="btn primary" onclick="go('academy')">ابدأ التعلم</button></div><div class="grid"><div class="card"><h3>أكاديمية السيناريو</h3><p>محاضرات وتمارين من الفكرة حتى تقديم المشروع.</p></div><div class="card"><h3>دليل المبدعين</h3><p>مساحات تعريفية للكتّاب والمخرجين والممثلين ومقدمي البرامج والمواهب الإذاعية.</p></div><div class="card"><h3>الأفلام القصيرة</h3><p>عرض بيانات الأفلام وصنّاعها ومدتها وروابط مشاهدتها.</p></div><div class="card"><h3>الإنتاج والتعاون</h3><p>مساحة للتعريف بالمشروعات وفرص التعاون بين صناع العمل.</p></div></div></section>
+<section id="home" class="active">
+<div class="hero">
+<h2>أهلاً بك في سيناريو وسيناريست</h2>
+<p>منصة عربية تجمع تعليم كتابة السيناريو والكتّاب والمخرجين والمواهب والأفلام والمشروعات الإبداعية.</p>
+<button class="btn primary" data-go="academy">ابدأ التعلم</button>
+</div>
+<div class="grid">
+<div class="card"><h3>أكاديمية السيناريو</h3><p>محاضرات وتمارين من الفكرة حتى تقديم المشروع.</p></div>
+<div class="card"><h3>دليل المبدعين</h3><p>مساحات للكتّاب والمخرجين والممثلين ومقدمي البرامج والمواهب الإذاعية.</p></div>
+<div class="card"><h3>الأفلام القصيرة</h3><p>عرض بيانات الأفلام وصنّاعها ومدتها وروابط مشاهدتها.</p></div>
+<div class="card"><h3>الإنتاج والتعاون</h3><p>مساحة للتعريف بالمشروعات وفرص التعاون.</p></div>
+<div class="card"><h3>سيناريو TV والراديو</h3><p>قنوات وإذاعات بروابط بث رسمية أو مرخصة.</p></div>
+<div class="card"><h3>نادي الشطرنج</h3><p>العب الشطرنج مباشرة داخل المنصة.</p><button class="btn" data-go="chess">العب الآن</button></div>
+</div>
+</section>
 <section id="academy"><h2>أكاديمية سيناريو وسيناريست</h2><p>دورة مجانية لتعلم كتابة السيناريو خطوة بخطوة.</p><div id="lessons" class="grid"></div><div id="academyItems" class="grid"></div></section>
 <section id="library"><h2>مكتبة السيناريوهات</h2><div id="libraryItems" class="grid"></div></section>
 <section id="writers"><h2>الكُتّاب</h2><p class="muted">ملفات تعريفية للأقلام الإبداعية وأعمالها.</p><div id="writerItems" class="grid"></div></section>
@@ -22,41 +104,479 @@
 <section id="films"><h2>الأفلام والمسلسلات</h2><div id="filmItems" class="grid"></div></section>
 <section id="shorts"><h2>الأفلام القصيرة ومشاهدها</h2><div id="shortItems" class="grid"></div></section>
 <section id="stories"><h2>الجرائم والحكايات</h2><div id="storyItems" class="grid"></div></section>
-<section id="news"><h2>أخبار فنية</h2><p class="tabs-note">تُضاف الأخبار من لوحة الإدارة. لا يتم جلب أخبار تلقائيًا من مواقع خارجية في هذه النسخة.</p><div id="newsItems" class="grid"></div></section>
-<section id="tv"><h2>سيناريو TV – البث المباشر</h2><p class="tabs-note">أضف من لوحة الإدارة روابط بث رسمية أو مرخّصة تسمح بالتضمين. لا تستخدم روابط بث غير مصرح بها.</p><div id="tvItems" class="grid"></div></section>
-<section id="ideas"><h2>ورشة الأفكار</h2><p>احفظ أفكارك على هذا الجهاز.</p><input id="ideaTitle" placeholder="عنوان الفكرة"><textarea id="ideaText" placeholder="اكتب فكرتك هنا"></textarea><button class="btn primary" onclick="saveIdea()">حفظ الفكرة</button><div id="ideasList" class="grid"></div></section>
+<section id="news"><h2>أخبار فنية</h2><p class="tabs-note">تُضاف الأخبار من لوحة الإدارة.</p><div id="newsItems" class="grid"></div></section>
+<section id="tv"><h2>سيناريو TV – البث المباشر</h2><p class="tabs-note">أضف روابط بث رسمية أو مرخصة تسمح بالتضمين.</p><div id="tvItems" class="grid"></div></section>
+<section id="radio"><h2>راديو سيناريو</h2><p class="tabs-note">أضف روابط بث صوتي مباشرة لمحطات تملك حق استخدامها.</p><div id="radioItems" class="grid"></div></section>
+<section id="chess">
+<h2>نادي الشطرنج</h2>
+<p>لعبة شطرنج محلية بين لاعبين على نفس الجهاز، مع التحقق من قانونية النقلات.</p>
+<div class="chess-wrap">
+<div id="chessStatus" class="chess-status">الأبيض يبدأ اللعب</div>
+<div id="chessBoard" class="chess-board"></div>
+<div class="actions" style="justify-content:center;margin-top:10px">
+<button class="btn primary" id="chessReset">لعبة جديدة</button>
+<button class="btn secondary" id="chessUndo">تراجع عن النقلة</button>
+</div>
+<p class="small">هذه النسخة للعب بين لاعبين على الجهاز نفسه، وليست متصلة بالإنترنت أو بمحرك ذكاء اصطناعي.</p>
+</div>
+</section>
+<section id="ideas"><h2>ورشة الأفكار</h2><p>احفظ أفكارك على هذا الجهاز.</p><input id="ideaTitle" placeholder="عنوان الفكرة"><textarea id="ideaText" placeholder="اكتب فكرتك هنا"></textarea><button class="btn primary" id="saveIdea">حفظ الفكرة</button><div id="ideasList" class="grid"></div></section>
 <section id="production"><h2>الإنتاج السينمائي</h2><p>مشروعات للتطوير والتعاون بين الكتّاب والمنتجين والمخرجين.</p><div id="productionItems" class="grid"></div></section>
-<section id="about"><h2>عن المنصة</h2><div class="card"><p>سيناريو وسيناريست منصة عربية تهتم بتعليم كتابة السيناريو، وعرض الأعمال والمواهب، وربط المبدعين بمشروعات الإنتاج.</p><p>إعداد وإشراف: رزق البغدادي.</p></div></section>
-<section id="admin"><h2>إدارة المنصة</h2><div class="adminbox"><div id="loginArea"><h3>دخول الإدارة</h3><input id="email" type="email" placeholder="البريد الإلكتروني"><input id="password" type="password" placeholder="كلمة المرور"><button class="btn primary" onclick="login()">دخول</button><p id="loginMessage" class="small"></p></div><div id="manageArea" class="hidden"><p id="adminWelcome"></p><button class="btn secondary" onclick="logout()">تسجيل الخروج</button><hr><h3 id="formHeading">إضافة محتوى</h3><input type="hidden" id="editId"><label>القسم</label><select id="category"><option value="academy">محاضرة إضافية</option><option value="library">سيناريو / كتاب</option><option value="writers">كاتب</option><option value="directors">مخرج</option><option value="talents">موهبة (تمثيل/تقديم/إذاعة)</option><option value="films">فيلم / مسلسل</option><option value="shorts">فيلم قصير</option><option value="stories">جريمة وحكاية</option><option value="news">خبر فني</option><option value="tv">قناة تلفزيونية</option><option value="production">مشروع إنتاج</option></select><input id="materialTitle" placeholder="العنوان / اسم العمل"><textarea id="materialDescription" placeholder="وصف مختصر أو بيانات العمل (المدة، الصنّاع، نوع الموهبة...) "></textarea><textarea id="materialContent" placeholder="النص الكامل أو التفاصيل أو رابط فيديو/بث رسمي"></textarea><button class="btn primary" onclick="saveMaterial()">حفظ المحتوى</button><button class="btn secondary" onclick="clearForm()">إلغاء التعديل</button><p id="saveMessage" class="small"></p><hr><h3>المحتوى المنشور</h3><div id="adminItems"></div></div></div></section>
-</main><footer>سيناريو وسيناريست © رزق البغدادي <p><button class="btn secondary" onclick="go('admin')">دخول الإدارة</button></p></footer>
-<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><button class="btn secondary" onclick="closeModal()">إغلاق</button><div id="modalContent"></div></div></div>
+<section id="about"><h2>عن المنصة</h2><div class="card"><p>سيناريو وسيناريست منصة عربية تهتم بتعليم كتابة السيناريو وعرض الأعمال والمواهب وربط المبدعين بمشروعات الإنتاج.</p><p>إعداد وإشراف: رزق البغدادي.</p></div></section>
+</main>
+'''
+<footer style="background:#080808;border-top:1px solid #b89545;padding:25px;text-align:center;color:#c9b77e">
+  <h3>سيناريو وسيناريست</h3>
+  <p>منصة عربية لصناعة السينما والدراما واكتشاف المواهب</p>
+  <p>© جميع الحقوق محفوظة</p>
+  <button onclick="openLogin()" class="btn">دخول الإدارة</button>
+</footer>
+
+<div id="loginModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <button class="close" onclick="closeLogin()">×</button>
+    <h2>دخول الإدارة</h2>
+    <input id="adminEmail" type="email" placeholder="البريد الإلكتروني">
+    <input id="adminPassword" type="password" placeholder="كلمة المرور">
+    <button class="btn" onclick="loginAdmin()">دخول</button>
+    <p id="loginMessage"></p>
+  </div>
+</div>
+
+<section id="admin" class="section">
+  <h2>لوحة إدارة المنصة</h2>
+  <p>إضافة وإدارة المواد المنشورة على المنصة.</p>
+
+  <div class="admin-form">
+    <input id="itemTitle" type="text" placeholder="عنوان المحتوى">
+    <select id="itemCategory">
+      <option value="academy">الأكاديمية</option>
+      <option value="library">المكتبة</option>
+      <option value="writers">الكتّاب</option>
+      <option value="directors">المخرجون</option>
+      <option value="talents">المواهب</option>
+      <option value="films">الأفلام والمسلسلات</option>
+      <option value="shorts">الأفلام القصيرة</option>
+      <option value="stories">الجرائم والحكايات</option>
+      <option value="news">الأخبار الفنية</option>
+      <option value="tv">التلفزيون</option>
+      <option value="radio">الراديو</option>
+      <option value="ideas">ورشة الأفكار</option>
+      <option value="production">الإنتاج</option>
+    </select>
+    <textarea id="itemDescription" placeholder="وصف المحتوى"></textarea>
+    <textarea id="itemContent" placeholder="النص أو رابط الصورة أو رابط الفيديو"></textarea>
+    <button class="btn" onclick="saveItem()">حفظ المحتوى</button>
+    <p id="adminMessage"></p>
+  </div>
+
+  <h3>المحتويات المنشورة</h3>
+  <div id="adminItems"></div>
+</section>
+
+<div id="contentModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <button class="close" onclick="closeContent()">×</button>
+    <h2 id="contentTitle"></h2>
+    <div id="contentBody"></div>
+  </div>
+</div>
+
 <script>
-const SUPABASE_URL='https://asmxyfkmojqzrbnrovmz.supabase.co';
-const SUPABASE_KEY='sb_publishable_gHjeBgsJd8_8Yc149FLTWg_OiZbNrv1';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const lessonTitles=['ما هو السيناريو؟','الفرق بين الرواية والقصة والسيناريو','الفكرة وكيف تتحول إلى فيلم','الثيمة والرسالة','بناء الشخصية السينمائية','البطل والهدف والصراع','الشخصيات الرئيسية والثانوية','العالم الدرامي ومكان الأحداث','الحدث المحفز','بناء الحبكة','البداية والوسط والنهاية','الفصل الأول','الفصل الثاني','الفصل الثالث','المشهد السينمائي','كتابة الوصف والحركة','كتابة الحوار','الحوار الطبيعي والوظيفي','الصراع الداخلي والخارجي','التشويق والمفاجأة','الفلاش باك','الإيقاع السينمائي','كتابة المشاهد','المعالجة الدرامية','السينوبسيس وملخص الفيلم','تطوير السيناريو','إعادة الكتابة والمراجعة','تنسيق السيناريو الاحترافي','إعداد ملف المشروع','تقديم المشروع لشركات الإنتاج'];
-const lessonDescriptions=['مقدمة في عالم كتابة الأفلام وكيف تتحول الفكرة إلى مشاهد.','نتعرف على طبيعة كل شكل والاختلاف في طريقة الحكي.','كيف نختار فكرة تصلح لفيلم طويل؟','ما الذي يريد الفيلم أن يقوله للمشاهد؟','كيف نصنع شخصية لها ماضٍ وهدف وعيوب؟'];
-const sectionMap={academy:'academyItems',library:'libraryItems',writers:'writerItems',directors:'directorItems',talents:'talentItems',films:'filmItems',shorts:'shortItems',stories:'storyItems',news:'newsItems',tv:'tvItems',production:'productionItems'};
-let materials=[],currentUser=null;
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function go(page){document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));const target=document.getElementById(page);if(target)target.classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='admin')checkSession();}
-document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b)go(b.dataset.page)});
-function show(title,description,content){const safeContent=esc(content).replace(/\n/g,'<br>');document.getElementById('modalContent').innerHTML=`<h2>${esc(title)}</h2><p>${esc(description)}</p><div>${safeContent}</div>`;document.getElementById('modal').classList.add('show');}
-function closeModal(){document.getElementById('modal').classList.remove('show');}
-function renderLessons(){document.getElementById('lessons').innerHTML=lessonTitles.map((t,i)=>`<div class="card"><h3>المحاضرة ${i+1}: ${esc(t)}</h3><p>${esc(lessonDescriptions[i]||'درس من دروس تعلم كتابة السيناريو وتطوير المهارات الدرامية.')}</p><button class="btn primary" onclick="show(${JSON.stringify('المحاضرة '+(i+1)+': '+t)},${JSON.stringify(lessonDescriptions[i]||'درس من دروس تعلم كتابة السيناريو.')},${JSON.stringify('تدريب عملي: اكتب فكرة قصيرة، وحدد الشخصية الرئيسية والهدف والصراع والعقبة التي تواجهها.')})">فتح المحاضرة</button></div>`).join('');}
-function cardHTML(item){const image='';const content=item.content||'';const video=/^https?:\/\//i.test(content.trim())?`<p><a href="${esc(content.trim())}" target="_blank" rel="noopener">فتح الرابط / مشاهدة المحتوى</a></p>`:'';return `<article class="card">${image}<h3>${esc(item.title)}</h3><p>${esc(item.description||'')}</p>${video}<button class="btn primary" onclick="show(${JSON.stringify(item.title)},${JSON.stringify(item.description||'')},${JSON.stringify(content)})">التفاصيل</button></article>`;}
-function renderMaterials(){Object.entries(sectionMap).forEach(([cat,id])=>{const el=document.getElementById(id);if(!el)return;const list=materials.filter(x=>x.category===cat);el.innerHTML=list.length?list.map(cardHTML).join(''):'<p class="muted">لا يوجد محتوى منشور في هذا القسم حتى الآن.</p>';});document.getElementById('tickerText').textContent=materials.filter(x=>x.category==='news').slice(0,8).map(x=>x.title).join('  ✦  ')||'أخبار السينما والإبداع العربي — مساحة للتعلم وعرض المواهب وصناعة الأفلام — سيناريو وسيناريست';}
-async function loadMaterials(){const {data,error}=await db.from('materials').select('*').order('created_at',{ascending:false});if(error){console.error(error);return;}materials=data||[];renderMaterials();renderAdminItems();}
-async function login(){const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value,msg=document.getElementById('loginMessage');msg.textContent='جارٍ تسجيل الدخول...';const {data,error}=await db.auth.signInWithPassword({email,password});if(error){msg.textContent='تعذر الدخول: '+error.message;return;}currentUser=data.user;await checkSession();}
-async function checkSession(){const {data}=await db.auth.getSession();currentUser=data.session?.user||null;const allowed=!!currentUser&&currentUser.email==='rezkalpogdady@gmail.com';document.getElementById('loginArea').classList.toggle('hidden',allowed);document.getElementById('manageArea').classList.toggle('hidden',!allowed);if(allowed){document.getElementById('adminWelcome').textContent='مرحبًا بك في لوحة إدارة المنصة.';await loadMaterials();}}
-async function logout(){await db.auth.signOut();currentUser=null;clearForm();checkSession();}
-async function saveMaterial(){const msg=document.getElementById('saveMessage'),id=document.getElementById('editId').value;const row={category:document.getElementById('category').value,title:document.getElementById('materialTitle').value.trim(),description:document.getElementById('materialDescription').value.trim(),content:document.getElementById('materialContent').value.trim(),updated_at:new Date().toISOString()};if(!row.title){msg.textContent='اكتب عنوان المحتوى أولًا.';return;}msg.textContent='جارٍ الحفظ...';let result=id?await db.from('materials').update(row).eq('id',id):await db.from('materials').insert(row);if(result.error){msg.textContent='حدث خطأ: '+result.error.message;return;}msg.textContent='تم حفظ المحتوى بنجاح.';clearForm();await loadMaterials();}
-function clearForm(){['editId','materialTitle','materialDescription','materialContent'].forEach(id=>document.getElementById(id).value='');document.getElementById('formHeading').textContent='إضافة محتوى';}
-function renderAdminItems(){const box=document.getElementById('adminItems');if(!box)return;if(!materials.length){box.innerHTML='<p>لا يوجد محتوى مضاف بعد.</p>';return;}box.innerHTML=materials.map(x=>`<div class="card"><strong>${esc(x.title)}</strong><p>${esc(x.category)} — ${esc(x.description||'')}</p><div class="actions"><button class="btn secondary" onclick="editMaterial('${esc(x.id)}')">تعديل</button><button class="btn danger" onclick="deleteMaterial('${esc(x.id)}')">حذف</button></div></div>`).join('');}
-function editMaterial(id){const x=materials.find(m=>String(m.id)===String(id));if(!x)return;document.getElementById('editId').value=x.id;document.getElementById('category').value=x.category;document.getElementById('materialTitle').value=x.title;document.getElementById('materialDescription').value=x.description||'';document.getElementById('materialContent').value=x.content||'';document.getElementById('formHeading').textContent='تعديل المحتوى';window.scrollTo({top:0,behavior:'smooth'});}
-async function deleteMaterial(id){if(!confirm('هل تريد حذف هذا المحتوى نهائيًا؟'))return;const {error}=await db.from('materials').delete().eq('id',id);if(error){alert('تعذر الحذف: '+error.message);return;}await loadMaterials();}
-function saveIdea(){const title=document.getElementById('ideaTitle').value.trim(),content=document.getElementById('ideaText').value.trim();if(!title||!content){alert('اكتب العنوان والفكرة.');return;}const ideas=JSON.parse(localStorage.getItem('sw_ideas')||'[]');ideas.push({title,content});localStorage.setItem('sw_ideas',JSON.stringify(ideas));document.getElementById('ideaTitle').value='';document.getElementById('ideaText').value='';renderIdeas();}
-function renderIdeas(){const ideas=JSON.parse(localStorage.getItem('sw_ideas')||'[]');document.getElementById('ideasList').innerHTML=ideas.map((x,i)=>`<div class="card"><h3>${esc(x.title)}</h3><p>${esc(x.content)}</p><button class="btn danger" onclick="deleteIdea(${i})">حذف</button></div>`).join('');}
-function deleteIdea(i){const ideas=JSON.parse(localStorage.getItem('sw_ideas')||'[]');ideas.splice(i,1);localStorage.setItem('sw_ideas',JSON.stringify(ideas));renderIdeas();}
-db.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;});renderLessons();renderIdeas();loadMaterials();
-</script></body></html>
+const SUPABASE_URL = "https://asmxyfkmojqzrbnrovmz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_gHjeBgsJd8_8Yc149FLTWg_OiZbNrv1";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let currentUser = null;
+let materials = [];
+
+const lessons = [
+  "مقدمة في عالم السيناريو",
+  "الفرق بين الرواية والقصة والسيناريو",
+  "الفكرة الدرامية",
+  "بناء الحكاية",
+  "الشخصية الرئيسية",
+  "الشخصيات المساعدة",
+  "الصراع الدرامي",
+  "الهدف والعقبة",
+  "بناء المشهد",
+  "الحوار السينمائي",
+  "الصورة السينمائية",
+  "الزمن والمكان",
+  "البداية الجاذبة",
+  "تصاعد الأحداث",
+  "نقطة التحول",
+  "الذروة",
+  "النهاية",
+  "كتابة المعالجة",
+  "تقسيم السيناريو",
+  "كتابة المشاهد",
+  "كتابة الأكشن",
+  "كتابة الكوميديا",
+  "كتابة الدراما",
+  "تطوير الشخصيات",
+  "إعادة الكتابة",
+  "الأخطاء الشائعة",
+  "قراءة السيناريو",
+  "تقديم المشروع",
+  "التعامل مع شركات الإنتاج",
+  "مشروع التخرج"
+];
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function go(sectionId) {
+  document.querySelectorAll(".section").forEach(section => {
+    section.style.display = "none";
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+function openLogin() {
+  document.getElementById("loginModal").style.display = "flex";
+}
+
+function closeLogin() {
+  document.getElementById("loginModal").style.display = "none";
+}
+
+function closeContent() {
+  document.getElementById("contentModal").style.display = "none";
+}
+
+function showContent(title, content) {
+  document.getElementById("contentTitle").textContent = title;
+  document.getElementById("contentBody").textContent = content;
+  document.getElementById("contentModal").style.display = "flex";
+}
+
+function renderLessons() {
+  const container = document.getElementById("lessonsList");
+  if (!container) return;
+
+  container.innerHTML = lessons.map((lesson, index) => `
+    <div class="card">
+      <h3>المحاضرة ${index + 1}</h3>
+      <p>${escapeHTML(lesson)}</p>
+      <button class="btn"
+        data-lesson="${index}">
+        فتح المحاضرة
+      </button>
+    </div>
+  `).join("");
+}
+
+function sectionMap(category) {
+  const map = {
+    academy: "academy",
+    library: "library",
+    writers: "writers",
+    directors: "directors",
+    talents: "talents",
+    films: "films",
+    shorts: "shorts",
+    stories: "stories",
+    news: "news",
+    tv: "tv",
+    radio: "radio",
+    ideas: "ideas",
+    production: "production"
+  };
+
+  return map[category] || "home";
+}
+async function loadMaterials() {
+  const message = document.getElementById("adminMessage");
+
+  try {
+    const { data, error } = await db
+      .from("materials")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) throw error;
+
+    materials = data || [];
+    renderMaterials();
+    renderAdminItems();
+
+    if (message) message.textContent = "";
+  } catch (error) {
+    console.error(error);
+    if (message) {
+      message.textContent = "تعذر تحميل المحتوى: " + error.message;
+    }
+  }
+}
+
+function renderMaterials() {
+  const categories = [
+    "academy", "library", "writers", "directors",
+    "talents", "films", "shorts", "stories",
+    "news", "tv", "radio", "ideas", "production"
+  ];
+
+  categories.forEach(category => {
+    const container = document.getElementById(category + "Content");
+    if (!container) return;
+
+    const items = materials.filter(item => item.category === category);
+
+    container.innerHTML = items.map(item => `
+      <div class="card">
+        <h3>${escapeHTML(item.title)}</h3>
+        <p>${escapeHTML(item.description || "")}</p>
+        <button class="btn"
+          data-open-item="${escapeHTML(item.id)}">
+          عرض التفاصيل
+        </button>
+      </div>
+    `).join("");
+  });
+}
+
+function renderAdminItems() {
+  const container = document.getElementById("adminItems");
+  if (!container) return;
+
+  container.innerHTML = materials.map(item => `
+    <div class="card">
+      <h3>${escapeHTML(item.title)}</h3>
+      <p>${escapeHTML(item.category)}</p>
+      <button class="btn"
+        data-delete-item="${escapeHTML(item.id)}">
+        حذف
+      </button>
+    </div>
+  `).join("");
+}
+
+async function saveItem() {
+  if (!currentUser) {
+    document.getElementById("adminMessage").textContent =
+      "سجل الدخول أولاً.";
+    return;
+  }
+
+  const title = document.getElementById("itemTitle").value.trim();
+  const category = document.getElementById("itemCategory").value;
+  const description = document.getElementById("itemDescription").value.trim();
+  const content = document.getElementById("itemContent").value.trim();
+  const message = document.getElementById("adminMessage");
+
+  if (!title) {
+    message.textContent = "اكتب عنوان المحتوى.";
+    return;
+  }
+
+  try {
+    const { error } = await db.from("materials").insert([{
+      title,
+      category,
+      description,
+      content
+    }]);
+
+    if (error) throw error;
+
+    message.textContent = "تم حفظ المحتوى.";
+    document.getElementById("itemTitle").value = "";
+    document.getElementById("itemDescription").value = "";
+    document.getElementById("itemContent").value = "";
+
+    await loadMaterials();
+  } catch (error) {
+    console.error(error);
+    message.textContent = "تعذر الحفظ: " + error.message;
+  }
+}
+
+async function deleteItem(id) {
+  if (!currentUser) {
+    alert("سجل الدخول أولاً.");
+    return;
+  }
+
+  if (!confirm("هل تريد حذف هذا المحتوى؟")) return;
+
+  try {
+    const { error } = await db
+      .from("materials")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    await loadMaterials();
+  } catch (error) {
+    alert("تعذر الحذف: " + error.message);
+  }
+}
+
+async function loginAdmin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const message = document.getElementById("loginMessage");
+
+  message.textContent = "جارٍ تسجيل الدخول...";
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    currentUser = data.user;
+    closeLogin();
+    go("admin");
+    await loadMaterials();
+
+  } catch (error) {
+    message.textContent = "فشل تسجيل الدخول: " + error.message;
+  }
+}
+
+async function logoutAdmin() {
+  await db.auth.signOut();
+  currentUser = null;
+  go("home");
+}
+
+function openItem(id) {
+  const item = materials.find(material =>
+    String(material.id) === String(id)
+  );
+
+  if (!item) return;
+
+  document.getElementById("contentTitle").textContent = item.title || "";
+
+  const body = document.getElementById("contentBody");
+  body.textContent = item.content || item.description || "لا توجد تفاصيل.";
+
+  document.getElementById("contentModal").style.display = "flex";
+}
+
+function openLesson(index) {
+  const title = lessons[index];
+  if (!title) return;
+
+  const content = `
+المحاضرة ${index + 1}: ${title}
+
+في هذه المحاضرة سنتناول هذا الموضوع من خلال أمثلة عملية وتطبيقات تساعدك على فهم كتابة السيناريو.
+
+التدريب:
+اكتب فكرة قصيرة من ثلاثة أسطر تطبق فيها موضوع المحاضرة.
+  `;
+
+  showContent(title, content);
+}
+
+function playMedia(url, type) {
+  const player = document.getElementById("mediaPlayer");
+  if (!player) return;
+
+  player.innerHTML = "";
+
+  if (type === "audio") {
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = url;
+    player.appendChild(audio);
+    return;
+  }
+
+  const video = document.createElement("video");
+  video.controls = true;
+  video.playsInline = true;
+  video.style.width = "100%";
+
+  if (url.includes(".m3u8") && window.Hls && Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+  } else {
+    video.src = url;
+  }
+
+  player.appendChild(video);
+}
+
+function startChess() {
+  const board = document.getElementById("chessBoard");
+  if (!board) return;
+
+  board.innerHTML = `
+    <div class="card">
+      <p>لوحة الشطرنج ستظهر هنا عند تجهيز رقعة اللعب.</p>
+      <p>اللعب بين لاعبين على نفس الجهاز يحتاج إلى إضافة واجهة الرقعة وربطها بمحرك قواعد الشطرنج.</p>
+    </div>
+  `;
+}
+function setupEvents() {
+  document.addEventListener("click", event => {
+    const lessonButton = event.target.closest("[data-lesson]");
+    if (lessonButton) {
+      openLesson(Number(lessonButton.dataset.lesson));
+      return;
+    }
+
+    const itemButton = event.target.closest("[data-open-item]");
+    if (itemButton) {
+      openItem(itemButton.dataset.openItem);
+      return;
+    }
+
+    const deleteButton = event.target.closest("[data-delete-item]");
+    if (deleteButton) {
+      deleteItem(deleteButton.dataset.deleteItem);
+      return;
+    }
+  });
+}
+
+async function initializePlatform() {
+  renderLessons();
+  setupEvents();
+
+  try {
+    const { data } = await db.auth.getSession();
+    currentUser = data?.session?.user || null;
+
+    if (currentUser) {
+      await loadMaterials();
+    } else {
+      await loadMaterials();
+    }
+  } catch (error) {
+    console.error("Initialization error:", error);
+  }
+
+  go("home");
+}
+
+document.addEventListener("DOMContentLoaded", initializePlatform);
+</script>
+
+</body>
+  </html>
