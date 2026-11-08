@@ -467,7 +467,14 @@ jobs:
           if (mapped.content_url !== 'https://cdn.example/lesson.mp4' || mapped.extra.lesson_text !== 'نص الورشة') {
             throw new Error('Lesson detail mapping dropped the published media URL or structured lesson text.');
           }
-          console.log('Published academy lesson indexing, ordering, and detail mapping checks passed.');
+          const openStart = html.indexOf('function openLesson(index)');
+          const openEnd = html.indexOf('function closeLesson()', openStart);
+          const openBody = html.slice(openStart, openEnd);
+          if (openStart < 0 || !openBody.includes('destroyInlineHlsVideos(dialog);') ||
+              openBody.indexOf('destroyInlineHlsVideos(dialog);') > openBody.indexOf('body.innerHTML=')) {
+            throw new Error('Switching lessons must release any previous inline HLS stream before replacing lesson content.');
+          }
+          console.log('Published academy lesson indexing, ordering, detail mapping, and player cleanup checks passed.');
           NODE
       - name: Check for server-side secret key patterns
         shell: bash
