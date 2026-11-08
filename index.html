@@ -1332,7 +1332,7 @@ function renderRadioStations(){
 let activeRadioHlsPlayer=null;
 function playRadioStation(id){
   const station=radioStations.find(item=>String(item.id)===String(id));
-  const streamUrl=station?safeHttpUrl(streamUrl):"";
+  const streamUrl=station?safeHttpUrl(station.stream):"";
   if(!streamUrl){alert("رابط البث غير متاح أو غير آمن لهذه المحطة.");return;}
   const player=document.getElementById("radioPlayer");
   const title=document.getElementById("radioNowTitle");
@@ -3104,7 +3104,7 @@ let activeHlsPlayer=null;
 function playTVChannel(id){
   const channel=tvChannels.find(item=>String(item.id)===String(id));
 
-  const streamUrl=channel?safeHttpUrl(streamUrl):"";
+  const streamUrl=channel?safeHttpUrl(channel.stream):"";
   if(!streamUrl){
     alert("رابط البث غير متاح لهذه القناة.");
     return;
