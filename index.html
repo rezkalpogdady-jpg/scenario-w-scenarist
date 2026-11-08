@@ -3288,6 +3288,20 @@ function directVideoMarkup(value,label="مشاهدة الفيديو"){
   return `<a class="btn" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`;
 }
 
+function clearInlineHlsError(player){
+  const notice=player.nextElementSibling;
+  if(notice?.classList.contains("inline-hls-error")) notice.remove();
+}
+
+function showInlineHlsError(player,message){
+  clearInlineHlsError(player);
+  const notice=document.createElement("p");
+  notice.className="inline-hls-error";
+  notice.style.color="var(--muted)";
+  notice.textContent=message;
+  player.insertAdjacentElement("afterend",notice);
+}
+
 function destroyInlineHlsVideos(root=document){
   root.querySelectorAll("video[data-hls-url]").forEach(player=>{
     if(player._hlsInstance){
@@ -3298,26 +3312,39 @@ function destroyInlineHlsVideos(root=document){
     player.removeAttribute("src");
     player.load();
     player.dataset.hlsReady="0";
+    clearInlineHlsError(player);
   });
 }
 
 function initializeInlineHlsVideos(root=document){
   root.querySelectorAll("video[data-hls-url]").forEach(player=>{
     if(player.dataset.hlsReady==="1") return;
+    clearInlineHlsError(player);
     player.dataset.hlsReady="1";
-    const source=player.dataset.hlsUrl;
+    const source=safeHttpsMediaUrl(player.dataset.hlsUrl);
+    if(!source){
+      player.dataset.hlsReady="0";
+      showInlineHlsError(player,"رابط الفيديو غير آمن أو غير صالح.");
+      return;
+    }
     if(window.Hls && Hls.isSupported()){
       const instance=new Hls({enableWorker:true});
-      instance.loadSource(source);instance.attachMedia(player);
-      instance.on(Hls.Events.ERROR,(_event,data)=>{
-        if(data.fatal){player.dataset.hlsReady="0";instance.destroy();player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>تعذر تشغيل البث. تحقق من الرابط والسماح بالتضمين.</p>");}
-      });
       player._hlsInstance=instance;
+      instance.on(Hls.Events.ERROR,(_event,data)=>{
+        if(data.fatal){
+          player.dataset.hlsReady="0";
+          instance.destroy();
+          if(player._hlsInstance===instance) player._hlsInstance=null;
+          showInlineHlsError(player,"تعذر تشغيل البث. تحقق من الرابط والسماح بالتضمين.");
+        }
+      });
+      instance.loadSource(source);
+      instance.attachMedia(player);
     }else if(player.canPlayType("application/vnd.apple.mpegurl")){
       player.src=source;
     }else{
       player.dataset.hlsReady="0";
-      player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>هذا المتصفح لا يدعم صيغة البث المطلوبة.</p>");
+      showInlineHlsError(player,"هذا المتصفح لا يدعم صيغة البث المطلوبة.");
     }
   });
 }
