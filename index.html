@@ -673,7 +673,7 @@ function escapeHTML(value){
 /* Safely serialize dynamic values used as arguments in inline HTML handlers. */
 function inlineJsArg(value){
   const json=JSON.stringify(String(value ?? ""));
-  const body=json.slice(1,-1).replace(/[<>&\\u2028\\u2029]/g,char=>"\\u"+char.charCodeAt(0).toString(16).padStart(4,"0"));
+  const body=json.slice(1,-1).replace(/[<>&\u2028\u2029]/g,char=>"\\u"+char.charCodeAt(0).toString(16).padStart(4,"0"));
   return "&quot;"+body+"&quot;";
 }
 
