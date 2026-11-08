@@ -262,7 +262,7 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
-          const match = html.match(/function validateAdminUploadFile\\(file\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          const match = html.match(/function validateAdminUploadFile\(file\)\s*\{[\s\S]*?\n\}/);
           if (!match) throw new Error('Upload validator is missing.');
           const validate = vm.runInNewContext(match[0] + '; validateAdminUploadFile');
           const cases = [
