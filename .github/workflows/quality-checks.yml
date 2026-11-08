@@ -641,6 +641,30 @@ jobs:
           }
           console.log('Private scenario PDF signed-URL flow and read-only storage audit checks passed.');
           NODE
+      - name: Check scenario library table RLS audit coverage
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const sql = fs.readFileSync('releases/6.6/preflight-6.5-readonly.sql', 'utf8');
+          const required = [
+            "to_regclass('public.scenario_scripts')",
+            'c.relrowsecurity',
+            "where schemaname='public' and tablename='scenario_scripts'",
+            "has_table_privilege('anon','public.scenario_scripts','INSERT')",
+            "has_table_privilege('authenticated','public.scenario_scripts','UPDATE')",
+            "has_column_privilege('anon','public.scenario_scripts','storage_path','SELECT')",
+            "has_column_privilege('authenticated','public.scenario_scripts','published','UPDATE')"
+          ];
+          for (const snippet of required) {
+            if (!sql.includes(snippet)) throw new Error('Scenario library table security audit is missing: ' + snippet);
+          }
+          const executable = sql.replace(/--.*$/gm, '');
+          if (/^\\s*(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/im.test(executable)) {
+            throw new Error('Scenario library table audit must remain read-only.');
+          }
+          console.log('Scenario library table RLS, policies, and privilege audit checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
