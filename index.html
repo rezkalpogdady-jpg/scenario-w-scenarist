@@ -2707,7 +2707,14 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
     this.reset();document.getElementById("adminScenarioScriptId").value="";
     if(!document.getElementById("adminScenarioScriptMessage").textContent.startsWith("تم الحفظ،"))scenarioScriptMessage("تم حفظ السيناريو بنجاح.");
     await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
-  }catch(error){if(file&&storagePath&&!previous?.storage_path){await adminSupabase.storage.from("scenario-scripts").remove([storagePath]);}scenarioScriptMessage("تعذر حفظ السيناريو: "+(error.message||"خطأ غير معروف"));}
+  }catch(error){
+    let cleanupNote="";
+    if(file&&storagePath&&storagePath!==previous?.storage_path){
+      const {error:cleanupError}=await adminSupabase.storage.from("scenario-scripts").remove([storagePath]);
+      if(cleanupError)cleanupNote=" وتعذر تنظيف ملف PDF الجديد المرفوع: "+cleanupError.message;
+    }
+    scenarioScriptMessage("تعذر حفظ السيناريو: "+(error.message||"خطأ غير معروف")+cleanupNote);
+  }
   finally{button.disabled=false;button.textContent="حفظ السيناريو";}
 });
 async function loadPublishedScenarioScripts(force=false){
