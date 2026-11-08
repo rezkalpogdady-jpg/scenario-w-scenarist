@@ -258,6 +258,54 @@ jobs:
           if (!adminProfiles.includes('safeHttpsMediaUrl(item.image_url)') || !adminProfiles.includes('safeHttpsMediaUrl(item.work_url)') || !adminProfiles.includes('مرفوض سابقًا — في انتظار مراجعة جديدة')) throw new Error('Admin member profile review must validate external links and distinguish rejected resubmissions.');
           console.log('Member client-side access-boundary and secure profile-link checks passed. Database RLS still requires independent verification.');
           NODE
+      - name: Check member profile review boundary and pending-default audit
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const migration = fs.readFileSync('releases/6.5/migration.sql', 'utf8');
+          const preflight = fs.readFileSync('releases/6.6/preflight-6.5-readonly.sql', 'utf8');
+          const trigger = fs.readFileSync('releases/6.6/member-profile-review-trigger.sql', 'utf8');
+
+          const start = html.indexOf('document.getElementById("accountProfileForm")?.addEventListener');
+          const end = html.indexOf('document.getElementById("accountNewPasswordForm")', start);
+          if (start < 0 || end < 0) throw new Error('Member profile save handler is missing.');
+          const save = html.slice(start, end);
+          const upsert = save.match(/\.upsert\(\s*\{([\s\S]*?)\}\s*,\s*\{onConflict:"user_id"\}\s*\)/);
+          if (!upsert) throw new Error('Profile save must use the expected user-scoped upsert payload.');
+          const payload = upsert[1];
+          for (const protectedField of ['profile_status', 'reviewed_at', 'reviewed_by', 'user_metadata', 'role']) {
+            if (new RegExp('\\b' + protectedField + '\\s*:').test(payload)) {
+              throw new Error('Member profile payload must not set protected review/role field: ' + protectedField);
+            }
+          }
+          for (const required of ['user_id:userId', 'display_name', 'account_type', 'updated_at']) {
+            if (!payload.includes(required)) throw new Error('Expected profile field missing from member upsert: ' + required);
+          }
+
+          const grant = migration.match(/grant\s+update\s*\(([\s\S]*?)\)\s*on\s+public\.member_profiles\s+to\s+authenticated/i);
+          if (!grant) throw new Error('Profile migration must grant column-scoped updates only.');
+          const grantedColumns = grant[1].split(',').map(value => value.trim().toLowerCase());
+          for (const protectedField of ['profile_status', 'reviewed_at', 'reviewed_by']) {
+            if (grantedColumns.includes(protectedField)) throw new Error('Protected profile review field is granted for member updates: ' + protectedField);
+          }
+          if (!migration.includes("with check (auth.uid() = user_id and profile_status = 'pending')")) {
+            throw new Error('New member profiles must be restricted to the owner and pending state.');
+          }
+          if (!preflight.includes('column_default') ||
+              !preflight.includes("column_name in ('profile_status','reviewed_at','updated_at')") ||
+              !preflight.includes("has_column_privilege('authenticated','public.member_profiles','profile_status','UPDATE')") ||
+              !preflight.includes("column_default يعيد 'pending'")) {
+            throw new Error('Read-only preflight must inspect the profile pending default and protected update privileges.');
+          }
+          if (!trigger.includes("new.profile_status := 'pending'") ||
+              !trigger.includes('before update of display_name, account_type, bio, city, specialty, image_url, work_url')) {
+            throw new Error('Material member profile edits must trigger a return to pending review.');
+          }
+          console.log('Member profile payload, column grants, pending insert policy, trigger, and live-schema audit checks passed.');
+          NODE
+
       - name: Check admin dashboard role gate
         shell: bash
         run: |
