@@ -3684,7 +3684,9 @@ loadApprovedIdeas();
   };
   async function saveProject(status){
     if(!accountUser){projectMessage("سجّل الدخول أولًا.");return;}
+    if(!$("academyFinalProjectForm").reportValidity())return;
     const payload={user_id:accountUser.id,status,updated_at:new Date().toISOString()};
+    if(status==="pending")payload.submitted_at=new Date().toISOString();
     for(const [key,id] of Object.entries(fields))payload[key]=$(id).value.trim();
     if(Object.values(fields).some(id=>!$(id).value.trim())){projectMessage("أكمل جميع عناصر المشروع قبل الحفظ أو الإرسال.");return;}
     const submit=$("academyFinalProjectForm").querySelector('button[type="submit"]');
