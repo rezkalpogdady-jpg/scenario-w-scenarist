@@ -584,7 +584,12 @@ const academyLessons = [
 
 const lessonsContainer = document.getElementById("lessonsList");
 
-function academyLessonTitles(materials = publicContentRecords || []){
+function academyLessonTitles(materials){
+  if(!Array.isArray(materials)){
+    materials=(publicContentRecords||[])
+      .filter(item=>item?.content_type==="academy")
+      .map(mapContentRecord);
+  }
   const titles=[...academyLessons];
   const known=new Set(titles.map(title=>title.trim().toLocaleLowerCase()));
   const additional=(materials||[]).filter(item=>{
@@ -647,7 +652,8 @@ function academyLessonExtraMarkup(material){
 function openLesson(index){
   const lesson=academyLessonTitles()[index];
   if(!lesson) return;
-  const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
+  const source=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
+  const material=source?mapContentRecord(source):null;
   const dialog=document.getElementById("lessonDialog");
   const title=document.getElementById("lessonDialogTitle");
   const body=document.getElementById("lessonDialogBody");
@@ -3172,6 +3178,7 @@ function mapContentRecord(item){
     bio:item.description || "",
     image:item.image_url || "",
     cover:item.image_url || "",
+    content_url:item.content_url || "",
     work:item.content_url || "",
     url:item.content_url || "",
     stream:item.content_url || "",
