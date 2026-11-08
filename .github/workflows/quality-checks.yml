@@ -287,6 +287,7 @@ jobs:
           const fs = require('node:fs');
           const html = fs.readFileSync('index.html', 'utf8');
           const required = [
+            'function isAbsoluteHttpsUrl(value)',
             'function broadcastRightsApproved(item)',
             'rightsStatus:String(extra.rights_status||"").toLowerCase()',
             'sourceUrl:extra.source_url||""',
