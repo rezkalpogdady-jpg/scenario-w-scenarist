@@ -107,6 +107,40 @@ jobs:
           console.log('Dynamic inline handler arguments passed serialization checks.');
           NODE
 
+      - name: Test URL scheme validation and media URL sinks
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const helper = html.match(/function safeHttpUrl\(value\)\s*\{[\s\S]*?\n\}/);
+          if (!helper) throw new Error('safeHttpUrl validation helper is missing.');
+          const safeHttpUrl = vm.runInNewContext(helper[0] + '; safeHttpUrl', {
+            URL,
+            window: { location: { href: 'https://platform.example/page' } }
+          });
+          for (const value of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>', 'vbscript:msgbox(1)']) {
+            if (safeHttpUrl(value) !== '') throw new Error('Unsafe URL scheme was accepted: ' + value);
+          }
+          for (const value of ['https://cdn.example/media.mp4', 'http://radio.example/live', '/storage/image.png']) {
+            if (!safeHttpUrl(value).startsWith('http')) throw new Error('Expected HTTP(S) URL was rejected: ' + value);
+          }
+          for (const fn of ['playTVChannel', 'playRadioStation']) {
+            const start = html.indexOf('function ' + fn + '(');
+            if (start < 0 || !html.slice(start, start + 1800).includes('safeHttpUrl(')) {
+              throw new Error(fn + ' must validate its stream URL before playback.');
+            }
+          }
+          if (/href="\$\{adminEscape\((?:item\.)?(?:work_url|image_url)|reviewUrl\)\}"/.test(html)) {
+            throw new Error('An escaped but scheme-unvalidated database URL remains in an href.');
+          }
+          if (/src="\$\{escapeHTML\(item\.cover\)\}"/.test(html)) {
+            throw new Error('A database cover URL remains in an image src without scheme validation.');
+          }
+          console.log('URL scheme tests and critical media URL sinks passed.');
+          NODE
+
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
