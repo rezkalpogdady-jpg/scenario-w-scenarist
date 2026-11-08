@@ -601,6 +601,27 @@ function renderLessonIndex(materials = []){
   }).join("");
 }
 
+function academyLessonExtraMarkup(material){
+  const extra=material?.extra && typeof material.extra==="object" ? material.extra : {};
+  const fields=[
+    ["lesson_text","محتوى المحاضرة"],
+    ["learning_objectives","أهداف التعلم"],
+    ["exercise","التدريب العملي"],
+    ["homework","الواجب"]
+  ];
+  const sections=fields.filter(([key])=>typeof extra[key]==="string" && extra[key].trim()).map(([key,label])=>
+    `<section class="panel"><h4 style="color:var(--gold)">${label}</h4><p style="white-space:pre-wrap">${escapeHTML(extra[key])}</p></section>`
+  );
+  if(Array.isArray(extra.resources)){
+    const links=extra.resources.filter(item=>item&&typeof item==="object"&&typeof item.url==="string").map(item=>{
+      const url=safeHttpsMediaUrl(item.url);
+      return url ? `<li><a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(String(item.title||"مادة مساعدة"))}</a></li>` : "";
+    }).filter(Boolean);
+    if(links.length)sections.push(`<section class="panel"><h4 style="color:var(--gold)">مواد مساعدة</h4><ul>${links.join("")}</ul></section>`);
+  }
+  return sections.join("");
+}
+
 function openLesson(index){
   const lesson=academyLessons[index];
   if(!lesson) return;
@@ -611,7 +632,7 @@ function openLesson(index){
   if(!dialog||!title||!body) return;
   title.textContent=`المحاضرة ${index+1}: ${lesson}`;
   body.innerHTML=material
-    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مكتوب مضاف لهذه المحاضرة بعد.")}</p>${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
+    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مختصر مضاف لهذه المحاضرة بعد.")}</p>${academyLessonExtraMarkup(material)}${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
     : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
   dialog.style.display="block";
   initializeInlineHlsVideos(dialog);
@@ -1349,7 +1370,7 @@ let activeRadioHlsPlayer=null;
 function playRadioStation(id){
   const station=radioStations.find(item=>String(item.id)===String(id));
   if(!station || !broadcastRightsApproved(station)){alert("لن يتم تشغيل المحطة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");return;}
-  const streamUrl=safeHttpUrl(station.stream);
+  const streamUrl=safeHttpsMediaUrl(station.stream);
   if(!streamUrl){alert("رابط البث غير متاح أو غير آمن لهذه المحطة.");return;}
   const player=document.getElementById("radioPlayer");
   const title=document.getElementById("radioNowTitle");
@@ -1845,7 +1866,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
         <label>بيانات إضافية (JSON) — اختيارية</label>
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
-        <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص. عند نشر قناة تلفزيون أو محطة راديو، أضف أيضًا: <code>{"rights_status":"official","source_url":"https://..."}</code> أو اجعل القيمة <code>licensed</code> مع رابط مرجع الترخيص. لا يُعد الرابط وحده إثباتًا قانونيًا؛ على الإدارة التحقق من حق البث قبل الاعتماد.</p>
+        <p style="font-size:12px;color:var(--muted)">بيانات إضافية بصيغة JSON. للمحاضرات يمكنك إضافة <code>lesson_text</code> و<code>learning_objectives</code> و<code>exercise</code> و<code>homework</code>، ويمكن إضافة <code>resources</code> كمصفوفة عناصر تحتوي <code>title</code> و<code>url</code>. مثال: <code>{"lesson_text":"شرح الدرس","exercise":"تدريب تطبيقي","homework":"واجب منزلي"}</code>. لنشر قناة أو محطة، أضف <code>rights_status</code> بقيمة <code>official</code> أو <code>licensed</code> و<code>source_url</code> لمرجع الحقوق؛ ويجب أن يكون رابط البث نفسه في الحقل أعلاه HTTPS. وجود الروابط وحده لا يثبت الترخيص؛ على الإدارة التحقق منه.</p>
 
         <label>أو ارفع ملفًا من جهازك</label>
         <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
@@ -2521,15 +2542,6 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
     return;
   }
-  if(["tv","radio"].includes(record.content_type) && record.published){
-    const rightsStatus=String(record.extra_data.rights_status||"").toLowerCase();
-    const sourceUrl=isAbsoluteHttpsUrl(record.extra_data.source_url||"");
-    if(!["official","licensed"].includes(rightsStatus) || !sourceUrl){
-      adminSetMessage("adminSaveMessage","لا يمكن نشر قناة أو محطة قبل إضافة rights_status بقيمة official أو licensed، وإضافة source_url لصفحة المصدر الرسمي أو مستند الترخيص داخل البيانات الإضافية.");
-      return;
-    }
-  }
-
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
@@ -2542,6 +2554,20 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     }
   }catch(uploadError){
     adminSetMessage("adminSaveMessage","تعذر رفع الملف: "+(uploadError.message || "خطأ غير معروف"));
+    return;
+  }
+
+  if(["tv","radio"].includes(record.content_type) && record.published){
+    const rightsStatus=String(record.extra_data.rights_status||"").toLowerCase();
+    const sourceUrl=isAbsoluteHttpsUrl(record.extra_data.source_url||"");
+    const streamUrl=isAbsoluteHttpsUrl(record.content_url||"");
+    if(!["official","licensed"].includes(rightsStatus) || !sourceUrl || !streamUrl){
+      adminSetMessage("adminSaveMessage","لا يمكن نشر قناة أو محطة قبل توثيق المصدر والترخيص، وإضافة رابط HTTPS صالح للبث نفسه في حقل رابط الملف أو البث.");
+      return;
+    }
+  }
+  if(record.content_type==="academy" && record.published && record.content_url && !isAbsoluteHttpsUrl(record.content_url)){
+    adminSetMessage("adminSaveMessage","فيديو المحاضرة المنشور يجب أن يستخدم رابط HTTPS آمنًا.");
     return;
   }
 
@@ -2923,7 +2949,8 @@ function mapContentRecord(item){
     url:item.content_url || "",
     stream:item.content_url || "",
     file:item.content_url || "",
-    published:!!item.published
+    published:!!item.published,
+    extra
   };
 }
 
@@ -2990,8 +3017,15 @@ function safeHttpUrl(value){
   }catch(_){ return ""; }
 }
 
+function safeHttpsMediaUrl(value){
+  try{
+    const url=new URL(String(value||""));
+    return url.protocol==="https:" && !!url.hostname ? url.href : "";
+  }catch(_){ return ""; }
+}
+
 function directVideoMarkup(value,label="مشاهدة الفيديو"){
-  const url=safeHttpUrl(value);
+  const url=safeHttpsMediaUrl(value);
   if(!url)return "";
   if(/\.(mp4|webm|ogg|m4v)(\?|#|$)/i.test(url)){
     return `<video controls playsinline preload="metadata" aria-label="${escapeHTML(label)}" style="width:100%;max-height:420px;background:#000;border-radius:8px" src="${escapeHTML(url)}"></video>`;
@@ -3209,7 +3243,7 @@ function playTVChannel(id){
     alert("لن يتم تشغيل القناة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");
     return;
   }
-  const streamUrl=safeHttpUrl(channel.stream);
+  const streamUrl=safeHttpsMediaUrl(channel.stream);
   if(!streamUrl){
     alert("رابط البث غير متاح لهذه القناة.");
     return;
