@@ -766,3 +766,34 @@ jobs:
           }
           console.log('6.5 required tables, columns, Storage dependencies, and read-only gate checks passed.');
           NODE
+
+      - name: Check academy and admin content save-reload flow
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const checklist = fs.readFileSync('releases/6.8/member-admin-manual-test-checklist.md', 'utf8');
+          const audit = fs.readFileSync('releases/6.6/technical-audit.md', 'utf8');
+          const required = [
+            ['admin save handler', /adminContentForm[\s\S]*?\.from\(["']site_content["']\)\.update\(record\)/],
+            ['admin insert path', /\.from\(["']site_content["']\)\.insert\(record\)/],
+            ['admin list reload after save', /adminResetForm\(\);\s*await adminLoadRecords\(\);/],
+            ['admin content reader', /function adminLoadRecords\(\)[\s\S]*?\.from\(["']site_content["']\)[\s\S]*?\.order\(["']created_at["']/],
+            ['public published-only reader', /function loadPublicContent\(\)[\s\S]*?\.from\(["']site_content["']\)[\s\S]*?\.eq\(["']published["'],\s*true\)/],
+            ['public content distribution', /distributePublicContent\(\(data \|\| \[\]\)\.map\(sanitizePublicContentRecord\)\)/],
+            ['academy mapping and rendering', /function mapContentRecord\(item\)[\s\S]*?lesson_text[\s\S]*?function renderAcademyContent\(items\)/],
+            ['academy lesson detail fields', /lesson_text[\s\S]*?learning_objectives[\s\S]*?exercise[\s\S]*?homework/],
+            ['scenario PDF signed URL flow', /createSignedUrl\([^\n]*3600\)/]
+          ];
+          for (const [label, pattern] of required) {
+            if (!pattern.test(html)) throw new Error('Content save/reload flow is missing: ' + label);
+          }
+          for (const role of ['anon', 'عضو A', 'عضو B', 'مدير']) {
+            if (!checklist.includes(role)) throw new Error('Manual permission checklist is missing role: ' + role);
+          }
+          for (const phrase of ['لا يستدعي loadPublicContent مباشرة', 'لم يتم اختبار المتصفح الحي']) {
+            if (!audit.includes(phrase)) throw new Error('Technical audit is missing documented save/reload limitation: ' + phrase);
+          }
+          console.log('Academy/admin save, public reload mapping, PDF access, and manual role checklist checks passed.');
+          NODE
