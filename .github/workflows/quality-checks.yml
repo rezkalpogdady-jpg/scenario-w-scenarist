@@ -1,0 +1,80 @@
+name: Platform quality checks
+
+on:
+  push:
+    branches:
+      - "stage/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inline-javascript:
+    name: Check inline JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Parse every inline JavaScript block
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const os = require('node:os');
+          const path = require('node:path');
+          const { spawnSync } = require('node:child_process');
+
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scriptTag = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
+          let match;
+          let checked = 0;
+          let failed = false;
+
+          while ((match = scriptTag.exec(html)) !== null) {
+            const attrs = match[1] || '';
+            const code = match[2] || '';
+            if (/\bsrc\s*=/i.test(attrs) || !code.trim()) continue;
+            if (/type\s*=\s*["']application\/(?:ld\+)?json["']/i.test(attrs)) continue;
+
+            checked += 1;
+            const file = path.join(os.tmpdir(), `inline-script-${checked}.js`);
+            fs.writeFileSync(file, code, 'utf8');
+            const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+
+            if (result.status !== 0) {
+              failed = true;
+              console.error(`Syntax error in inline script #${checked}:`);
+              console.error(result.stderr || result.stdout);
+            }
+          }
+
+          console.log(`Checked ${checked} inline JavaScript block(s).`);
+          if (checked === 0) {
+            console.error('No inline JavaScript blocks were found; refusing a false-green result.');
+            process.exit(1);
+          }
+          if (failed) process.exit(1);
+          NODE
+
+      - name: Check for server-side secret key patterns
+        shell: bash
+        run: |
+          if grep -nE 'sb_secret_[A-Za-z0-9_-]{20,}|service_role[[:space:]]*[:=][[:space:]]*["\x27][^"\x27]{20,}' index.html; then
+            echo "Potential server-side secret found in client code."
+            exit 1
+          fi
+          echo "No known server-side secret-key pattern found in index.html."
