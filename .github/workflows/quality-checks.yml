@@ -470,8 +470,8 @@ jobs:
           if (mapped.content_url !== 'https://cdn.example/lesson.mp4' || mapped.extra.lesson_text !== 'نص الورشة') {
             throw new Error('Lesson detail mapping dropped the published media URL or structured lesson text.');
           }
-          vm.runInContext(escape[0] + '\\n' + safeMedia[0] + '\\n' + extraMarkup[0] +
-            '\\nthis.renderExtra = academyLessonExtraMarkup;', context);
+          vm.runInContext(escape[0] + '\n' + safeMedia[0] + '\n' + extraMarkup[0] +
+            '\nthis.renderExtra = academyLessonExtraMarkup;', context);
           const safeMarkup = context.renderExtra({ extra: {
             lesson_text: '<img src=x onerror=alert(1)>',
             resources: [
