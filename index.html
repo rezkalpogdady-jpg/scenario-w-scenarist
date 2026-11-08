@@ -2464,39 +2464,35 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   }
 
   let result;
-
-  if(id){
-    result=await adminSupabase
-      .from("site_content")
-      .update(record)
-      .eq("id",id)
-      .select();
-  }else{
-    result=await adminSupabase
-      .from("site_content")
-      .insert(record)
-      .select();
-  }
-
-  if(result.error){
+  try{
+    if(id){
+      result=await adminSupabase.from("site_content").update(record).eq("id",id).select();
+    }else{
+      result=await adminSupabase.from("site_content").insert(record).select();
+    }
+    if(result.error) throw result.error;
+  }catch(saveError){
+    let cleanupNote="";
     if(uploadedAsset){
       const orphanPath=adminStoragePathFromPublicUrl(uploadedAsset.url);
-      if(orphanPath) await adminSupabase.storage.from("site-media").remove([orphanPath]);
+      if(orphanPath){
+        const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([orphanPath]);
+        if(cleanupError) cleanupNote=" وتعذر تنظيف الملف المرفوع الجديد: "+cleanupError.message;
+      }
     }
-    adminSetMessage("adminSaveMessage",
-      "تعذر الحفظ: "+result.error.message);
+    adminSetMessage("adminSaveMessage","تعذر الحفظ: "+(saveError.message||"خطأ غير معروف")+cleanupNote);
     return;
   }
 
-  /* عند استبدال ملف قديم، احذف النسخة السابقة بعد نجاح حفظ الرابط الجديد */
+  /* نظّف الملفات القديمة التي لم تعد مرتبطة بالسجل، بعد نجاح حفظ البيانات فقط */
   let cleanupWarning="";
-  if(uploadedAsset && previousRecord){
-    const oldUrl=uploadedAsset.type.startsWith("image/") ? previousRecord.image_url : previousRecord.content_url;
-    const oldPath=adminStoragePathFromPublicUrl(oldUrl);
-    const newPath=adminStoragePathFromPublicUrl(uploadedAsset.url);
-    if(oldPath && oldPath!==newPath){
-      const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([oldPath]);
-      if(cleanupError) cleanupWarning=" تم الحفظ، لكن تعذر تنظيف الملف القديم: "+cleanupError.message;
+  if(previousRecord){
+    const oldPaths=[adminStoragePathFromPublicUrl(previousRecord.image_url),adminStoragePathFromPublicUrl(previousRecord.content_url)].filter(Boolean);
+    const currentPaths=[adminStoragePathFromPublicUrl(record.image_url),adminStoragePathFromPublicUrl(record.content_url)].filter(Boolean);
+    const obsoletePaths=[...new Set(oldPaths)].filter(path=>!currentPaths.includes(path));
+    if(obsoletePaths.length){
+      const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove(obsoletePaths);
+      if(cleanupError) cleanupWarning=" تم الحفظ، لكن تعذر تنظيف بعض الملفات القديمة: "+cleanupError.message;
     }
   }
 
