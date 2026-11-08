@@ -270,11 +270,11 @@ order by policyname;
 -- فحص امتيازات سجل المكتبة. الواجهة العامة تقرأ بيانات منشورة فقط،
 -- والملفات نفسها لا تُقرأ إلا عبر Signed URL بعد التحقق من تسجيل الدخول.
 select
-  has_table_privilege('anon','public.scenario_scripts','SELECT') as anon_can_select_metadata,
-  has_table_privilege('authenticated','public.scenario_scripts','SELECT') as authenticated_can_select_metadata,
-  has_table_privilege('authenticated','public.scenario_scripts','INSERT') as authenticated_can_insert,
-  has_table_privilege('authenticated','public.scenario_scripts','UPDATE') as authenticated_can_update,
-  has_table_privilege('authenticated','public.scenario_scripts','DELETE') as authenticated_can_delete;
+  has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'SELECT') as anon_can_select_metadata,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'SELECT') as authenticated_can_select_metadata,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'INSERT') as authenticated_can_insert,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'UPDATE') as authenticated_can_update,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'DELETE') as authenticated_can_delete;
 
 -- ملاحظة: هذه الاستعلامات لا تغيّر أي إعداد. لا تعتبر bucket آمنًا
 -- قبل مراجعة public=false والسياسات الفعلية ونتائج الوصول بحساب anon وعضو ومدير.
@@ -299,18 +299,18 @@ order by policyname;
 -- راجعها مع السياسات: anon يجب ألا يستطيع الكتابة أو قراءة storage_path،
 -- والأعضاء لا يملكون إدارة السجلات أو تغيير حالة النشر.
 select
-  has_table_privilege('anon','public.scenario_scripts','SELECT') as anon_can_select_metadata,
-  has_table_privilege('anon','public.scenario_scripts','INSERT') as anon_can_insert,
-  has_table_privilege('anon','public.scenario_scripts','UPDATE') as anon_can_update,
-  has_table_privilege('anon','public.scenario_scripts','DELETE') as anon_can_delete,
-  has_table_privilege('authenticated','public.scenario_scripts','SELECT') as authenticated_can_select,
-  has_table_privilege('authenticated','public.scenario_scripts','INSERT') as authenticated_can_insert,
-  has_table_privilege('authenticated','public.scenario_scripts','UPDATE') as authenticated_can_update,
-  has_table_privilege('authenticated','public.scenario_scripts','DELETE') as authenticated_can_delete;
+  has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'SELECT') as anon_can_select_metadata,
+  has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'INSERT') as anon_can_insert,
+  has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'UPDATE') as anon_can_update,
+  has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'DELETE') as anon_can_delete,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'SELECT') as authenticated_can_select,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'INSERT') as authenticated_can_insert,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'UPDATE') as authenticated_can_update,
+  has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'DELETE') as authenticated_can_delete;
 
 -- 14) امتيازات الأعمدة الحساسة: مسار التخزين وحالة النشر.
 select
-  has_column_privilege('anon','public.scenario_scripts','storage_path','SELECT') as anon_can_read_storage_path,
-  has_column_privilege('authenticated','public.scenario_scripts','storage_path','SELECT') as authenticated_can_read_storage_path,
-  has_column_privilege('authenticated','public.scenario_scripts','published','UPDATE') as authenticated_can_update_published,
-  has_column_privilege('authenticated','public.scenario_scripts','storage_path','UPDATE') as authenticated_can_update_storage_path;
+  has_column_privilege('anon',(select to_regclass('public.scenario_scripts')),'storage_path','SELECT') as anon_can_read_storage_path,
+  has_column_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'storage_path','SELECT') as authenticated_can_read_storage_path,
+  has_column_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'published','UPDATE') as authenticated_can_update_published,
+  has_column_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'storage_path','UPDATE') as authenticated_can_update_storage_path;
