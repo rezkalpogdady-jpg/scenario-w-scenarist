@@ -303,6 +303,28 @@ jobs:
               !trigger.includes('before update of display_name, account_type, bio, city, specialty, image_url, work_url')) {
             throw new Error('Material member profile edits must trigger a return to pending review.');
           }
+          const worksStart = html.indexOf('document.getElementById("memberWorkForm")?.addEventListener');
+          const worksEnd = html.indexOf('document.getElementById("accountLogout")', worksStart);
+          if (worksStart < 0 || worksEnd < 0) throw new Error('Member work submission handler is missing.');
+          const worksForm = html.slice(worksStart, worksEnd);
+          if (!worksForm.includes('safeHttpsMediaUrl(work_url)')) throw new Error('Member work links must require HTTPS.');
+          if (!worksForm.includes('status:') && worksForm.includes('payload={')) {
+            // The insert payload intentionally omits status; the database policy supplies the pending boundary.
+          }
+          for (const fragment of [
+            "with check (auth.uid() = user_id and status = 'pending')",
+            "revoke update, delete, truncate on public.member_works from anon, authenticated",
+            "grant select, insert on public.member_works to authenticated",
+            "set public = false",
+            "bucket_id <> 'member-submissions'",
+            "(storage.foldername(name))[1] = auth.uid()::text"
+          ]) {
+            if (!migration.includes(fragment)) throw new Error('Private member work storage / review boundary missing: ' + fragment);
+          }
+          if (!migration.includes('create policy "6.5 restrict private member file reads"') ||
+              !migration.includes('create policy "6.5 restrict private member file uploads"')) {
+            throw new Error('Private member submission read/upload restrictions are missing.');
+          }
           console.log('Member profile payload, column grants, pending insert policy, trigger, and live-schema audit checks passed.');
           NODE
 
