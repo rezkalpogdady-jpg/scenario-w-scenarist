@@ -2079,10 +2079,18 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
     }
     const payload={user_id:accountUser.id,title:document.getElementById("memberWorkTitle").value.trim(),category:document.getElementById("memberWorkCategory").value,summary:document.getElementById("memberWorkSummary").value.trim(),work_url:work_url||null,storage_path:storagePath};
     const {error}=await client.from("member_works").insert(payload);
-    if(error){if(storagePath)await client.storage.from("member-submissions").remove([storagePath]);throw error;}
+    if(error)throw error;
+    storagePath=null;
     this.reset();const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="وصل عملك إلى الإدارة بشكل آمن، وسيظهر في المكتبة بعد الموافقة.";
     await accountLoadMemberWorks();
-  }catch(error){const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.");}
+  }catch(error){
+    let cleanupNote="";
+    if(storagePath){
+      const {error:cleanupError}=await accountClient().storage.from("member-submissions").remove([storagePath]);
+      if(cleanupError)cleanupNote=" وتعذر تنظيف الملف المرفوع غير المرتبط بطلب.";
+    }
+    const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.")+cleanupNote;
+  }
   finally{button.disabled=false;button.textContent="إرسال العمل للمراجعة";}
 });
 document.getElementById("accountLogout")?.addEventListener("click",async()=>{
