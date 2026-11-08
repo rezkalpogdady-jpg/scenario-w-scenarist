@@ -132,7 +132,7 @@ jobs:
               throw new Error(fn + ' must validate its stream URL before playback.');
             }
           }
-          if (/href="\$\{adminEscape\((?:item\.)?(?:work_url|image_url)|reviewUrl\)\}"/.test(html)) {
+          if (/href="\$\{adminEscape\((?:(?:item\.)?(?:work_url|image_url)|reviewUrl)\)\}"/.test(html)) {
             throw new Error('An escaped but scheme-unvalidated database URL remains in an href.');
           }
           if (/src="\$\{escapeHTML\(item\.cover\)\}"/.test(html)) {
