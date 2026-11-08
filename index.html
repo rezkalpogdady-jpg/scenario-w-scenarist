@@ -1429,12 +1429,17 @@ function playRadioStation(id){
   const isHls=/\.m3u8($|\?)/i.test(streamUrl);
   const play=()=>player.play().then(()=>{status.textContent="يتم تشغيل: "+station.name;}).catch(()=>{status.textContent="اضغط زر التشغيل داخل المشغل لبدء الاستماع.";});
   if(isHls && window.Hls && Hls.isSupported()){
-    activeRadioHlsPlayer=new Hls();
-    activeRadioHlsPlayer.loadSource(streamUrl);
-    activeRadioHlsPlayer.attachMedia(player);
-    activeRadioHlsPlayer.on(Hls.Events.MANIFEST_PARSED,play);
-    activeRadioHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
-      if(data.fatal){status.textContent="تعذر تشغيل المحطة؛ تحقق من رابط البث أو صلاحية تضمينه.";activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
+    const instance=new Hls();
+    activeRadioHlsPlayer=instance;
+    instance.loadSource(streamUrl);
+    instance.attachMedia(player);
+    instance.on(Hls.Events.MANIFEST_PARSED,play);
+    instance.on(Hls.Events.ERROR,(_event,data)=>{
+      if(data.fatal){
+        status.textContent="تعذر تشغيل المحطة؛ تحقق من رابط البث أو صلاحية تضمينه.";
+        instance.destroy();
+        if(activeRadioHlsPlayer===instance) activeRadioHlsPlayer=null;
+      }
     });
   }else{
     player.src=streamUrl;player.load();play();
@@ -3557,8 +3562,9 @@ function playTVChannel(id){
   const player=document.getElementById("tvPlayer");
   const placeholder=document.getElementById("tvPlaceholder");
   const status=document.getElementById("tvStatus");
-  if(!player || !placeholder || !status){
-    console.warn("مشغل التلفزيون غير موجود في الصفحة.");
+  const nowTitle=document.getElementById("tvNowTitle");
+  if(!player || !placeholder || !status || !nowTitle){
+    console.warn("مشغل التلفزيون أو عناصر حالته غير موجودة في الصفحة.");
     return;
   }
 
@@ -3574,19 +3580,20 @@ function playTVChannel(id){
   player.removeAttribute("src");
   player.load();
 
-  document.getElementById("tvNowTitle").textContent=channel.name;
+  nowTitle.textContent=channel.name;
   placeholder.style.display="none";
   status.textContent="جارٍ تحميل القناة...";
 
   const isHls=/\.m3u8($|\?)/i.test(streamUrl);
 
   if(isHls && window.Hls && Hls.isSupported()){
-    activeHlsPlayer=new Hls();
+    const instance=new Hls();
+    activeHlsPlayer=instance;
 
-    activeHlsPlayer.loadSource(streamUrl);
-    activeHlsPlayer.attachMedia(player);
+    instance.loadSource(streamUrl);
+    instance.attachMedia(player);
 
-    activeHlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{
+    instance.on(Hls.Events.MANIFEST_PARSED,()=>{
       player.play().then(()=>{
         status.textContent="يتم تشغيل: "+channel.name;
       }).catch(()=>{
@@ -3594,11 +3601,11 @@ function playTVChannel(id){
       });
     });
 
-    activeHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
+    instance.on(Hls.Events.ERROR,(_event,data)=>{
       if(data.fatal){
         status.textContent="تعذر تشغيل البث. قد يكون المصدر غير متاح أو يمنع التضمين.";
-        activeHlsPlayer.destroy();
-        activeHlsPlayer=null;
+        instance.destroy();
+        if(activeHlsPlayer===instance) activeHlsPlayer=null;
       }
     });
 
