@@ -3334,7 +3334,7 @@ function renderAcademyContent(items){
   destroyInlineHlsVideos(videoBox);
   const video=(items||[]).find(item=>item.content_url);
   videoBox.innerHTML=video
-    ? `<h3>${escapeHTML(video.title)}</h3><p>${escapeHTML(video.description || "")}</p>${directVideoMarkup(video.content_url,"مشاهدة المحاضرة")}`
+    ? `<h3>${escapeHTML(video.title)}</h3><p>${escapeHTML(video.description || "")}</p>${academyLessonMediaMarkup(video.content_url)}`
     : `<div style="font-size:45px">▶</div><p>ستظهر هنا معاينة الفيديو التعليمي عند نشر أول محاضرة مصورة.</p>`;
   initializeInlineHlsVideos(videoBox);
 }
