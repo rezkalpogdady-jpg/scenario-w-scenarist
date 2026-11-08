@@ -61,3 +61,37 @@ order by p.proname,identity_arguments;
 -- يجب أن تكون الدوال محمية داخليًا، وألا يستطيع anon تنفيذها.
 -- authenticated قد يحتاج EXECUTE لاستدعاء RPC من لوحة المدير، لذلك يلزم
 -- فحص الدور داخل الدالة نفسها؛ لا يكفي حجب زر الواجهة.
+
+-- 5) امتيازات الجداول والأعمدة ذات الصلة؛ هذه نتائج فعّالة للأدوار وليست مجرد GRANT نصي.
+-- المتوقع: authenticated لا يملك UPDATE على profile_status/reviewed_at،
+-- ولا UPDATE/DELETE على member_works. افحص أي نتيجة مخالفة قبل اعتماد migration.
+select 'member_profiles' as object_name,
+       has_table_privilege('anon','public.member_profiles','SELECT') as anon_select,
+       has_table_privilege('authenticated','public.member_profiles','SELECT') as authenticated_select,
+       has_table_privilege('authenticated','public.member_profiles','UPDATE') as authenticated_table_update,
+       has_column_privilege('authenticated','public.member_profiles','profile_status','UPDATE') as authenticated_can_update_profile_status,
+       has_column_privilege('authenticated','public.member_profiles','reviewed_at','UPDATE') as authenticated_can_update_reviewed_at
+union all
+select 'member_works',
+       has_table_privilege('anon','public.member_works','SELECT'),
+       has_table_privilege('authenticated','public.member_works','SELECT'),
+       has_table_privilege('authenticated','public.member_works','UPDATE'),
+       has_column_privilege('authenticated','public.member_works','status','UPDATE'),
+       has_column_privilege('authenticated','public.member_works','user_id','UPDATE');
+
+-- 6) سياسات RLS الحالية للجداول الحساسة والتخزين، بما فيها permissive/restrictive.
+-- تذكير: السياسات permissive تتحد بـ OR، والتقييدية بـ AND.
+select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+from pg_policies
+where (schemaname='public' and tablename in ('member_profiles','member_works','community_submissions'))
+   or (schemaname='storage' and tablename='objects')
+order by schemaname,tablename,cmd,policyname;
+
+-- 7) مالك الجداول وحالة FORCE RLS؛ مالك الجدول قد يتجاوز RLS ما لم يُفرض.
+select n.nspname as schema_name,c.relname as table_name,
+       pg_get_userbyid(c.relowner) as table_owner,
+       c.relrowsecurity as rls_enabled,c.relforcerowsecurity as force_rls
+from pg_class c join pg_namespace n on n.oid=c.relnamespace
+where (n.nspname='public' and c.relname in ('member_profiles','member_works','community_submissions'))
+   or (n.nspname='storage' and c.relname='objects')
+order by n.nspname,c.relname;
