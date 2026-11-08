@@ -2000,6 +2000,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div class="section-heading"><h2>مراجعة تدريبات الأكاديمية</h2><p>تظهر إجابات الطلاب هنا لمراجعتها وإرسال الملاحظات</p></div>
     <div id="adminAcademyAssignments" class="grid"><div class="panel">تظهر التدريبات بعد دخول المدير.</div></div>
 
+    <div class="section-heading"><h2>مراجعة المشروعات النهائية</h2><p>تقييم مشروعات الطلاب وإرسال الملاحظات قبل اعتماد إتمام الأكاديمية</p></div>
+    <div id="adminAcademyFinalProjects" class="grid"><div class="panel">تظهر المشروعات بعد دخول المدير.</div></div>
+
     <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
     <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
 
@@ -2425,6 +2428,7 @@ async function adminVerifyAdmin(session){
   await adminLoadMemberProfiles();
   await adminLoadMemberWorks();
   await adminLoadAcademyAssignments();
+  await adminLoadAcademyFinalProjects();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
 }
@@ -2494,6 +2498,53 @@ async function adminReviewAcademyAssignment(id,status){
   }).eq("id",id);
   if(error){alert("تعذر حفظ المراجعة: "+error.message);return;}
   await adminLoadAcademyAssignments();
+}
+
+/* مراجعة المشروعات النهائية للأكاديمية */
+async function adminLoadAcademyFinalProjects(){
+  if(!adminSupabase || !adminSession) return;
+  const box=document.getElementById("adminAcademyFinalProjects");
+  if(!box)return;
+  box.innerHTML="<div class='panel'>جارٍ تحميل مشروعات الطلاب...</div>";
+  const {data,error}=await adminSupabase.from("academy_final_projects")
+    .select("id,user_id,project_title,genre,logline,synopsis,treatment,screenplay,status,admin_feedback,submitted_at")
+    .order("submitted_at",{ascending:false}).limit(100);
+  if(error){box.textContent="تعذر تحميل المشروعات: "+error.message;return;}
+  const pending=(data||[]).filter(item=>["pending","needs_revision"].includes(item.status));
+  if(!pending.length){box.innerHTML="<div class='panel'>لا توجد مشروعات نهائية تنتظر المراجعة.</div>";return;}
+  const userIds=[...new Set(pending.map(item=>item.user_id))];
+  const profiles=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",userIds);
+  const names=new Map((profiles.data||[]).map(item=>[item.user_id,item.display_name]));
+  box.innerHTML=pending.map(item=>`<article class="admin-item">
+    <h3>${adminEscape(item.project_title)}</h3>
+    <p class="admin-status">الطالب: ${adminEscape(names.get(item.user_id)||"عضو")} • ${adminEscape(item.genre)} • ${new Date(item.submitted_at).toLocaleString("ar-EG")}</p>
+    <p><strong>الفكرة:</strong> ${adminEscape(item.logline)}</p>
+    <details class="panel"><summary>قراءة الملخص والمعالجة والسيناريو</summary>
+      <h4>الملخص</h4><div style="white-space:pre-wrap;line-height:1.9">${adminEscape(item.synopsis)}</div>
+      <h4>المعالجة</h4><div style="white-space:pre-wrap;line-height:1.9">${adminEscape(item.treatment)}</div>
+      <h4>السيناريو</h4><div style="white-space:pre-wrap;line-height:1.9;max-height:520px;overflow:auto">${adminEscape(item.screenplay)}</div>
+    </details>
+    <p class="admin-status">الحالة: ${item.status==="needs_revision"?"بانتظار تعديل الطالب":"قيد المراجعة"}</p>
+    <p>${adminEscape(item.admin_feedback||"لا توجد ملاحظات سابقة.")}</p>
+    <div class="admin-actions">
+      <button class="btn primary" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','approved')">اعتماد المشروع</button>
+      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','needs_revision')">طلب تعديل</button>
+      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','rejected')">رفض المشروع</button>
+    </div>
+  </article>`).join("");
+}
+
+async function adminReviewAcademyFinalProject(id,status){
+  if(!adminSupabase || !adminSession)return;
+  const promptText=status==="approved"?"ملاحظات للطالب (اختياري):":status==="needs_revision"?"اكتب التعديلات المطلوبة من الطالب:":"اكتب سبب رفض المشروع:";
+  const feedback=prompt(promptText);
+  if(feedback===null)return;
+  if(status!=="approved"&&!feedback.trim()){alert("اكتب ملاحظة توضح قرار المراجعة.");return;}
+  const {error}=await adminSupabase.from("academy_final_projects").update({
+    status,admin_feedback:feedback.trim()||null,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()
+  }).eq("id",id);
+  if(error){alert("تعذر حفظ المراجعة: "+error.message);return;}
+  await adminLoadAcademyFinalProjects();
 }
 
 /* جلب المحتوى */
