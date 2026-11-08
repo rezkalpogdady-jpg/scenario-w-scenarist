@@ -441,8 +441,11 @@ jobs:
           const curriculum = html.match(/const academyLessons = \[([\s\S]*?)\n\];/);
           const resolver = html.match(/function academyLessonTitles\(materials(?:\s*=\s*publicContentRecords\s*\|\|\s*\[\])?\)\s*\{[\s\S]*?\n\}/);
           const mapper = html.match(/function mapContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
-          if (!curriculum || !resolver || !mapper) throw new Error('Academy lesson index resolver, base curriculum, or record mapper is missing.');
-          const context = vm.createContext({ publicContentRecords: [] });
+          const escape = html.match(/function escapeHTML\(value\)\s*\{[\s\S]*?\n\}/);
+          const safeMedia = html.match(/function safeHttpsMediaUrl\(value\)\s*\{[\s\S]*?\n\}/);
+          const extraMarkup = html.match(/function academyLessonExtraMarkup\(material\)\s*\{[\s\S]*?\n\}/);
+          if (!curriculum || !resolver || !mapper || !escape || !safeMedia || !extraMarkup) throw new Error('Academy lesson index, record mapper, or safe lesson renderer is missing.');
+          const context = vm.createContext({ publicContentRecords: [], URL });
           vm.runInContext(
             'const academyLessons = [' + curriculum[1] + '\n];\n' +
             mapper[0] + '\n' + resolver[0] +
@@ -466,6 +469,20 @@ jobs:
           const mapped = context.mapRecord(context.publicContentRecords[0]);
           if (mapped.content_url !== 'https://cdn.example/lesson.mp4' || mapped.extra.lesson_text !== 'نص الورشة') {
             throw new Error('Lesson detail mapping dropped the published media URL or structured lesson text.');
+          }
+          vm.runInContext(escape[0] + '\\n' + safeMedia[0] + '\\n' + extraMarkup[0] +
+            '\\nthis.renderExtra = academyLessonExtraMarkup;', context);
+          const safeMarkup = context.renderExtra({ extra: {
+            lesson_text: '<img src=x onerror=alert(1)>',
+            resources: [
+              { title: '<script>bad</script>', url: 'https://docs.example/guide' },
+              { title: 'رابط غير آمن', url: 'javascript:alert(1)' }
+            ]
+          }});
+          if (safeMarkup.includes('<img src=x') || safeMarkup.includes('<script>') ||
+              !safeMarkup.includes('&lt;script&gt;bad&lt;/script&gt;') ||
+              safeMarkup.includes('javascript:alert')) {
+            throw new Error('Academy lesson text/resources must be escaped and unsafe resource URLs omitted.');
           }
           const openStart = html.indexOf('function openLesson(index)');
           const openEnd = html.indexOf('function closeLesson()', openStart);
