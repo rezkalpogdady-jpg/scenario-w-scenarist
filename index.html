@@ -670,6 +670,13 @@ function escapeHTML(value){
   }[char]));
 }
 
+/* Safely serialize dynamic values used as arguments in inline HTML handlers. */
+function inlineJsArg(value){
+  const json=JSON.stringify(String(value ?? ""));
+  const body=json.slice(1,-1).replace(/[<>&\\u2028\\u2029]/g,char=>"\\u"+char.charCodeAt(0).toString(16).padStart(4,"0"));
+  return "&quot;"+body+"&quot;";
+}
+
 document.getElementById("librarySearch")?.addEventListener("input",renderLibrary);
 document.getElementById("libraryCategory")?.addEventListener("change",renderLibrary);
 renderLibrary();
@@ -1260,7 +1267,7 @@ function tvCard(channel){
       <div class="feature-content">
         <h3>${escapeHTML(channel.name)}</h3>
         <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        <button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>
+        <button class="btn" onclick="playTVChannel(${inlineJsArg(channel.id)})">مشاهدة القناة</button>
       </div>
     </article>`;
 }
@@ -1298,7 +1305,7 @@ function radioCard(station){
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
         <p>${escapeHTML(station.description || "محطة إذاعية")}</p>
-        <button class="btn" onclick="playRadioStation('${escapeHTML(station.id)}')">استمع الآن</button>
+        <button class="btn" onclick="playRadioStation(${inlineJsArg(station.id)})">استمع الآن</button>
       </div>
     </article>`;
 }
@@ -1546,7 +1553,7 @@ async function chessJoinOnlineGame(code){try{const user=await chessRequireUser()
 function chessReplayOnlineMoves(row){const game=new Chess();try{(Array.isArray(row.moves)?row.moves:[]).forEach(san=>{if(!game.move(san))throw new Error("invalid move");});if(game.fen()!==row.fen)game.load(row.fen);}catch(e){game.load(row.fen);}return game;}
 function chessSubscribeOnline(gameId){if(chessOnlineChannel)chessSupabase().removeChannel(chessOnlineChannel);chessOnlineChannel=chessSupabase().channel("chess-game-"+gameId).on("postgres_changes",{event:"UPDATE",schema:"public",table:"chess_games",filter:"id=eq."+gameId},payload=>{const row=payload.new;if(!row||!chessOnlineGame)return;chessOnlineGame=row;if(row.status==="playing"&&row.black_user_id){const st=document.getElementById("chessOnlineStatus");if(st)st.textContent="انضم لاعب آخر. المباراة بدأت؛ الأبيض يبدأ.";}if(row.fen&&chessGame.fen()!==row.fen){chessGame=chessReplayOnlineMoves(row);chessSelected=null;chessLegalMoves=[];renderChessBoard();chessRenderHistory();chessPlaySound(chessGame.in_check()?"check":"move");chessMessage(chessGame.in_checkmate()?"كش مات! انتهت المباراة.":chessGame.in_draw()?"انتهت المباراة بالتعادل.":"وصلت نقلة جديدة من خصمك.");}if(row.status==="finished")chessMessage(row.result||"انتهت المباراة.");}).subscribe(status=>{const el=document.getElementById("chessOnlineStatus");if(el&&status==="SUBSCRIBED")el.textContent="متصل بالمباراة مباشرة.";else if(el&&status==="CHANNEL_ERROR")el.textContent="تعذر الاتصال اللحظي. تحقق من تفعيل Realtime لجدول chess_games.";});}
 async function chessOnlineSaveMove(){if(!chessOnlineGame||chessOnlineBusy)return;chessOnlineBusy=true;try{const row=chessOnlineGame,finished=chessGame.game_over();const result=chessGame.in_checkmate()?(chessGame.turn()==="w"?"فاز الأسود بكش مات":"فاز الأبيض بكش مات"):chessGame.in_draw()?"تعادل":null;const {data,error}=await chessSupabase().rpc("submit_chess_position",{p_game_id:row.id,p_fen:chessGame.fen(),p_moves:chessGame.history(),p_turn:chessGame.turn(),p_status:finished?"finished":"playing",p_result:result});if(error)throw error;chessOnlineGame=Array.isArray(data)?data[0]:data;}catch(e){chessMessage("تعذر حفظ النقلة: "+(e.message||"تحقق من سياسات قاعدة البيانات."));}finally{chessOnlineBusy=false;}}
-async function chessLoadOpenGames(){const box=document.getElementById("chessOpenGames");if(!box)return;try{await chessRequireUser();const {data,error}=await chessSupabase().from("chess_games").select("id,invite_code,created_at").eq("status","waiting").is("black_user_id",null).order("created_at",{ascending:false}).limit(10);if(error)throw error;box.innerHTML=data?.length?"<h4>تحديات تنتظر لاعبًا</h4>"+data.map(g=>`<div style="padding:8px;border-bottom:1px solid var(--border)"><span dir="ltr">${adminEscape(g.invite_code)}</span> <button class="btn" type="button" onclick="chessJoinOnlineGame('${adminEscape(g.invite_code)}')">انضمام</button></div>`).join(""):"<p style=\"color:var(--muted)\">لا توجد تحديات مفتوحة حاليًا.</p>";}catch(e){box.textContent="تعذر عرض التحديات: "+(e.message||"سجّل الدخول وتأكد من إعداد قاعدة البيانات.");}}
+async function chessLoadOpenGames(){const box=document.getElementById("chessOpenGames");if(!box)return;try{await chessRequireUser();const {data,error}=await chessSupabase().from("chess_games").select("id,invite_code,created_at").eq("status","waiting").is("black_user_id",null).order("created_at",{ascending:false}).limit(10);if(error)throw error;box.innerHTML=data?.length?"<h4>تحديات تنتظر لاعبًا</h4>"+data.map(g=>`<div style="padding:8px;border-bottom:1px solid var(--border)"><span dir="ltr">${adminEscape(g.invite_code)}</span> <button class="btn" type="button" onclick="chessJoinOnlineGame(${inlineJsArg(g.invite_code)})">انضمام</button></div>`).join(""):"<p style=\"color:var(--muted)\">لا توجد تحديات مفتوحة حاليًا.</p>";}catch(e){box.textContent="تعذر عرض التحديات: "+(e.message||"سجّل الدخول وتأكد من إعداد قاعدة البيانات.");}}
 function GenUIChessCopyInvite(){if(window.currentChessInviteCode&&navigator.clipboard?.writeText){navigator.clipboard.writeText(window.currentChessInviteCode).then(()=>chessMessage("تم نسخ كود الدعوة."),()=>chessMessage("انسخ كود الدعوة يدويًا."));}else chessMessage("انسخ كود الدعوة الظاهر يدويًا.");}
 resetChess();
 </script>
@@ -2124,9 +2131,9 @@ async function adminLoadIdeas(){
     <p class="admin-status">${adminEscape(item.work_type)} • ${adminEscape(item.stage||"فكرة أولية")} • صاحب الفكرة: ${adminEscape(item.owner_name||"غير محدد")}</p>
     <p class="admin-status">الحالة: ${adminEscape(item.status)}</p>
     <div class="admin-actions">
-      <button class="btn" onclick="adminSetIdeaStatus('${item.id}','approved')">موافقة</button>
-      <button class="btn" onclick="adminSetIdeaStatus('${item.id}','rejected')">رفض</button>
-      <button class="btn" onclick="adminDeleteIdea('${item.id}')">حذف</button>
+      <button class="btn" onclick="adminSetIdeaStatus(${inlineJsArg(item.id)},'approved')">موافقة</button>
+      <button class="btn" onclick="adminSetIdeaStatus(${inlineJsArg(item.id)},'rejected')">رفض</button>
+      <button class="btn" onclick="adminDeleteIdea(${inlineJsArg(item.id)})">حذف</button>
     </div></article>`).join("");
 }
 async function adminSetIdeaStatus(id,status){
@@ -2152,7 +2159,7 @@ async function adminLoadCommunitySubmissions(){
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
     const details=isTalent?`المجال: ${item.category||""} • المدينة: ${item.city||"غير محددة"}`:`النوع: ${item.category||""} • صاحب المشروع: ${item.owner_name||""}`;
-    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity('${item.id}','approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity('${item.id}','rejected')">رفض</button></div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
   }).join("");
 }
 async function adminReviewCommunity(id,status){
@@ -2173,7 +2180,7 @@ async function adminLoadMemberProfiles(){
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية جديدة للمراجعة.</div>';return;}
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
-  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button></div></article>`).join("");
+  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'rejected')">رفض الملف</button></div></article>`).join("");
 }
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
@@ -2195,7 +2202,7 @@ async function adminLoadMemberWorks(){
       const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
       if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
     }
-    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
   }));
   box.innerHTML=cards.join("");
 }
@@ -2377,8 +2384,8 @@ function adminRenderRecords(){
         • ${item.published ? "منشور" : "مسودة"}
       </p>
       <div class="admin-actions">
-        <button class="btn" onclick="adminEditRecord('${item.id}')">تعديل</button>
-        <button class="btn" onclick="adminDeleteRecord('${item.id}')">حذف</button>
+        <button class="btn" onclick="adminEditRecord(${inlineJsArg(item.id)})">تعديل</button>
+        <button class="btn" onclick="adminDeleteRecord(${inlineJsArg(item.id)})">حذف</button>
       </div>
     </article>
   `).join("");
@@ -2641,7 +2648,7 @@ async function adminLoadScenarioScripts(){
   if(error){if(box)box.textContent="تعذر تحميل المكتبة: "+error.message;return;}
   scenarioScriptRecords=data||[];
   if(!box)return;
-  box.innerHTML=scenarioScriptRecords.length?scenarioScriptRecords.map(item=>`<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.author)} • ${adminEscape(item.category)}</p><p>${item.published?"متاح للأعضاء":"مسودة غير منشورة"}</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript('${item.id}')">تعديل البيانات</button><button class="btn" type="button" onclick="adminToggleScenarioScript('${item.id}',${!item.published})">${item.published?"إيقاف النشر":"نشر للأعضاء"}</button><button class="btn" type="button" onclick="adminDeleteScenarioScript('${item.id}')">حذف</button></div></article>`).join(""):'<p style="color:var(--muted)">لم تتم إضافة سيناريوهات كاملة بعد.</p>';
+  box.innerHTML=scenarioScriptRecords.length?scenarioScriptRecords.map(item=>`<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.author)} • ${adminEscape(item.category)}</p><p>${item.published?"متاح للأعضاء":"مسودة غير منشورة"}</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript(${inlineJsArg(item.id)})">تعديل البيانات</button><button class="btn" type="button" onclick="adminToggleScenarioScript('${item.id}',${!item.published})">${item.published?"إيقاف النشر":"نشر للأعضاء"}</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(${inlineJsArg(item.id)})">حذف</button></div></article>`).join(""):'<p style="color:var(--muted)">لم تتم إضافة سيناريوهات كاملة بعد.</p>';
 }
 function adminEditScenarioScript(id){
   const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
@@ -2713,7 +2720,7 @@ function renderScenarioScriptCards(){
   const category=document.getElementById("libraryCategory")?.value||"";
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
-  const scriptCards=items.map(item=>`<article class="feature"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو كامل للقراءة</div><h3>${escapeHTML(item.title)}</h3><p>المؤلف: ${escapeHTML(item.author)}</p><p>التصنيف: ${escapeHTML(item.category)}</p><p>${escapeHTML(item.summary||"")}</p><button class="btn primary" type="button" onclick="openScenarioScript('${item.id}')">اقرأ السيناريو</button></div></article>`);
+  const scriptCards=items.map(item=>`<article class="feature"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو كامل للقراءة</div><h3>${escapeHTML(item.title)}</h3><p>المؤلف: ${escapeHTML(item.author)}</p><p>التصنيف: ${escapeHTML(item.category)}</p><p>${escapeHTML(item.summary||"")}</p><button class="btn primary" type="button" onclick="openScenarioScript(${inlineJsArg(item.id)})">اقرأ السيناريو</button></div></article>`);
   const legacyCards=legacy.map(item=>`<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<a class="btn" href="${safeHttpUrl(item.file)}" target="_blank" rel="noopener">فتح الملف</a>`:""}</div></article>`);
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
@@ -3296,7 +3303,7 @@ loadApprovedIdeas();
       try{
         const {data,error}=await adminSupabase.from(table).select(selectFields).eq('status','pending').order('created_at',{ascending:false}).limit(100);
         if(error)throw error;
-        box.innerHTML=data?.length?data.map(row=>`<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions"><button class="btn primary" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','approved')">موافقة ونشر</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','rejected')">رفض</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`).join(''):`<div class="panel">لا توجد ${label}ات معلقة.</div>`;
+        box.innerHTML=data?.length?data.map(row=>`<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions"><button class="btn primary" type="button" onclick="adminModerateCommunityItem(${inlineJsArg(table)},${inlineJsArg(row.id)},'approved')">موافقة ونشر</button><button class="btn" type="button" onclick="adminModerateCommunityItem(${inlineJsArg(table)},${inlineJsArg(row.id)},'rejected')">رفض</button><button class="btn" type="button" onclick="adminModerateCommunityItem(${inlineJsArg(table)},${inlineJsArg(row.id)},'delete')">حذف</button></div></article>`).join(''):`<div class="panel">لا توجد ${label}ات معلقة.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
     }
   }
