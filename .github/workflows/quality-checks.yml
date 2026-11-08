@@ -212,7 +212,7 @@ jobs:
           const start = html.indexOf('async function openScenarioScript(');
           const end = html.indexOf('function closeScenarioReader(', start);
           const reader = html.slice(start, end);
-          if (start < 0 || !reader.includes('safeHttpUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}"')) throw new Error('Private scenario iframe must validate its signed URL.');
+          if (start < 0 || !reader.includes('safeHttpUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}#toolbar=0&navpanes=0&view=FitH"')) throw new Error('Private scenario iframe must validate its signed URL.');
           console.log('HTML escaping and private reader URL checks passed.');
           NODE
       - name: Check member data access boundaries in client queries
