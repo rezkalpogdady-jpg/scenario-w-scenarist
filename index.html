@@ -2056,6 +2056,7 @@ function adminConfigReady(){
 /* حسابات الأعضاء: لا تمنح التسجيلات الجديدة صلاحية مدير */
 let accountSupabase=null;
 let accountUser=null;
+let accountProfileRequest=0;
 function accountClient(){
   if(accountSupabase) return accountSupabase;
   if(!window.supabase || !adminConfigReady()) throw new Error("خدمة الحسابات غير متاحة حاليًا.");
@@ -2089,13 +2090,16 @@ function accountShowUser(user,profile){
   if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور ومعتمد. أي تعديل جديد سيعيده للمراجعة." : profile?.profile_status==="rejected" ? "الملف لم يُعتمد. عدّل بياناتك ثم أعد إرساله للمراجعة." : "ملفك قيد المراجعة أو لم يُرسل بعد، ولن يظهر للعامة قبل الموافقة.";
 }
 async function accountLoadProfile(user){
+  const requestId=++accountProfileRequest;
   try{
     const client=accountClient();
     const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",user.id).maybeSingle();
+    if(requestId!==accountProfileRequest)return;
     if(error) throw error;
     accountShowUser(user,data||null);
     await accountLoadMemberWorks();
   }catch(error){
+    if(requestId!==accountProfileRequest)return;
     accountShowUser(user,null);
     accountMessage("تم تسجيل الدخول، لكن تعذر تحميل بيانات الملف الشخصي. تأكد من تنفيذ تحديث قاعدة البيانات.");
     console.warn("member profile",error.message||error);
@@ -2239,7 +2243,7 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
   finally{button.disabled=false;button.textContent="إرسال العمل للمراجعة";}
 });
 document.getElementById("accountLogout")?.addEventListener("click",async()=>{
-  try{const {error}=await accountClient().auth.signOut();if(error)throw error;accountShowUser(null,null);accountMessage("تم تسجيل الخروج.");}
+  try{const {error}=await accountClient().auth.signOut();if(error)throw error;accountProfileRequest++;accountShowUser(null,null);accountMessage("تم تسجيل الخروج.");}
   catch(error){accountMessage("تعذر تسجيل الخروج: "+(error.message||""));}
 });
 /* استقبال رابط استعادة كلمة المرور وتحديث حالة الحساب عند تغير الجلسة */
@@ -2252,6 +2256,7 @@ try{
     }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
+      accountProfileRequest++;
       accountShowUser(null,null);
     }
   });
