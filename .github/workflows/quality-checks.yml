@@ -91,6 +91,7 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
           const sanitizer = html.match(/function sanitizePublicContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
           const mapper = html.match(/function mapContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
           if (!sanitizer || !mapper) throw new Error('Public content sanitizer or mapper is missing.');
