@@ -1257,10 +1257,16 @@ renderProjects();
 let tvChannels = [];
 let radioStations = [];
 
+/* Require an absolute HTTPS source/evidence URL; this is a record, not legal verification. */
+function isAbsoluteHttpsUrl(value){
+  try{const url=new URL(String(value||""));return url.protocol==="https:" && !!url.hostname;}
+  catch(_){return false;}
+}
+
 /* Only entries with an explicit rights declaration and evidence URL can play. */
 function broadcastRightsApproved(item){
   return ["official","licensed"].includes(String(item?.rightsStatus||"").toLowerCase()) &&
-    !!safeHttpUrl(item?.sourceUrl);
+    isAbsoluteHttpsUrl(item?.sourceUrl);
 }
 
 /* إنشاء بطاقة قناة */
@@ -2498,7 +2504,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   }
   if(["tv","radio"].includes(record.content_type) && record.published){
     const rightsStatus=String(record.extra_data.rights_status||"").toLowerCase();
-    const sourceUrl=safeHttpUrl(record.extra_data.source_url||"");
+    const sourceUrl=isAbsoluteHttpsUrl(record.extra_data.source_url||"");
     if(!["official","licensed"].includes(rightsStatus) || !sourceUrl){
       adminSetMessage("adminSaveMessage","لا يمكن نشر قناة أو محطة قبل إضافة rights_status بقيمة official أو licensed، وإضافة source_url لصفحة المصدر الرسمي أو مستند الترخيص داخل البيانات الإضافية.");
       return;
