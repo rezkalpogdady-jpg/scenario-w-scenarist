@@ -2107,7 +2107,8 @@ document.getElementById("accountSignupForm")?.addEventListener("submit",async fu
   const account_type=document.getElementById("accountType").value;
   const email=document.getElementById("accountSignupEmail").value.trim();
   const password=document.getElementById("accountSignupPassword").value;
-  if(!display_name||!account_type||password.length<8){accountMessage("أكمل البيانات واستخدم كلمة مرور من 8 أحرف على الأقل.");return;}
+  const allowedAccountTypes=["writer","director","actor","presenter","voice","producer"];
+  if(!display_name||display_name.length>120||!allowedAccountTypes.includes(account_type)||password.length<8){accountMessage("أكمل البيانات واختر مجالًا صحيحًا واستخدم كلمة مرور من 8 أحرف على الأقل.");return;}
   try{button.disabled=true;accountMessage("جارٍ إنشاء الحساب...");
     const {data,error}=await accountClient().auth.signUp({email,password,options:{data:{display_name,account_type},emailRedirectTo:window.location.href.split("#")[0]}});
     if(error) throw error;
@@ -2142,9 +2143,12 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   const image_url=document.getElementById("accountEditImage").value.trim();
   const work_url=document.getElementById("accountEditWork").value.trim();
   const bio=document.getElementById("accountEditBio").value.trim();
-  if(!display_name){accountMessage("اكتب الاسم الذي سيظهر في ملفك.");return;}
-  if(image_url&&!safeHttpUrl(image_url)){accountMessage("رابط الصورة غير صالح؛ استخدم رابط http أو https.");return;}
-  if(work_url&&!safeHttpUrl(work_url)){accountMessage("رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.");return;}
+  const allowedAccountTypes=["writer","director","actor","presenter","voice","producer"];
+  if(!display_name||display_name.length>120){accountMessage("اكتب اسمًا صحيحًا لا يتجاوز 120 حرفًا.");return;}
+  if(!allowedAccountTypes.includes(account_type)){accountMessage("اختر مجالًا إبداعيًا صحيحًا من القائمة.");return;}
+  if(city.length>120||specialty.length>160||bio.length>2000){accountMessage("تأكد من أطوال المدينة والتخصص والنبذة.");return;}
+  if(image_url&&!safeHttpsMediaUrl(image_url)){accountMessage("رابط الصورة يجب أن يكون HTTPS صالحًا.");return;}
+  if(work_url&&!safeHttpsMediaUrl(work_url)){accountMessage("رابط نموذج العمل يجب أن يكون HTTPS صالحًا.");return;}
   try{button.disabled=true;const client=accountClient();
     const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:image_url||null,work_url:work_url||null,bio,updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(error) throw error;
