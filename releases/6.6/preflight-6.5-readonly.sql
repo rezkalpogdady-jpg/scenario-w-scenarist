@@ -252,3 +252,34 @@ from information_schema.triggers
 where trigger_schema='public'
   and event_object_table in ('member_profiles','member_works')
 order by event_object_table,trigger_name,event_manipulation;
+
+
+-- 10) مكتبة السيناريوهات الكاملة: تحقق قراءة فقط من مساحة PDF الخاصة.
+-- المتوقع: scenario-scripts موجودة و public=false وحد الرفع مناسب (حتى 50 MiB).
+-- يجب أن تسمح سياسات القراءة للأعضاء المسجلين بإنشاء Signed URL فقط،
+-- دون منح anon وصولًا مباشرًا إلى ملفات المكتبة.
+select id,name,public,file_size_limit,allowed_mime_types
+from storage.buckets
+where id='scenario-scripts';
+
+select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+from pg_policies
+where schemaname='storage' and tablename='objects'
+  and (
+    coalesce(qual,'') ilike '%scenario-scripts%'
+    or coalesce(with_check,'') ilike '%scenario-scripts%'
+    or policyname ilike '%scenario%script%'
+  )
+order by policyname;
+
+-- فحص امتيازات سجل المكتبة. الواجهة العامة تقرأ بيانات منشورة فقط،
+-- والملفات نفسها لا تُقرأ إلا عبر Signed URL بعد التحقق من تسجيل الدخول.
+select
+  has_table_privilege('anon','public.scenario_scripts','SELECT') as anon_can_select_metadata,
+  has_table_privilege('authenticated','public.scenario_scripts','SELECT') as authenticated_can_select_metadata,
+  has_table_privilege('authenticated','public.scenario_scripts','INSERT') as authenticated_can_insert,
+  has_table_privilege('authenticated','public.scenario_scripts','UPDATE') as authenticated_can_update,
+  has_table_privilege('authenticated','public.scenario_scripts','DELETE') as authenticated_can_delete;
+
+-- ملاحظة: هذه الاستعلامات لا تغيّر أي إعداد. لا تعتبر bucket آمنًا
+-- قبل مراجعة public=false والسياسات الفعلية ونتائج الوصول بحساب anon وعضو ومدير.
