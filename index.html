@@ -1909,6 +1909,19 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <textarea id="adminLessonResources" rows="3" dir="ltr" placeholder='[{"title":"ملف التدريب","url":"https://..."}]'></textarea>
         </div>
 
+        <div id="adminBroadcastFields" class="panel" style="display:none;margin:14px 0">
+          <h3 style="color:var(--gold)">بيانات مصدر البث وحقوق العرض</h3>
+          <p style="font-size:13px;color:var(--muted)">لا تضع رابطًا إلا إذا كان صادرًا عن الجهة المالكة أو لديك إذن باستخدامه. تسجيل البيانات لا يُعد إثباتًا قانونيًا للترخيص؛ راجع المصدر قبل النشر.</p>
+          <label>حالة المصدر</label>
+          <select id="adminBroadcastRights">
+            <option value="">لم يتم التحقق بعد</option>
+            <option value="official">مصدر رسمي</option>
+            <option value="licensed">مرخص للاستخدام</option>
+          </select>
+          <label>رابط مرجع المصدر أو الترخيص (HTTPS)</label>
+          <input id="adminBroadcastSource" type="url" placeholder="https://الموقع-الرسمي-أو-مرجع-الترخيص">
+        </div>
+
         <label>بيانات إضافية متقدمة (JSON) — اختيارية</label>
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
         <p style="font-size:12px;color:var(--muted)">تُستخدم البيانات المتقدمة للأقسام الأخرى أو للحقول غير المتاحة في النموذج. لنشر قناة أو محطة، أضف <code>rights_status</code> بقيمة <code>official</code> أو <code>licensed</code> و<code>source_url</code> لمرجع الحقوق؛ ويجب أن يكون رابط البث نفسه في الحقل أعلاه HTTPS. وجود الروابط وحده لا يثبت الترخيص؛ على الإدارة التحقق منه.</p>
@@ -2626,6 +2639,24 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     }else delete record.extra_data.resources;
   }
 
+  if(["tv","radio"].includes(record.content_type)){
+    const rights=document.getElementById("adminBroadcastRights")?.value||"";
+    const source=document.getElementById("adminBroadcastSource")?.value.trim()||"";
+    if(record.published && (!["official","licensed"].includes(rights)||!isAbsoluteHttpsUrl(source))){
+      adminSetMessage("adminSaveMessage","قبل نشر قناة أو محطة، اختر مصدرًا رسميًا أو مرخصًا وأدخل رابط مرجع HTTPS صالحًا.");
+      return;
+    }
+    if(rights)record.extra_data.rights_status=rights;
+    else delete record.extra_data.rights_status;
+    if(source){
+      if(!isAbsoluteHttpsUrl(source)){
+        adminSetMessage("adminSaveMessage","رابط مرجع المصدر يجب أن يبدأ بـ HTTPS.");
+        return;
+      }
+      record.extra_data.source_url=source.slice(0,2048);
+    }else delete record.extra_data.source_url;
+  }
+
   if(!record.title){
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
     return;
@@ -2728,6 +2759,8 @@ function adminEditRecord(id){
   document.getElementById("adminLessonExercise").value=itemExtra.exercise||"";
   document.getElementById("adminLessonHomework").value=itemExtra.homework||"";
   document.getElementById("adminLessonResources").value=Array.isArray(itemExtra.resources)?JSON.stringify(itemExtra.resources,null,2):"";
+  document.getElementById("adminBroadcastRights").value=itemExtra.rights_status||"";
+  document.getElementById("adminBroadcastSource").value=itemExtra.source_url||"";
   adminSyncAcademyFieldsVisibility();
   document.getElementById("adminPublished").checked=!!item.published;
 
@@ -2820,7 +2853,7 @@ function adminResetForm(){
   document.getElementById("adminRecordId").value="";
   const extra=document.getElementById("adminExtraData");
   if(extra) extra.value="";
-  ["adminLessonOrder","adminLessonText","adminLessonObjectives","adminLessonExercise","adminLessonHomework","adminLessonResources"].forEach(id=>{const field=document.getElementById(id);if(field)field.value="";});
+  ["adminLessonOrder","adminLessonText","adminLessonObjectives","adminLessonExercise","adminLessonHomework","adminLessonResources","adminBroadcastRights","adminBroadcastSource"].forEach(id=>{const field=document.getElementById(id);if(field)field.value="";});
   adminSyncAcademyFieldsVisibility();
   const preview=document.getElementById("adminAcademyPreview");
   if(preview)preview.style.display="none";
@@ -2830,8 +2863,11 @@ function adminResetForm(){
 }
 
 function adminSyncAcademyFieldsVisibility(){
+  const type=document.getElementById("adminContentType")?.value||"";
   const fields=document.getElementById("adminAcademyFields");
-  if(fields)fields.style.display=document.getElementById("adminContentType")?.value==="academy"?"block":"none";
+  if(fields)fields.style.display=type==="academy"?"block":"none";
+  const broadcast=document.getElementById("adminBroadcastFields");
+  if(broadcast)broadcast.style.display=["tv","radio"].includes(type)?"block":"none";
 }
 function adminRenderAcademyPreview(){
   const panel=document.getElementById("adminAcademyPreview");
