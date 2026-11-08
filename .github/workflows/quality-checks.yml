@@ -212,8 +212,14 @@ jobs:
           const start = html.indexOf('async function openScenarioScript(');
           const end = html.indexOf('function closeScenarioReader(', start);
           const reader = html.slice(start, end);
-          if (start < 0 || !reader.includes('safeHttpUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}#toolbar=0&navpanes=0&view=FitH"')) throw new Error('Private scenario iframe must validate its signed URL.');
-          console.log('HTML escaping and private reader URL checks passed.');
+          if (start < 0 || !reader.includes('safeHttpsMediaUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}#toolbar=0&navpanes=0&view=FitH"')) throw new Error('Private scenario iframe must validate its signed URL over HTTPS.');
+          const uploadStart = html.indexOf('document.getElementById("adminScenarioScriptForm")?.addEventListener');
+          const uploadEnd = html.indexOf('async function loadPublishedScenarioScripts(', uploadStart);
+          const upload = html.slice(uploadStart, uploadEnd);
+          for (const required of ['file.slice(0,5).arrayBuffer()', 'signature[0]!==0x25', 'signature[1]!==0x50', 'signature[2]!==0x44', 'signature[3]!==0x46', 'signature[4]!==0x2D', 'file.size>50*1024*1024', 'if(!title||!author)']) {
+            if (!upload.includes(required)) throw new Error('Scenario PDF upload safeguard missing: ' + required);
+          }
+          console.log('HTML escaping, private HTTPS reader, and PDF signature validation checks passed.');
           NODE
       - name: Check member data access boundaries in client queries
         shell: bash
