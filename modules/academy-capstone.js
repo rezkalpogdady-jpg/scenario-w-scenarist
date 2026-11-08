@@ -115,7 +115,7 @@
     const feedback=document.getElementById('capstoneFeedback');
     if (!state || !eligibility || !form) return;
 
-    if (!window.accountUser) {
+    if (!accountUser) {
       state.textContent='سجّل الدخول أولًا حتى تحفظ مشروعك.';
       eligibility.textContent='يمكنك الاطلاع على متطلبات المشروع، لكن الحفظ والإرسال متاحان للأعضاء المسجلين.';
       form.style.display='none';
@@ -124,7 +124,7 @@
     form.style.display='block';
 
     try {
-      const client=window.accountClient();
+      const client=accountClient();
       const [progressResult, assignmentsResult, projectResult] = await Promise.all([
         client.from('academy_progress').select('lesson_number').eq('user_id',accountUser.id).eq('completed',true),
         client.from('academy_assignments').select('lesson_number,status').eq('user_id',accountUser.id),
@@ -161,7 +161,7 @@
 
   async function saveStudent(status) {
     const message=document.getElementById('capstoneMessage');
-    if (!window.accountUser) { if(message)message.textContent='سجّل الدخول أولًا.'; return; }
+    if (!accountUser) { if(message)message.textContent='سجّل الدخول أولًا.'; return; }
     const data=getFormData();
     const required=[
       ['project_title',2,200,'عنوان المشروع'],
@@ -197,7 +197,7 @@
   }
 
   async function loadAdmin() {
-    if (!window.adminSupabase || !window.adminSession) return;
+    if (!adminSupabase || !adminSession) return;
     const box=document.getElementById('adminFinalProjectsList');
     if (!box) return;
     box.innerHTML='<div class="panel">جارٍ تحميل مشروعات التخرج...</div>';
@@ -252,7 +252,7 @@
       saveStudent('pending');
     });
     await loadStudent();
-    if (window.adminSession) await loadAdmin();
+    if (adminSession) await loadAdmin();
 
     try {
       accountClient().auth.onAuthStateChange((event,session)=>{
@@ -265,7 +265,7 @@
     const dashboard=document.getElementById('adminDashboard');
     if (dashboard && window.MutationObserver) {
       const observer=new MutationObserver(()=>{
-        if (window.adminSession && dashboard.style.display!=='none') loadAdmin();
+        if (adminSession && dashboard.style.display!=='none') loadAdmin();
       });
       observer.observe(dashboard,{attributes:true,attributeFilter:['style']});
     }
