@@ -1318,6 +1318,12 @@ function broadcastRightsApproved(item){
 /* إنشاء بطاقة قناة */
 function tvCard(channel){
   const approved=broadcastRightsApproved(channel);
+  const playable=approved && !!safeHttpsMediaUrl(channel.stream);
+  const status=playable
+    ? "المصدر موثق ورابط البث الآمن متاح"
+    : !approved
+      ? "البث متوقف لحين توثيق المصدر وحقوق العرض"
+      : "تم تسجيل المصدر، لكن رابط البث الآمن غير متاح بعد";
   return `
     <article class="feature">
       ${channel.image
@@ -1326,8 +1332,8 @@ function tvCard(channel){
       <div class="feature-content">
         <h3>${escapeHTML(channel.name)}</h3>
         <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        <p>${approved ? "بيانات المصدر والترخيص مسجلة لدى الإدارة" : "البث متوقف لحين توثيق المصدر وحقوق العرض"}</p>
-        <button class="btn" ${approved ? "" : "disabled"} onclick="playTVChannel(${inlineJsArg(channel.id)})">${approved ? "مشاهدة القناة" : "غير متاحة حاليًا"}</button>
+        <p>${status}</p>
+        <button class="btn" ${playable ? "" : "disabled"} onclick="playTVChannel(${inlineJsArg(channel.id)})">${playable ? "مشاهدة القناة" : "غير متاحة حاليًا"}</button>
       </div>
     </article>`;
 }
@@ -1358,6 +1364,12 @@ function renderTVChannels(){
 /* بطاقات الراديو */
 function radioCard(station){
   const approved=broadcastRightsApproved(station);
+  const playable=approved && !!safeHttpsMediaUrl(station.stream);
+  const status=playable
+    ? "المصدر موثق ورابط البث الآمن متاح"
+    : !approved
+      ? "البث متوقف لحين توثيق المصدر وحقوق العرض"
+      : "تم تسجيل المصدر، لكن رابط البث الآمن غير متاح بعد";
   return `
     <article class="feature">
       ${station.image
@@ -1366,8 +1378,8 @@ function radioCard(station){
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
         <p>${escapeHTML(station.description || "محطة إذاعية")}</p>
-        <p>${approved ? "بيانات المصدر والترخيص مسجلة لدى الإدارة" : "البث متوقف لحين توثيق المصدر وحقوق العرض"}</p>
-        <button class="btn" ${approved ? "" : "disabled"} onclick="playRadioStation(${inlineJsArg(station.id)})">${approved ? "استمع الآن" : "غير متاحة حاليًا"}</button>
+        <p>${status}</p>
+        <button class="btn" ${playable ? "" : "disabled"} onclick="playRadioStation(${inlineJsArg(station.id)})">${playable ? "استمع الآن" : "غير متاحة حاليًا"}</button>
       </div>
     </article>`;
 }
