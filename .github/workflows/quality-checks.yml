@@ -409,20 +409,13 @@ jobs:
             throw new Error('Public site content query must not select every column.');
           }
           const vm = require('node:vm');
-          function extractFunction(name) {
-            const escaped = name.replace(/[.*+?^\\{}()|[\]\\]/g, '\u005c\          if (/\.from\("site_content"\)\s*\.select\("\*"\)\s*\.eq\("published",true\)/.test(html)) {
-            throw new Error('Public site content query must not select every column.');
-          }
-          console.log('Secure media and academy publishing checks passed.');');
-            const match = html.match(new RegExp('function ' + escaped + '\\([^\\n]*\\)\\s*\\{[\\s\\S]*?\\n\\}'));
-            if (!match) throw new Error('Missing function for runtime data-flow test: ' + name);
-            return match[0];
-          }
+          const sanitizer = html.match(/function sanitizePublicContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
+          const mapper = html.match(/function mapContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
+          if (!sanitizer || !mapper) throw new Error('Public content sanitizer or mapper is missing.');
           const runtime = vm.createContext({});
           vm.runInContext(
-            extractFunction('sanitizePublicContentRecord') + '\\n' +
-            extractFunction('mapContentRecord') +
-            '\\nthis.sanitize = sanitizePublicContentRecord; this.map = mapContentRecord;',
+            sanitizer[0] + '\n' + mapper[0] +
+            '\nthis.sanitize = sanitizePublicContentRecord; this.map = mapContentRecord;',
             runtime
           );
           const publicRecord = runtime.sanitize({
