@@ -325,6 +325,28 @@ jobs:
           }
           console.log('Member work upload validation checks passed.');
           NODE
+      - name: Check member profile re-review trigger migration
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const sql = fs.readFileSync('releases/6.6/member-profile-review-trigger.sql', 'utf8');
+          const required = [
+            'security invoker',
+            'set search_path = pg_catalog, public, auth',
+            'auth.uid() = old.user_id',
+            "-> 'app_metadata' ->> 'role'",
+            "new.profile_status := 'pending'",
+            'new.updated_at := now()',
+            'before update of display_name, account_type, bio, city, specialty, image_url, work_url',
+            'revoke all on function'
+          ];
+          for (const snippet of required) {
+            if (!sql.toLowerCase().includes(snippet.toLowerCase())) throw new Error('Missing profile review safeguard: ' + snippet);
+          }
+          if (/drop\\s+table|delete\\s+from|truncate\\s+table/i.test(sql)) throw new Error('Unexpected destructive SQL in profile trigger migration.');
+          console.log('Member profile re-review migration static checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
