@@ -255,6 +255,31 @@ jobs:
           if (!gate.includes('adminDashboard").style.display="none"')) throw new Error('Non-admin users must not see the admin dashboard.');
           console.log('Admin dashboard client-side role gate checks passed; database authorization must still be verified independently.');
           NODE
+      - name: Check admin upload extension and MIME allowlist
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const match = html.match(/function validateAdminUploadFile\\(file\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          if (!match) throw new Error('Upload validator is missing.');
+          const validate = vm.runInNewContext(match[0] + '; validateAdminUploadFile');
+          const cases = [
+            [{name:'photo.jpg',type:'image/jpeg',size:1024}, true],
+            [{name:'script.jpg',type:'text/html',size:1024}, false],
+            [{name:'movie.mp4',type:'video/mp4',size:1024}, true],
+            [{name:'fake.exe',type:'application/octet-stream',size:1024}, false],
+            [{name:'large.pdf',type:'application/pdf',size:51*1024*1024}, false],
+            [{name:'empty.pdf',type:'application/pdf',size:0}, false],
+            [{name:'script.pdf',type:'text/html',size:1024}, false]
+          ];
+          for (const [file, expected] of cases) {
+            let accepted = true; try { validate(file); } catch (_) { accepted = false; }
+            if (accepted !== expected) throw new Error('Unexpected upload validation result for ' + file.name);
+          }
+          console.log('Admin upload extension/MIME allowlist checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
