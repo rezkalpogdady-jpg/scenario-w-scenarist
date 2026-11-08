@@ -839,7 +839,7 @@ renderLibrary();
 
   <div class="panel">
     <h3 style="color:var(--gold)">بيانات الفيلم المعروض</h3>
-    <p>كل فيلم يمكن أن يحتوي على عنوانه، وصورته، واسم المخرج، والكاتب، ومدة العرض، وسنة الإنتاج، ووصف مختصر، ورابط مشاهدة مصرح به.</p>
+    <p>تُضاف بيانات الفيلم من لوحة الإدارة ضمن قسم «الأفلام القصيرة». في حقل JSON يمكن إدخال director وwriter وduration وproduction_year، ولإظهار رابط المشاهدة يجب إدخال rights_status بقيمة owner أو official أو licensed مع source_url صالح يبدأ بـ HTTPS. لا يظهر رابط الفيلم قبل توثيق حق العرض.</p>
   </div>
 </section>
 
@@ -933,11 +933,27 @@ function renderTalents(){
 
 /* عرض الأفلام القصيرة */
 function renderShortFilms(){
-  const box = document.getElementById("shortFilmsItems");
-  if(!box) return;
-  box.innerHTML = creativeProfiles.shorts.length
-    ? creativeProfiles.shorts.map(x=>profileCard(x,"shorts")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">شاشة الأفلام القصيرة في انتظار الأعمال المشاركة.</div>`;
+  const box=document.getElementById("shortFilmsItems");
+  if(!box)return;
+  const items=creativeProfiles.shorts;
+  box.innerHTML=items.length?items.map(item=>{
+    const imageUrl=safeHttpsMediaUrl(item.image);
+    const workUrl=safeHttpsMediaUrl(item.work);
+    const rightsApproved=["owner","official","licensed"].includes(String(item.rightsStatus||"").toLowerCase())&&!!safeHttpsMediaUrl(item.sourceUrl);
+    const image=imageUrl
+      ? `<img src="${escapeHTML(imageUrl)}" alt="ملصق فيلم ${escapeHTML(item.title||item.name||"")}" loading="lazy" referrerpolicy="no-referrer">`
+      : `<div style="height:170px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:42px">🎬</div>`;
+    const meta=[
+      item.director?`المخرج: ${escapeHTML(item.director)}`:"",
+      item.writer?`الكاتب: ${escapeHTML(item.writer)}`:"",
+      item.duration?`المدة: ${escapeHTML(item.duration)}`:"",
+      item.productionYear?`سنة الإنتاج: ${escapeHTML(item.productionYear)}`:""
+    ].filter(Boolean).map(value=>`<p>${value}</p>`).join("");
+    const watch=workUrl&&rightsApproved
+      ? `<a class="btn primary" href="${escapeHTML(workUrl)}" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a><p style="font-size:11px;color:var(--muted)">المصدر/إذن العرض: <a href="${escapeHTML(safeHttpsMediaUrl(item.sourceUrl))}" target="_blank" rel="noopener noreferrer">مرجع التحقق</a></p>`
+      : `<p style="font-size:12px;color:var(--muted)">بيانات الفيلم منشورة، لكن رابط المشاهدة لن يظهر قبل توثيق حق العرض ومصدره.</p>`;
+    return `<article class="feature">${image}<div class="feature-content"><h3>${escapeHTML(item.title||item.name||"فيلم قصير")}</h3>${meta}<p>${escapeHTML(item.description||item.bio||"")}</p>${watch}</div></article>`;
+  }).join(""):`<div class="panel" style="grid-column:1/-1;text-align:center">شاشة الأفلام القصيرة في انتظار الأعمال المشاركة.</div>`;
 }
 
 /* إظهار نموذج تسجيل موهبة */
@@ -3246,7 +3262,11 @@ function mapContentRecord(item){
     type:extra.type || item.category || "",
     city:extra.city || "",
     director:extra.director || "",
+    writer:extra.writer || extra.author || "",
     duration:extra.duration || "",
+    productionYear:extra.production_year || extra.year || "",
+    rightsStatus:String(extra.rights_status || "").toLowerCase(),
+    sourceUrl:extra.source_url || "",
     owner:extra.owner || "",
     description:item.description || "",
     summary:item.description || "",
