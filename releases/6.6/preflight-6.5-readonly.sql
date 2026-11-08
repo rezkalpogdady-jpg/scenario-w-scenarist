@@ -278,3 +278,39 @@ select
 
 -- ملاحظة: هذه الاستعلامات لا تغيّر أي إعداد. لا تعتبر bucket آمنًا
 -- قبل مراجعة public=false والسياسات الفعلية ونتائج الوصول بحساب anon وعضو ومدير.
+
+
+-- 11) وجود جدول مكتبة السيناريوهات وتفعيل RLS عليه.
+-- يعرض صفًا واحدًا حتى لو لم يوجد الجدول، لتسهيل اكتشاف غياب الإعداد.
+select
+  to_regclass('public.scenario_scripts') as scenario_scripts_table,
+  coalesce(c.relrowsecurity,false) as rls_enabled,
+  coalesce(c.relforcerowsecurity,false) as rls_forced
+from (select 1) seed
+left join pg_class c on c.oid=to_regclass('public.scenario_scripts');
+
+-- 12) جميع سياسات RLS الخاصة بجدول السيناريوهات، إن وُجدت.
+select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+from pg_policies
+where schemaname='public' and tablename='scenario_scripts'
+order by policyname;
+
+-- 13) صلاحيات الأدوار على جدول المكتبة.
+-- راجعها مع السياسات: anon يجب ألا يستطيع الكتابة أو قراءة storage_path،
+-- والأعضاء لا يملكون إدارة السجلات أو تغيير حالة النشر.
+select
+  has_table_privilege('anon','public.scenario_scripts','SELECT') as anon_can_select_metadata,
+  has_table_privilege('anon','public.scenario_scripts','INSERT') as anon_can_insert,
+  has_table_privilege('anon','public.scenario_scripts','UPDATE') as anon_can_update,
+  has_table_privilege('anon','public.scenario_scripts','DELETE') as anon_can_delete,
+  has_table_privilege('authenticated','public.scenario_scripts','SELECT') as authenticated_can_select,
+  has_table_privilege('authenticated','public.scenario_scripts','INSERT') as authenticated_can_insert,
+  has_table_privilege('authenticated','public.scenario_scripts','UPDATE') as authenticated_can_update,
+  has_table_privilege('authenticated','public.scenario_scripts','DELETE') as authenticated_can_delete;
+
+-- 14) امتيازات الأعمدة الحساسة: مسار التخزين وحالة النشر.
+select
+  has_column_privilege('anon','public.scenario_scripts','storage_path','SELECT') as anon_can_read_storage_path,
+  has_column_privilege('authenticated','public.scenario_scripts','storage_path','SELECT') as authenticated_can_read_storage_path,
+  has_column_privilege('authenticated','public.scenario_scripts','published','UPDATE') as authenticated_can_update_published,
+  has_column_privilege('authenticated','public.scenario_scripts','storage_path','UPDATE') as authenticated_can_update_storage_path;
