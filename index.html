@@ -483,9 +483,15 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     <p>30 محاضرة من البداية إلى الاحتراف</p>
   </div>
 
+  <div class="panel" id="academyStudentProgress" style="display:none">
+    <h3 style="color:var(--gold)">متابعة تقدمك في الأكاديمية</h3>
+    <p id="academyProgressText">جارٍ تحميل تقدمك...</p>
+    <div style="height:10px;background:#292929;border-radius:20px;overflow:hidden"><div id="academyProgressBar" style="height:100%;width:0;background:var(--gold);transition:width .25s"></div></div>
+  </div>
+
   <div class="panel">
     <h3 style="color:var(--gold)">ابدأ من الأساسيات</h3>
-    <p>كل محاضرة لها شرح مكتوب، ومساحة للفيديو التعليمي، وتدريب تطبيقي. ستتم إضافة محتوى المحاضرات والفيديوهات من لوحة الإدارة في الجزء الخاص بها.</p>
+    <p>كل محاضرة لها شرح مكتوب، ومساحة للفيديو التعليمي، وتدريب تطبيقي. سجّل دخولك لحفظ تقدمك وتسليم التدريبات.</p>
     <div id="lessonsList" class="grid"></div>
   </div>
 
@@ -601,23 +607,108 @@ function renderLessonIndex(materials = []){
   }).join("");
 }
 
-function openLesson(index){
+async function openLesson(index){
   const lesson=academyLessons[index];
   if(!lesson) return;
+  const lessonNumber=index+1;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
   const dialog=document.getElementById("lessonDialog");
   const title=document.getElementById("lessonDialogTitle");
   const body=document.getElementById("lessonDialogBody");
   if(!dialog||!title||!body) return;
-  title.textContent=`المحاضرة ${index+1}: ${lesson}`;
+  title.textContent=`المحاضرة ${lessonNumber}: ${lesson}`;
   const lessonBody=material && material.extra_data && typeof material.extra_data.body==="string" ? material.extra_data.body : "";
   const formattedBody=lessonBody ? `<div class="lesson-content" style="line-height:2;white-space:pre-wrap;margin:18px 0">${escapeHTML(lessonBody)}</div>` : "";
   body.innerHTML=material
     ? `<p>${escapeHTML(material.description||"")}</p>${formattedBody}${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
-    : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
+    : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p>`;
+  body.insertAdjacentHTML("beforeend",`<section class="panel" style="margin-top:22px">
+    <h3 style="color:var(--gold)">تدريب المحاضرة ${lessonNumber}</h3>
+    <p>اكتب إجابتك أو تطبيقك العملي هنا، وسيُحفظ في حسابك لتراجعه الإدارة.</p>
+    <div id="academyLessonAccountState" style="color:var(--muted)">جارٍ التحقق من حسابك...</div>
+    <div id="academyLessonControls"></div>
+    <div id="academyAssignmentHistory"></div>
+  </section>`);
   dialog.style.display="block";
   initializeInlineHlsVideos(dialog);
   dialog.scrollIntoView({behavior:"smooth",block:"start"});
+  await loadAcademyLessonWorkspace(lessonNumber);
+}
+
+async function loadAcademyLessonWorkspace(lessonNumber){
+  const state=document.getElementById("academyLessonAccountState");
+  const controls=document.getElementById("academyLessonControls");
+  const history=document.getElementById("academyAssignmentHistory");
+  if(!state||!controls||!history) return;
+  if(!accountUser){
+    state.textContent="يجب تسجيل الدخول أولًا حتى تحفظ تقدمك وترسل التدريب.";
+    controls.innerHTML='<button class="btn" type="button" onclick="showPage(\'account\')">الانتقال إلى حساب العضوية</button>';
+    return;
+  }
+  try{
+    const client=accountClient();
+    const [progressResult,assignmentResult]=await Promise.all([
+      client.from("academy_progress").select("completed").eq("user_id",accountUser.id).eq("lesson_number",lessonNumber).maybeSingle(),
+      client.from("academy_assignments").select("id,status,admin_feedback,submitted_at").eq("user_id",accountUser.id).eq("lesson_number",lessonNumber).order("submitted_at",{ascending:false}).limit(5)
+    ]);
+    if(progressResult.error) throw progressResult.error;
+    if(assignmentResult.error) throw assignmentResult.error;
+    const completed=!!progressResult.data?.completed;
+    state.textContent="أنت مسجل الدخول: "+(accountUser.email||"عضو المنصة");
+    controls.innerHTML=`<button class="btn ${completed?"primary":""}" type="button" onclick="academyMarkLessonComplete(${lessonNumber})">${completed?"تم تسجيل إتمام المحاضرة ✓":"تسجيل إتمام المحاضرة"}</button>
+      <form id="academyAssignmentForm" style="margin-top:16px">
+        <label for="academyAssignmentAnswer">إجابتك على التدريب</label>
+        <textarea id="academyAssignmentAnswer" maxlength="12000" required rows="6" placeholder="اكتب إجابتك هنا..." style="width:100%;margin:8px 0"></textarea>
+        <button class="btn primary" type="submit">إرسال التدريب للمراجعة</button>
+      </form>
+      <p id="academyAssignmentMessage" aria-live="polite"></p>`;
+    history.innerHTML=assignmentResult.data?.length ? '<h4 style="color:var(--gold)">آخر تسليماتك</h4>'+assignmentResult.data.map(item=>`<div class="panel"><strong>${item.status==="approved"?"تمت الموافقة":item.status==="needs_revision"?"مطلوب تعديل":"قيد المراجعة"}</strong><p>${escapeHTML(item.admin_feedback||"لا توجد ملاحظات من الإدارة حتى الآن.")}</p><small>${new Date(item.submitted_at).toLocaleString("ar-EG")}</small></div>`).join("") : "<p>لم ترسل تدريبًا لهذه المحاضرة بعد.</p>";
+    document.getElementById("academyAssignmentForm")?.addEventListener("submit",async event=>{
+      event.preventDefault();
+      const answer=document.getElementById("academyAssignmentAnswer").value.trim();
+      const button=event.currentTarget.querySelector('button[type="submit"]');
+      const message=document.getElementById("academyAssignmentMessage");
+      if(!answer){message.textContent="اكتب إجابتك قبل الإرسال.";return;}
+      button.disabled=true;message.textContent="جارٍ إرسال التدريب...";
+      try{
+        const {error}=await client.from("academy_assignments").insert({user_id:accountUser.id,lesson_number:lessonNumber,answer});
+        if(error) throw error;
+        message.textContent="تم حفظ التدريب وإرساله للمراجعة.";
+        await loadAcademyLessonWorkspace(lessonNumber);
+      }catch(error){message.textContent="تعذر إرسال التدريب: "+(error.message||"حاول مرة أخرى.");}
+      finally{button.disabled=false;}
+    });
+  }catch(error){
+    state.textContent="تعذر تحميل مساحة التدريب: "+(error.message||"تحقق من اتصالك.");
+  }
+}
+
+async function academyMarkLessonComplete(lessonNumber){
+  if(!accountUser){alert("سجل الدخول أولًا.");return;}
+  try{
+    const {error}=await accountClient().from("academy_progress").upsert({
+      user_id:accountUser.id,lesson_number:lessonNumber,completed:true,completed_at:new Date().toISOString(),updated_at:new Date().toISOString()
+    },{onConflict:"user_id,lesson_number"});
+    if(error) throw error;
+    await renderAcademyProgressSummary();
+    await loadAcademyLessonWorkspace(lessonNumber);
+  }catch(error){alert("تعذر حفظ التقدم: "+(error.message||"حاول مرة أخرى."));}
+}
+
+async function renderAcademyProgressSummary(){
+  const panel=document.getElementById("academyStudentProgress");
+  const label=document.getElementById("academyProgressText");
+  const bar=document.getElementById("academyProgressBar");
+  if(!panel||!label||!bar) return;
+  if(!accountUser){panel.style.display="none";return;}
+  panel.style.display="block";
+  try{
+    const {data,error}=await accountClient().from("academy_progress").select("lesson_number").eq("user_id",accountUser.id).eq("completed",true);
+    if(error) throw error;
+    const count=new Set((data||[]).map(row=>row.lesson_number)).size;
+    label.textContent=`أنهيت ${count} من 30 محاضرة (${Math.round(count/30*100)}٪).`;
+    bar.style.width=(count/30*100)+"%";
+  }catch(error){label.textContent="تعذر تحميل نسبة التقدم حاليًا.";}
 }
 
 function closeLesson(){
@@ -1961,6 +2052,7 @@ async function accountLoadProfile(user){
     const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",user.id).maybeSingle();
     if(error) throw error;
     accountShowUser(user,data||null);
+    await renderAcademyProgressSummary();
     await accountLoadMemberWorks();
   }catch(error){
     accountShowUser(user,null);
@@ -2095,6 +2187,7 @@ try{
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
       accountShowUser(null,null);
+      renderAcademyProgressSummary();
     }
   });
 }catch(error){console.warn("account auth listener",error.message||error);}
