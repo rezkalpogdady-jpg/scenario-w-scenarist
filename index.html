@@ -2228,10 +2228,26 @@ async function adminReviewMemberWork(id,status){
     if(uploadError){alert("تعذر نقل الملف إلى المكتبة العامة: "+uploadError.message);return;}
     publicUrl=adminSupabase.storage.from("site-media").getPublicUrl(uploaded.path).data.publicUrl;
   }
-  const {error}=await adminSupabase.rpc("admin_review_member_work",{p_work_id:id,p_status:status,p_public_url:publicUrl});
-  if(error){if(publicPath)await adminSupabase.storage.from("site-media").remove([publicPath]);alert("تعذرت مراجعة العمل: "+error.message);return;}
-  if(work.storage_path)await adminSupabase.storage.from("member-submissions").remove([work.storage_path]);
-  alert(status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل.");
+  let reviewError=null;
+  try{
+    const {error}=await adminSupabase.rpc("admin_review_member_work",{p_work_id:id,p_status:status,p_public_url:publicUrl});
+    reviewError=error||null;
+  }catch(error){reviewError=error;}
+  if(reviewError){
+    let cleanupNote="";
+    if(publicPath){
+      const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([publicPath]);
+      if(cleanupError)cleanupNote=" وتعذر تنظيف النسخة العامة المؤقتة: "+cleanupError.message;
+    }
+    alert("تعذرت مراجعة العمل: "+(reviewError.message||"خطأ غير معروف")+cleanupNote);
+    return;
+  }
+  let privateCleanupWarning="";
+  if(work.storage_path){
+    const {error:removeError}=await adminSupabase.storage.from("member-submissions").remove([work.storage_path]);
+    if(removeError)privateCleanupWarning=" تمت المراجعة، لكن تعذر تنظيف النسخة الخاصة الأصلية: "+removeError.message;
+  }
+  alert((status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل.")+privateCleanupWarning);
   await adminLoadMemberWorks();await adminLoadRecords();await loadPublicContent();
 }
 
