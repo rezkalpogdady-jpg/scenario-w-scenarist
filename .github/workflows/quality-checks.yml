@@ -294,6 +294,10 @@ jobs:
             'if(!["official","licensed"].includes(rightsStatus) || !sourceUrl || !streamUrl)',
             'if(!channel || !broadcastRightsApproved(channel))',
             'if(!station || !broadcastRightsApproved(station))',
+            'const nowTitle=document.getElementById("tvNowTitle")',
+            'const instance=new Hls();',
+            'if(activeHlsPlayer===instance) activeHlsPlayer=null;',
+            'if(activeRadioHlsPlayer===instance) activeRadioHlsPlayer=null;',
             'البث متوقف لحين توثيق المصدر وحقوق العرض'
           ];
           for (const snippet of required) {
