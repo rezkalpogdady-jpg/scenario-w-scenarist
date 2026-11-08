@@ -2236,7 +2236,7 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
   const file=document.getElementById("memberWorkFile")?.files?.[0]||null;
   const work_url=document.getElementById("memberWorkUrl").value.trim();
   if(!file && !work_url){accountMessage("ارفع ملف العمل أو أضف رابطًا خارجيًا.");return;}
-  if(work_url && !safeHttpUrl(work_url)){accountMessage("رابط العمل غير صالح. استخدم رابط http أو https.");return;}
+  if(work_url && !safeHttpsMediaUrl(work_url)){accountMessage("رابط العمل غير صالح. استخدم رابط HTTPS آمن.");return;}
   let fileValidation=null;
   if(file){try{fileValidation=validateMemberWorkUploadFile(file);}catch(error){accountMessage(error.message);return;}}
   let storagePath=null;
