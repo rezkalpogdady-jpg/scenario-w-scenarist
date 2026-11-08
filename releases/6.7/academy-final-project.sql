@@ -27,3 +27,42 @@ create policy "Students revise own final project" on public.academy_final_projec
 drop policy if exists "Platform admins manage academy final projects" on public.academy_final_projects;
 create policy "Platform admins manage academy final projects" on public.academy_final_projects for all to authenticated using (is_platform_admin()) with check (is_platform_admin());
 grant select, insert, update on public.academy_final_projects to authenticated;
+
+-- Server-side gate: students cannot bypass the 30 lessons + 30 approved assignments requirement.
+create or replace function public.guard_academy_final_project_submission()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_completed_count integer := 0;
+  v_approved_count integer := 0;
+begin
+  if public.is_platform_admin() then
+    return new;
+  end if;
+  if v_user_id is null or new.user_id <> v_user_id then
+    raise exception 'You may only submit your own final project.';
+  end if;
+  new.admin_feedback := null;
+  new.reviewed_at := null;
+  if new.status = 'pending' then
+    select count(distinct lesson_number) into v_completed_count
+      from public.academy_progress where user_id = v_user_id and completed = true;
+    select count(distinct lesson_number) into v_approved_count
+      from public.academy_assignments where user_id = v_user_id and status = 'approved';
+    if v_completed_count < 30 or v_approved_count < 30 then
+      raise exception 'Complete all 30 lessons and receive approval for all 30 assignments before submitting the final project.';
+    end if;
+    new.submitted_at := now();
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists academy_final_project_submission_guard on public.academy_final_projects;
+create trigger academy_final_project_submission_guard
+  before insert or update on public.academy_final_projects
+  for each row execute function public.guard_academy_final_project_submission();
+revoke all on function public.guard_academy_final_project_submission() from public;
