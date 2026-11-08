@@ -584,10 +584,27 @@ const academyLessons = [
 
 const lessonsContainer = document.getElementById("lessonsList");
 
+function academyLessonTitles(materials = publicContentRecords || []){
+  const titles=[...academyLessons];
+  const known=new Set(titles.map(title=>title.trim().toLocaleLowerCase()));
+  (materials||[]).forEach(item=>{
+    if(item?.content_type && item.content_type!=="academy") return;
+    if(item?.published===false) return;
+    const title=String(item?.title||"").trim();
+    const key=title.toLocaleLowerCase();
+    if(title && !known.has(key)){
+      known.add(key);
+      titles.push(title);
+    }
+  });
+  return titles;
+}
+
 function renderLessonIndex(materials = []){
   if(!lessonsContainer) return;
+  const titles=academyLessonTitles(materials);
   const byTitle = new Map(materials.map(item=>[String(item.title||"").trim(),item]));
-  lessonsContainer.innerHTML = academyLessons.map((lesson,index)=>{
+  lessonsContainer.innerHTML = titles.map((lesson,index)=>{
     const material=byTitle.get(lesson);
     const available=!!material;
     return `<article class="feature">
@@ -623,7 +640,7 @@ function academyLessonExtraMarkup(material){
 }
 
 function openLesson(index){
-  const lesson=academyLessons[index];
+  const lesson=academyLessonTitles()[index];
   if(!lesson) return;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
   const dialog=document.getElementById("lessonDialog");
