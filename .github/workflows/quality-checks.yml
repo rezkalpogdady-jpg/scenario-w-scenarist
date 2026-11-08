@@ -408,7 +408,35 @@ jobs:
           if (/\.from\("site_content"\)\s*\.select\("\*"\)\s*\.eq\("published",true\)/.test(html)) {
             throw new Error('Public site content query must not select every column.');
           }
-          console.log('Secure media and academy publishing checks passed.');
+          const vm = require('node:vm');
+          function extractFunction(name) {
+            const escaped = name.replace(/[.*+?^\\{}()|[\]\\]/g, '\u005c\          if (/\.from\("site_content"\)\s*\.select\("\*"\)\s*\.eq\("published",true\)/.test(html)) {
+            throw new Error('Public site content query must not select every column.');
+          }
+          console.log('Secure media and academy publishing checks passed.');');
+            const match = html.match(new RegExp('function ' + escaped + '\\([^\\n]*\\)\\s*\\{[\\s\\S]*?\\n\\}'));
+            if (!match) throw new Error('Missing function for runtime data-flow test: ' + name);
+            return match[0];
+          }
+          const runtime = vm.createContext({});
+          vm.runInContext(
+            extractFunction('sanitizePublicContentRecord') + '\\n' +
+            extractFunction('mapContentRecord') +
+            '\\nthis.sanitize = sanitizePublicContentRecord; this.map = mapContentRecord;',
+            runtime
+          );
+          const publicRecord = runtime.sanitize({
+            id: 7, content_type: 'tv', title: 'قناة اختبار', content_url: 'https://stream.example/live.m3u8',
+            extra_data: { rights_status: 'official', source_url: 'https://source.example/rights',
+              internal_admin_note: 'must not leak', lesson_text: 'درس', resources: [{title:'مرجع',url:'https://docs.example/a'}] },
+            published: true
+          });
+          if (publicRecord.extra_data.internal_admin_note !== undefined) throw new Error('Private admin-only metadata leaked into public content.');
+          const mapped = runtime.map(publicRecord);
+          if (mapped.stream !== 'https://stream.example/live.m3u8') throw new Error('Admin content_url is not connected to the public TV/radio stream field.');
+          if (mapped.rightsStatus !== 'official' || mapped.sourceUrl !== 'https://source.example/rights') throw new Error('Broadcast rights metadata did not survive public sanitization.');
+          if (!mapped.extra || mapped.extra.lesson_text !== 'درس' || mapped.extra.resources.length !== 1) throw new Error('Academy lesson metadata/resources did not survive public sanitization.');
+          console.log('Secure media, academy publishing, and public content data-flow checks passed.');
           NODE
       - name: Check for server-side secret key patterns
         shell: bash
