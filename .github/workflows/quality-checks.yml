@@ -783,7 +783,8 @@ jobs:
             ['admin content reader', /function adminLoadRecords\(\)[\s\S]*?\.from\(["']site_content["']\)[\s\S]*?\.order\(["']created_at["']/],
             ['public published-only reader', /function loadPublicContent\(\)[\s\S]*?\.from\(["']site_content["']\)[\s\S]*?\.eq\(["']published["'],\s*true\)/],
             ['public content distribution', /distributePublicContent\(\(data \|\| \[\]\)\.map\(sanitizePublicContentRecord\)\)/],
-            ['academy mapping and rendering', /function mapContentRecord\(item\)[\s\S]*?extra[\s\S]*?function renderLessonIndex\(materials/],
+            ['academy data mapping', /function mapContentRecord\(item\)[\s\S]*?extra[\s\S]*?published/],
+            ['academy lesson index rendering', /function renderLessonIndex\(materials/],
             ['academy detail rendering', /function academyLessonExtraMarkup\(material\)[\s\S]*?lesson_text[\s\S]*?learning_objectives[\s\S]*?exercise[\s\S]*?homework/],
             ['academy lesson detail fields', /lesson_text[\s\S]*?learning_objectives[\s\S]*?exercise[\s\S]*?homework/],
             ['scenario PDF signed URL flow', /createSignedUrl\([^\n]*3600\)/]
