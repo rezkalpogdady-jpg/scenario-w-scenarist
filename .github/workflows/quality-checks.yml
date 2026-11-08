@@ -431,6 +431,29 @@ jobs:
           if (!mapped.extra || mapped.extra.lesson_text !== 'درس' || mapped.extra.resources.length !== 1) throw new Error('Academy lesson metadata/resources did not survive public sanitization.');
           console.log('Secure media, academy publishing, and public content data-flow checks passed.');
           NODE
+      - name: Check academy custom lesson indexing
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const curriculum = html.match(/const academyLessons = \\[([\\s\\S]*?)\\n\\];/);
+          const resolver = html.match(/function academyLessonTitles\\(materials = publicContentRecords \\|\\| \\[\\]\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          if (!curriculum || !resolver) throw new Error('Academy lesson index resolver or base curriculum is missing.');
+          const context = vm.createContext({ publicContentRecords: [] });
+          vm.runInContext('const academyLessons = [' + curriculum[1] + '\\n];\\n' + resolver[0] + '\\nthis.resolveTitles = academyLessonTitles;', context);
+          const titles = context.resolveTitles([
+            { content_type: 'academy', title: 'ورشة كتابة المشهد', published: true },
+            { content_type: 'academy', title: 'مقدمة في عالم السيناريو', published: true },
+            { content_type: 'radio', title: 'لا تظهر في الأكاديمية', published: true },
+            { content_type: 'academy', title: 'مسودة مخفية', published: false }
+          ]);
+          if (titles.length !== 31 || titles[30] !== 'ورشة كتابة المشهد') throw new Error('A newly published academy lesson is missing from the index.');
+          if (titles.filter(title => title === 'مقدمة في عالم السيناريو').length !== 1) throw new Error('A curriculum lesson was duplicated.');
+          if (titles.includes('لا تظهر في الأكاديمية') || titles.includes('مسودة مخفية')) throw new Error('Non-academy or unpublished content entered the academy index.');
+          console.log('Published academy lesson indexing checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
