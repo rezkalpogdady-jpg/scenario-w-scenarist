@@ -1966,6 +1966,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة أعمال الأعضاء</h2><p>السيناريوهات والأعمال المرسلة من حسابات الأعضاء لا تدخل المكتبة إلا بعد الموافقة</p></div>
     <div id="adminMemberWorksList" class="grid"><div class="panel">تظهر أعمال الأعضاء بعد تسجيل دخول المدير.</div></div>
+    <div class="section-heading"><h2>مراجعة تدريبات الأكاديمية</h2><p>تظهر إجابات الطلاب هنا لمراجعتها وإرسال الملاحظات</p></div>
+    <div id="adminAcademyAssignments" class="grid"><div class="panel">تظهر التدريبات بعد دخول المدير.</div></div>
+
     <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
     <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
 
@@ -2390,6 +2393,7 @@ async function adminVerifyAdmin(session){
   await adminLoadCommunitySubmissions();
   await adminLoadMemberProfiles();
   await adminLoadMemberWorks();
+  await adminLoadAcademyAssignments();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
 }
@@ -2420,6 +2424,46 @@ document.getElementById("adminLoginForm")?.addEventListener("submit",async funct
 
   await adminVerifyAdmin(data.session);
 });
+
+/* مراجعة تدريبات الأكاديمية */
+async function adminLoadAcademyAssignments(){
+  if(!adminSupabase || !adminSession) return;
+  const box=document.getElementById("adminAcademyAssignments");
+  if(!box) return;
+  box.innerHTML="<div class='panel'>جارٍ تحميل تدريبات الطلاب...</div>";
+  const {data,error}=await adminSupabase.from("academy_assignments")
+    .select("id,user_id,lesson_number,answer,status,admin_feedback,submitted_at")
+    .order("submitted_at",{ascending:false}).limit(100);
+  if(error){box.textContent="تعذر تحميل التدريبات: "+error.message;return;}
+  if(!data?.length){box.innerHTML="<div class='panel'>لا توجد تدريبات مرسلة حتى الآن.</div>";return;}
+  const userIds=[...new Set(data.map(item=>item.user_id))];
+  const profilesResult=await adminSupabase.from("member_profiles")
+    .select("user_id,display_name").in("user_id",userIds);
+  const names=new Map((profilesResult.data||[]).map(item=>[item.user_id,item.display_name]));
+  box.innerHTML=data.map(item=>`<article class="admin-item">
+    <h3>المحاضرة ${item.lesson_number}: ${adminEscape(academyLessons[item.lesson_number-1]||"")}</h3>
+    <p class="admin-status">الطالب: ${adminEscape(names.get(item.user_id)||"عضو")} • ${new Date(item.submitted_at).toLocaleString("ar-EG")}</p>
+    <div style="white-space:pre-wrap;line-height:1.9;margin:12px 0">${adminEscape(item.answer)}</div>
+    <p class="admin-status">الحالة: ${item.status==="approved"?"تمت الموافقة":item.status==="needs_revision"?"مطلوب تعديل":"قيد المراجعة"}</p>
+    <p>${adminEscape(item.admin_feedback||"")}</p>
+    <div class="admin-actions">
+      <button class="btn primary" type="button" onclick="adminReviewAcademyAssignment('${item.id}','approved')">موافقة</button>
+      <button class="btn" type="button" onclick="adminReviewAcademyAssignment('${item.id}','needs_revision')">طلب تعديل</button>
+    </div>
+  </article>`).join("");
+}
+
+async function adminReviewAcademyAssignment(id,status){
+  if(!adminSupabase || !adminSession) return;
+  const feedback=prompt(status==="approved"?"ملاحظة للطالب (اختياري):":"اكتب المطلوب تعديله:");
+  if(feedback===null) return;
+  if(status==="needs_revision" && !feedback.trim()){alert("اكتب ملاحظة توضح المطلوب تعديله.");return;}
+  const {error}=await adminSupabase.from("academy_assignments").update({
+    status,admin_feedback:feedback.trim()||null,reviewed_at:new Date().toISOString()
+  }).eq("id",id);
+  if(error){alert("تعذر حفظ المراجعة: "+error.message);return;}
+  await adminLoadAcademyAssignments();
+}
 
 /* جلب المحتوى */
 async function adminLoadRecords(){
