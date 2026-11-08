@@ -2737,6 +2737,30 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   }
 
   const selectedFile=document.getElementById("adminFile")?.files?.[0]||null;
+  if(record.content_type==="shorts"){
+    if(record.image_url && !isAbsoluteHttpsUrl(record.image_url)){
+      adminSetMessage("adminSaveMessage","رابط ملصق الفيلم يجب أن يكون رابط HTTPS صالحًا.");
+      return;
+    }
+    if(record.content_url && !isAbsoluteHttpsUrl(record.content_url)){
+      adminSetMessage("adminSaveMessage","رابط مشاهدة الفيلم يجب أن يكون رابط HTTPS صالحًا.");
+      return;
+    }
+    if(selectedFile){
+      try{
+        const uploadCheck=validateAdminUploadFile(selectedFile);
+        const mediaType=String(uploadCheck.contentType||"").toLowerCase();
+        if(!mediaType.startsWith("image/") && !mediaType.startsWith("video/")){
+          adminSetMessage("adminSaveMessage","ملف الفيلم القصير يجب أن يكون صورة للملصق أو فيديو للفيلم، وليس ملف صوت أو مستند.");
+          return;
+        }
+      }catch(validationError){
+        adminSetMessage("adminSaveMessage",validationError.message||"الملف المختار غير صالح.");
+        return;
+      }
+    }
+  }
+
   if(selectedFile && ["tv","radio"].includes(record.content_type)){
     try{
       const uploadCheck=validateAdminUploadFile(selectedFile);
