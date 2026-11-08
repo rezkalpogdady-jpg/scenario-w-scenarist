@@ -47,8 +47,13 @@ begin
   if v_user_id is null or new.user_id <> v_user_id then
     raise exception 'You may only submit your own final project.';
   end if;
-  new.admin_feedback := null;
-  new.reviewed_at := null;
+  if tg_op = 'UPDATE' then
+    new.admin_feedback := old.admin_feedback;
+    new.reviewed_at := old.reviewed_at;
+  else
+    new.admin_feedback := null;
+    new.reviewed_at := null;
+  end if;
   if new.status = 'pending' then
     select count(distinct lesson_number) into v_completed_count
       from public.academy_progress where user_id = v_user_id and completed = true;
