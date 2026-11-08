@@ -199,8 +199,8 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
-          const esc = html.match(/function escapeHTML\\(value\\)\\s*\\{[\\s\\S]*?\\n\\}/);
-          const admin = html.match(/function adminEscape\\(value\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          const esc = html.match(/function escapeHTML\(value\)\s*\{[\s\S]*?\n\}/);
+          const admin = html.match(/function adminEscape\(value\)\s*\{[\s\S]*?\n\}/);
           if (!esc || !admin) throw new Error('HTML escaping helpers are required.');
           const escapeHTML = vm.runInNewContext(esc[0] + '; escapeHTML');
           const adminEscape = vm.runInNewContext(admin[0] + '; adminEscape');
