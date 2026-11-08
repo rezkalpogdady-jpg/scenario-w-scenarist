@@ -2491,8 +2491,17 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     const currentPaths=[adminStoragePathFromPublicUrl(record.image_url),adminStoragePathFromPublicUrl(record.content_url)].filter(Boolean);
     const obsoletePaths=[...new Set(oldPaths)].filter(path=>!currentPaths.includes(path));
     if(obsoletePaths.length){
-      const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove(obsoletePaths);
-      if(cleanupError) cleanupWarning=" تم الحفظ، لكن تعذر تنظيف بعض الملفات القديمة: "+cleanupError.message;
+      const {data:references,error:referenceError}=await adminSupabase.from("site_content").select("image_url,content_url").neq("id",id);
+      if(referenceError){
+        cleanupWarning=" تم الحفظ، لكن تعذر التحقق من استخدام الملفات القديمة في سجلات أخرى؛ تُركت دون حذف.";
+      }else{
+        const stillReferenced=new Set((references||[]).flatMap(row=>[adminStoragePathFromPublicUrl(row.image_url),adminStoragePathFromPublicUrl(row.content_url)]).filter(Boolean));
+        const safeToDelete=obsoletePaths.filter(path=>!stillReferenced.has(path));
+        if(safeToDelete.length){
+          const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove(safeToDelete);
+          if(cleanupError) cleanupWarning=" تم الحفظ، لكن تعذر تنظيف بعض الملفات القديمة: "+cleanupError.message;
+        }
+      }
     }
   }
 
