@@ -443,6 +443,7 @@ jobs:
           const publicRecord = runtime.sanitize({
             id: 7, content_type: 'tv', title: 'قناة اختبار', content_url: 'https://stream.example/live.m3u8',
             extra_data: { rights_status: 'official', source_url: 'https://source.example/rights',
+              director: 'مخرج اختبار', writer: 'كاتب اختبار', duration: '12 دقيقة', production_year: '2026', year: '2025',
               internal_admin_note: 'must not leak', lesson_text: 'درس', resources: [{title:'مرجع',url:'https://docs.example/a'}] },
             published: true
           });
@@ -450,6 +451,7 @@ jobs:
           const mapped = runtime.map(publicRecord);
           if (mapped.stream !== 'https://stream.example/live.m3u8') throw new Error('Admin content_url is not connected to the public TV/radio stream field.');
           if (mapped.rightsStatus !== 'official' || mapped.sourceUrl !== 'https://source.example/rights') throw new Error('Broadcast rights metadata did not survive public sanitization.');
+          if (mapped.director !== 'مخرج اختبار' || mapped.writer !== 'كاتب اختبار' || mapped.duration !== '12 دقيقة' || mapped.productionYear !== '2026') throw new Error('Short-film metadata did not survive public sanitization and mapping.');
           if (!mapped.extra || mapped.extra.lesson_text !== 'درس' || mapped.extra.resources.length !== 1) throw new Error('Academy lesson metadata/resources did not survive public sanitization.');
           console.log('Secure media, academy publishing, and public content data-flow checks passed.');
           NODE
