@@ -2087,8 +2087,8 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
   }catch(error){
     let cleanupNote="";
     if(storagePath){
-      const {error:cleanupError}=await accountClient().storage.from("member-submissions").remove([storagePath]);
-      if(cleanupError)cleanupNote=" وتعذر تنظيف الملف المرفوع غير المرتبط بطلب.";
+      const cleanup=await adminRemoveStorageIfUnreferenced(accountClient(),"member-submissions","member_works","storage_path",storagePath);
+      if(!cleanup.removed)cleanupNote=" تم الإبقاء على الملف المرفوع احتياطيًا لتعذر التأكد من عدم ارتباطه بطلب محفوظ.";
     }
     const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.")+cleanupNote;
   }
@@ -2235,17 +2235,13 @@ async function adminReviewMemberWork(id,status){
     reviewError=error||null;
   }catch(error){reviewError=error;}
   if(reviewError){
-    let cleanupNote="";
-    if(publicPath){
-      const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([publicPath]);
-      if(cleanupError)cleanupNote=" وتعذر تنظيف النسخة العامة المؤقتة: "+cleanupError.message;
-    }
+    const cleanupNote=publicPath?" تُركت النسخة العامة المؤقتة دون حذف لأن نتيجة RPC قد تكون غير محسومة بعد انقطاع الاتصال؛ يلزم التحقق من سجل العمل قبل تنظيفها.":"";
     alert("تعذرت مراجعة العمل: "+(reviewError.message||"خطأ غير معروف")+cleanupNote);
     return;
   }
   let privateCleanupWarning="";
   if(work.storage_path){
-    const cleanup=await adminRemoveStorageIfUnreferenced("member-submissions","member_works","storage_path",work.storage_path);
+    const cleanup=await adminRemoveStorageIfUnreferenced(adminSupabase,"member-submissions","member_works","storage_path",work.storage_path);
     if(!cleanup.removed)privateCleanupWarning=cleanup.reason==="still-referenced"?" تمت المراجعة، والملف الخاص محفوظ لأنه ما زال مرتبطًا بسجل عمل.":" تمت المراجعة، لكن تُرك الملف الخاص دون حذف لتعذر التحقق من المراجع أو تنظيفه.";
   }
   alert((status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل.")+privateCleanupWarning);
@@ -2501,8 +2497,8 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     if(uploadedAsset){
       const orphanPath=adminStoragePathFromPublicUrl(uploadedAsset.url);
       if(orphanPath){
-        const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([orphanPath]);
-        if(cleanupError) cleanupNote=" وتعذر تنظيف الملف المرفوع الجديد: "+cleanupError.message;
+        const cleanup=await adminRemoveSiteMediaIfUnreferenced(orphanPath);
+        if(!cleanup.removed)cleanupNote=cleanup.reason==="still-referenced"?" وتم الإبقاء على الملف لأن سجلًا ما زال يشير إليه.":" وتم الإبقاء على الملف الجديد احتياطيًا لتعذر التحقق من ارتباطه بسجل.";
       }
     }
     adminSetMessage("adminSaveMessage","تعذر الحفظ: "+(saveError.message||"خطأ غير معروف")+cleanupNote);
@@ -2573,13 +2569,28 @@ function adminStoragePathFromPublicUrl(value){
 
 /* لا نحذف ملفًا من التخزين قبل التأكد من عدم وجود سجل آخر يشير إليه.
    عند تعذر الاستعلام نُبقي الملف حفاظًا على البيانات. */
-async function adminRemoveStorageIfUnreferenced(bucket,table,column,path){
-  if(!path)return {removed:false,reason:"missing-path"};
+async function adminRemoveStorageIfUnreferenced(client,bucket,table,column,path){
+  if(!client||!path)return {removed:false,reason:"missing-client-or-path"};
   try{
-    const {data,error}=await adminSupabase.from(table).select("id").eq(column,path).limit(1);
+    const {data,error}=await client.from(table).select("id").eq(column,path).limit(1);
     if(error||!Array.isArray(data))return {removed:false,reason:"reference-check-failed",error};
     if(data.length)return {removed:false,reason:"still-referenced"};
-    const {error:removeError}=await adminSupabase.storage.from(bucket).remove([path]);
+    const {error:removeError}=await client.storage.from(bucket).remove([path]);
+    if(removeError)return {removed:false,reason:"remove-failed",error:removeError};
+    return {removed:true};
+  }catch(error){
+    return {removed:false,reason:"unexpected-error",error};
+  }
+}
+
+async function adminRemoveSiteMediaIfUnreferenced(path){
+  if(!adminSupabase||!path)return {removed:false,reason:"missing-client-or-path"};
+  try{
+    const {data,error}=await adminSupabase.from("site_content").select("image_url,content_url");
+    if(error||!Array.isArray(data))return {removed:false,reason:"reference-check-failed",error};
+    const referenced=data.some(row=>adminStoragePathFromPublicUrl(row.image_url)===path||adminStoragePathFromPublicUrl(row.content_url)===path);
+    if(referenced)return {removed:false,reason:"still-referenced"};
+    const {error:removeError}=await adminSupabase.storage.from("site-media").remove([path]);
     if(removeError)return {removed:false,reason:"remove-failed",error:removeError};
     return {removed:true};
   }catch(error){
@@ -2729,7 +2740,7 @@ async function adminDeleteScenarioScript(id){
   const {error}=await adminSupabase.from("scenario_scripts").delete().eq("id",id);
   if(error){scenarioScriptMessage("تعذر حذف السجل: "+error.message);return;}
   if(item.storage_path){
-    const cleanup=await adminRemoveStorageIfUnreferenced("scenario-scripts","scenario_scripts","storage_path",item.storage_path);
+    const cleanup=await adminRemoveStorageIfUnreferenced(adminSupabase,"scenario-scripts","scenario_scripts","storage_path",item.storage_path);
     if(!cleanup.removed)scenarioScriptMessage(cleanup.reason==="still-referenced"?"حُذف السجل، لكن الملف محفوظ لأنه ما زال مرتبطًا بسجل آخر.":"حُذف السجل، لكن تُرك الملف دون حذف لتعذر التحقق من المراجع أو تنظيفه.");
   }
   await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
@@ -2756,7 +2767,7 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
     const result=id?await adminSupabase.from("scenario_scripts").update(record).eq("id",id):await adminSupabase.from("scenario_scripts").insert(record);
     if(result.error)throw result.error;
     if(file&&previous?.storage_path){
-      const cleanup=await adminRemoveStorageIfUnreferenced("scenario-scripts","scenario_scripts","storage_path",previous.storage_path);
+      const cleanup=await adminRemoveStorageIfUnreferenced(adminSupabase,"scenario-scripts","scenario_scripts","storage_path",previous.storage_path);
       if(!cleanup.removed)scenarioScriptMessage(cleanup.reason==="still-referenced"?"تم الحفظ، والملف القديم محفوظ لأنه ما زال مرتبطًا بسجل آخر.":"تم الحفظ، لكن تُرك ملف PDF القديم دون حذف لتعذر التحقق من المراجع أو تنظيفه.");
     }
     this.reset();document.getElementById("adminScenarioScriptId").value="";
@@ -2765,8 +2776,8 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
   }catch(error){
     let cleanupNote="";
     if(file&&storagePath&&storagePath!==previous?.storage_path){
-      const {error:cleanupError}=await adminSupabase.storage.from("scenario-scripts").remove([storagePath]);
-      if(cleanupError)cleanupNote=" وتعذر تنظيف ملف PDF الجديد المرفوع: "+cleanupError.message;
+      const cleanup=await adminRemoveStorageIfUnreferenced(adminSupabase,"scenario-scripts","scenario_scripts","storage_path",storagePath);
+      if(!cleanup.removed)cleanupNote=" تم الإبقاء على ملف PDF الجديد احتياطيًا لتعذر التأكد من عدم ارتباطه بسجل محفوظ.";
     }
     scenarioScriptMessage("تعذر حفظ السيناريو: "+(error.message||"خطأ غير معروف")+cleanupNote);
   }
