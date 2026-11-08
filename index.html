@@ -2859,6 +2859,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   if(uploadInput) uploadInput.value="";
   adminResetForm();
   await adminLoadRecords();
+  await loadPublicContent();
 });
 
 /* تعبئة النموذج للتعديل */
