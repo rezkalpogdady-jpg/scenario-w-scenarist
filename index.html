@@ -517,13 +517,13 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
         <option value="">اختر النوع</option><option>دراما</option><option>اجتماعي</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>جريمة</option><option>تاريخي</option><option>رومانسي</option><option>خيال علمي</option><option>وثائقي</option>
       </select>
       <label for="academyFinalProjectLogline">الفكرة في جملة واحدة (Logline)</label>
-      <textarea id="academyFinalProjectLogline" maxlength="1200" required rows="3" placeholder="البطل + هدفه + العقبة + المخاطرة"></textarea>
+      <textarea id="academyFinalProjectLogline" maxlength="700" minlength="10" required rows="3" placeholder="البطل + هدفه + العقبة + المخاطرة"></textarea>
       <label for="academyFinalProjectSynopsis">الملخص السينمائي</label>
-      <textarea id="academyFinalProjectSynopsis" maxlength="12000" required rows="6" placeholder="احكِ القصة من بدايتها حتى نهايتها باختصار واضح..."></textarea>
+      <textarea id="academyFinalProjectSynopsis" maxlength="6000" minlength="50" required rows="6" placeholder="احكِ القصة من بدايتها حتى نهايتها باختصار واضح..."></textarea>
       <label for="academyFinalProjectTreatment">المعالجة الدرامية</label>
-      <textarea id="academyFinalProjectTreatment" maxlength="30000" required rows="8" placeholder="اكتب تطور الأحداث والمشاهد الرئيسية ومسار الشخصيات..."></textarea>
+      <textarea id="academyFinalProjectTreatment" maxlength="20000" minlength="100" required rows="8" placeholder="اكتب تطور الأحداث والمشاهد الرئيسية ومسار الشخصيات..."></textarea>
       <label for="academyFinalProjectScreenplay">السيناريو</label>
-      <textarea id="academyFinalProjectScreenplay" maxlength="100000" required rows="12" placeholder="اكتب السيناريو بتنسيق المشاهد والحوار..."></textarea>
+      <textarea id="academyFinalProjectScreenplay" maxlength="120000" minlength="100" required rows="12" placeholder="اكتب السيناريو بتنسيق المشاهد والحوار..."></textarea>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
         <button class="btn" type="button" id="academyFinalProjectSaveDraft">حفظ كمسودة</button>
         <button class="btn primary" type="submit">إرسال المشروع للمراجعة</button>
@@ -2528,7 +2528,7 @@ async function adminLoadAcademyFinalProjects(){
     <p>${adminEscape(item.admin_feedback||"لا توجد ملاحظات سابقة.")}</p>
     <div class="admin-actions">
       <button class="btn primary" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','approved')">اعتماد المشروع</button>
-      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','needs_revision')">طلب تعديل</button>
+      
       <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','rejected')">رفض المشروع</button>
     </div>
   </article>`).join("");
@@ -2536,7 +2536,7 @@ async function adminLoadAcademyFinalProjects(){
 
 async function adminReviewAcademyFinalProject(id,status){
   if(!adminSupabase || !adminSession)return;
-  const promptText=status==="approved"?"ملاحظات للطالب (اختياري):":status==="needs_revision"?"اكتب التعديلات المطلوبة من الطالب:":"اكتب سبب رفض المشروع:";
+  const promptText=status==="approved"?"ملاحظات للطالب (اختياري):":"اكتب التعديلات المطلوبة من الطالب:";
   const feedback=prompt(promptText);
   if(feedback===null)return;
   if(status!=="approved"&&!feedback.trim()){alert("اكتب ملاحظة توضح قرار المراجعة.");return;}
@@ -3620,7 +3620,7 @@ loadApprovedIdeas();
   let projects = [];
   function projectMessage(message){ if($("academyFinalProjectMessage")) $("academyFinalProjectMessage").textContent=message; }
   function projectStatus(status){
-    return status==="approved" ? "تمت الموافقة" : status==="needs_revision" ? "يحتاج إلى تعديل" : status==="pending" ? "قيد مراجعة الإدارة" : status==="rejected" ? "لم تتم الموافقة" : "مسودة محفوظة";
+    return status==="approved" ? "تمت الموافقة" : status==="needs_revision" ? "يحتاج إلى تعديل" : status==="pending" ? "قيد مراجعة الإدارة" : "مسودة محفوظة";
   }
   function resetProjectForm(){
     $("academyFinalProjectForm")?.reset();
@@ -3659,6 +3659,15 @@ loadApprovedIdeas();
       if(error)throw error;
       projects=data||[];
       renderProjects();
+      if(projects.length){
+        const current=projects[0];
+        if(["draft","needs_revision"].includes(current.status)){
+          window.editAcademyFinalProject(current.id);
+        }else{
+          form.style.display="none";
+          account.textContent="لديك مشروع نهائي محفوظ بالفعل. يمكنك متابعة حالته وملاحظات الإدارة من القائمة أدناه.";
+        }
+      }
     }catch(error){
       $("academyFinalProjectList").innerHTML='<div class="panel">تعذر تحميل المشروعات: '+escapeHTML(error.message||"تحقق من الاتصال والصلاحيات.")+'</div>';
     }
