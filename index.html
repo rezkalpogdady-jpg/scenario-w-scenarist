@@ -2253,9 +2253,15 @@ async function adminReviewMemberWork(id,status){
   if(status==="approved"&&work.storage_path){
     const {data:fileData,error:downloadError}=await adminSupabase.storage.from("member-submissions").download(work.storage_path);
     if(downloadError){alert("تعذر تجهيز الملف للنشر: "+downloadError.message);return;}
-    const extension=(work.storage_path.split(".").pop()||"pdf").replace(/[^a-z0-9]/gi,"").toLowerCase()||"pdf";
+    const extension=(work.storage_path.split(".").pop()||"").toLowerCase();
+    const publicMimeByExtension={pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",txt:"text/plain"};
+    const publicMime=publicMimeByExtension[extension];
+    if(!publicMime||!fileData||fileData.size<=0||fileData.size>25*1024*1024){
+      alert("تعذر نشر العمل: امتداد الملف أو حجمه غير مسموح به.");
+      return;
+    }
     publicPath=`library/${crypto.randomUUID()}-${work.id}.${extension}`;
-    const {data:uploaded,error:uploadError}=await adminSupabase.storage.from("site-media").upload(publicPath,fileData,{upsert:false,contentType:fileData.type||"application/octet-stream"});
+    const {data:uploaded,error:uploadError}=await adminSupabase.storage.from("site-media").upload(publicPath,fileData,{upsert:false,contentType:publicMime});
     if(uploadError){alert("تعذر نقل الملف إلى المكتبة العامة: "+uploadError.message);return;}
     publicUrl=adminSupabase.storage.from("site-media").getPublicUrl(uploaded.path).data.publicUrl;
   }
