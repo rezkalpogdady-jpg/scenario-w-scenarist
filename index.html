@@ -2680,6 +2680,35 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
     return;
   }
+
+  if(["academy","tv","radio"].includes(record.content_type) && record.content_url && !isAbsoluteHttpsUrl(record.content_url)){
+    adminSetMessage("adminSaveMessage","رابط الفيديو أو البث يجب أن يكون رابط HTTPS مباشرًا وآمنًا.");
+    return;
+  }
+
+  const selectedFile=document.getElementById("adminFile")?.files?.[0]||null;
+  if(selectedFile && ["tv","radio"].includes(record.content_type)){
+    try{
+      const uploadCheck=validateAdminUploadFile(selectedFile);
+      const mediaType=String(uploadCheck.contentType||"").toLowerCase();
+      const expectedPrefix=record.content_type==="tv" ? "video/" : "audio/";
+      if(!mediaType.startsWith(expectedPrefix)){
+        adminSetMessage("adminSaveMessage",record.content_type==="tv"
+          ? "ملف القناة يجب أن يكون فيديو، وليس صورة أو مستندًا أو ملفًا صوتيًا."
+          : "ملف المحطة يجب أن يكون صوتيًا، وليس صورة أو مستندًا أو فيديو.");
+        return;
+      }
+    }catch(validationError){
+      adminSetMessage("adminSaveMessage",validationError.message||"الملف المختار غير صالح.");
+      return;
+    }
+  }
+
+  if(["tv","radio"].includes(record.content_type) && record.published && !record.content_url && !selectedFile){
+    adminSetMessage("adminSaveMessage","أضف رابط بث HTTPS أو اختر ملف بث مناسبًا قبل نشر القناة أو المحطة.");
+    return;
+  }
+
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
