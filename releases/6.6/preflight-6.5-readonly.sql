@@ -196,6 +196,23 @@ select
 -- و authenticated_can_update_profile_status = false.
 -- هذا الفحص للقراءة فقط ولا يغير أي امتياز أو قيمة افتراضية.
 
+
+-- 6) تعريف دالة اعتماد ملف العضو: تحقق يدوي من التفويض داخل جسم الدالة.
+-- يجب أن تتحقق الدالة من app_metadata.role = admin (أو آلية موثوقة مكافئة)،
+-- وألا تعتمد على user_metadata أو قيمة يرسلها العميل.
+select
+  p.oid::regprocedure as function_signature,
+  pg_get_userbyid(p.proowner) as function_owner,
+  p.prosecdef as security_definer,
+  p.proconfig as function_settings,
+  has_function_privilege('anon',p.oid,'EXECUTE') as anon_can_execute,
+  has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_can_execute,
+  pg_get_functiondef(p.oid) as function_definition
+from pg_proc p
+join pg_namespace n on n.oid=p.pronamespace
+where n.nspname='public'
+  and p.proname='admin_review_member_profile';
+
 -- 6) عرض triggers على ملفات الأعضاء؛ مهمة لمعرفة هل تحديث الملف يعيد الحالة pending.
 select event_object_table as table_name,trigger_name,event_manipulation,
        action_timing,action_statement
