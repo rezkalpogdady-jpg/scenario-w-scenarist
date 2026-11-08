@@ -1257,8 +1257,15 @@ renderProjects();
 let tvChannels = [];
 let radioStations = [];
 
+/* Only entries with an explicit rights declaration and evidence URL can play. */
+function broadcastRightsApproved(item){
+  return ["official","licensed"].includes(String(item?.rightsStatus||"").toLowerCase()) &&
+    !!safeHttpUrl(item?.sourceUrl);
+}
+
 /* إنشاء بطاقة قناة */
 function tvCard(channel){
+  const approved=broadcastRightsApproved(channel);
   return `
     <article class="feature">
       ${channel.image
@@ -1267,7 +1274,8 @@ function tvCard(channel){
       <div class="feature-content">
         <h3>${escapeHTML(channel.name)}</h3>
         <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        <button class="btn" onclick="playTVChannel(${inlineJsArg(channel.id)})">مشاهدة القناة</button>
+        <p>${approved ? "بيانات المصدر والترخيص مسجلة لدى الإدارة" : "البث متوقف لحين توثيق المصدر وحقوق العرض"}</p>
+        <button class="btn" ${approved ? "" : "disabled"} onclick="playTVChannel(${inlineJsArg(channel.id)})">${approved ? "مشاهدة القناة" : "غير متاحة حاليًا"}</button>
       </div>
     </article>`;
 }
@@ -1297,6 +1305,7 @@ function renderTVChannels(){
 
 /* بطاقات الراديو */
 function radioCard(station){
+  const approved=broadcastRightsApproved(station);
   return `
     <article class="feature">
       ${station.image
@@ -1305,7 +1314,8 @@ function radioCard(station){
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
         <p>${escapeHTML(station.description || "محطة إذاعية")}</p>
-        <button class="btn" onclick="playRadioStation(${inlineJsArg(station.id)})">استمع الآن</button>
+        <p>${approved ? "بيانات المصدر والترخيص مسجلة لدى الإدارة" : "البث متوقف لحين توثيق المصدر وحقوق العرض"}</p>
+        <button class="btn" ${approved ? "" : "disabled"} onclick="playRadioStation(${inlineJsArg(station.id)})">${approved ? "استمع الآن" : "غير متاحة حاليًا"}</button>
       </div>
     </article>`;
 }
@@ -1332,7 +1342,8 @@ function renderRadioStations(){
 let activeRadioHlsPlayer=null;
 function playRadioStation(id){
   const station=radioStations.find(item=>String(item.id)===String(id));
-  const streamUrl=station?safeHttpUrl(station.stream):"";
+  if(!station || !broadcastRightsApproved(station)){alert("لن يتم تشغيل المحطة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");return;}
+  const streamUrl=safeHttpUrl(station.stream);
   if(!streamUrl){alert("رابط البث غير متاح أو غير آمن لهذه المحطة.");return;}
   const player=document.getElementById("radioPlayer");
   const title=document.getElementById("radioNowTitle");
@@ -1828,7 +1839,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
         <label>بيانات إضافية (JSON) — اختيارية</label>
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
-        <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص في بطاقات الأقسام.</p>
+        <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص. عند نشر قناة تلفزيون أو محطة راديو، أضف أيضًا: <code>{"rights_status":"official","source_url":"https://..."}</code> أو اجعل القيمة <code>licensed</code> مع رابط مرجع الترخيص. لا يُعد الرابط وحده إثباتًا قانونيًا؛ على الإدارة التحقق من حق البث قبل الاعتماد.</p>
 
         <label>أو ارفع ملفًا من جهازك</label>
         <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
@@ -2485,6 +2496,14 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
     return;
   }
+  if(["tv","radio"].includes(record.content_type) && record.published){
+    const rightsStatus=String(record.extra_data.rights_status||"").toLowerCase();
+    const sourceUrl=safeHttpUrl(record.extra_data.source_url||"");
+    if(!["official","licensed"].includes(rightsStatus) || !sourceUrl){
+      adminSetMessage("adminSaveMessage","لا يمكن نشر قناة أو محطة قبل إضافة rights_status بقيمة official أو licensed، وإضافة source_url لصفحة المصدر الرسمي أو مستند الترخيص داخل البيانات الإضافية.");
+      return;
+    }
+  }
 
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
@@ -2858,6 +2877,8 @@ function mapContentRecord(item){
   const extra=item.extra_data && typeof item.extra_data==="object" ? item.extra_data : {};
   return {
     id:item.id,
+    rightsStatus:String(extra.rights_status||"").toLowerCase(),
+    sourceUrl:extra.source_url||"",
     title:item.title || "",
     name:extra.name || item.title || "",
     author:extra.author || extra.writer || "",
@@ -3057,7 +3078,9 @@ function distributePublicContent(records){
         name:item.title,
         category:item.category,
         image:item.image,
-        stream:item.stream
+        stream:item.stream,
+        rightsStatus:item.rightsStatus,
+        sourceUrl:item.sourceUrl
       }))
     );
     renderTVChannels();
@@ -3070,7 +3093,9 @@ function distributePublicContent(records){
         name:item.title,
         description:item.description,
         image:item.image,
-        stream:item.stream
+        stream:item.stream,
+        rightsStatus:item.rightsStatus,
+        sourceUrl:item.sourceUrl
       }))
     );
     renderRadioStations();
@@ -3155,8 +3180,11 @@ let activeHlsPlayer=null;
 
 function playTVChannel(id){
   const channel=tvChannels.find(item=>String(item.id)===String(id));
-
-  const streamUrl=channel?safeHttpUrl(channel.stream):"";
+  if(!channel || !broadcastRightsApproved(channel)){
+    alert("لن يتم تشغيل القناة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");
+    return;
+  }
+  const streamUrl=safeHttpUrl(channel.stream);
   if(!streamUrl){
     alert("رابط البث غير متاح لهذه القناة.");
     return;
