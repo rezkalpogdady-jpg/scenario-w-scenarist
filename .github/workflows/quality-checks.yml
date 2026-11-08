@@ -325,6 +325,25 @@ jobs:
               !migration.includes('create policy "6.5 restrict private member file uploads"')) {
             throw new Error('Private member submission read/upload restrictions are missing.');
           }
+          const adminWorkStart = html.indexOf('async function adminReviewMemberWork(id,status)');
+          const adminWorkEnd = html.indexOf('async function adminLoadVisitStats()', adminWorkStart);
+          if (adminWorkStart < 0 || adminWorkEnd < 0) throw new Error('Admin member work review handler is missing.');
+          const adminWorkReview = html.slice(adminWorkStart, adminWorkEnd);
+          if (!adminWorkReview.includes('rpc("admin_review_member_work"')) throw new Error('Member work approval/rejection must go through the protected review RPC.');
+          if (adminWorkReview.includes('.from("member_works").update(') || adminWorkReview.includes('.from("member_works").delete(')) {
+            throw new Error('Admin member work review must not bypass the protected RPC with direct table writes.');
+          }
+          const adminProfileStart = html.indexOf('async function adminReviewMemberProfile(userId,status)');
+          const adminProfileEnd = html.indexOf('async function adminLoadMemberWorks()', adminProfileStart);
+          if (adminProfileStart < 0 || adminProfileEnd < 0) throw new Error('Admin member profile review handler is missing.');
+          if (!html.slice(adminProfileStart, adminProfileEnd).includes('rpc("admin_review_member_profile"')) {
+            throw new Error('Member profile approval/rejection must go through the protected review RPC.');
+          }
+          if (!preflight.includes("and p.proname='admin_review_member_work'") ||
+              !preflight.includes("has_column_privilege('authenticated','public.member_works','status','UPDATE')") ||
+              !preflight.includes("column_name in ('status','created_at')")) {
+            throw new Error('Read-only preflight must inspect member work defaults, protected columns, and review RPC definition.');
+          }
           console.log('Member profile payload, column grants, pending insert policy, trigger, and live-schema audit checks passed.');
           NODE
 
