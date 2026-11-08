@@ -609,6 +609,38 @@ jobs:
           }
           console.log('Published academy lesson indexing, ordering, detail mapping, and player cleanup checks passed.');
           NODE
+      - name: Check private scenario PDF library access flow
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const sql = fs.readFileSync('releases/6.6/preflight-6.5-readonly.sql', 'utf8');
+          const readerStart = html.indexOf('async function openScenarioScript(id)');
+          const readerEnd = html.indexOf('function closeScenarioReader()', readerStart);
+          if (readerStart < 0 || readerEnd < 0) throw new Error('Scenario PDF reader is missing.');
+          const reader = html.slice(readerStart, readerEnd);
+          for (const snippet of [
+            'await client.auth.getUser()',
+            'if(!userData.user)',
+            '.eq("published",true)',
+            '.createSignedUrl(row.storage_path,3600)',
+            'safeHttpsMediaUrl(signed.signedUrl)'
+          ]) {
+            if (!reader.includes(snippet)) throw new Error('Private PDF reader is missing safeguard: ' + snippet);
+          }
+          if (reader.includes('getPublicUrl(')) throw new Error('Private scenario PDF reader must not generate public URLs.');
+          if (!sql.includes("where id='scenario-scripts'") ||
+              !sql.includes("and public=false") && !sql.includes('public=false') ||
+              !sql.includes("where schemaname='storage' and tablename='objects'")) {
+            throw new Error('Read-only preflight must inspect the scenario-scripts bucket and its Storage policies.');
+          }
+          const executable = sql.replace(/--.*$/gm, '');
+          if (/^\\s*(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/im.test(executable)) {
+            throw new Error('Scenario library audit must remain read-only.');
+          }
+          console.log('Private scenario PDF signed-URL flow and read-only storage audit checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
