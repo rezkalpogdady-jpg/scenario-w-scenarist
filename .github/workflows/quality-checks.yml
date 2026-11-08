@@ -738,3 +738,31 @@ jobs:
           }
           console.log('Admin direct-table, Storage, RLS, RPC, trigger, and read-only coverage checks passed.');
           NODE
+
+      - name: Check read-only 6.5 dependency preflight
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const gate = fs.readFileSync('releases/6.8/preflight-65-dependencies-readonly.sql', 'utf8');
+          const migration = fs.readFileSync('releases/6.5/migration.sql', 'utf8');
+          const required = [
+            "'member_profiles'", "'member_works'",
+            "'member_profiles','user_id'", "'member_profiles','profile_status'",
+            "'member_works','user_id'", "'member_works','status'",
+            "'member_works','storage_path'", "'member-submissions'",
+            "to_regclass('storage.buckets')", "to_regclass('storage.objects')",
+            "to_regprocedure('storage.foldername(text)')"
+          ];
+          for (const snippet of required) {
+            if (!gate.includes(snippet)) throw new Error('6.5 dependency preflight is missing: ' + snippet);
+          }
+          for (const snippet of ['public.member_profiles', 'public.member_works', 'storage.buckets', 'storage.objects']) {
+            if (!migration.includes(snippet)) throw new Error('Preflight dependency is not referenced by 6.5 migration: ' + snippet);
+          }
+          const executable = gate.replace(/--.*$/gm, '');
+          if (/^\\s*(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/im.test(executable)) {
+            throw new Error('6.5 dependency preflight must remain read-only.');
+          }
+          console.log('6.5 required tables, columns, Storage dependencies, and read-only gate checks passed.');
+          NODE
