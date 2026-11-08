@@ -23,7 +23,7 @@
     const panel = document.createElement('section');
     panel.id = 'academyFinalProject';
     panel.className = 'panel';
-    panel.innerHTML = \`
+    panel.innerHTML = `
       <div class="section-heading">
         <h2>مشروع التخرج النهائي</h2>
         <p>من تطوير الفكرة إلى السيناريو الجاهز للتقديم</p>
@@ -51,7 +51,7 @@
       </form>
       <p id="capstoneMessage" aria-live="polite"></p>
       <div id="capstoneFeedback"></div>
-    \`;
+    `;
     academy.appendChild(panel);
   }
 
@@ -61,13 +61,13 @@
     const panel = document.createElement('section');
     panel.className = 'panel';
     panel.id = 'adminAcademyFinalProjects';
-    panel.innerHTML = \`
+    panel.innerHTML = `
       <div class="section-heading">
         <h2>مراجعة مشروعات التخرج</h2>
         <p>اعتماد المشروع أو إعادته للطالب لاستكمال التعديلات</p>
       </div>
       <div id="adminFinalProjectsList" class="grid"><div class="panel">تظهر المشروعات المرسلة هنا.</div></div>
-    \`;
+    `;
     const assignments = document.getElementById('adminAcademyAssignments');
     if (assignments && assignments.parentElement) assignments.parentElement.insertBefore(panel, assignments.nextSibling);
     else dashboard.appendChild(panel);
@@ -139,15 +139,15 @@
       const lessonCount=completed.size;
       const approvedCount=approved.size;
       const eligible=lessonCount===30 && approvedCount===30;
-      eligibility.innerHTML=\`<strong>متطلبات إرسال مشروع التخرج</strong><p>المحاضرات المكتملة: \${lessonCount} من 30</p><p>التدريبات التي وافقت عليها الإدارة: \${approvedCount} من 30</p><p style="color:\${eligible?'#7bc69a':'var(--muted)'}">\${eligible?'اكتملت المتطلبات. يمكنك إرسال مشروعك للمراجعة.':'يمكنك حفظ مسودة الآن، وسيُفتح الإرسال النهائي بعد إتمام المحاضرات الثلاثين واعتماد التدريبات الثلاثين.'}</p>\`;
+      eligibility.innerHTML=`<strong>متطلبات إرسال مشروع التخرج</strong><p>المحاضرات المكتملة: ${lessonCount} من 30</p><p>التدريبات التي وافقت عليها الإدارة: ${approvedCount} من 30</p><p style="color:${eligible?'#7bc69a':'var(--muted)'}">${eligible?'اكتملت المتطلبات. يمكنك إرسال مشروعك للمراجعة.':'يمكنك حفظ مسودة الآن، وسيُفتح الإرسال النهائي بعد إتمام المحاضرات الثلاثين واعتماد التدريبات الثلاثين.'}</p>`;
       const submit=document.getElementById('capstoneSubmit');
       if (submit) { submit.dataset.eligible=eligible?'yes':'no'; submit.disabled=!eligible; }
 
       const project=projectResult.data;
       if (project) {
         fillForm(project);
-        state.innerHTML=\`حالة المشروع: <strong style="color:\${statusColor(project.status)}">\${statusLabel(project.status)}</strong> • آخر تحديث: \${new Date(project.updated_at).toLocaleString('ar-EG')}\`;
-        if (feedback) feedback.innerHTML=project.admin_feedback ? \`<div class="panel"><strong>ملاحظات الإدارة</strong><p style="white-space:pre-wrap">\${esc(project.admin_feedback)}</p></div>\` : '';
+        state.innerHTML=`حالة المشروع: <strong style="color:${statusColor(project.status)}">${statusLabel(project.status)}</strong> • آخر تحديث: ${new Date(project.updated_at).toLocaleString('ar-EG')}`;
+        if (feedback) feedback.innerHTML=project.admin_feedback ? `<div class="panel"><strong>ملاحظات الإدارة</strong><p style="white-space:pre-wrap">${esc(project.admin_feedback)}</p></div>` : '';
         setFormLocked(project.status==='pending' || project.status==='approved');
       } else {
         state.textContent='لم تحفظ مشروع تخرج بعد. يمكنك البدء وحفظ مسودة.';
@@ -173,7 +173,7 @@
     ];
     for (const [key,min,max,label] of required) {
       if (data[key].length<min || data[key].length>max) {
-        if(message)message.textContent=\`راجع حقل "\${label}"؛ الطول المطلوب من \${min} إلى \${max} حرفًا.\`;
+        if(message)message.textContent=`راجع حقل "${label}"؛ الطول المطلوب من ${min} إلى ${max} حرفًا.`;
         return;
       }
     }
@@ -209,24 +209,24 @@
     const ids=[...new Set(data.map(item=>item.user_id))];
     const profiles=await adminSupabase.from('member_profiles').select('user_id,display_name').in('user_id',ids);
     const names=new Map((profiles.data||[]).map(row=>[row.user_id,row.display_name]));
-    box.innerHTML=data.map(item=>\`
+    box.innerHTML=data.map(item=>`
       <article class="admin-item">
-        <h3>\${esc(item.project_title)}</h3>
-        <p class="admin-status">الطالب: \${esc(names.get(item.user_id)||'عضو')} • \${esc(item.genre)} • \${statusLabel(item.status)}</p>
-        <p><strong>الفكرة:</strong> \${esc(item.logline)}</p>
+        <h3>${esc(item.project_title)}</h3>
+        <p class="admin-status">الطالب: ${esc(names.get(item.user_id)||'عضو')} • ${esc(item.genre)} • ${statusLabel(item.status)}</p>
+        <p><strong>الفكرة:</strong> ${esc(item.logline)}</p>
         <details><summary>قراءة الملخص والمعالجة والسيناريو</summary>
-          <h4>الملخص السينمائي</h4><div style="white-space:pre-wrap">\${esc(item.synopsis)}</div>
-          <h4>المعالجة الدرامية</h4><div style="white-space:pre-wrap">\${esc(item.treatment)}</div>
-          <h4>السيناريو</h4><div style="white-space:pre-wrap;max-height:520px;overflow:auto;background:#101010;padding:12px;border-radius:8px">\${esc(item.screenplay)}</div>
+          <h4>الملخص السينمائي</h4><div style="white-space:pre-wrap">${esc(item.synopsis)}</div>
+          <h4>المعالجة الدرامية</h4><div style="white-space:pre-wrap">${esc(item.treatment)}</div>
+          <h4>السيناريو</h4><div style="white-space:pre-wrap;max-height:520px;overflow:auto;background:#101010;padding:12px;border-radius:8px">${esc(item.screenplay)}</div>
         </details>
-        <label for="capstoneFeedback-\${item.id}">ملاحظات الإدارة</label>
-        <textarea id="capstoneFeedback-\${item.id}" rows="4" maxlength="6000">\${esc(item.admin_feedback||'')}</textarea>
+        <label for="capstoneFeedback-${item.id}">ملاحظات الإدارة</label>
+        <textarea id="capstoneFeedback-${item.id}" rows="4" maxlength="6000">${esc(item.admin_feedback||'')}</textarea>
         <div class="admin-actions">
-          <button class="btn primary" type="button" data-capstone-action="approved" data-id="\${item.id}">اعتماد مشروع التخرج</button>
-          <button class="btn" type="button" data-capstone-action="needs_revision" data-id="\${item.id}">إعادة للطالب للتعديل</button>
+          <button class="btn primary" type="button" data-capstone-action="approved" data-id="${item.id}">اعتماد مشروع التخرج</button>
+          <button class="btn" type="button" data-capstone-action="needs_revision" data-id="${item.id}">إعادة للطالب للتعديل</button>
         </div>
-        <small>\${new Date(item.submitted_at).toLocaleString('ar-EG')}</small>
-      </article>\`).join('');
+        <small>${new Date(item.submitted_at).toLocaleString('ar-EG')}</small>
+      </article>`).join('');
     box.querySelectorAll('[data-capstone-action]').forEach(button=>{
       button.addEventListener('click',async()=>{
         const id=button.dataset.id;
