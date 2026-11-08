@@ -2696,6 +2696,27 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   }
 
   const selectedFile=document.getElementById("adminFile")?.files?.[0]||null;
+  if(selectedFile){
+    try{
+      const uploadCheck=validateAdminUploadFile(selectedFile);
+      const mediaType=String(uploadCheck.contentType||"").toLowerCase();
+      if(record.content_type==="academy" &&
+         !mediaType.startsWith("image/") &&
+         !mediaType.startsWith("video/") &&
+         !["application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(mediaType)){
+        throw new Error("ملفات الأكاديمية المسموح بها: فيديو MP4 أو WebM، أو PDF/Word للمادة التعليمية، أو صورة للغلاف.");
+      }
+      if(mediaType==="application/pdf"){
+        const signature=new Uint8Array(await selectedFile.slice(0,5).arrayBuffer());
+        if(signature.length!==5 || signature[0]!==0x25 || signature[1]!==0x50 || signature[2]!==0x44 || signature[3]!==0x46 || signature[4]!==0x2D){
+          throw new Error("محتوى الملف لا يحمل ترويسة PDF صحيحة؛ اختر ملف PDF فعليًا.");
+        }
+      }
+    }catch(validationError){
+      adminSetMessage("adminSaveMessage",validationError.message||"الملف المختار غير صالح.");
+      return;
+    }
+  }
   if(selectedFile && ["tv","radio"].includes(record.content_type)){
     try{
       const uploadCheck=validateAdminUploadFile(selectedFile);
