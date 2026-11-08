@@ -395,10 +395,10 @@ jobs:
             'function sanitizePublicContentRecord(item)',
             '.select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")',
             'function academyLessonExtraMarkup(material)',
-            'extra.lesson_text',
-            'extra.learning_objectives',
-            'extra.exercise',
-            'extra.homework',
+            '["lesson_text","محتوى المحاضرة"]',
+            '["learning_objectives","أهداف التعلم"]',
+            '["exercise","التدريب العملي"]',
+            '["homework","الواجب"]',
             'function destroyInlineHlsVideos(root=document)',
             'destroyInlineHlsVideos(dialog)'
           ];
