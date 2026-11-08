@@ -2529,7 +2529,7 @@ async function adminLoadAcademyFinalProjects(){
     <div class="admin-actions">
       <button class="btn primary" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','approved')">اعتماد المشروع</button>
       
-      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','rejected')">رفض المشروع</button>
+      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','needs_revision')">طلب تعديل</button>
     </div>
   </article>`).join("");
 }
