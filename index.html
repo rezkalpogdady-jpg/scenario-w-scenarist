@@ -854,8 +854,10 @@ let creativeProfiles = {
 
 /* إنشاء بطاقة تعريف */
 function profileCard(item, type){
-  const image = item.image
-    ? `<img src="${safeHttpUrl(item.image)}" alt="">`
+  const imageUrl=safeHttpsMediaUrl(item.image);
+  const workUrl=safeHttpsMediaUrl(item.work);
+  const image = imageUrl
+    ? `<img src="${escapeHTML(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
     : `<div style="height:145px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:45px"></div>`;
 
   let details = "";
@@ -879,7 +881,7 @@ function profileCard(item, type){
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(item.bio || item.description || "")}</p>
-        ${item.work ? `<a class="btn" href="${safeHttpUrl(item.work)}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>` : ""}
+        ${workUrl ? `<a class="btn" href="${escapeHTML(workUrl)}" target="_blank" rel="noopener noreferrer">مشاهدة نموذج العمل</a>` : ""}
       </div>
     </article>`;
 }
@@ -2343,7 +2345,11 @@ async function adminLoadMemberProfiles(){
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية جديدة للمراجعة.</div>';return;}
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
-  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${safeHttpUrl(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${safeHttpUrl(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'rejected')">رفض الملف</button></div></article>`).join("");
+  box.innerHTML=data.map(item=>{
+    const imageUrl=safeHttpsMediaUrl(item.image_url),workUrl=safeHttpsMediaUrl(item.work_url);
+    const state=item.profile_status==="rejected"?"مرفوض سابقًا — في انتظار مراجعة جديدة":"طلب جديد — في انتظار المراجعة";
+    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(state)}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${imageUrl?`<p><a href="${adminEscape(imageUrl)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${workUrl?`<p><a href="${adminEscape(workUrl)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'rejected')">رفض الملف</button></div></article>`;
+  }).join("");
 }
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
