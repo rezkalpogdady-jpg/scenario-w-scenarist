@@ -2814,7 +2814,9 @@ async function openScenarioScript(id){
     if(!userData.user){frame.innerHTML='<div style="padding:24px;color:white;text-align:center"><p>قراءة السيناريوهات الكاملة متاحة للأعضاء المسجلين.</p><button class="btn primary" type="button" onclick="showPage(\'account\')">تسجيل الدخول أو إنشاء حساب</button></div>';return;}
     const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path").eq("id",id).eq("published",true).single();if(rowError)throw rowError;
     const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,3600);if(signedError)throw signedError;
-    frame.innerHTML=`<iframe title="${escapeHTML(item.title)}" src="${escapeHTML(signed.signedUrl)}#toolbar=0&navpanes=0&view=FitH" loading="lazy" style="width:100%;height:75vh;min-height:520px;border:0;background:#fff"></iframe>`;
+    const readerUrl=safeHttpUrl(signed.signedUrl);
+    if(!readerUrl)throw new Error("تعذر التحقق من رابط القراءة الآمن.");
+    frame.innerHTML=`<iframe title="${escapeHTML(item.title)}" src="${escapeHTML(readerUrl)}#toolbar=0&navpanes=0&view=FitH" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:75vh;min-height:520px;border:0;background:#fff"></iframe>`;
     notice.textContent=`المؤلف: ${item.author} • نسخة قراءة مؤقتة للأعضاء • حقوق النشر محفوظة`;
   }catch(error){frame.innerHTML=`<p style="padding:24px;color:white">تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p>`;}
 }
