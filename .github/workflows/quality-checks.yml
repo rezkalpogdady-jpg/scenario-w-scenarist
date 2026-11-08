@@ -291,7 +291,7 @@ jobs:
             'function broadcastRightsApproved(item)',
             'rightsStatus:String(extra.rights_status||"").toLowerCase()',
             'sourceUrl:extra.source_url||""',
-            'if(!["official","licensed"].includes(rightsStatus) || !sourceUrl)',
+            'if(!["official","licensed"].includes(rightsStatus) || !sourceUrl || !streamUrl)',
             'if(!channel || !broadcastRightsApproved(channel))',
             'if(!station || !broadcastRightsApproved(station))',
             'البث متوقف لحين توثيق المصدر وحقوق العرض'
