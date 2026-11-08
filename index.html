@@ -2139,7 +2139,7 @@ document.getElementById("accountResetForm")?.addEventListener("submit",async fun
   finally{button.disabled=false;}
 });
 document.getElementById("accountProfileForm")?.addEventListener("submit",async function(event){
-  event.preventDefault(); if(!accountUser) return; const button=this.querySelector('button[type="submit"]');
+  event.preventDefault(); if(!accountUser) return; const requestId=accountProfileRequest;const userId=accountUser.id;const button=this.querySelector('button[type="submit"]');
   const display_name=document.getElementById("accountEditName").value.trim();
   const account_type=document.getElementById("accountEditType").value;
   const city=document.getElementById("accountEditCity").value.trim();
@@ -2154,11 +2154,14 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   if(image_url&&!safeHttpsMediaUrl(image_url)){accountMessage("رابط الصورة يجب أن يكون HTTPS صالحًا.");return;}
   if(work_url&&!safeHttpsMediaUrl(work_url)){accountMessage("رابط نموذج العمل يجب أن يكون HTTPS صالحًا.");return;}
   try{button.disabled=true;const client=accountClient();
-    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:image_url||null,work_url:work_url||null,bio,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    const {error}=await client.from("member_profiles").upsert({user_id:userId,display_name,account_type,city,specialty,image_url:image_url||null,work_url:work_url||null,bio,updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(error) throw error;
+    if(requestId!==accountProfileRequest||accountUser?.id!==userId)return;
     const {error:metaError}=await client.auth.updateUser({data:{display_name,account_type}});
     if(metaError) throw metaError;
-    const {data:profile}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",accountUser.id).maybeSingle();
+    if(requestId!==accountProfileRequest||accountUser?.id!==userId)return;
+    const {data:profile}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",userId).maybeSingle();
+    if(requestId!==accountProfileRequest||accountUser?.id!==userId)return;
     accountShowUser(accountUser,profile);
     accountMessage("تم حفظ بياناتك وإرسال الملف لمراجعة الإدارة قبل نشره.");
   }catch(error){accountMessage("تعذر حفظ الملف الشخصي: "+(error.message||"راجع إعداد قاعدة البيانات."));}
@@ -2201,8 +2204,10 @@ function validateMemberWorkUploadFile(file){
 
 async function accountLoadMemberWorks(){
   const box=document.getElementById("memberWorkHistory");
-  if(!box || !accountUser) return;
-  const {data,error}=await accountClient().from("member_works").select("id,title,category,status,created_at").eq("user_id",accountUser.id).order("created_at",{ascending:false}).limit(30);
+  const userId=accountUser?.id;
+  if(!box || !userId) return;
+  const {data,error}=await accountClient().from("member_works").select("id,title,category,status,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(30);
+  if(accountUser?.id!==userId)return;
   if(error){box.textContent="تعذر تحميل أعمالك السابقة: "+error.message;return;}
   box.innerHTML=data?.length ? data.map(item=>`<article class="admin-item"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.category)} • ${item.status==="pending"?"قيد المراجعة":item.status==="approved"?"تم الاعتماد": "لم يتم الاعتماد"}</p></article>`).join("") : '<p style="color:var(--muted)">لم ترسل أعمالًا بعد.</p>';
 }
