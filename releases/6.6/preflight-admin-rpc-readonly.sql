@@ -75,8 +75,6 @@ select 'member_works',
        has_table_privilege('anon','public.member_works','SELECT'),
        has_table_privilege('authenticated','public.member_works','SELECT'),
        has_table_privilege('authenticated','public.member_works','UPDATE'),
-       has_column_privilege('authenticated','public.member_works','status','UPDATE'),
-       has_column_privilege('authenticated','public.member_works','user_id','UPDATE'),
        has_column_privilege('authenticated','public.member_works','status','UPDATE');
 
 -- 6) سياسات RLS الحالية للجداول الحساسة والتخزين، بما فيها permissive/restrictive.
