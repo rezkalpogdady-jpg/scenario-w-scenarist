@@ -138,7 +138,7 @@ jobs:
           if (/src="\$\{escapeHTML\(item\.cover\)\}"/.test(html)) {
             throw new Error('A database cover URL remains in an image src without scheme validation.');
           }
-          const cleanup = html.match(/async function adminRemoveStorageIfUnreferenced\(bucket,table,column,path\)\s*\{[\s\S]*?\n\}/);
+          const cleanup = html.match(/async function adminRemoveStorageIfUnreferenced\(client,bucket,table,column,path\)\s*\{[\s\S]*?\n\}/);
           if (!cleanup) throw new Error('Shared-storage reference guard is missing.');
           const guard = cleanup[0];
           if (!guard.includes('.from(table).select("id").eq(column,path).limit(1)') ||
