@@ -265,11 +265,6 @@ where id='scenario-scripts';
 select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
 from pg_policies
 where schemaname='storage' and tablename='objects'
-  and (
-    coalesce(qual,'') ilike '%scenario-scripts%'
-    or coalesce(with_check,'') ilike '%scenario-scripts%'
-    or policyname ilike '%scenario%script%'
-  )
 order by policyname;
 
 -- فحص امتيازات سجل المكتبة. الواجهة العامة تقرأ بيانات منشورة فقط،
