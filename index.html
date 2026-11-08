@@ -3218,7 +3218,7 @@ document.getElementById("libraryCategory")?.addEventListener("change",()=>{rende
 /* Whitelist public metadata; never forward arbitrary admin-only extra_data keys. */
 function sanitizePublicContentRecord(item){
   const source=item?.extra_data && typeof item.extra_data==="object" && !Array.isArray(item.extra_data) ? item.extra_data : {};
-  const allowed=["rights_status","source_url","name","author","writer","specialty","type","city","director","duration","owner","lesson_text","learning_objectives","exercise","homework"];
+  const allowed=["rights_status","source_url","name","author","writer","specialty","type","city","director","duration","production_year","year","owner","lesson_text","learning_objectives","exercise","homework"];
   const extra_data={};
   allowed.forEach(key=>{
     if(typeof source[key]==="string" && source[key].length<=20000) extra_data[key]=source[key];
