@@ -504,6 +504,37 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     </div>
   </div>
 
+  <div class="panel" id="academyFinalProjectPanel">
+    <h3 style="color:var(--gold)">المشروع النهائي للطالب</h3>
+    <p>طبّق ما تعلمته في المحاضرات على مشروع فيلم متكامل: من الفكرة والجملة التعريفية إلى الملخص والمعالجة والسيناريو. يمكنك حفظ مسودة ثم إرسالها للمراجعة.</p>
+    <div id="academyFinalProjectAccount" style="color:var(--muted)">سجّل الدخول لحفظ مشروعك ومتابعة تقييم الإدارة.</div>
+    <form id="academyFinalProjectForm" style="display:none">
+      <input id="academyFinalProjectId" type="hidden">
+      <label for="academyFinalProjectTitle">عنوان المشروع</label>
+      <input id="academyFinalProjectTitle" maxlength="180" required placeholder="اكتب عنوان الفيلم">
+      <label for="academyFinalProjectGenre">النوع الدرامي</label>
+      <select id="academyFinalProjectGenre" required>
+        <option value="">اختر النوع</option><option>دراما</option><option>اجتماعي</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>جريمة</option><option>تاريخي</option><option>رومانسي</option><option>خيال علمي</option><option>وثائقي</option>
+      </select>
+      <label for="academyFinalProjectLogline">الفكرة في جملة واحدة (Logline)</label>
+      <textarea id="academyFinalProjectLogline" maxlength="1200" required rows="3" placeholder="البطل + هدفه + العقبة + المخاطرة"></textarea>
+      <label for="academyFinalProjectSynopsis">الملخص السينمائي</label>
+      <textarea id="academyFinalProjectSynopsis" maxlength="12000" required rows="6" placeholder="احكِ القصة من بدايتها حتى نهايتها باختصار واضح..."></textarea>
+      <label for="academyFinalProjectTreatment">المعالجة الدرامية</label>
+      <textarea id="academyFinalProjectTreatment" maxlength="30000" required rows="8" placeholder="اكتب تطور الأحداث والمشاهد الرئيسية ومسار الشخصيات..."></textarea>
+      <label for="academyFinalProjectScreenplay">السيناريو</label>
+      <textarea id="academyFinalProjectScreenplay" maxlength="100000" required rows="12" placeholder="اكتب السيناريو بتنسيق المشاهد والحوار..."></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn" type="button" id="academyFinalProjectSaveDraft">حفظ كمسودة</button>
+        <button class="btn primary" type="submit">إرسال المشروع للمراجعة</button>
+        <button class="btn" type="button" id="academyFinalProjectCancel" style="display:none">إلغاء التعديل</button>
+      </div>
+      <p id="academyFinalProjectMessage" aria-live="polite"></p>
+    </form>
+    <div class="section-heading"><h3 style="color:var(--gold)">مشروعاتك وحالة التقييم</h3><button class="btn" type="button" id="academyFinalProjectRefresh">تحديث القائمة</button></div>
+    <div id="academyFinalProjectList"><p class="muted">ستظهر مشروعاتك هنا بعد تسجيل الدخول.</p></div>
+  </div>
+
   <div id="lessonDialog" class="panel" role="dialog" aria-modal="true" aria-labelledby="lessonDialogTitle" style="display:none;margin-top:18px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
       <h3 id="lessonDialogTitle" style="color:var(--gold);margin:0"></h3>
@@ -3521,5 +3552,109 @@ loadApprovedIdeas();
 })();
 </script>
 
+
+<script>
+/* أكاديمية سيناريو وسيناريست: المشروع النهائي للطالب */
+(function(){
+  const $ = id => document.getElementById(id);
+  const fields = {
+    project_title: "academyFinalProjectTitle",
+    genre: "academyFinalProjectGenre",
+    logline: "academyFinalProjectLogline",
+    synopsis: "academyFinalProjectSynopsis",
+    treatment: "academyFinalProjectTreatment",
+    screenplay: "academyFinalProjectScreenplay"
+  };
+  let editingProject = null;
+  let projects = [];
+  function projectMessage(message){ if($("academyFinalProjectMessage")) $("academyFinalProjectMessage").textContent=message; }
+  function projectStatus(status){
+    return status==="approved" ? "تمت الموافقة" : status==="needs_revision" ? "يحتاج إلى تعديل" : status==="pending" ? "قيد مراجعة الإدارة" : status==="rejected" ? "لم تتم الموافقة" : "مسودة محفوظة";
+  }
+  function resetProjectForm(){
+    $("academyFinalProjectForm")?.reset();
+    $("academyFinalProjectId").value="";
+    editingProject=null;
+    $("academyFinalProjectCancel").style.display="none";
+    projectMessage("");
+  }
+  function renderProjects(){
+    const box=$("academyFinalProjectList");
+    if(!box)return;
+    if(!projects.length){box.innerHTML='<div class="panel">لم تحفظ مشروعًا نهائيًا بعد. ابدأ بكتابة مشروعك أعلاه.</div>';return;}
+    box.innerHTML=projects.map(p=>{
+      const canEdit=["draft","needs_revision"].includes(p.status);
+      return `<article class="panel"><h4 style="color:var(--gold);margin:0 0 8px">${escapeHTML(p.project_title)}</h4>
+        <p>${escapeHTML(p.genre)} • <strong>${projectStatus(p.status)}</strong></p>
+        <p>${escapeHTML(p.admin_feedback||"لا توجد ملاحظات من الإدارة حتى الآن.")}</p>
+        <small>${p.submitted_at?new Date(p.submitted_at).toLocaleString("ar-EG"):""}</small>
+        ${canEdit?`<div style="margin-top:10px"><button class="btn" type="button" onclick="editAcademyFinalProject('${p.id}')">استكمال / تعديل المشروع</button></div>`:""}
+      </article>`;
+    }).join("");
+  }
+  window.loadAcademyFinalProjects=async function(){
+    const account=$("academyFinalProjectAccount"),form=$("academyFinalProjectForm");
+    if(!account||!form)return;
+    if(!accountUser){
+      account.textContent="سجّل الدخول أولًا حتى تحفظ مشروعك وتتابع ملاحظات الإدارة.";
+      form.style.display="none";
+      $("academyFinalProjectList").innerHTML='<div class="panel">سجّل الدخول لعرض مشروعاتك.</div>';
+      return;
+    }
+    account.textContent="أنت مسجل الدخول. اكتب مشروعك واحفظه أو أرسله للمراجعة.";
+    form.style.display="block";
+    try{
+      const {data,error}=await accountClient().from("academy_final_projects").select("id,project_title,genre,logline,synopsis,treatment,screenplay,status,admin_feedback,submitted_at,updated_at").order("updated_at",{ascending:false}).limit(30);
+      if(error)throw error;
+      projects=data||[];
+      renderProjects();
+    }catch(error){
+      $("academyFinalProjectList").innerHTML='<div class="panel">تعذر تحميل المشروعات: '+escapeHTML(error.message||"تحقق من الاتصال والصلاحيات.")+'</div>';
+    }
+  };
+  window.editAcademyFinalProject=function(id){
+    const p=projects.find(x=>x.id===id);
+    if(!p||!["draft","needs_revision"].includes(p.status))return;
+    editingProject=p.id;
+    $("academyFinalProjectId").value=p.id;
+    Object.entries(fields).forEach(([key,id])=>{$(id).value=p[key]||"";});
+    $("academyFinalProjectCancel").style.display="inline-block";
+    projectMessage("أنت تعدّل مشروعًا محفوظًا. بعد الانتهاء أرسله للمراجعة.");
+    $("academyFinalProjectForm").scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  async function saveProject(status){
+    if(!accountUser){projectMessage("سجّل الدخول أولًا.");return;}
+    const payload={user_id:accountUser.id,status,updated_at:new Date().toISOString()};
+    for(const [key,id] of Object.entries(fields))payload[key]=$(id).value.trim();
+    if(Object.values(fields).some(id=>!$(id).value.trim())){projectMessage("أكمل جميع عناصر المشروع قبل الحفظ أو الإرسال.");return;}
+    const submit=$("academyFinalProjectForm").querySelector('button[type="submit"]');
+    submit.disabled=true;
+    projectMessage(status==="pending"?"جارٍ إرسال المشروع للمراجعة...":"جارٍ حفظ المسودة...");
+    try{
+      const client=accountClient();
+      const result=editingProject
+        ? await client.from("academy_final_projects").update(payload).eq("id",editingProject)
+        : await client.from("academy_final_projects").insert(payload);
+      if(result.error)throw result.error;
+      projectMessage(status==="pending"?"تم إرسال المشروع للمراجعة. ستظهر ملاحظات الإدارة هنا.":"تم حفظ المسودة بنجاح.");
+      resetProjectForm();
+      await window.loadAcademyFinalProjects();
+    }catch(error){
+      projectMessage("تعذر حفظ المشروع: "+(error.message||"تحقق من الاتصال والصلاحيات."));
+    }finally{submit.disabled=false;}
+  }
+  $("academyFinalProjectForm")?.addEventListener("submit",event=>{event.preventDefault();saveProject("pending");});
+  $("academyFinalProjectSaveDraft")?.addEventListener("click",()=>saveProject("draft"));
+  $("academyFinalProjectCancel")?.addEventListener("click",resetProjectForm);
+  $("academyFinalProjectRefresh")?.addEventListener("click",()=>window.loadAcademyFinalProjects());
+  const previousShowPage=window.showPage;
+  if(typeof previousShowPage==="function"){
+    window.showPage=function(id){previousShowPage(id);if(id==="academy")window.loadAcademyFinalProjects();};
+  }
+  document.addEventListener("DOMContentLoaded",()=>{
+    if(document.getElementById("academyFinalProjectPanel")&&document.getElementById("academy")?.classList.contains("active"))window.loadAcademyFinalProjects();
+  });
+})();
+</script>
 </body>
 </html>
