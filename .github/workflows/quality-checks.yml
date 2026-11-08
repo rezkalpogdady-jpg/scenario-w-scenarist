@@ -240,6 +240,9 @@ jobs:
           if (!worksLoad.includes('.eq("user_id",accountUser.id)')) throw new Error('Member work history must be scoped to the signed-in user.');
           const profileSave = section('document.getElementById("accountProfileForm")', 'document.getElementById("accountNewPasswordForm")');
           if (!profileSave.includes('if(!accountUser) return') || !profileSave.includes('user_id:accountUser.id')) throw new Error('Profile writes must require and use the authenticated user ID.');
+          if (!profileSave.includes('allowedAccountTypes=["writer","director","actor","presenter","voice","producer"]') || !profileSave.includes('!allowedAccountTypes.includes(account_type)') || !profileSave.includes('safeHttpsMediaUrl(image_url)') || !profileSave.includes('safeHttpsMediaUrl(work_url)')) throw new Error('Member profile updates must validate account type and HTTPS portfolio links.');
+          const signup = section('document.getElementById("accountSignupForm")', 'document.getElementById("accountLoginForm")');
+          if (!signup.includes('allowedAccountTypes=["writer","director","actor","presenter","voice","producer"]') || !signup.includes('!allowedAccountTypes.includes(account_type)')) throw new Error('Signup must reject unsupported member account types.');
           const workSubmit = section('document.getElementById("memberWorkForm")', 'document.getElementById("accountLogout")');
           if (!workSubmit.includes('if(!accountUser)') || !workSubmit.includes('user_id:accountUser.id')) throw new Error('Member work submissions must require and use the authenticated user ID.');
           const publicProfiles = section('async function loadApprovedMemberProfiles()', '/* إنشاء اتصال عام لقراءة المحتوى المنشور */');
