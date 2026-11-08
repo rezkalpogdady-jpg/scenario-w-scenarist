@@ -649,6 +649,20 @@ function academyLessonExtraMarkup(material){
   return sections.join("");
 }
 
+function academyLessonMediaMarkup(value){
+  const url=safeHttpsMediaUrl(value);
+  if(!url)return "";
+  let pathname="";
+  try{pathname=new URL(url).pathname.toLowerCase();}catch(_){}
+  if(pathname.endsWith(".pdf")){
+    return '<section class="panel" style="margin-top:14px"><h4 style="color:var(--gold)">ملف المحاضرة PDF</h4><p>يمكنك قراءة الملف هنا أو فتحه في نافذة مستقلة.</p><div style="width:100%;height:min(70vh,720px);min-height:360px;background:#fff;border-radius:8px;overflow:hidden"><iframe src="'+escapeHTML(url)+'" title="ملف المحاضرة PDF" loading="lazy" style="width:100%;height:100%;border:0"></iframe></div><p><a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">فتح ملف PDF</a></p></section>';
+  }
+  if(/\\.(doc|docx|rtf|txt)$/i.test(pathname)){
+    const label=/\\.rtf$/i.test(pathname)?"RTF":/\\.txt$/i.test(pathname)?"ملف نصي":"Word";
+    return '<section class="panel" style="margin-top:14px"><h4 style="color:var(--gold)">مادة المحاضرة – '+label+'</h4><p>افتح الملف باستخدام التطبيق المناسب على جهازك.</p><a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">فتح ملف المحاضرة</a></section>';
+  }
+  return directVideoMarkup(url,"مشاهدة فيديو المحاضرة");
+}
 function openLesson(index){
   const lesson=academyLessonTitles()[index];
   if(!lesson) return;
@@ -661,7 +675,7 @@ function openLesson(index){
   destroyInlineHlsVideos(dialog);
   title.textContent=`المحاضرة ${index+1}: ${lesson}`;
   body.innerHTML=material
-    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مختصر مضاف لهذه المحاضرة بعد.")}</p>${academyLessonExtraMarkup(material)}${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
+    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مختصر مضاف لهذه المحاضرة بعد.")}</p>${academyLessonExtraMarkup(material)}${material.content_url ? academyLessonMediaMarkup(material.content_url) : "<p style='color:var(--muted)'>لا يوجد فيديو أو ملف مرفق حاليًا.</p>"}`
     : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
   dialog.style.display="block";
   initializeInlineHlsVideos(dialog);
