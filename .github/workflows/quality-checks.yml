@@ -142,7 +142,7 @@ jobs:
           if (!cleanup) throw new Error('Shared-storage reference guard is missing.');
           const guard = cleanup[0];
           if (!guard.includes('.from(table).select("id").eq(column,path).limit(1)') ||
-              !guard.includes('if(Array.isArray(data)&&data.length)') ||
+              !guard.includes('if(error||!Array.isArray(data))') || !guard.includes('if(data.length)') ||
               !guard.includes('.storage.from(bucket).remove([path])') ||
               !guard.includes('reason:"reference-check-failed"')) {
             throw new Error('Shared-storage guard must verify references and retain files on lookup failure.');
