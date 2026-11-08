@@ -262,6 +262,14 @@
       });
     } catch (_) {}
 
+    const profilePanel=document.getElementById('accountProfilePanel');
+    if (profilePanel && window.MutationObserver) {
+      const profileObserver=new MutationObserver(()=>{
+        if (accountUser && profilePanel.style.display!=='none') loadStudent();
+      });
+      profileObserver.observe(profilePanel,{attributes:true,attributeFilter:['style']});
+    }
+
     const dashboard=document.getElementById('adminDashboard');
     if (dashboard && window.MutationObserver) {
       const observer=new MutationObserver(()=>{
