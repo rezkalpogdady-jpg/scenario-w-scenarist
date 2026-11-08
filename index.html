@@ -1922,7 +1922,14 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           نشر المحتوى للزوار
         </label>
 
+        <div id="adminAcademyPreview" class="panel" style="display:none;margin:14px 0;border:1px solid var(--gold)">
+          <h3 style="color:var(--gold)">معاينة المحاضرة قبل الحفظ</h3>
+          <p style="font-size:12px;color:var(--muted)">معاينة محلية للبيانات الحالية فقط؛ لم يتم حفظها أو نشرها بعد.</p>
+          <div id="adminAcademyPreviewBody"></div>
+        </div>
+
         <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" type="button" id="adminPreviewLessonButton">معاينة المحاضرة</button>
           <button class="btn primary" type="submit" id="adminSaveButton">حفظ المحتوى</button>
           <button class="btn" type="button" id="adminCancelEdit">إلغاء التعديل</button>
         </div>
@@ -2815,6 +2822,10 @@ function adminResetForm(){
   if(extra) extra.value="";
   ["adminLessonOrder","adminLessonText","adminLessonObjectives","adminLessonExercise","adminLessonHomework","adminLessonResources"].forEach(id=>{const field=document.getElementById(id);if(field)field.value="";});
   adminSyncAcademyFieldsVisibility();
+  const preview=document.getElementById("adminAcademyPreview");
+  if(preview)preview.style.display="none";
+  const previewBody=document.getElementById("adminAcademyPreviewBody");
+  if(previewBody)previewBody.textContent="";
   document.getElementById("adminSaveButton").textContent="حفظ المحتوى";
 }
 
@@ -2822,6 +2833,55 @@ function adminSyncAcademyFieldsVisibility(){
   const fields=document.getElementById("adminAcademyFields");
   if(fields)fields.style.display=document.getElementById("adminContentType")?.value==="academy"?"block":"none";
 }
+function adminRenderAcademyPreview(){
+  const panel=document.getElementById("adminAcademyPreview");
+  const body=document.getElementById("adminAcademyPreviewBody");
+  if(!panel||!body)return;
+  const value=id=>document.getElementById(id)?.value.trim()||"";
+  const title=value("adminTitle")||"محاضرة بدون عنوان";
+  const description=value("adminDescription");
+  const contentUrl=value("adminContentUrl");
+  const sections=[
+    ["محتوى المحاضرة",value("adminLessonText")],
+    ["أهداف التعلم",value("adminLessonObjectives")],
+    ["التدريب العملي",value("adminLessonExercise")],
+    ["الواجب المنزلي",value("adminLessonHomework")]
+  ].filter(([,text])=>text);
+  let resources=[];
+  const resourcesText=value("adminLessonResources");
+  if(resourcesText){
+    try{
+      const parsed=JSON.parse(resourcesText);
+      if(!Array.isArray(parsed)||parsed.length>20||parsed.some(item=>!item||typeof item!=="object"||typeof item.title!=="string"||!isAbsoluteHttpsUrl(item.url))){
+        throw new Error("راجع المواد المساعدة: يلزم عنوان ورابط HTTPS صحيح لكل عنصر، وبحد أقصى 20 عنصرًا.");
+      }
+      resources=parsed;
+    }catch(error){
+      adminSetMessage("adminSaveMessage",error.message||"صيغة المواد المساعدة غير صحيحة.");
+      return;
+    }
+  }
+  const safeVideo=safeHttpsMediaUrl(contentUrl);
+  const order=value("adminLessonOrder");
+  body.innerHTML=`
+    <h2>${escapeHTML(title)}</h2>
+    ${description?`<p style="white-space:pre-wrap">${escapeHTML(description)}</p>`:""}
+    ${sections.map(([heading,text])=>`<section class="panel"><h4 style="color:var(--gold)">${heading}</h4><p style="white-space:pre-wrap">${escapeHTML(text)}</p></section>`).join("")}
+    ${resources.length?`<section class="panel"><h4 style="color:var(--gold)">مواد ومراجع مساعدة</h4><ul>${resources.map(item=>`<li><a href="${escapeHTML(safeHttpsMediaUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title.trim())}</a></li>`).join("")}</ul></section>`:""}
+    ${safeVideo?`<p><a class="btn" href="${escapeHTML(safeVideo)}" target="_blank" rel="noopener noreferrer">فتح رابط الفيديو أو المادة</a></p>`:(contentUrl?"<p>رابط الفيديو غير صالح للمعاينة؛ استخدم رابط HTTPS آمنًا.</p>":"<p style='color:var(--muted)'>لا يوجد فيديو أو ملف مرفق.</p>")}
+    ${order?`<p style="color:var(--muted)">ترتيب المحاضرة الإضافية: ${escapeHTML(order)}</p>`:""}
+  `;
+  panel.style.display="block";
+  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+document.getElementById("adminPreviewLessonButton")?.addEventListener("click",()=>{
+  if(document.getElementById("adminContentType")?.value!=="academy"){
+    adminSetMessage("adminSaveMessage","المعاينة متاحة لمحتوى الأكاديمية فقط.");
+    return;
+  }
+  adminRenderAcademyPreview();
+});
+
 document.getElementById("adminContentType")?.addEventListener("change",adminSyncAcademyFieldsVisibility);
 adminSyncAcademyFieldsVisibility();
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
