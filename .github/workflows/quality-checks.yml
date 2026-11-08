@@ -280,6 +280,26 @@ jobs:
           }
           console.log('Admin upload extension/MIME allowlist checks passed.');
           NODE
+      - name: Check TV and radio rights gates
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const required = [
+            'function broadcastRightsApproved(item)',
+            'rightsStatus:String(extra.rights_status||"").toLowerCase()',
+            'sourceUrl:extra.source_url||""',
+            'if(!["official","licensed"].includes(rightsStatus) || !sourceUrl)',
+            'if(!channel || !broadcastRightsApproved(channel))',
+            'if(!station || !broadcastRightsApproved(station))',
+            'البث متوقف لحين توثيق المصدر وحقوق العرض'
+          ];
+          for (const snippet of required) {
+            if (!html.includes(snippet)) throw new Error('Missing broadcast rights safeguard: ' + snippet);
+          }
+          console.log('TV/radio rights gate static checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
