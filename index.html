@@ -641,7 +641,10 @@ function openLesson(index){
 
 function closeLesson(){
   const dialog=document.getElementById("lessonDialog");
-  if(dialog) dialog.style.display="none";
+  if(dialog){
+    destroyInlineHlsVideos(dialog);
+    dialog.style.display="none";
+  }
 }
 
 renderLessonIndex();
@@ -1377,6 +1380,9 @@ function playRadioStation(id){
   const status=document.getElementById("radioStatus");
   if(!player || !title || !status) return;
   if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
+  const tvPlayer=document.getElementById("tvPlayer");
+  if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
+  if(tvPlayer){tvPlayer.pause();tvPlayer.removeAttribute("src");tvPlayer.load();}
   player.pause();player.removeAttribute("src");player.load();
   title.textContent=station.name;status.textContent="جارٍ تحميل المحطة...";
   const isHls=/\.m3u8($|\?)/i.test(streamUrl);
@@ -3003,6 +3009,7 @@ function renderAcademyContent(items){
   const videoBox=document.getElementById("academyVideo");
   if(typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
   if(!videoBox) return;
+  destroyInlineHlsVideos(videoBox);
   const video=(items||[]).find(item=>item.content_url);
   videoBox.innerHTML=video
     ? `<h3>${escapeHTML(video.title)}</h3><p>${escapeHTML(video.description || "")}</p>${directVideoMarkup(video.content_url,"مشاهدة المحاضرة")}`
@@ -3050,6 +3057,19 @@ function directVideoMarkup(value,label="مشاهدة الفيديو"){
     if(embed) return `<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden"><iframe src="${embed}" title="${escapeHTML(label)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>`;
   }catch(_){}
   return `<a class="btn" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`;
+}
+
+function destroyInlineHlsVideos(root=document){
+  root.querySelectorAll("video[data-hls-url]").forEach(player=>{
+    if(player._hlsInstance){
+      player._hlsInstance.destroy();
+      player._hlsInstance=null;
+    }
+    player.pause();
+    player.removeAttribute("src");
+    player.load();
+    player.dataset.hlsReady="0";
+  });
 }
 
 function initializeInlineHlsVideos(root=document){
@@ -3261,6 +3281,9 @@ function playTVChannel(id){
     activeHlsPlayer.destroy();
     activeHlsPlayer=null;
   }
+  const radioPlayer=document.getElementById("radioPlayer");
+  if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
+  if(radioPlayer){radioPlayer.pause();radioPlayer.removeAttribute("src");radioPlayer.load();}
 
   player.pause();
   player.removeAttribute("src");
