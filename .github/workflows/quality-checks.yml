@@ -651,10 +651,10 @@ jobs:
             "to_regclass('public.scenario_scripts')",
             'c.relrowsecurity',
             "where schemaname='public' and tablename='scenario_scripts'",
-            "has_table_privilege('anon','public.scenario_scripts','INSERT')",
-            "has_table_privilege('authenticated','public.scenario_scripts','UPDATE')",
-            "has_column_privilege('anon','public.scenario_scripts','storage_path','SELECT')",
-            "has_column_privilege('authenticated','public.scenario_scripts','published','UPDATE')"
+            "has_table_privilege('anon',(select to_regclass('public.scenario_scripts')),'INSERT')",
+            "has_table_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'UPDATE')",
+            "has_column_privilege('anon',(select to_regclass('public.scenario_scripts')),'storage_path','SELECT')",
+            "has_column_privilege('authenticated',(select to_regclass('public.scenario_scripts')),'published','UPDATE')"
           ];
           for (const snippet of required) {
             if (!sql.includes(snippet)) throw new Error('Scenario library table security audit is missing: ' + snippet);
