@@ -2245,8 +2245,8 @@ async function adminReviewMemberWork(id,status){
   }
   let privateCleanupWarning="";
   if(work.storage_path){
-    const {error:removeError}=await adminSupabase.storage.from("member-submissions").remove([work.storage_path]);
-    if(removeError)privateCleanupWarning=" تمت المراجعة، لكن تعذر تنظيف النسخة الخاصة الأصلية: "+removeError.message;
+    const cleanup=await adminRemoveStorageIfUnreferenced("member-submissions","member_works","storage_path",work.storage_path);
+    if(!cleanup.removed)privateCleanupWarning=cleanup.reason==="still-referenced"?" تمت المراجعة، والملف الخاص محفوظ لأنه ما زال مرتبطًا بسجل عمل.":" تمت المراجعة، لكن تُرك الملف الخاص دون حذف لتعذر التحقق من المراجع أو تنظيفه.";
   }
   alert((status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل.")+privateCleanupWarning);
   await adminLoadMemberWorks();await adminLoadRecords();await loadPublicContent();
@@ -2571,6 +2571,22 @@ function adminStoragePathFromPublicUrl(value){
   }catch(_){return null;}
 }
 
+/* لا نحذف ملفًا من التخزين قبل التأكد من عدم وجود سجل آخر يشير إليه.
+   عند تعذر الاستعلام نُبقي الملف حفاظًا على البيانات. */
+async function adminRemoveStorageIfUnreferenced(bucket,table,column,path){
+  if(!path)return {removed:false,reason:"missing-path"};
+  try{
+    const {data,error}=await adminSupabase.from(table).select("id").eq(column,path).limit(1);
+    if(error)return {removed:false,reason:"reference-check-failed",error};
+    if(Array.isArray(data)&&data.length)return {removed:false,reason:"still-referenced"};
+    const {error:removeError}=await adminSupabase.storage.from(bucket).remove([path]);
+    if(removeError)return {removed:false,reason:"remove-failed",error:removeError};
+    return {removed:true};
+  }catch(error){
+    return {removed:false,reason:"unexpected-error",error};
+  }
+}
+
 /* حذف سجل */
 async function adminDeleteRecord(id){
   if(!adminSupabase || !adminSession) return;
@@ -2712,7 +2728,10 @@ async function adminDeleteScenarioScript(id){
   const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
   const {error}=await adminSupabase.from("scenario_scripts").delete().eq("id",id);
   if(error){scenarioScriptMessage("تعذر حذف السجل: "+error.message);return;}
-  if(item.storage_path){const {error:removeError}=await adminSupabase.storage.from("scenario-scripts").remove([item.storage_path]);if(removeError)scenarioScriptMessage("حُذف السجل، لكن تعذر حذف الملف: "+removeError.message);}
+  if(item.storage_path){
+    const cleanup=await adminRemoveStorageIfUnreferenced("scenario-scripts","scenario_scripts","storage_path",item.storage_path);
+    if(!cleanup.removed)scenarioScriptMessage(cleanup.reason==="still-referenced"?"حُذف السجل، لكن الملف محفوظ لأنه ما زال مرتبطًا بسجل آخر.":"حُذف السجل، لكن تُرك الملف دون حذف لتعذر التحقق من المراجع أو تنظيفه.");
+  }
   await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
 }
 document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",async function(event){
@@ -2736,7 +2755,10 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
     const record={title:document.getElementById("adminScenarioScriptTitle").value.trim(),author:document.getElementById("adminScenarioScriptAuthor").value.trim(),category:document.getElementById("adminScenarioScriptCategory").value,summary:document.getElementById("adminScenarioScriptSummary").value.trim(),storage_path:storagePath,published:document.getElementById("adminScenarioScriptPublished").checked,updated_at:new Date().toISOString()};
     const result=id?await adminSupabase.from("scenario_scripts").update(record).eq("id",id):await adminSupabase.from("scenario_scripts").insert(record);
     if(result.error)throw result.error;
-    if(file&&previous?.storage_path){const {error:oldError}=await adminSupabase.storage.from("scenario-scripts").remove([previous.storage_path]);if(oldError)scenarioScriptMessage("تم الحفظ، لكن تعذر تنظيف ملف PDF القديم: "+oldError.message);}
+    if(file&&previous?.storage_path){
+      const cleanup=await adminRemoveStorageIfUnreferenced("scenario-scripts","scenario_scripts","storage_path",previous.storage_path);
+      if(!cleanup.removed)scenarioScriptMessage(cleanup.reason==="still-referenced"?"تم الحفظ، والملف القديم محفوظ لأنه ما زال مرتبطًا بسجل آخر.":"تم الحفظ، لكن تُرك ملف PDF القديم دون حذف لتعذر التحقق من المراجع أو تنظيفه.");
+    }
     this.reset();document.getElementById("adminScenarioScriptId").value="";
     if(!document.getElementById("adminScenarioScriptMessage").textContent.startsWith("تم الحفظ،"))scenarioScriptMessage("تم حفظ السيناريو بنجاح.");
     await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
