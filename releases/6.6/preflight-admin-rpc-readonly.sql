@@ -69,15 +69,15 @@ select 'member_profiles' as object_name,
        has_table_privilege('anon','public.member_profiles','SELECT') as anon_select,
        has_table_privilege('authenticated','public.member_profiles','SELECT') as authenticated_select,
        has_table_privilege('authenticated','public.member_profiles','UPDATE') as authenticated_table_update,
-       has_column_privilege('authenticated','public.member_profiles','profile_status','UPDATE') as authenticated_can_update_profile_status,
-       has_column_privilege('authenticated','public.member_profiles','reviewed_at','UPDATE') as authenticated_can_update_reviewed_at
+       has_column_privilege('authenticated','public.member_profiles','profile_status','UPDATE') as authenticated_can_update_profile_status
 union all
 select 'member_works',
        has_table_privilege('anon','public.member_works','SELECT'),
        has_table_privilege('authenticated','public.member_works','SELECT'),
        has_table_privilege('authenticated','public.member_works','UPDATE'),
        has_column_privilege('authenticated','public.member_works','status','UPDATE'),
-       has_column_privilege('authenticated','public.member_works','user_id','UPDATE');
+       has_column_privilege('authenticated','public.member_works','user_id','UPDATE'),
+       has_column_privilege('authenticated','public.member_works','status','UPDATE');
 
 -- 6) سياسات RLS الحالية للجداول الحساسة والتخزين، بما فيها permissive/restrictive.
 -- تذكير: السياسات permissive تتحد بـ OR، والتقييدية بـ AND.
