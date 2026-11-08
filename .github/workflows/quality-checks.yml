@@ -240,6 +240,21 @@ jobs:
           if (publicProfiles.includes('.select("*"')) throw new Error('Public profile directory must not select all profile columns.');
           console.log('Member client-side access-boundary checks passed. Database RLS still requires independent verification.');
           NODE
+      - name: Check admin dashboard role gate
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const start = html.indexOf('async function adminVerifyAdmin(session)');
+          const end = html.indexOf('/* تسجيل الدخول */', start);
+          if (start < 0 || end < 0) throw new Error('Admin verification function could not be isolated.');
+          const gate = html.slice(start, end);
+          if (!gate.includes('data.user.app_metadata?.role') || !gate.includes('role!=="admin"')) throw new Error('Admin dashboard must require the trusted app_metadata admin role.');
+          if (gate.includes('user_metadata')) throw new Error('Do not use user-editable metadata for admin authorization.');
+          if (!gate.includes('adminDashboard").style.display="none"')) throw new Error('Non-admin users must not see the admin dashboard.');
+          console.log('Admin dashboard client-side role gate checks passed; database authorization must still be verified independently.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
