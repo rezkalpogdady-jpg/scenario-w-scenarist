@@ -192,6 +192,29 @@ jobs:
           console.log('URL scheme tests and critical media URL sinks passed.');
           NODE
 
+      - name: Check HTML escaping and private reader URL validation
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const esc = html.match(/function escapeHTML\\(value\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          const admin = html.match(/function adminEscape\\(value\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          if (!esc || !admin) throw new Error('HTML escaping helpers are required.');
+          const escapeHTML = vm.runInNewContext(esc[0] + '; escapeHTML');
+          const adminEscape = vm.runInNewContext(admin[0] + '; adminEscape');
+          const hostile = '<img src=x onerror=alert(1)> & "';
+          for (const [name, fn] of [['escapeHTML', escapeHTML], ['adminEscape', adminEscape]]) {
+            const out = fn(hostile);
+            if (/[<>"']/.test(out) || !out.includes('&lt;') || !out.includes('&amp;')) throw new Error(name + ' failed hostile HTML escaping.');
+          }
+          const start = html.indexOf('async function openScenarioScript(');
+          const end = html.indexOf('function closeScenarioReader(', start);
+          const reader = html.slice(start, end);
+          if (start < 0 || !reader.includes('safeHttpUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}"')) throw new Error('Private scenario iframe must validate its signed URL.');
+          console.log('HTML escaping and private reader URL checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
