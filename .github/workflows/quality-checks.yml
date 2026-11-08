@@ -451,14 +451,14 @@ jobs:
           );
           const rawRecords = [
             { content_type: 'academy', title: 'ورشة كتابة المشهد', published: true, extra_data: { lesson_order: 2, lesson_text: 'نص الورشة' }, content_url: 'https://cdn.example/lesson.mp4' },
-            { content_type: 'academy', title: 'مقدمة في عالم السيناريو', published: true, extra_data: { lesson_order: 1 } },
+            { content_type: 'academy', title: 'ورشة تطوير الشخصيات', published: true, extra_data: { lesson_order: 1 } },
             { content_type: 'academy', title: 'الفرق بين الرواية والقصة والسيناريو', published: true, extra_data: {} },
             { content_type: 'radio', title: 'لا تظهر في الأكاديمية', published: true },
             { content_type: 'academy', title: 'مسودة مخفية', published: false }
           ];
           context.publicContentRecords = rawRecords;
           const titles = context.resolveTitles();
-          if (titles.length !== 32 || titles[30] !== 'مقدمة في عالم السيناريو' || titles[31] !== 'ورشة كتابة المشهد') {
+          if (titles.length !== 32 || titles[30] !== 'ورشة تطوير الشخصيات' || titles[31] !== 'ورشة كتابة المشهد') {
             throw new Error('Raw published lesson records must be normalized and ordered in the academy index.');
           }
           if (titles.filter(title => title === 'الفرق بين الرواية والقصة والسيناريو').length !== 1) throw new Error('A curriculum lesson was duplicated.');
