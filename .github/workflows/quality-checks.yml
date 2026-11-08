@@ -438,11 +438,11 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
-          const curriculum = html.match(/const academyLessons = \\[([\\s\\S]*?)\\n\\];/);
-          const resolver = html.match(/function academyLessonTitles\\(materials = publicContentRecords \\|\\| \\[\\]\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          const curriculum = html.match(/const academyLessons = \[([\s\S]*?)\n\];/);
+          const resolver = html.match(/function academyLessonTitles\(materials = publicContentRecords \|\| \[\]\)\s*\{[\s\S]*?\n\}/);
           if (!curriculum || !resolver) throw new Error('Academy lesson index resolver or base curriculum is missing.');
           const context = vm.createContext({ publicContentRecords: [] });
-          vm.runInContext('const academyLessons = [' + curriculum[1] + '\\n];\\n' + resolver[0] + '\\nthis.resolveTitles = academyLessonTitles;', context);
+          vm.runInContext('const academyLessons = [' + curriculum[1] + '\n];\n' + resolver[0] + '\nthis.resolveTitles = academyLessonTitles;', context);
           const titles = context.resolveTitles([
             { content_type: 'academy', title: 'ورشة كتابة المشهد', published: true },
             { content_type: 'academy', title: 'مقدمة في عالم السيناريو', published: true },
