@@ -213,6 +213,7 @@ jobs:
           const end = html.indexOf('function closeScenarioReader(', start);
           const reader = html.slice(start, end);
           if (start < 0 || !reader.includes('safeHttpsMediaUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}#toolbar=0&navpanes=0&view=FitH"')) throw new Error('Private scenario iframe must validate its signed URL over HTTPS.');
+          if (!html.includes('let scenarioReaderRequest=0;') || !reader.includes('const requestId=++scenarioReaderRequest;') || !reader.includes('if(requestId!==scenarioReaderRequest)return;') || !html.includes('function closeScenarioReader(){scenarioReaderRequest++;')) throw new Error('Scenario reader must ignore stale requests and invalidate pending work on close.');
           const uploadStart = html.indexOf('document.getElementById("adminScenarioScriptForm")?.addEventListener');
           const uploadEnd = html.indexOf('async function loadPublishedScenarioScripts(', uploadStart);
           const upload = html.slice(uploadStart, uploadEnd);
