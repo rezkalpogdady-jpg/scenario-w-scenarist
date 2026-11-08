@@ -138,6 +138,27 @@ jobs:
           if (/src="\$\{escapeHTML\(item\.cover\)\}"/.test(html)) {
             throw new Error('A database cover URL remains in an image src without scheme validation.');
           }
+          const cleanup = html.match(/async function adminRemoveStorageIfUnreferenced\(bucket,table,column,path\)\s*\{[\s\S]*?\n\}/);
+          if (!cleanup) throw new Error('Shared-storage reference guard is missing.');
+          const guard = cleanup[0];
+          if (!guard.includes('.from(table).select("id").eq(column,path).limit(1)') ||
+              !guard.includes('if(Array.isArray(data)&&data.length)') ||
+              !guard.includes('.storage.from(bucket).remove([path])') ||
+              !guard.includes('reason:"reference-check-failed"')) {
+            throw new Error('Shared-storage guard must verify references and retain files on lookup failure.');
+          }
+          for (const fn of ['adminDeleteScenarioScript', 'adminReviewMemberWork']) {
+            const start = html.indexOf('async function ' + fn + '(');
+            const end = html.indexOf('\nfunction ', start + 1);
+            const body = html.slice(start, end < 0 ? undefined : end);
+            if (start < 0 || !body.includes('adminRemoveStorageIfUnreferenced(')) {
+              throw new Error(fn + ' must use the shared-storage reference guard.');
+            }
+          }
+          const scenarioSave = html.slice(html.indexOf('adminScenarioScriptForm') - 100, html.indexOf('async function loadPublishedScenarioScripts'));
+          if (!scenarioSave.includes('adminRemoveStorageIfUnreferenced(')) {
+            throw new Error('Replacing a scenario PDF must use the shared-storage reference guard.');
+          }
           console.log('URL scheme tests and critical media URL sinks passed.');
           NODE
 
