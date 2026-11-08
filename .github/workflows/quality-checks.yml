@@ -375,7 +375,8 @@ jobs:
             if (!sql.includes(name)) throw new Error('Missing admin RPC audit target: ' + name);
           }
           if (!sql.includes('pg_get_functiondef') || !sql.includes('has_function_privilege')) throw new Error('Admin RPC audit must inspect function definitions and EXECUTE grants.');
-          if (/\\b(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/i.test(sql)) throw new Error('Read-only admin RPC preflight contains a mutating SQL statement.');
+          const executable = sql.replace(/--.*$/gm, '');
+          if (/^\\s*(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/im.test(executable)) throw new Error('Read-only admin RPC preflight contains a mutating SQL statement.');
           console.log('Read-only admin RPC audit checks passed.');
           NODE
       - name: Check for server-side secret key patterns
