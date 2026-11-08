@@ -82,8 +82,9 @@ jobs:
           const inlineJsArg = vm.runInNewContext(helper[0] + '; inlineJsArg');
           const payload = '"><img src=x onerror=alert(1)>&' + String.fromCharCode(0x2028);
           const encoded = inlineJsArg(payload);
+          const body = encoded.slice(6, -6);
           if (!encoded.startsWith('&quot;') || !encoded.endsWith('&quot;') ||
-              /[<>&\u2028\u2029]/.test(encoded.replace(/\\u[0-9a-f]{4}/gi, ''))) {
+              /[<>&\u2028\u2029]/.test(body)) {
             throw new Error('inlineJsArg failed the hostile-input serialization test.');
           }
           const lines = html.split(/\r?\n/);
