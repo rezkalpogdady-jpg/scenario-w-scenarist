@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "stage/**"
+      - "main"
   pull_request:
     branches:
       - main
@@ -69,6 +70,20 @@ jobs:
           }
           if (failed) process.exit(1);
           NODE
+
+      - name: Parse every feature module
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(modules/*.js)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No feature modules found."
+            exit 0
+          fi
+          for file in "${files[@]}"; do
+            echo "Checking $file"
+            node --check "$file"
+          done
 
       - name: Check dynamic inline handler arguments
         shell: bash
