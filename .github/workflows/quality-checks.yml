@@ -347,6 +347,37 @@ jobs:
           if (/drop\\s+table|delete\\s+from|truncate\\s+table/i.test(sql)) throw new Error('Unexpected destructive SQL in profile trigger migration.');
           console.log('Member profile re-review migration static checks passed.');
           NODE
+      - name: Check approved member work publication MIME allowlist
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const required = [
+            'const publicMimeByExtension={pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",txt:"text/plain"}',
+            'const publicMime=publicMimeByExtension[extension]',
+            'fileData.size>25*1024*1024',
+            'contentType:publicMime'
+          ];
+          for (const snippet of required) {
+            if (!html.includes(snippet)) throw new Error('Missing approved work publication safeguard: ' + snippet);
+          }
+          if (/contentType:fileData\\.type/.test(html)) throw new Error('Untrusted Blob MIME still used for approved member work publication.');
+          console.log('Approved member work publication MIME checks passed.');
+          NODE
+      - name: Check read-only admin RPC audit coverage
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const sql = fs.readFileSync('releases/6.6/preflight-admin-rpc-readonly.sql', 'utf8');
+          for (const name of ['admin_review_member_profile','admin_review_member_work','admin_review_community_submission']) {
+            if (!sql.includes(name)) throw new Error('Missing admin RPC audit target: ' + name);
+          }
+          if (!sql.includes('pg_get_functiondef') || !sql.includes('has_function_privilege')) throw new Error('Admin RPC audit must inspect function definitions and EXECUTE grants.');
+          if (/\\b(create|alter|drop|grant|revoke|insert|update|delete|truncate)\\s+/i.test(sql)) throw new Error('Read-only admin RPC preflight contains a mutating SQL statement.');
+          console.log('Read-only admin RPC audit checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
