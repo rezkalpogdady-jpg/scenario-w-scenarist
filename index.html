@@ -1427,34 +1427,28 @@ function renderRadioStations(){
 let activeRadioHlsPlayer=null;
 function playRadioStation(id){
   const station=radioStations.find(item=>String(item.id)===String(id));
-  if(!station || !broadcastRightsApproved(station)){alert("لن يتم تشغيل المحطة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");return;}
+  if(!station||!broadcastRightsApproved(station)){alert("لن يتم تشغيل المحطة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");return;}
   const streamUrl=safeHttpsMediaUrl(station.stream);
   if(!streamUrl){alert("رابط البث غير متاح أو غير آمن لهذه المحطة.");return;}
-  const player=document.getElementById("radioPlayer");
-  const title=document.getElementById("radioNowTitle");
-  const status=document.getElementById("radioStatus");
-  if(!player || !title || !status) return;
+  const player=document.getElementById("radioPlayer"),title=document.getElementById("radioNowTitle"),status=document.getElementById("radioStatus");
+  if(!player||!title||!status)return;
   if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
   const tvPlayer=document.getElementById("tvPlayer");
   if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
   if(tvPlayer){tvPlayer.pause();tvPlayer.removeAttribute("src");tvPlayer.load();}
-  player.pause();player.removeAttribute("src");player.load();
-  title.textContent=station.name;status.textContent="جارٍ تحميل المحطة...";
-  const isHls=/\.m3u8($|\?)/i.test(streamUrl);
-  const play=()=>player.play().then(()=>{status.textContent="يتم تشغيل: "+station.name;}).catch(()=>{status.textContent="اضغط زر التشغيل داخل المشغل لبدء الاستماع.";});
+  player.pause();player.removeAttribute("src");player.load();title.textContent=station.name;status.textContent="جارٍ الاتصال بالمحطة...";
+  const isHls=/\.m3u8(?:$|[?#])/i.test(streamUrl);
+  player.addEventListener("canplay",()=>{status.textContent="المحطة جاهزة للاستماع: "+station.name+"."},{once:true});
+  player.addEventListener("error",()=>{status.textContent="فشل تشغيل المحطة. تحقق من رابط البث المباشر أو توقف المصدر أو إعدادات CORS."},{once:true});
+  const play=()=>player.play().then(()=>{status.textContent="يتم تشغيل: "+station.name;}).catch(()=>{status.textContent="المحطة جاهزة؛ اضغط زر التشغيل داخل المشغل.";});
   if(isHls && window.Hls && Hls.isSupported()){
-    const instance=new Hls();
-    activeRadioHlsPlayer=instance;
-    instance.loadSource(streamUrl);
-    instance.attachMedia(player);
-    instance.on(Hls.Events.MANIFEST_PARSED,play);
-    instance.on(Hls.Events.ERROR,(_event,data)=>{
-      if(data.fatal){
-        status.textContent="تعذر تشغيل المحطة؛ تحقق من رابط البث أو صلاحية تضمينه.";
-        instance.destroy();
-        if(activeRadioHlsPlayer===instance) activeRadioHlsPlayer=null;
-      }
-    });
+    const instance=new Hls({enableWorker:true});activeRadioHlsPlayer=instance;
+    instance.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal){status.textContent="تعذر تحميل بث HLS الصوتي. تحقق من الرابط وإعدادات CORS لدى مزود البث.";instance.destroy();if(activeRadioHlsPlayer===instance)activeRadioHlsPlayer=null;}});
+    instance.loadSource(streamUrl);instance.attachMedia(player);instance.on(Hls.Events.MANIFEST_PARSED,play);
+  }else if(isHls && player.canPlayType("application/vnd.apple.mpegurl")){
+    player.src=streamUrl;player.load();play();
+  }else if(isHls){
+    status.textContent="هذا المتصفح لا يدعم بث HLS الصوتي، ومشغل HLS غير متاح. تحقق من تحميل المكتبة أو استخدم رابط MP3/AAC مباشر.";
   }else{
     player.src=streamUrl;player.load();play();
   }
@@ -3608,83 +3602,31 @@ let activeHlsPlayer=null;
 
 function playTVChannel(id){
   const channel=tvChannels.find(item=>String(item.id)===String(id));
-  if(!channel || !broadcastRightsApproved(channel)){
-    alert("لن يتم تشغيل القناة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");
-    return;
-  }
+  if(!channel || !broadcastRightsApproved(channel)){alert("لن يتم تشغيل القناة قبل تسجيل مصدر رسمي أو ترخيص ومرجع توثيقي لدى الإدارة.");return;}
   const streamUrl=safeHttpsMediaUrl(channel.stream);
-  if(!streamUrl){
-    alert("رابط البث غير متاح لهذه القناة.");
-    return;
-  }
-
-  const player=document.getElementById("tvPlayer");
-  const placeholder=document.getElementById("tvPlaceholder");
-  const status=document.getElementById("tvStatus");
-  const nowTitle=document.getElementById("tvNowTitle");
-  if(!player || !placeholder || !status || !nowTitle){
-    console.warn("مشغل التلفزيون أو عناصر حالته غير موجودة في الصفحة.");
-    return;
-  }
-
-  if(activeHlsPlayer){
-    activeHlsPlayer.destroy();
-    activeHlsPlayer=null;
-  }
+  if(!streamUrl){alert("رابط البث غير متاح لهذه القناة.");return;}
+  const player=document.getElementById("tvPlayer"),placeholder=document.getElementById("tvPlaceholder"),status=document.getElementById("tvStatus"),nowTitle=document.getElementById("tvNowTitle");
+  if(!player||!placeholder||!status||!nowTitle)return;
+  if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
   const radioPlayer=document.getElementById("radioPlayer");
   if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
   if(radioPlayer){radioPlayer.pause();radioPlayer.removeAttribute("src");radioPlayer.load();}
-
-  player.pause();
-  player.removeAttribute("src");
-  player.load();
-
-  nowTitle.textContent=channel.name;
-  placeholder.style.display="none";
-  status.textContent="جارٍ تحميل القناة...";
-
-  const isHls=/\.m3u8($|\?)/i.test(streamUrl);
-
+  player.pause();player.removeAttribute("src");player.load();
+  nowTitle.textContent=channel.name;placeholder.style.display="none";status.textContent="جارٍ الاتصال بمصدر البث...";
+  const isHls=/\.m3u8(?:$|[?#])/i.test(streamUrl);
+  player.addEventListener("canplay",()=>{status.textContent="القناة جاهزة للتشغيل: "+channel.name+"."},{once:true});
+  player.addEventListener("error",()=>{status.textContent="فشل تشغيل القناة. قد يكون الرابط غير مباشر أو المصدر متوقفًا أو يمنع الاتصال من هذا النطاق."},{once:true});
   if(isHls && window.Hls && Hls.isSupported()){
-    const instance=new Hls();
-    activeHlsPlayer=instance;
-
-    instance.loadSource(streamUrl);
-    instance.attachMedia(player);
-
-    instance.on(Hls.Events.MANIFEST_PARSED,()=>{
-      player.play().then(()=>{
-        status.textContent="يتم تشغيل: "+channel.name;
-      }).catch(()=>{
-        status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-      });
-    });
-
-    instance.on(Hls.Events.ERROR,(_event,data)=>{
-      if(data.fatal){
-        status.textContent="تعذر تشغيل البث. قد يكون المصدر غير متاح أو يمنع التضمين.";
-        instance.destroy();
-        if(activeHlsPlayer===instance) activeHlsPlayer=null;
-      }
-    });
-
+    const instance=new Hls({enableWorker:true});activeHlsPlayer=instance;
+    instance.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal){status.textContent="تعذر تحميل بث HLS. تحقق من الرابط وإعدادات CORS لدى مزود البث.";instance.destroy();if(activeHlsPlayer===instance)activeHlsPlayer=null;}});
+    instance.loadSource(streamUrl);instance.attachMedia(player);
+    instance.on(Hls.Events.MANIFEST_PARSED,()=>{player.play().then(()=>{status.textContent="يتم تشغيل: "+channel.name;}).catch(()=>{status.textContent="البث جاهز؛ اضغط زر التشغيل داخل الشاشة.";});});
   }else if(isHls && player.canPlayType("application/vnd.apple.mpegurl")){
-    player.src=streamUrl;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-    });
-
+    player.src=streamUrl;player.load();player.play().then(()=>{status.textContent="يتم تشغيل: "+channel.name;}).catch(()=>{status.textContent="البث جاهز؛ اضغط زر التشغيل داخل الشاشة.";});
+  }else if(isHls){
+    status.textContent="هذا المتصفح لا يدعم بث HLS، ولم يتم تحميل مشغل HLS. تحقق من اتصال المكتبة أو استخدم متصفحًا حديثًا.";
   }else{
-    player.src=streamUrl;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="تعذر التشغيل التلقائي. اضغط زر التشغيل أو تحقق من رابط البث.";
-    });
+    player.src=streamUrl;player.load();player.play().then(()=>{status.textContent="يتم تشغيل: "+channel.name;}).catch(()=>{status.textContent="تم تحميل الرابط. اضغط زر التشغيل داخل الشاشة.";});
   }
 }
 
