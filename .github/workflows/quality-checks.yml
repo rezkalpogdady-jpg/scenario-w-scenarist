@@ -147,16 +147,22 @@ jobs:
               !guard.includes('reason:"reference-check-failed"')) {
             throw new Error('Shared-storage guard must verify references and retain files on lookup failure.');
           }
-          for (const fn of ['adminDeleteScenarioScript', 'adminReviewMemberWork']) {
-            const start = html.indexOf('async function ' + fn + '(');
-            const end = html.indexOf('\nfunction ', start + 1);
-            const body = html.slice(start, end < 0 ? undefined : end);
-            if (start < 0 || !body.includes('adminRemoveStorageIfUnreferenced(')) {
-              throw new Error(fn + ' must use the shared-storage reference guard.');
-            }
+          const deleteStart = html.indexOf('async function adminDeleteScenarioScript(');
+          const deleteEnd = html.indexOf('document.getElementById("adminScenarioScriptForm")', deleteStart);
+          const deleteBody = html.slice(deleteStart, deleteEnd);
+          if (deleteStart < 0 || !deleteBody.includes('adminRemoveStorageIfUnreferenced(')) {
+            throw new Error('Scenario deletion must use the shared-storage reference guard.');
           }
-          const scenarioSave = html.slice(html.indexOf('adminScenarioScriptForm') - 100, html.indexOf('async function loadPublishedScenarioScripts'));
-          if (!scenarioSave.includes('adminRemoveStorageIfUnreferenced(')) {
+          const reviewStart = html.indexOf('async function adminReviewMemberWork(');
+          const reviewEnd = html.indexOf('async function adminLoadVisitStats(', reviewStart);
+          const reviewBody = html.slice(reviewStart, reviewEnd);
+          if (reviewStart < 0 || !reviewBody.includes('adminRemoveStorageIfUnreferenced(')) {
+            throw new Error('Member-work review must use the shared-storage reference guard.');
+          }
+          const saveStart = html.indexOf('document.getElementById("adminScenarioScriptForm")?.addEventListener');
+          const saveEnd = html.indexOf('async function loadPublishedScenarioScripts(', saveStart);
+          const saveBody = html.slice(saveStart, saveEnd);
+          if (saveStart < 0 || !saveBody.includes('adminRemoveStorageIfUnreferenced(')) {
             throw new Error('Replacing a scenario PDF must use the shared-storage reference guard.');
           }
           console.log('URL scheme tests and critical media URL sinks passed.');
