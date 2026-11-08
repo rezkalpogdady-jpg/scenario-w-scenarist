@@ -173,6 +173,29 @@ where n.nspname='public'
   )
 order by p.proname;
 
+
+-- 7) فحص القيمة الافتراضية الفعلية لحالة ملف العضو وامتيازات الأعمدة.
+-- نموذج التسجيل لا يرسل profile_status؛ لذلك يجب أن يكون default في الجدول pending.
+-- كما يجب ألا يستطيع authenticated تحديث profile_status مباشرة.
+select table_name,column_name,data_type,udt_name,column_default,is_nullable
+from information_schema.columns
+where table_schema='public'
+  and table_name='member_profiles'
+  and column_name in ('profile_status','reviewed_at','updated_at')
+order by ordinal_position;
+
+select
+  has_table_privilege('authenticated','public.member_profiles','UPDATE') as authenticated_table_update,
+  has_column_privilege('authenticated','public.member_profiles','profile_status','UPDATE') as authenticated_can_update_profile_status,
+  has_column_privilege('authenticated','public.member_profiles','reviewed_at','UPDATE') as authenticated_can_update_reviewed_at,
+  has_column_privilege('authenticated','public.member_profiles','display_name','UPDATE') as authenticated_can_update_display_name,
+  has_column_privilege('authenticated','public.member_profiles','bio','UPDATE') as authenticated_can_update_bio;
+
+-- راجع نتيجة profile_status يدويًا:
+-- المتوقع: column_default يعيد 'pending' (أو تعبيرًا مكافئًا)،
+-- و authenticated_can_update_profile_status = false.
+-- هذا الفحص للقراءة فقط ولا يغير أي امتياز أو قيمة افتراضية.
+
 -- 6) عرض triggers على ملفات الأعضاء؛ مهمة لمعرفة هل تحديث الملف يعيد الحالة pending.
 select event_object_table as table_name,trigger_name,event_manipulation,
        action_timing,action_statement
