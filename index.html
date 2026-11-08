@@ -2412,22 +2412,39 @@ function adminRenderRecords(){
   `).join("");
 }
 
+/* Allow-list for admin uploads; browser MIME is checked against the file extension. */
+function validateAdminUploadFile(file){
+  if(!file || typeof file.name!=="string") throw new Error("اختر ملفًا صالحًا.");
+  const maxBytes=50*1024*1024;
+  if(!Number.isFinite(file.size) || file.size<=0 || file.size>maxBytes) throw new Error("حجم الملف يجب أن يكون أكبر من صفر ولا يتجاوز 50 ميجابايت.");
+  const ext=(file.name.match(/\.([^.]+)$/)?.[1]||"").toLowerCase();
+  const types={
+    jpg:["image/jpeg"],jpeg:["image/jpeg"],png:["image/png"],webp:["image/webp"],gif:["image/gif"],
+    mp4:["video/mp4"],webm:["video/webm"],ogv:["video/ogg"],ogg:["audio/ogg","video/ogg"],
+    mp3:["audio/mpeg"],wav:["audio/wav","audio/x-wav"],m4a:["audio/mp4","audio/x-m4a"],aac:["audio/aac"],
+    pdf:["application/pdf"],doc:["application/msword"],
+    docx:["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+  };
+  const allowed=types[ext];
+  if(!allowed) throw new Error("امتداد الملف غير مدعوم. استخدم صورة أو فيديو أو صوتًا أو PDF أو Word.");
+  const mime=String(file.type||"").toLowerCase();
+  if(mime && mime!=="application/octet-stream" && !allowed.includes(mime)) throw new Error("نوع الملف لا يتطابق مع امتداده. أعد اختيار الملف الصحيح.");
+  return {contentType:allowed[0],maxBytes};
+}
+
 /* رفع ملف إلى Supabase Storage باسم آمن */
 async function adminUploadSelectedFile(){
   const input=document.getElementById("adminFile");
   const file=input?.files?.[0];
   if(!file) return null;
   if(!adminSupabase || !adminSession) throw new Error("سجل دخول المدير أولاً.");
-  const maxBytes=50*1024*1024;
-  if(file.size>maxBytes) throw new Error("حجم الملف أكبر من 50 ميجابايت؛ هذا هو الحد الأقصى المتاح في الخطة المجانية.");
-  const allowed=file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/") || /\.(pdf|doc|docx)$/i.test(file.name);
-  if(!allowed) throw new Error("نوع الملف غير مدعوم. استخدم صورة أو فيديو أو صوتًا أو PDF أو Word.");
+  const validation=validateAdminUploadFile(file);
   const cleanName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-100) || "upload";
   const path=`${document.getElementById("adminContentType").value}/${crypto.randomUUID()}-${cleanName}`;
-  const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type || undefined});
+  const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:validation.contentType});
   if(error) throw error;
   const {data:publicData}=adminSupabase.storage.from("site-media").getPublicUrl(data.path);
-  return {url:publicData.publicUrl,type:file.type || ""};
+  return {url:publicData.publicUrl,type:validation.contentType};
 }
 
 /* إضافة أو تعديل */
