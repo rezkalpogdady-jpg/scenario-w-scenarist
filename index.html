@@ -587,16 +587,21 @@ const lessonsContainer = document.getElementById("lessonsList");
 function academyLessonTitles(materials = publicContentRecords || []){
   const titles=[...academyLessons];
   const known=new Set(titles.map(title=>title.trim().toLocaleLowerCase()));
-  (materials||[]).forEach(item=>{
-    if(item?.content_type && item.content_type!=="academy") return;
-    if(item?.published===false) return;
+  const additional=(materials||[]).filter(item=>{
+    if(item?.content_type && item.content_type!=="academy")return false;
+    if(item?.published===false)return false;
     const title=String(item?.title||"").trim();
     const key=title.toLocaleLowerCase();
-    if(title && !known.has(key)){
-      known.add(key);
-      titles.push(title);
-    }
+    if(!title||known.has(key))return false;
+    known.add(key);
+    return true;
   });
+  additional.sort((a,b)=>{
+    const ao=Number(a?.extra?.lesson_order)||1000;
+    const bo=Number(b?.extra?.lesson_order)||1000;
+    return ao-bo||String(a.title||"").localeCompare(String(b.title||""),"ar");
+  });
+  additional.forEach(item=>titles.push(String(item.title).trim()));
   return titles;
 }
 
@@ -1887,9 +1892,26 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>رابط الملف أو الفيديو أو البث (اختياري)</label>
         <input id="adminContentUrl" type="url" placeholder="https://...">
 
-        <label>بيانات إضافية (JSON) — اختيارية</label>
+        <div id="adminAcademyFields" class="panel" style="margin:14px 0;display:none">
+          <h3 style="color:var(--gold)">إعدادات المحاضرة التعليمية</h3>
+          <p style="font-size:13px;color:var(--muted)">حقول مباشرة بدل كتابة بيانات المحاضرة يدويًا بصيغة JSON. اترك الترتيب فارغًا للمحاضرات الإضافية إذا لم تكن بحاجة إلى ترتيب خاص.</p>
+          <label>ترتيب المحاضرة الإضافية</label>
+          <input id="adminLessonOrder" type="number" min="1" max="999" step="1" placeholder="مثال: 31">
+          <label>نص المحاضرة الكامل</label>
+          <textarea id="adminLessonText" rows="6" placeholder="اكتب شرح المحاضرة هنا..."></textarea>
+          <label>أهداف التعلم</label>
+          <textarea id="adminLessonObjectives" rows="3" placeholder="ما الذي سيتعلمه الطالب؟"></textarea>
+          <label>التدريب العملي</label>
+          <textarea id="adminLessonExercise" rows="3" placeholder="تدريب تطبيقي بعد الشرح..."></textarea>
+          <label>الواجب المنزلي</label>
+          <textarea id="adminLessonHomework" rows="3" placeholder="المطلوب من الطالب بعد المحاضرة..."></textarea>
+          <label>المواد والمراجع المساعدة (JSON اختياري)</label>
+          <textarea id="adminLessonResources" rows="3" dir="ltr" placeholder='[{"title":"ملف التدريب","url":"https://..."}]'></textarea>
+        </div>
+
+        <label>بيانات إضافية متقدمة (JSON) — اختيارية</label>
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
-        <p style="font-size:12px;color:var(--muted)">بيانات إضافية بصيغة JSON. للمحاضرات يمكنك إضافة <code>lesson_text</code> و<code>learning_objectives</code> و<code>exercise</code> و<code>homework</code>، ويمكن إضافة <code>resources</code> كمصفوفة عناصر تحتوي <code>title</code> و<code>url</code>. مثال: <code>{"lesson_text":"شرح الدرس","exercise":"تدريب تطبيقي","homework":"واجب منزلي"}</code>. لنشر قناة أو محطة، أضف <code>rights_status</code> بقيمة <code>official</code> أو <code>licensed</code> و<code>source_url</code> لمرجع الحقوق؛ ويجب أن يكون رابط البث نفسه في الحقل أعلاه HTTPS. وجود الروابط وحده لا يثبت الترخيص؛ على الإدارة التحقق منه.</p>
+        <p style="font-size:12px;color:var(--muted)">تُستخدم البيانات المتقدمة للأقسام الأخرى أو للحقول غير المتاحة في النموذج. لنشر قناة أو محطة، أضف <code>rights_status</code> بقيمة <code>official</code> أو <code>licensed</code> و<code>source_url</code> لمرجع الحقوق؛ ويجب أن يكون رابط البث نفسه في الحقل أعلاه HTTPS. وجود الروابط وحده لا يثبت الترخيص؛ على الإدارة التحقق منه.</p>
 
         <label>أو ارفع ملفًا من جهازك</label>
         <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
@@ -2561,6 +2583,42 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     }
   }
 
+  if(record.content_type==="academy"){
+    const academyFields=[
+      ["lesson_text","adminLessonText"],
+      ["learning_objectives","adminLessonObjectives"],
+      ["exercise","adminLessonExercise"],
+      ["homework","adminLessonHomework"]
+    ];
+    academyFields.forEach(([key,id])=>{
+      const value=document.getElementById(id)?.value.trim()||"";
+      if(value)record.extra_data[key]=value;
+      else delete record.extra_data[key];
+    });
+    const orderText=document.getElementById("adminLessonOrder")?.value.trim()||"";
+    if(orderText){
+      const order=Number(orderText);
+      if(!Number.isInteger(order)||order<1||order>999){
+        adminSetMessage("adminSaveMessage","ترتيب المحاضرة يجب أن يكون رقمًا صحيحًا من 1 إلى 999.");
+        return;
+      }
+      record.extra_data.lesson_order=order;
+    }else delete record.extra_data.lesson_order;
+    const resourcesText=document.getElementById("adminLessonResources")?.value.trim()||"";
+    if(resourcesText){
+      try{
+        const resources=JSON.parse(resourcesText);
+        if(!Array.isArray(resources)||resources.length>20||resources.some(item=>!item||typeof item!=="object"||typeof item.title!=="string"||!isAbsoluteHttpsUrl(item.url))){
+          throw new Error("المواد المساعدة يجب أن تكون مصفوفة من عناصر لها عنوان ورابط HTTPS صالح، بحد أقصى 20 عنصرًا.");
+        }
+        record.extra_data.resources=resources.map(item=>({title:item.title.trim().slice(0,200),url:item.url.trim().slice(0,2048)}));
+      }catch(error){
+        adminSetMessage("adminSaveMessage",error.message||"صيغة المواد المساعدة غير صحيحة.");
+        return;
+      }
+    }else delete record.extra_data.resources;
+  }
+
   if(!record.title){
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
     return;
@@ -2655,7 +2713,15 @@ function adminEditRecord(id){
   document.getElementById("adminDescription").value=item.description || "";
   document.getElementById("adminImage").value=item.image_url || "";
   document.getElementById("adminContentUrl").value=item.content_url || "";
-  document.getElementById("adminExtraData").value=JSON.stringify(item.extra_data || {},null,2);
+  const itemExtra=item.extra_data&&typeof item.extra_data==="object"?item.extra_data:{};
+  document.getElementById("adminExtraData").value=JSON.stringify(itemExtra,null,2);
+  document.getElementById("adminLessonOrder").value=itemExtra.lesson_order??"";
+  document.getElementById("adminLessonText").value=itemExtra.lesson_text||"";
+  document.getElementById("adminLessonObjectives").value=itemExtra.learning_objectives||"";
+  document.getElementById("adminLessonExercise").value=itemExtra.exercise||"";
+  document.getElementById("adminLessonHomework").value=itemExtra.homework||"";
+  document.getElementById("adminLessonResources").value=Array.isArray(itemExtra.resources)?JSON.stringify(itemExtra.resources,null,2):"";
+  adminSyncAcademyFieldsVisibility();
   document.getElementById("adminPublished").checked=!!item.published;
 
   document.getElementById("adminSaveButton").textContent="حفظ التعديلات";
@@ -2747,9 +2813,16 @@ function adminResetForm(){
   document.getElementById("adminRecordId").value="";
   const extra=document.getElementById("adminExtraData");
   if(extra) extra.value="";
+  ["adminLessonOrder","adminLessonText","adminLessonObjectives","adminLessonExercise","adminLessonHomework","adminLessonResources"].forEach(id=>{const field=document.getElementById(id);if(field)field.value="";});
+  adminSyncAcademyFieldsVisibility();
   document.getElementById("adminSaveButton").textContent="حفظ المحتوى";
 }
 
+function adminSyncAcademyFieldsVisibility(){
+  const fields=document.getElementById("adminAcademyFields");
+  if(fields)fields.style.display=document.getElementById("adminContentType")?.value==="academy"?"block":"none";
+}
+document.getElementById("adminContentType")?.addEventListener("change",adminSyncAcademyFieldsVisibility);
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
 document.getElementById("adminSearch")?.addEventListener("input",adminRenderRecords);
 document.getElementById("adminFilter")?.addEventListener("change",adminRenderRecords);
@@ -2944,6 +3017,7 @@ function sanitizePublicContentRecord(item){
   allowed.forEach(key=>{
     if(typeof source[key]==="string" && source[key].length<=20000) extra_data[key]=source[key];
   });
+  if(Number.isInteger(source.lesson_order)&&source.lesson_order>=1&&source.lesson_order<=999)extra_data.lesson_order=source.lesson_order;
   if(Array.isArray(source.resources)){
     extra_data.resources=source.resources.slice(0,20).filter(item=>item&&typeof item==="object").map(item=>({
       title:typeof item.title==="string" ? item.title.slice(0,200) : "مادة مساعدة",
