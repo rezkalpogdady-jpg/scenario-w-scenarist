@@ -2823,6 +2823,7 @@ function adminSyncAcademyFieldsVisibility(){
   if(fields)fields.style.display=document.getElementById("adminContentType")?.value==="academy"?"block":"none";
 }
 document.getElementById("adminContentType")?.addEventListener("change",adminSyncAcademyFieldsVisibility);
+adminSyncAcademyFieldsVisibility();
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
 document.getElementById("adminSearch")?.addEventListener("input",adminRenderRecords);
 document.getElementById("adminFilter")?.addEventListener("change",adminRenderRecords);
