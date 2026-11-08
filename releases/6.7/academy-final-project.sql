@@ -15,6 +15,7 @@ create table if not exists public.academy_final_projects (
   updated_at timestamptz not null default now(),
   constraint academy_final_projects_one_per_student unique (user_id)
 );
+alter table public.academy_final_projects alter column status set default 'draft';
 create index if not exists academy_final_projects_status_submitted_idx on public.academy_final_projects (status, submitted_at desc);
 create index if not exists academy_final_projects_user_id_idx on public.academy_final_projects (user_id);
 alter table public.academy_final_projects enable row level security;
