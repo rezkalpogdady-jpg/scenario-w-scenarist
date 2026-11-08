@@ -128,7 +128,7 @@ jobs:
           }
           for (const fn of ['playTVChannel', 'playRadioStation']) {
             const start = html.indexOf('function ' + fn + '(');
-            if (start < 0 || !html.slice(start, start + 1800).includes('safeHttpUrl(')) {
+            if (start < 0 || !html.slice(start, start + 1800).includes('safeHttpsMediaUrl(')) {
               throw new Error(fn + ' must validate its stream URL before playback.');
             }
           }
