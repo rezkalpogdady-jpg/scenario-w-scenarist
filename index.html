@@ -2577,8 +2577,8 @@ async function adminRemoveStorageIfUnreferenced(bucket,table,column,path){
   if(!path)return {removed:false,reason:"missing-path"};
   try{
     const {data,error}=await adminSupabase.from(table).select("id").eq(column,path).limit(1);
-    if(error)return {removed:false,reason:"reference-check-failed",error};
-    if(Array.isArray(data)&&data.length)return {removed:false,reason:"still-referenced"};
+    if(error||!Array.isArray(data))return {removed:false,reason:"reference-check-failed",error};
+    if(data.length)return {removed:false,reason:"still-referenced"};
     const {error:removeError}=await adminSupabase.storage.from(bucket).remove([path]);
     if(removeError)return {removed:false,reason:"remove-failed",error:removeError};
     return {removed:true};
