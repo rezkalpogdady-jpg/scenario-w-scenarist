@@ -308,7 +308,7 @@ jobs:
           const fs = require('node:fs');
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
-          const match = html.match(/function validateMemberWorkUploadFile\\(file\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          const match = html.match(/function validateMemberWorkUploadFile\(file\)\s*\{[\s\S]*?\n\}/);
           if (!match) throw new Error('Member work upload validator is missing.');
           const validate = vm.runInNewContext(match[0] + '; validateMemberWorkUploadFile');
           const cases = [
