@@ -1,20 +1,53 @@
--- سيناريو وسيناريست | فحص ما قبل Migration 6.5
--- READ ONLY: هذا الملف لا ينشئ أو يعدل أو يحذف أي جدول أو سياسة أو ملف.
--- شغّله أولًا في Supabase SQL Editor بحساب مالك المشروع.
--- إذا ظهر EXCEPTION فتوقف ولا تشغّل migration.sql قبل معالجة السبب.
+-- سيناريو وسيناريست | فحص ما قبل Migration 6.5 ومراجعة صلاحيات المنصة
+-- READ ONLY: لا ينشئ أو يعدل أو يحذف أي جدول أو سياسة أو ملف أو صلاحية.
+-- شغّله في Supabase SQL Editor بحساب مالك المشروع.
+-- أي EXCEPTION يعني التوقف وعدم تشغيل Migration 6.5 حتى معالجة السبب.
 
 do $preflight$
 declare
   missing text[] := array[]::text[];
-  tbl text;
-  col text;
-  has_admin_review boolean;
-  has_site_media boolean;
-  has_member_submissions boolean;
-  permissive_count integer;
+  required_table text;
+  required_column text;
+  missing_tables text[] := array[]::text[];
+  rls_disabled text[] := array[]::text[];
+  bucket_missing text[] := array[]::text[];
+  required_tables text[] := array[
+    'site_content','scenario_scripts','idea_submissions',
+    'community_submissions','community_topics','topic_replies',
+    'content_comments','content_ratings','member_profiles',
+    'member_works','chess_games','page_visits'
+  ];
+  required_buckets text[] := array['site-media','member-submissions'];
+  required_functions text[] := array[
+    'admin_review_member_work','admin_review_member_profile',
+    'admin_review_community_submission','admin_visit_stats',
+    'join_chess_game','submit_chess_position'
+  ];
+  fn text;
 begin
-  -- الجداول والأعمدة التي يعتمد عليها كود المنصة وMigration 6.5.
-  for tbl, col in
+  -- كل الجداول التي يستدعيها كود الواجهة مباشرة.
+  foreach required_table in array required_tables loop
+    if to_regclass('public.'||quote_ident(required_table)) is null then
+      missing_tables := array_append(missing_tables, 'public.'||required_table);
+    elsif not exists (
+      select 1 from pg_class c
+      join pg_namespace n on n.oid=c.relnamespace
+      where n.nspname='public' and c.relname=required_table
+        and c.relrowsecurity
+    ) then
+      rls_disabled := array_append(rls_disabled, 'public.'||required_table);
+    end if;
+  end loop;
+
+  if coalesce(array_length(missing_tables,1),0)>0 then
+    raise exception 'Preflight failed: missing application tables: %', array_to_string(missing_tables, ', ');
+  end if;
+  if coalesce(array_length(rls_disabled,1),0)>0 then
+    raise exception 'Preflight failed: RLS is not enabled on: %', array_to_string(rls_disabled, ', ');
+  end if;
+
+  -- أعمدة الحد الأدنى التي يعتمد عليها تحديث 6.5 ومسارات الحسابات.
+  for required_table, required_column in
     select * from (values
       ('member_profiles','user_id'),
       ('member_profiles','display_name'),
@@ -34,101 +67,116 @@ begin
     ) as required(table_name,column_name)
   loop
     if not exists (
-      select 1
-        from information_schema.columns
-       where table_schema='public'
-         and table_name=tbl
-         and column_name=col
+      select 1 from information_schema.columns
+      where table_schema='public'
+        and table_name=required_table
+        and column_name=required_column
     ) then
-      missing := array_append(missing, 'public.'||tbl||'.'||col);
+      missing := array_append(missing,'public.'||required_table||'.'||required_column);
     end if;
   end loop;
-
-  if coalesce(array_length(missing,1),0) > 0 then
-    raise exception 'Preflight failed. Missing required columns: %', array_to_string(missing, ', ');
+  if coalesce(array_length(missing,1),0)>0 then
+    raise exception 'Preflight failed: missing required columns: %',array_to_string(missing,', ');
   end if;
 
   if to_regclass('storage.buckets') is null or to_regclass('storage.objects') is null then
-    raise exception 'Preflight failed. Supabase Storage tables are unavailable.';
+    raise exception 'Preflight failed: Supabase Storage catalog is unavailable.';
   end if;
 
-  select exists(select 1 from storage.buckets where id='site-media') into has_site_media;
-  select exists(select 1 from storage.buckets where id='member-submissions') into has_member_submissions;
-
-  if not has_site_media then
-    raise exception 'Preflight failed. Required bucket site-media does not exist.';
-  end if;
-  if not has_member_submissions then
-    raise exception 'Preflight failed. Required bucket member-submissions does not exist.';
-  end if;
-
-  select exists(
-    select 1 from pg_proc p
-    join pg_namespace n on n.oid=p.pronamespace
-    where n.nspname='public' and p.proname='admin_review_member_work'
-  ) into has_admin_review;
-
-  if not has_admin_review then
-    raise exception 'Preflight failed. RPC public.admin_review_member_work is missing.';
+  foreach required_table in array required_buckets loop
+    if not exists(select 1 from storage.buckets where id=required_table) then
+      bucket_missing := array_append(bucket_missing,required_table);
+    end if;
+  end loop;
+  if coalesce(array_length(bucket_missing,1),0)>0 then
+    raise exception 'Preflight failed: required Storage buckets are missing: %',array_to_string(bucket_missing,', ');
   end if;
 
-  -- Restrictive policies do not grant access by themselves.
-  -- At least one permissive policy must also allow each intended operation.
-  select count(*) into permissive_count
-    from pg_policies
-   where schemaname='public'
-     and tablename='member_profiles'
-     and permissive='PERMISSIVE'
-     and 'authenticated'=any(roles);
+  foreach fn in array required_functions loop
+    if not exists(
+      select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+      where n.nspname='public' and p.proname=fn
+    ) then
+      raise notice 'Required/expected RPC not found: public.% (confirm whether this feature is enabled)',fn;
+    end if;
+  end loop;
 
-  raise notice 'member_profiles permissive policies for authenticated: %', permissive_count;
-
-  select count(*) into permissive_count
-    from pg_policies
-   where schemaname='public'
-     and tablename='member_works'
-     and permissive='PERMISSIVE'
-     and 'authenticated'=any(roles);
-
-  raise notice 'member_works permissive policies for authenticated: %', permissive_count;
-
-  select count(*) into permissive_count
-    from pg_policies
-   where schemaname='storage'
-     and tablename='objects'
-     and permissive='PERMISSIVE'
-     and 'authenticated'=any(roles);
-
-  raise notice 'storage.objects permissive policies for authenticated: %', permissive_count;
-
-  raise notice 'Preflight passed for required schema and buckets. Review permissive policy counts and verify every policy expression before applying migration 6.5.';
+  raise notice 'Preflight passed: required tables, RLS flags, minimum columns and Storage buckets exist.';
+  raise notice 'This does not certify policy correctness, function safety, or runtime behavior. Review all result sets below.';
 end
 $preflight$;
 
--- مراجعة السياسات الحالية بالتفصيل (قراءة فقط):
-select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
-  from pg_policies
- where (schemaname='public' and tablename in ('member_profiles','member_works','site_content'))
-    or (schemaname='storage' and tablename='objects')
- order by schemaname, tablename, policyname;
+-- 1) كل سياسات RLS للجداول التي يستعملها التطبيق، بما فيها الصلاحيات الممنوحة فعليًا.
+select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+from pg_policies
+where schemaname='public'
+  and tablename in (
+    'site_content','scenario_scripts','idea_submissions',
+    'community_submissions','community_topics','topic_replies',
+    'content_comments','content_ratings','member_profiles',
+    'member_works','chess_games','page_visits'
+  )
+order by tablename,cmd,policyname;
 
--- مراجعة خصائص التخزين:
-select id, name, public, file_size_limit, allowed_mime_types
-  from storage.buckets
- where id in ('site-media','member-submissions')
- order by id;
+-- 2) حالة RLS و FORCE RLS لكل جدول من جداول التطبيق.
+select n.nspname as schema_name,c.relname as table_name,
+       c.relrowsecurity as rls_enabled,c.relforcerowsecurity as force_rls
+from pg_class c join pg_namespace n on n.oid=c.relnamespace
+where n.nspname='public'
+  and c.relkind in ('r','p')
+  and c.relname in (
+    'site_content','scenario_scripts','idea_submissions',
+    'community_submissions','community_topics','topic_replies',
+    'content_comments','content_ratings','member_profiles',
+    'member_works','chess_games','page_visits'
+  )
+order by c.relname;
 
--- مراجعة وجود دوال الإدارة (لا تعرض أجسام الدوال أو أسرارًا):
-select n.nspname as schema_name, p.proname as function_name,
+-- 3) امتيازات الجداول والأعمدة للأدوار anon/authenticated/PUBLIC.
+-- راجع خصوصًا أي امتياز واسع ممنوح إلى PUBLIC.
+select table_schema,table_name,grantee,privilege_type
+from information_schema.role_table_grants
+where table_schema='public'
+  and table_name in (
+    'site_content','scenario_scripts','idea_submissions',
+    'community_submissions','community_topics','topic_replies',
+    'content_comments','content_ratings','member_profiles',
+    'member_works','chess_games','page_visits'
+  )
+  and grantee in ('anon','authenticated','PUBLIC')
+order by table_name,grantee,privilege_type;
+
+-- 4) خصائص التخزين وسياسات الوصول إلى storage.objects.
+select id,name,public,file_size_limit,allowed_mime_types
+from storage.buckets
+where id in ('site-media','member-submissions')
+order by id;
+
+select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+from pg_policies
+where schemaname='storage' and tablename='objects'
+order by policyname;
+
+-- 5) تعريفات دوال الإدارة وأمن التنفيذ. لا نعرض أجسام الدوال أو أسرارًا.
+select n.nspname as schema_name,p.proname as function_name,
        pg_get_function_identity_arguments(p.oid) as arguments,
-       p.prosecdef as security_definer
-  from pg_proc p
-  join pg_namespace n on n.oid=p.pronamespace
- where n.nspname='public'
-   and p.proname in (
-     'admin_review_member_work',
-     'admin_review_member_profile',
-     'admin_review_community_submission',
-     'admin_visit_stats'
-   )
- order by p.proname;
+       p.prosecdef as security_definer,
+       p.proconfig as function_settings,
+       has_function_privilege('anon',p.oid,'EXECUTE') as anon_can_execute,
+       has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_can_execute
+from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+where n.nspname='public'
+  and p.proname in (
+    'admin_review_member_work','admin_review_member_profile',
+    'admin_review_community_submission','admin_visit_stats',
+    'join_chess_game','submit_chess_position'
+  )
+order by p.proname;
+
+-- 6) عرض triggers على ملفات الأعضاء؛ مهمة لمعرفة هل تحديث الملف يعيد الحالة pending.
+select event_object_table as table_name,trigger_name,event_manipulation,
+       action_timing,action_statement
+from information_schema.triggers
+where trigger_schema='public'
+  and event_object_table in ('member_profiles','member_works')
+order by event_object_table,trigger_name,event_manipulation;
