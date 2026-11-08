@@ -215,6 +215,31 @@ jobs:
           if (start < 0 || !reader.includes('safeHttpUrl(signed.signedUrl)') || !reader.includes('if(!readerUrl)') || !reader.includes('src="${escapeHTML(readerUrl)}"')) throw new Error('Private scenario iframe must validate its signed URL.');
           console.log('HTML escaping and private reader URL checks passed.');
           NODE
+      - name: Check member data access boundaries in client queries
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          function section(startText, endText) {
+            const start = html.indexOf(startText);
+            const end = html.indexOf(endText, start + startText.length);
+            if (start < 0 || end < 0) throw new Error('Could not isolate expected member access section.');
+            return html.slice(start, end);
+          }
+          const profileLoad = section('async function accountLoadProfile(user)', 'document.getElementById("accountSignupForm")');
+          if (!profileLoad.includes('.eq("user_id",user.id)')) throw new Error('Profile reads must be scoped to the signed-in user.');
+          const worksLoad = section('async function accountLoadMemberWorks()', 'document.getElementById("memberWorkForm")');
+          if (!worksLoad.includes('.eq("user_id",accountUser.id)')) throw new Error('Member work history must be scoped to the signed-in user.');
+          const profileSave = section('document.getElementById("accountProfileForm")', 'document.getElementById("accountNewPasswordForm")');
+          if (!profileSave.includes('if(!accountUser) return') || !profileSave.includes('user_id:accountUser.id')) throw new Error('Profile writes must require and use the authenticated user ID.');
+          const workSubmit = section('document.getElementById("memberWorkForm")', 'document.getElementById("accountLogout")');
+          if (!workSubmit.includes('if(!accountUser)') || !workSubmit.includes('user_id:accountUser.id')) throw new Error('Member work submissions must require and use the authenticated user ID.');
+          const publicProfiles = section('async function loadApprovedMemberProfiles()', '/* إنشاء اتصال عام لقراءة المحتوى المنشور */');
+          if (!publicProfiles.includes('.eq("profile_status","approved")')) throw new Error('Public profile directory must filter to approved profiles only.');
+          if (publicProfiles.includes('.select("*"')) throw new Error('Public profile directory must not select all profile columns.');
+          console.log('Member client-side access-boundary checks passed. Database RLS still requires independent verification.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
