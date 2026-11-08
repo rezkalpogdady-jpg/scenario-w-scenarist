@@ -523,3 +523,30 @@ jobs:
             exit 1
           fi
           echo "No known server-side secret-key pattern found in index.html."
+
+      - name: Test short-film metadata and rights-gated playback
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const mapper = html.match(/function mapContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
+          const renderer = html.match(/function renderShortFilms\(\)\s*\{[\s\S]*?\n\}/);
+          if (!mapper || !renderer) throw new Error('Short-film mapper or renderer is missing.');
+          for (const field of ['writer:', 'productionYear:', 'rightsStatus:', 'sourceUrl:']) {
+            if (!mapper[0].includes(field)) throw new Error('Short-film metadata mapping is missing ' + field);
+          }
+          for (const field of ['item.director', 'item.writer', 'item.duration', 'item.productionYear']) {
+            if (!renderer[0].includes(field)) throw new Error('Short-film card does not display ' + field);
+          }
+          if (!renderer[0].includes('safeHttpsMediaUrl(item.work)') ||
+              !renderer[0].includes('safeHttpsMediaUrl(item.sourceUrl)') ||
+              !renderer[0].includes('["owner","official","licensed"]') ||
+              !renderer[0].includes('&&!!safeHttpsMediaUrl(item.sourceUrl)')) {
+            throw new Error('Short-film playback must require an approved rights status and HTTPS source reference.');
+          }
+          if (!renderer[0].includes('target="_blank" rel="noopener noreferrer"')) {
+            throw new Error('Short-film external links must use safe new-tab attributes.');
+          }
+          console.log('Short-film metadata and rights-gated playback checks passed.');
+          NODE
