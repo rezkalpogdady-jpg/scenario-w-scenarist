@@ -431,7 +431,7 @@ jobs:
           if (!mapped.extra || mapped.extra.lesson_text !== 'درس' || mapped.extra.resources.length !== 1) throw new Error('Academy lesson metadata/resources did not survive public sanitization.');
           console.log('Secure media, academy publishing, and public content data-flow checks passed.');
           NODE
-      - name: Check academy custom lesson indexing
+      - name: Check academy custom lesson indexing and lesson detail mapping
         shell: bash
         run: |
           node <<'NODE'
@@ -439,20 +439,35 @@ jobs:
           const vm = require('node:vm');
           const html = fs.readFileSync('index.html', 'utf8');
           const curriculum = html.match(/const academyLessons = \[([\s\S]*?)\n\];/);
-          const resolver = html.match(/function academyLessonTitles\(materials = publicContentRecords \|\| \[\]\)\s*\{[\s\S]*?\n\}/);
-          if (!curriculum || !resolver) throw new Error('Academy lesson index resolver or base curriculum is missing.');
+          const resolver = html.match(/function academyLessonTitles\(materials(?:\s*=\s*publicContentRecords\s*\|\|\s*\[\])?\)\s*\{[\s\S]*?\n\}/);
+          const mapper = html.match(/function mapContentRecord\(item\)\s*\{[\s\S]*?\n\}/);
+          if (!curriculum || !resolver || !mapper) throw new Error('Academy lesson index resolver, base curriculum, or record mapper is missing.');
           const context = vm.createContext({ publicContentRecords: [] });
-          vm.runInContext('const academyLessons = [' + curriculum[1] + '\n];\n' + resolver[0] + '\nthis.resolveTitles = academyLessonTitles;', context);
-          const titles = context.resolveTitles([
-            { content_type: 'academy', title: 'ورشة كتابة المشهد', published: true },
-            { content_type: 'academy', title: 'مقدمة في عالم السيناريو', published: true },
+          vm.runInContext(
+            'const academyLessons = [' + curriculum[1] + '\n];\n' +
+            mapper[0] + '\n' + resolver[0] +
+            '\nthis.resolveTitles = academyLessonTitles; this.mapRecord = mapContentRecord;',
+            context
+          );
+          const rawRecords = [
+            { content_type: 'academy', title: 'ورشة كتابة المشهد', published: true, extra_data: { lesson_order: 2, lesson_text: 'نص الورشة' }, content_url: 'https://cdn.example/lesson.mp4' },
+            { content_type: 'academy', title: 'مقدمة في عالم السيناريو', published: true, extra_data: { lesson_order: 1 } },
+            { content_type: 'academy', title: 'الفرق بين الرواية والقصة والسيناريو', published: true, extra_data: {} },
             { content_type: 'radio', title: 'لا تظهر في الأكاديمية', published: true },
             { content_type: 'academy', title: 'مسودة مخفية', published: false }
-          ]);
-          if (titles.length !== 31 || titles[30] !== 'ورشة كتابة المشهد') throw new Error('A newly published academy lesson is missing from the index.');
-          if (titles.filter(title => title === 'مقدمة في عالم السيناريو').length !== 1) throw new Error('A curriculum lesson was duplicated.');
+          ];
+          context.publicContentRecords = rawRecords;
+          const titles = context.resolveTitles();
+          if (titles.length !== 32 || titles[30] !== 'مقدمة في عالم السيناريو' || titles[31] !== 'ورشة كتابة المشهد') {
+            throw new Error('Raw published lesson records must be normalized and ordered in the academy index.');
+          }
+          if (titles.filter(title => title === 'الفرق بين الرواية والقصة والسيناريو').length !== 1) throw new Error('A curriculum lesson was duplicated.');
           if (titles.includes('لا تظهر في الأكاديمية') || titles.includes('مسودة مخفية')) throw new Error('Non-academy or unpublished content entered the academy index.');
-          console.log('Published academy lesson indexing checks passed.');
+          const mapped = context.mapRecord(context.publicContentRecords[0]);
+          if (mapped.content_url !== 'https://cdn.example/lesson.mp4' || mapped.extra.lesson_text !== 'نص الورشة') {
+            throw new Error('Lesson detail mapping dropped the published media URL or structured lesson text.');
+          }
+          console.log('Published academy lesson indexing, ordering, and detail mapping checks passed.');
           NODE
       - name: Check for server-side secret key patterns
         shell: bash
