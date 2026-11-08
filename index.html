@@ -658,6 +658,7 @@ function openLesson(index){
   const title=document.getElementById("lessonDialogTitle");
   const body=document.getElementById("lessonDialogBody");
   if(!dialog||!title||!body) return;
+  destroyInlineHlsVideos(dialog);
   title.textContent=`المحاضرة ${index+1}: ${lesson}`;
   body.innerHTML=material
     ? `<p>${escapeHTML(material.description||"لا يوجد شرح مختصر مضاف لهذه المحاضرة بعد.")}</p>${academyLessonExtraMarkup(material)}${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
