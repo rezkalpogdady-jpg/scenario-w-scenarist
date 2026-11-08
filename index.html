@@ -2699,6 +2699,15 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     }else delete record.extra_data.resources;
   }
 
+  if(record.content_type==="shorts" && record.published){
+    const rights=String(record.extra_data.rights_status||"").toLowerCase();
+    const source=String(record.extra_data.source_url||"").trim();
+    if(!["owner","official","licensed"].includes(rights) || !isAbsoluteHttpsUrl(source)){
+      adminSetMessage("adminSaveMessage","قبل نشر فيلم قصير، وثّق حق العرض بإحدى القيم owner أو official أو licensed وأضف رابط مرجع HTTPS صالحًا في البيانات الإضافية.");
+      return;
+    }
+  }
+
   if(["tv","radio"].includes(record.content_type)){
     const rights=document.getElementById("adminBroadcastRights")?.value||"";
     const source=document.getElementById("adminBroadcastSource")?.value.trim()||"";
