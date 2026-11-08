@@ -197,6 +197,38 @@ select
 -- هذا الفحص للقراءة فقط ولا يغير أي امتياز أو قيمة افتراضية.
 
 
+-- 8) فحص القيمة الافتراضية وحماية أعمدة أعمال الأعضاء.
+-- insert في الواجهة لا يرسل status؛ لذلك يجب أن يكون default = pending.
+select table_name,column_name,data_type,column_default,is_nullable
+from information_schema.columns
+where table_schema='public'
+  and table_name='member_works'
+  and column_name in ('status','created_at')
+order by ordinal_position;
+
+select
+  has_table_privilege('authenticated','public.member_works','UPDATE') as authenticated_table_update,
+  has_table_privilege('authenticated','public.member_works','DELETE') as authenticated_table_delete,
+  has_table_privilege('authenticated','public.member_works','INSERT') as authenticated_table_insert,
+  has_column_privilege('authenticated','public.member_works','status','UPDATE') as authenticated_can_update_status,
+  has_column_privilege('authenticated','public.member_works','user_id','UPDATE') as authenticated_can_update_owner,
+  has_column_privilege('authenticated','public.member_works','storage_path','UPDATE') as authenticated_can_update_storage_path;
+
+-- 9) تعريف دالة مراجعة أعمال الأعضاء وصلاحيات تنفيذها.
+-- يجب أن تكون محمية داخل جسم الدالة وتتحقق من app_metadata.role = admin.
+select
+  p.oid::regprocedure as function_signature,
+  pg_get_userbyid(p.proowner) as function_owner,
+  p.prosecdef as security_definer,
+  p.proconfig as function_settings,
+  has_function_privilege('anon',p.oid,'EXECUTE') as anon_can_execute,
+  has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_can_execute,
+  pg_get_functiondef(p.oid) as function_definition
+from pg_proc p
+join pg_namespace n on n.oid=p.pronamespace
+where n.nspname='public'
+  and p.proname='admin_review_member_work';
+
 -- 6) تعريف دالة اعتماد ملف العضو: تحقق يدوي من التفويض داخل جسم الدالة.
 -- يجب أن تتحقق الدالة من app_metadata.role = admin (أو آلية موثوقة مكافئة)،
 -- وألا تعتمد على user_metadata أو قيمة يرسلها العميل.
