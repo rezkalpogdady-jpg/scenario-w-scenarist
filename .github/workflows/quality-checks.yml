@@ -301,6 +301,30 @@ jobs:
           }
           console.log('TV/radio rights gate static checks passed.');
           NODE
+      - name: Check member work upload extension and MIME allowlist
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const match = html.match(/function validateMemberWorkUploadFile\\(file\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          if (!match) throw new Error('Member work upload validator is missing.');
+          const validate = vm.runInNewContext(match[0] + '; validateMemberWorkUploadFile');
+          const cases = [
+            [{name:'script.pdf',type:'text/html',size:1024}, false],
+            [{name:'portfolio.pdf',type:'application/pdf',size:1024}, true],
+            [{name:'portfolio.docx',type:'',size:1024}, true],
+            [{name:'portfolio.exe',type:'application/pdf',size:1024}, false],
+            [{name:'empty.txt',type:'text/plain',size:0}, false],
+            [{name:'large.doc',type:'application/msword',size:26*1024*1024}, false]
+          ];
+          for (const [file, expected] of cases) {
+            let accepted = true; try { validate(file); } catch (_) { accepted = false; }
+            if (accepted !== expected) throw new Error('Unexpected member upload validation for ' + file.name);
+          }
+          console.log('Member work upload validation checks passed.');
+          NODE
       - name: Check for server-side secret key patterns
         shell: bash
         run: |
