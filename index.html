@@ -939,7 +939,7 @@ function renderShortFilms(){
   box.innerHTML=items.length?items.map(item=>{
     const imageUrl=safeHttpsMediaUrl(item.image);
     const workUrl=safeHttpsMediaUrl(item.work);
-    const rightsApproved=["owner","official","licensed"].includes(String(item.rightsStatus||"").toLowerCase())&&!!safeHttpsMediaUrl(item.sourceUrl);
+    const rightsDocumented=["owner","official","licensed"].includes(String(item.rightsStatus||"").toLowerCase())&&!!safeHttpsMediaUrl(item.sourceUrl);
     const image=imageUrl
       ? `<img src="${escapeHTML(imageUrl)}" alt="ملصق فيلم ${escapeHTML(item.title||item.name||"")}" loading="lazy" referrerpolicy="no-referrer">`
       : `<div style="height:170px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:42px">🎬</div>`;
@@ -949,7 +949,7 @@ function renderShortFilms(){
       item.duration?`المدة: ${escapeHTML(item.duration)}`:"",
       item.productionYear?`سنة الإنتاج: ${escapeHTML(item.productionYear)}`:""
     ].filter(Boolean).map(value=>`<p>${value}</p>`).join("");
-    const watch=workUrl&&rightsApproved
+    const watch=workUrl&&rightsDocumented
       ? `<a class="btn primary" href="${escapeHTML(workUrl)}" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a><p style="font-size:11px;color:var(--muted)">المصدر/إذن العرض: <a href="${escapeHTML(safeHttpsMediaUrl(item.sourceUrl))}" target="_blank" rel="noopener noreferrer">مرجع التحقق</a></p>`
       : `<p style="font-size:12px;color:var(--muted)">بيانات الفيلم منشورة، لكن رابط المشاهدة لن يظهر قبل توثيق حق العرض ومصدره.</p>`;
     return `<article class="feature">${image}<div class="feature-content"><h3>${escapeHTML(item.title||item.name||"فيلم قصير")}</h3>${meta}<p>${escapeHTML(item.description||item.bio||"")}</p>${watch}</div></article>`;
