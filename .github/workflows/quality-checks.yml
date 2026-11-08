@@ -701,3 +701,39 @@ jobs:
           }
           console.log('Short-film metadata and rights-gated playback checks passed.');
           NODE
+
+      - name: Check admin data-access preflight coverage
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const sql = fs.readFileSync('releases/6.8/preflight-admin-data-access-readonly.sql', 'utf8');
+          const directAdminTables = [
+            'idea_submissions',
+            'site_content',
+            'scenario_scripts',
+            'community_topics',
+            'topic_replies',
+            'content_comments'
+          ];
+          for (const table of directAdminTables) {
+            if (!html.includes('from("' + table + '")')) {
+              throw new Error('Expected admin data access table is no longer referenced in index.html: ' + table);
+            }
+            if (!sql.includes("('" + table + "')") && !sql.includes("'" + table + "'")) {
+              throw new Error('Read-only admin preflight does not cover an admin data table: ' + table);
+            }
+          }
+          for (const bucket of ['site-media', 'scenario-scripts', 'member-submissions']) {
+            if (!sql.includes("'" + bucket + "'")) throw new Error('Admin preflight is missing Storage bucket: ' + bucket);
+          }
+          for (const snippet of ['pg_policies', 'has_table_privilege', 'has_function_privilege', 'pg_get_functiondef', 'pg_trigger']) {
+            if (!sql.includes(snippet)) throw new Error('Admin preflight is missing security catalog coverage: ' + snippet);
+          }
+          const executable = sql.replace(/--.*$/gm, '');
+          if (/^\s*(create|alter|drop|grant|revoke|insert|update|delete|truncate)\s+/im.test(executable)) {
+            throw new Error('Admin data-access preflight must remain read-only.');
+          }
+          console.log('Admin direct-table, Storage, RLS, RPC, trigger, and read-only coverage checks passed.');
+          NODE
