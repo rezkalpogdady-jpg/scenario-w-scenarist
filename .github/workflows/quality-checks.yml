@@ -252,7 +252,11 @@ jobs:
           const publicProfiles = section('async function loadApprovedMemberProfiles()', '/* إنشاء اتصال عام لقراءة المحتوى المنشور */');
           if (!publicProfiles.includes('.eq("profile_status","approved")')) throw new Error('Public profile directory must filter to approved profiles only.');
           if (publicProfiles.includes('.select("*"')) throw new Error('Public profile directory must not select all profile columns.');
-          console.log('Member client-side access-boundary checks passed. Database RLS still requires independent verification.');
+          const profileCard = section('function profileCard(item, type)', '/* عرض الكُتّاب */');
+          if (!profileCard.includes('safeHttpsMediaUrl(item.image)') || !profileCard.includes('safeHttpsMediaUrl(item.work)') || profileCard.includes('safeHttpUrl(item.image)') || profileCard.includes('safeHttpUrl(item.work)')) throw new Error('Public member profile cards must render only validated HTTPS image and portfolio links.');
+          const adminProfiles = section('async function adminLoadMemberProfiles()', 'async function adminLoadMemberWorks()');
+          if (!adminProfiles.includes('safeHttpsMediaUrl(item.image_url)') || !adminProfiles.includes('safeHttpsMediaUrl(item.work_url)') || !adminProfiles.includes('مرفوض سابقًا — في انتظار مراجعة جديدة')) throw new Error('Admin member profile review must validate external links and distinguish rejected resubmissions.');
+          console.log('Member client-side access-boundary and secure profile-link checks passed. Database RLS still requires independent verification.');
           NODE
       - name: Check admin dashboard role gate
         shell: bash
