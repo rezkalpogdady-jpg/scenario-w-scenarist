@@ -631,7 +631,7 @@ jobs:
           }
           if (reader.includes('getPublicUrl(')) throw new Error('Private scenario PDF reader must not generate public URLs.');
           if (!sql.includes("where id='scenario-scripts'") ||
-              !sql.includes("and public=false") && !sql.includes('public=false') ||
+              !sql.includes('select id,name,public,file_size_limit,allowed_mime_types') ||
               !sql.includes("where schemaname='storage' and tablename='objects'")) {
             throw new Error('Read-only preflight must inspect the scenario-scripts bucket and its Storage policies.');
           }
