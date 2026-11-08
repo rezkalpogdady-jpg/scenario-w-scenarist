@@ -2586,11 +2586,19 @@ async function adminDeleteRecord(id){
     return;
   }
 
-  const paths=[adminStoragePathFromPublicUrl(item?.image_url),adminStoragePathFromPublicUrl(item?.content_url)].filter(Boolean);
+  const paths=[...new Set([adminStoragePathFromPublicUrl(item?.image_url),adminStoragePathFromPublicUrl(item?.content_url)].filter(Boolean))];
   if(paths.length){
-    const uniquePaths=[...new Set(paths)];
-    const {error:storageError}=await adminSupabase.storage.from("site-media").remove(uniquePaths);
-    if(storageError) alert("تم حذف سجل المحتوى، لكن تعذر حذف أحد ملفاته من التخزين: "+storageError.message);
+    const {data:references,error:referenceError}=await adminSupabase.from("site_content").select("image_url,content_url");
+    if(referenceError){
+      alert("تم حذف سجل المحتوى، لكن تعذر التحقق من ارتباط ملفاته بسجلات أخرى؛ تُركت الملفات دون حذف.");
+    }else{
+      const stillReferenced=new Set((references||[]).flatMap(row=>[adminStoragePathFromPublicUrl(row.image_url),adminStoragePathFromPublicUrl(row.content_url)]).filter(Boolean));
+      const safeToDelete=paths.filter(path=>!stillReferenced.has(path));
+      if(safeToDelete.length){
+        const {error:storageError}=await adminSupabase.storage.from("site-media").remove(safeToDelete);
+        if(storageError) alert("تم حذف سجل المحتوى، لكن تعذر حذف بعض ملفاته من التخزين: "+storageError.message);
+      }
+    }
   }
   await adminLoadRecords();
 }
