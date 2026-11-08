@@ -718,7 +718,8 @@ jobs:
             'content_comments'
           ];
           for (const table of directAdminTables) {
-            if (!html.includes('from("' + table + '")')) {
+            const tableAccess = new RegExp('\\.from\\(\\s*["\\x27]' + table + '["\\x27]\\s*\\)');
+            if (!tableAccess.test(html)) {
               throw new Error('Expected admin data access table is no longer referenced in index.html: ' + table);
             }
             if (!sql.includes("('" + table + "')") && !sql.includes("'" + table + "'")) {
