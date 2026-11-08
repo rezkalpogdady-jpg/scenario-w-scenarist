@@ -2919,6 +2919,27 @@ document.getElementById("libraryCategory")?.addEventListener("change",()=>{rende
 </script>
 
 <script>
+/* Whitelist public metadata; never forward arbitrary admin-only extra_data keys. */
+function sanitizePublicContentRecord(item){
+  const source=item?.extra_data && typeof item.extra_data==="object" && !Array.isArray(item.extra_data) ? item.extra_data : {};
+  const allowed=["rights_status","source_url","name","author","writer","specialty","type","city","director","duration","owner","lesson_text","learning_objectives","exercise","homework"];
+  const extra_data={};
+  allowed.forEach(key=>{
+    if(typeof source[key]==="string" && source[key].length<=20000) extra_data[key]=source[key];
+  });
+  if(Array.isArray(source.resources)){
+    extra_data.resources=source.resources.slice(0,20).filter(item=>item&&typeof item==="object").map(item=>({
+      title:typeof item.title==="string" ? item.title.slice(0,200) : "مادة مساعدة",
+      url:typeof item.url==="string" ? item.url.slice(0,2048) : ""
+    }));
+  }
+  return {
+    id:item.id,content_type:item.content_type,title:item.title,category:item.category,
+    description:item.description,image_url:item.image_url,content_url:item.content_url,
+    extra_data,published:item.published,created_at:item.created_at
+  };
+}
+
 /* =========================
    تحميل المحتوى المنشور
 ========================= */
@@ -3227,7 +3248,7 @@ async function loadPublicContent(){
 
     const {data,error}=await publicContentClient
       .from("site_content")
-      .select("*")
+      .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
       .eq("published",true)
       .order("created_at",{ascending:false});
 
@@ -3236,7 +3257,7 @@ async function loadPublicContent(){
       return;
     }
 
-    distributePublicContent(data || []);
+    distributePublicContent((data || []).map(sanitizePublicContentRecord));
     await loadApprovedMemberProfiles();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
