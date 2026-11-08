@@ -448,6 +448,9 @@ jobs:
             published: true
           });
           if (publicRecord.extra_data.internal_admin_note !== undefined) throw new Error('Private admin-only metadata leaked into public content.');
+          for (const field of ['director','writer','duration','production_year','year']) {
+            if (publicRecord.extra_data[field] === undefined) throw new Error('Short-film field was dropped by public sanitization: ' + field);
+          }
           const mapped = runtime.map(publicRecord);
           if (mapped.stream !== 'https://stream.example/live.m3u8') throw new Error('Admin content_url is not connected to the public TV/radio stream field.');
           if (mapped.rightsStatus !== 'official' || mapped.sourceUrl !== 'https://source.example/rights') throw new Error('Broadcast rights metadata did not survive public sanitization.');
@@ -541,6 +544,7 @@ jobs:
           for (const field of ['item.director', 'item.writer', 'item.duration', 'item.productionYear']) {
             if (!renderer[0].includes(field)) throw new Error('Short-film card does not display ' + field);
           }
+          if (!renderer[0].includes('const rightsDocumented=') || renderer[0].includes('rightsApproved')) throw new Error('Rights metadata must be described as documented, not treated as an independent legal approval.');
           if (!renderer[0].includes('safeHttpsMediaUrl(item.work)') ||
               !renderer[0].includes('safeHttpsMediaUrl(item.sourceUrl)') ||
               !renderer[0].includes('["owner","official","licensed"]') ||
