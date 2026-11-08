@@ -111,3 +111,6 @@
 | `SECURITY DEFINER` | إن استُخدم، يجب تثبيت `search_path` والتحقق من هوية المدير داخل الدالة وتقييد الامتيازات والمالك |
 
 استعمل `releases/6.6/preflight-admin-rpc-readonly.sql` لجمع تعريفات الدوال والمالك والإعدادات وامتيازات التنفيذ. لم تصلنا تعريفات RPC الفعلية في ملفات المستودع، ولذلك لا يمكن إصدار حكم أمني عليها قبل مراجعة نتائج الفحص.
+
+- فحص الامتيازات الفعلية: تأكد أن `authenticated` لا يملك تحديث `member_profiles.profile_status` أو `member_works.status` مباشرة، وأن سياسات `storage.objects` لا تسمح بقراءة `member-submissions` للعامة.
+- فحص RLS: راجع `relrowsecurity` و`relforcerowsecurity` ومالك كل جدول حساس، مع العلم أن مالك الجدول قد يتجاوز RLS ما لم يُفرض.
