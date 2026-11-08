@@ -652,7 +652,7 @@ function renderLibrary(){
 
   container.innerHTML = filtered.map(item=>`
     <article class="feature">
-      ${item.cover ? `<img src="${escapeHTML(item.cover)}" alt="">` : ""}
+      ${item.cover ? `<img src="${safeHttpUrl(item.cover)}" alt="">` : ""}
       <div class="feature-content">
         <h3>${escapeHTML(item.title)}</h3>
         <p>الكاتب: ${escapeHTML(item.author)}</p>
@@ -1332,7 +1332,8 @@ function renderRadioStations(){
 let activeRadioHlsPlayer=null;
 function playRadioStation(id){
   const station=radioStations.find(item=>String(item.id)===String(id));
-  if(!station || !station.stream){alert("رابط البث غير متاح لهذه المحطة.");return;}
+  const streamUrl=station?safeHttpUrl(streamUrl):"";
+  if(!streamUrl){alert("رابط البث غير متاح أو غير آمن لهذه المحطة.");return;}
   const player=document.getElementById("radioPlayer");
   const title=document.getElementById("radioNowTitle");
   const status=document.getElementById("radioStatus");
@@ -1340,18 +1341,18 @@ function playRadioStation(id){
   if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
   player.pause();player.removeAttribute("src");player.load();
   title.textContent=station.name;status.textContent="جارٍ تحميل المحطة...";
-  const isHls=/\.m3u8($|\?)/i.test(station.stream);
+  const isHls=/\.m3u8($|\?)/i.test(streamUrl);
   const play=()=>player.play().then(()=>{status.textContent="يتم تشغيل: "+station.name;}).catch(()=>{status.textContent="اضغط زر التشغيل داخل المشغل لبدء الاستماع.";});
   if(isHls && window.Hls && Hls.isSupported()){
     activeRadioHlsPlayer=new Hls();
-    activeRadioHlsPlayer.loadSource(station.stream);
+    activeRadioHlsPlayer.loadSource(streamUrl);
     activeRadioHlsPlayer.attachMedia(player);
     activeRadioHlsPlayer.on(Hls.Events.MANIFEST_PARSED,play);
     activeRadioHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
       if(data.fatal){status.textContent="تعذر تشغيل المحطة؛ تحقق من رابط البث أو صلاحية تضمينه.";activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
     });
   }else{
-    player.src=station.stream;player.load();play();
+    player.src=streamUrl;player.load();play();
   }
 }
 
@@ -2167,7 +2168,7 @@ async function adminLoadCommunitySubmissions(){
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
     const details=isTalent?`المجال: ${item.category||""} • المدينة: ${item.city||"غير محددة"}`:`النوع: ${item.category||""} • صاحب المشروع: ${item.owner_name||""}`;
-    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${safeHttpUrl(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
   }).join("");
 }
 async function adminReviewCommunity(id,status){
@@ -2188,7 +2189,7 @@ async function adminLoadMemberProfiles(){
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية جديدة للمراجعة.</div>';return;}
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
-  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'rejected')">رفض الملف</button></div></article>`).join("");
+  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${safeHttpUrl(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${safeHttpUrl(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(${inlineJsArg(item.user_id)},'rejected')">رفض الملف</button></div></article>`).join("");
 }
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
@@ -2210,7 +2211,7 @@ async function adminLoadMemberWorks(){
       const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
       if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
     }
-    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p>${reviewUrl?`<p><a href="${safeHttpUrl(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork(${inlineJsArg(item.id)},'rejected')">رفض</button></div></article>`;
   }));
   box.innerHTML=cards.join("");
 }
@@ -2765,7 +2766,7 @@ function renderScenarioScriptCards(){
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const scriptCards=items.map(item=>`<article class="feature"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو كامل للقراءة</div><h3>${escapeHTML(item.title)}</h3><p>المؤلف: ${escapeHTML(item.author)}</p><p>التصنيف: ${escapeHTML(item.category)}</p><p>${escapeHTML(item.summary||"")}</p><button class="btn primary" type="button" onclick="openScenarioScript(${inlineJsArg(item.id)})">اقرأ السيناريو</button></div></article>`);
-  const legacyCards=legacy.map(item=>`<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<a class="btn" href="${safeHttpUrl(item.file)}" target="_blank" rel="noopener">فتح الملف</a>`:""}</div></article>`);
+  const legacyCards=legacy.map(item=>`<article class="feature">${item.cover?`<img src="${safeHttpUrl(item.cover)}" alt="">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<a class="btn" href="${safeHttpUrl(item.file)}" target="_blank" rel="noopener">فتح الملف</a>`:""}</div></article>`);
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
   box.innerHTML=cards.join("");
@@ -3103,7 +3104,8 @@ let activeHlsPlayer=null;
 function playTVChannel(id){
   const channel=tvChannels.find(item=>String(item.id)===String(id));
 
-  if(!channel || !channel.stream){
+  const streamUrl=channel?safeHttpUrl(streamUrl):"";
+  if(!streamUrl){
     alert("رابط البث غير متاح لهذه القناة.");
     return;
   }
@@ -3129,12 +3131,12 @@ function playTVChannel(id){
   placeholder.style.display="none";
   status.textContent="جارٍ تحميل القناة...";
 
-  const isHls=/\.m3u8($|\?)/i.test(channel.stream);
+  const isHls=/\.m3u8($|\?)/i.test(streamUrl);
 
   if(isHls && window.Hls && Hls.isSupported()){
     activeHlsPlayer=new Hls();
 
-    activeHlsPlayer.loadSource(channel.stream);
+    activeHlsPlayer.loadSource(streamUrl);
     activeHlsPlayer.attachMedia(player);
 
     activeHlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{
@@ -3154,7 +3156,7 @@ function playTVChannel(id){
     });
 
   }else if(isHls && player.canPlayType("application/vnd.apple.mpegurl")){
-    player.src=channel.stream;
+    player.src=streamUrl;
 
     player.play().then(()=>{
       status.textContent="يتم تشغيل: "+channel.name;
@@ -3163,7 +3165,7 @@ function playTVChannel(id){
     });
 
   }else{
-    player.src=channel.stream;
+    player.src=streamUrl;
 
     player.play().then(()=>{
       status.textContent="يتم تشغيل: "+channel.name;
