@@ -3989,7 +3989,7 @@ async function accountLoadWriterIdeas(){
 }
 async function writerIdeaEdit(id){
   if(!accountUser)return;
-  const {data,error}=await accountClient().from("writer_ideas").select("*").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
+  const {data,error}=await accountClient().from("writer_ideas").select("id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open,status,review_notes,rights_confirmed").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
   if(error||!data||data.status!=="rejected"){alert("يمكن تعديل الفكرة بعد طلب المدير تعديلها فقط.");return;}
   writerIdeaEditingId=data.id;
   document.getElementById("writerIdeaId").value=data.id;
