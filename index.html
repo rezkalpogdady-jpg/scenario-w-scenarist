@@ -337,48 +337,6 @@ Main{padding:17px 11px}
 <button class="btn primary" onclick="showPage('academy')">اكتشف الأكاديمية</button>
 </div>
 
-<div class="section-heading" style="margin-top:26px">
-<h2>الأقسام المهمة</h2>
-<p>ادخل مباشرة إلى الخدمات الأساسية للمنصة</p>
-</div>
-<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:34px">
-  <article class="feature">
-    <div class="feature-content">
-      <h3>المحاضرات</h3>
-      <p>تعلم كتابة السيناريو من خلال المحاضرات والدروس.</p>
-      <button class="btn primary" onclick="showPage('academy')">دخول المحاضرات</button>
-    </div>
-  </article>
-  <article class="feature">
-    <div class="feature-content">
-      <h3>بيع الكتب</h3>
-      <p>اعرض كتابك بالغلاف والسعر وتواصل مع القراء.</p>
-      <button class="btn primary" onclick="showPage('books')">ادخل سوق الكتب</button>
-    </div>
-  </article>
-  <article class="feature">
-    <div class="feature-content">
-      <h3>مؤلفو السيناريو</h3>
-      <p>تعرّف على كتاب السيناريو وملفاتهم وأعمالهم.</p>
-      <button class="btn primary" onclick="showPage('writers')">دليل المؤلفين</button>
-    </div>
-  </article>
-  <article class="feature">
-    <div class="feature-content">
-      <h3>المخرجون</h3>
-      <p>اكتشف المخرجين ونماذج أعمالهم.</p>
-      <button class="btn primary" onclick="showPage('directors')">دليل المخرجين</button>
-    </div>
-  </article>
-  <article class="feature">
-    <div class="feature-content">
-      <h3>المواهب</h3>
-      <p>اكتشف الممثلين ومقدمي البرامج والمواهب الإذاعية.</p>
-      <button class="btn primary" onclick="showPage('talents')">اكتشف المواهب</button>
-    </div>
-  </article>
-</div>
-
 <div class="section-heading">
 <h2>أقسام المنصة</h2>
 <p>كل ما يحتاجه صانع العمل الإبداعي في مكان واحد</p>
@@ -505,6 +463,37 @@ Main{padding:17px 11px}
 </div>
 </div>
 
+
+<div class="section-heading" style="margin-top:42px">
+  <h2>الأقسام الرئيسية للمنصة</h2>
+  <p>خدمات سيناريو وسيناريست الأساسية — اختر القسم الذي تريد الدخول إليه</p>
+</div>
+<div class="grid" id="homeMainSections" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-bottom:30px">
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=85" alt="محاضرات أكاديمية السيناريو">
+    <div class="feature-content"><h3>المحاضرات</h3><p>تعلم كتابة السيناريو من البداية حتى إعداد مشروع فيلم متكامل.</p><button class="btn primary" onclick="showPage('academy')">دخول المحاضرات</button></div>
+  </article>
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=900&q=85" alt="كتب وسوق الكتب">
+    <div class="feature-content"><h3>بيع الكتب</h3><p>اعرض كتابك بالغلاف والسعر والنبذة، وتواصل مباشرة مع القراء.</p><button class="btn primary" onclick="showPage('books')">دخول سوق الكتب</button></div>
+  </article>
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=85" alt="مؤلفو السيناريو والكتابة">
+    <div class="feature-content"><h3>مؤلفو السيناريو</h3><p>تعرّف على كتاب السيناريو وملفاتهم وأعمالهم.</p><button class="btn primary" onclick="showPage('writers')">دليل المؤلفين</button></div>
+  </article>
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=85" alt="المخرجون وصناعة الأفلام">
+    <div class="feature-content"><h3>المخرجون</h3><p>اكتشف المخرجين ونماذج أعمالهم ومشروعاتهم.</p><button class="btn primary" onclick="showPage('directors')">دليل المخرجين</button></div>
+  </article>
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=900&q=85" alt="المواهب والتمثيل">
+    <div class="feature-content"><h3>المواهب</h3><p>اكتشف الممثلين ومقدمي البرامج والمواهب الإذاعية.</p><button class="btn primary" onclick="showPage('talents')">اكتشف المواهب</button></div>
+  </article>
+  <article class="feature">
+    <img src="https://images.unsplash.com/photo-1514306191717-452ec28c7814?auto=format&fit=crop&w=900&q=85" alt="الأفلام القصيرة">
+    <div class="feature-content"><h3>الأفلام القصيرة</h3><p>شاهد تجارب صناع الأفلام الشباب واعرض فيلمك القصير.</p><button class="btn primary" onclick="showPage('shorts')">دخول الأفلام القصيرة</button></div>
+  </article>
+</div>
 </section>
 
 <!-- الأجزاء التالية ستضاف هنا حسب الترتيب -->
