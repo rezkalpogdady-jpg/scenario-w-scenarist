@@ -499,32 +499,24 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     <p>رحلتك من أول فكرة إلى كتابة سيناريو متكامل قابل للتقديم والإنتاج. منهج تدريبي من 30 محاضرة، يجمع بين الشرح المكتوب والفيديو والتطبيق العملي.</p>
   </div>
 
-  <div class="section-heading">
-    <h2>منهج تعليم السيناريو</h2>
-    <p>30 محاضرة من البداية إلى الاحتراف</p>
+  <div class="section-heading" id="academyLessonsHeading">
+    <h2>المحاضرات التعليمية</h2>
+    <p>30 محاضرة مستقلة — اختر محاضرتك لفتح صفحة القراءة الخاصة بها</p>
   </div>
 
-  <div class="panel">
-    <h3 style="color:var(--gold)">ابدأ من الأساسيات</h3>
-    <p>كل محاضرة لها شرح مكتوب، ومساحة للفيديو التعليمي، وتدريب تطبيقي. ستتم إضافة محتوى المحاضرات والفيديوهات من لوحة الإدارة في الجزء الخاص بها.</p>
+  <div class="panel" id="academyLessonsPanel">
     <div id="lessonsList" class="grid"></div>
   </div>
 
-  <div class="panel">
-    <h3 style="color:var(--gold)">قاعة الفيديو التعليمية</h3>
-    <p>مكان مخصص لعرض المحاضرات المصورة والدروس العملية.</p>
-    <div id="academyVideo" style="background:#080808;border:1px solid var(--border);border-radius:10px;padding:25px;text-align:center">
-      <div style="font-size:45px">▶</div>
-      <p>سيظهر الفيديو التعليمي هنا عند إضافته من الإدارة.</p>
+  <div id="lessonDialog" class="panel" role="article" aria-labelledby="lessonDialogTitle" style="display:none;margin-top:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:14px">
+      <div>
+        <div id="lessonDialogNumber" style="color:var(--gold);font-size:13px;margin-bottom:5px"></div>
+        <h2 id="lessonDialogTitle" style="color:var(--gold);margin:0"></h2>
+      </div>
+      <button class="btn" type="button" onclick="closeLesson()">العودة إلى المحاضرات</button>
     </div>
-  </div>
-
-  <div id="lessonDialog" class="panel" role="dialog" aria-modal="true" aria-labelledby="lessonDialogTitle" style="display:none;margin-top:18px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <h3 id="lessonDialogTitle" style="color:var(--gold);margin:0"></h3>
-      <button class="btn" type="button" onclick="closeLesson()">إغلاق المحاضرة</button>
-    </div>
-    <div id="lessonDialogBody" style="margin-top:14px"></div>
+    <div id="lessonDialogBody" style="margin-top:20px;max-width:900px;margin-left:auto;margin-right:auto;line-height:2;font-size:17px"></div>
   </div>
 </section>
 
@@ -602,7 +594,7 @@ const academyLessons = [
 "كتابة المشاهد المتوازية",
 "إعادة الكتابة والتطوير",
 "تنسيق السيناريو الاحترافي",
-"تجهيز المشروع للتقديم لشركات الإنتاج"
+"المراجعة النهائية للسيناريو وتنسيقه"
 ];
 
 const lessonsContainer = document.getElementById("lessonsList");
@@ -612,22 +604,21 @@ function renderLessonIndex(materials = []){
   const byTitle = new Map(materials.map(item=>[String(item.title||"").trim(),item]));
   lessonsContainer.innerHTML = academyLessons.map((lesson,index)=>{
     const material=byTitle.get(lesson);
-    const available=!!material;
-    const poster=material?.image_url ? safeHttpUrl(material.image_url) : "";
+    const poster=material?.image || material?.image_url || "";
+    const safePoster=poster ? safeHttpUrl(poster) : "";
     return `<article class="feature academy-lesson-card" style="overflow:hidden;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
-      ${poster
-        ? `<img src="${escapeHTML(poster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#111">`
-        : `<div aria-label="أفيش مؤقت للمحاضرة ${index+1}" style="aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:radial-gradient(circle at 50% 35%,#4b3820 0,#211b16 42%,#101010 100%);border-bottom:2px solid var(--gold)">
+      ${safePoster
+        ? `<img src="${escapeHTML(safePoster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#111">`
+        : `<div aria-label="غلاف المحاضرة ${index+1}" style="aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:radial-gradient(circle at 50% 35%,#4b3820 0,#211b16 42%,#101010 100%);border-bottom:2px solid var(--gold)">
             <div style="font-size:12px;letter-spacing:2px;color:var(--gold)">سيناريو وسيناريست</div>
             <div style="font-size:42px;font-weight:800;color:var(--gold);margin:22px 0 12px">${String(index+1).padStart(2,"0")}</div>
             <div style="font-size:18px;line-height:1.7;color:#fff;font-weight:700">${escapeHTML(lesson)}</div>
-            <div style="font-size:11px;color:#c7bda9;margin-top:18px">أكاديمية السيناريو</div>
+            <div style="font-size:11px;color:#c7bda9;margin-top:18px">محاضرة تعليمية</div>
           </div>`}
       <div class="feature-content" style="padding:16px">
         <div style="color:var(--gold);font-size:13px">المحاضرة ${index+1}</div>
         <h3>${escapeHTML(lesson)}</h3>
-        <p>${available ? escapeHTML(material.description || "مادة المحاضرة متاحة.") : "سيتم نشر الشرح والتدريب من إدارة الأكاديمية."}</p>
-        <button class="btn" type="button" onclick="openLesson(${index})">${available ? "فتح المحاضرة" : "تفاصيل المحاضرة"}</button>
+        <button class="btn" type="button" onclick="openLesson(${index})">اقرأ المحاضرة</button>
       </div>
     </article>`;
   }).join("");
@@ -638,23 +629,42 @@ function openLesson(index){
   if(!lesson) return;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
   const dialog=document.getElementById("lessonDialog");
+  const listPanel=document.getElementById("academyLessonsPanel");
+  const listHeading=document.getElementById("academyLessonsHeading");
+  const number=document.getElementById("lessonDialogNumber");
   const title=document.getElementById("lessonDialogTitle");
   const body=document.getElementById("lessonDialogBody");
   if(!dialog||!title||!body) return;
-  title.textContent=`المحاضرة ${index+1}: ${lesson}`;
+  number.textContent="المحاضرة "+String(index+1).padStart(2,"0");
+  title.textContent=lesson;
+  const extra=material?.extra_data && typeof material.extra_data==="object" ? material.extra_data : {};
   const poster=material?.image_url ? safeHttpUrl(material.image_url) : "";
-  body.innerHTML=material
-    ? `${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" style="display:block;width:min(100%,420px);max-height:620px;object-fit:contain;margin:0 auto 22px;border-radius:12px;box-shadow:0 12px 35px rgba(0,0,0,.35)">` : ""}
-       <p>${escapeHTML(material.description||"لا يوجد شرح مكتوب مضاف لهذه المحاضرة بعد.")}</p>${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
-    : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
+  const lessonText=typeof extra.body==="string" && extra.body.trim()
+    ? extra.body
+    : (typeof extra.lesson_text==="string" && extra.lesson_text.trim() ? extra.lesson_text : "");
+  const description=material?.description || "";
+  const paragraphs=(lessonText || description)
+    .split(/\n{2,}/)
+    .map(part=>part.trim())
+    .filter(Boolean)
+    .map(part=>`<p style="white-space:pre-wrap;margin:0 0 18px">${escapeHTML(part)}</p>`)
+    .join("");
+  body.innerHTML=`${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش ${escapeHTML(lesson)}" style="display:block;width:min(100%,380px);max-height:560px;object-fit:contain;margin:0 auto 26px;border-radius:10px;box-shadow:0 10px 30px #0008">` : ""}
+    <div class="lesson-reading-text">${paragraphs || "<p style='color:var(--muted);text-align:center;padding:35px 10px'>سيتم نشر نص هذه المحاضرة قريبًا.</p>"}</div>`;
+  if(listPanel) listPanel.style.display="none";
+  if(listHeading) listHeading.style.display="none";
   dialog.style.display="block";
-  initializeInlineHlsVideos(dialog);
   dialog.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function closeLesson(){
   const dialog=document.getElementById("lessonDialog");
+  const listPanel=document.getElementById("academyLessonsPanel");
+  const listHeading=document.getElementById("academyLessonsHeading");
   if(dialog) dialog.style.display="none";
+  if(listPanel) listPanel.style.display="block";
+  if(listHeading) listHeading.style.display="block";
+  listHeading?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 renderLessonIndex();
@@ -3267,14 +3277,7 @@ function renderFilms(){
 
 /* عرض المحاضرات والفيديوهات التي تضيفها الإدارة */
 function renderAcademyContent(items){
-  const videoBox=document.getElementById("academyVideo");
   if(typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
-  if(!videoBox) return;
-  const video=(items||[]).find(item=>item.content_url);
-  videoBox.innerHTML=video
-    ? `<h3>${escapeHTML(video.title)}</h3><p>${escapeHTML(video.description || "")}</p>${directVideoMarkup(video.content_url,"مشاهدة المحاضرة")}`
-    : `<div style="font-size:45px">▶</div><p>ستظهر هنا معاينة الفيديو التعليمي عند نشر أول محاضرة مصورة.</p>`;
-  initializeInlineHlsVideos(videoBox);
 }
 
 function safeHttpUrl(value){
