@@ -516,6 +516,12 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       </div>
       <button class="btn" type="button" onclick="closeLesson()">العودة إلى المحاضرات</button>
     </div>
+    <div id="lessonAudioControls" class="panel" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px">
+      <button class="btn primary" type="button" id="lessonSpeakButton" onclick="speakCurrentLesson()">استمع للمحاضرة</button>
+      <button class="btn" type="button" id="lessonPauseButton" onclick="pauseCurrentLesson()" disabled>إيقاف مؤقت</button>
+      <button class="btn" type="button" id="lessonStopButton" onclick="stopCurrentLesson()" disabled>إيقاف الاستماع</button>
+      <span id="lessonAudioStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">يمكنك قراءة المحاضرة أو الاستماع إليها صوتيًا.</span>
+    </div>
     <div id="lessonDialogBody" style="margin-top:20px;max-width:900px;margin-left:auto;margin-right:auto;line-height:2;font-size:17px"></div>
   </div>
 </section>
@@ -624,7 +630,79 @@ function renderLessonIndex(materials = []){
   }).join("");
 }
 
+let currentLessonUtterance = null;
+let currentLessonText = "";
+
+function updateLessonAudioControls(){
+  const pause=document.getElementById("lessonPauseButton");
+  const stop=document.getElementById("lessonStopButton");
+  const status=document.getElementById("lessonAudioStatus");
+  const active=!!(window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.paused));
+  if(pause) {
+    pause.disabled=!active;
+    pause.textContent=speechSynthesis && speechSynthesis.paused ? "متابعة الاستماع" : "إيقاف مؤقت";
+  }
+  if(stop) stop.disabled=!active;
+  if(status && !("speechSynthesis" in window)) status.textContent="ميزة الاستماع الصوتي غير مدعومة في هذا المتصفح.";
+}
+
+function speakCurrentLesson(){
+  if(!("speechSynthesis" in window)){
+    const status=document.getElementById("lessonAudioStatus");
+    if(status) status.textContent="المتصفح لا يدعم الاستماع الصوتي. جرّب Chrome على الهاتف.";
+    return;
+  }
+  if(!currentLessonText.trim()){
+    const status=document.getElementById("lessonAudioStatus");
+    if(status) status.textContent="لا يوجد نص منشور لهذه المحاضرة حتى الآن.";
+    return;
+  }
+  speechSynthesis.cancel();
+  currentLessonUtterance=new SpeechSynthesisUtterance(currentLessonText);
+  currentLessonUtterance.lang="ar-SA";
+  currentLessonUtterance.rate=0.95;
+  currentLessonUtterance.pitch=1;
+  const voices=speechSynthesis.getVoices();
+  const arabicVoice=voices.find(voice=>/^ar([_-]|$)/i.test(voice.lang)) || voices.find(voice=>/arabic|عربي/i.test(voice.name));
+  if(arabicVoice) currentLessonUtterance.voice=arabicVoice;
+  currentLessonUtterance.onstart=()=>{
+    const status=document.getElementById("lessonAudioStatus");
+    if(status) status.textContent="جارٍ قراءة المحاضرة صوتيًا...";
+    updateLessonAudioControls();
+  };
+  currentLessonUtterance.onend=()=>{
+    const status=document.getElementById("lessonAudioStatus");
+    if(status) status.textContent="انتهى الاستماع إلى المحاضرة.";
+    currentLessonUtterance=null;
+    updateLessonAudioControls();
+  };
+  currentLessonUtterance.onerror=()=>{
+    const status=document.getElementById("lessonAudioStatus");
+    if(status) status.textContent="تعذر تشغيل الصوت. تأكد من دعم الصوت العربي في جهازك.";
+    currentLessonUtterance=null;
+    updateLessonAudioControls();
+  };
+  speechSynthesis.speak(currentLessonUtterance);
+  updateLessonAudioControls();
+}
+
+function pauseCurrentLesson(){
+  if(!("speechSynthesis" in window)) return;
+  if(speechSynthesis.paused) speechSynthesis.resume();
+  else if(speechSynthesis.speaking) speechSynthesis.pause();
+  updateLessonAudioControls();
+}
+
+function stopCurrentLesson(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  currentLessonUtterance=null;
+  const status=document.getElementById("lessonAudioStatus");
+  if(status) status.textContent="تم إيقاف الاستماع.";
+  updateLessonAudioControls();
+}
+
 function openLesson(index){
+  stopCurrentLesson();
   const lesson=academyLessons[index];
   if(!lesson) return;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
@@ -651,6 +729,10 @@ function openLesson(index){
     .join("");
   body.innerHTML=`${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش ${escapeHTML(lesson)}" style="display:block;width:min(100%,380px);max-height:560px;object-fit:contain;margin:0 auto 26px;border-radius:10px;box-shadow:0 10px 30px #0008">` : ""}
     <div class="lesson-reading-text">${paragraphs || "<p style='color:var(--muted);text-align:center;padding:35px 10px'>سيتم نشر نص هذه المحاضرة قريبًا.</p>"}</div>`;
+  currentLessonText=(lessonText || description || "").trim();
+  const audioStatus=document.getElementById("lessonAudioStatus");
+  if(audioStatus) audioStatus.textContent=currentLessonText ? "يمكنك قراءة المحاضرة أو الاستماع إليها صوتيًا." : "لا يوجد نص منشور للاستماع إليه في هذه المحاضرة بعد.";
+  updateLessonAudioControls();
   if(listPanel) listPanel.style.display="none";
   if(listHeading) listHeading.style.display="none";
   dialog.style.display="block";
@@ -658,6 +740,7 @@ function openLesson(index){
 }
 
 function closeLesson(){
+  stopCurrentLesson();
   const dialog=document.getElementById("lessonDialog");
   const listPanel=document.getElementById("academyLessonsPanel");
   const listHeading=document.getElementById("academyLessonsHeading");
