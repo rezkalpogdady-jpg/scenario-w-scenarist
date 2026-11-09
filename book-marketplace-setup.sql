@@ -197,4 +197,22 @@ revoke all on function public.seller_delete_book_listing(uuid,text) from public;
 grant execute on function public.seller_get_book_listing(uuid,text) to anon, authenticated;
 grant execute on function public.seller_delete_book_listing(uuid,text) to anon, authenticated;
 
+
+-- حذف إعلانات الكتب: للمدير فقط.
+drop policy if exists "Platform admins can delete book listings" on public.book_marketplace_listings;
+create policy "Platform admins can delete book listings"
+  on public.book_marketplace_listings
+  for delete to authenticated
+  using (private.is_platform_admin());
+
+-- حذف أغلفة الكتب من مساحة التخزين: للمدير فقط.
+drop policy if exists "Platform admins can delete book marketplace covers" on storage.objects;
+create policy "Platform admins can delete book marketplace covers"
+  on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'book-marketplace-covers'
+    and private.is_platform_admin()
+  );
+
 commit;
