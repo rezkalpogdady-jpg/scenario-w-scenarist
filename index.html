@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.5.9: فصل مسؤولية المدير عن إقرار العضو وتحسين الوصول إلى نموذج مكتبة السيناريوهات؛ نسخة مستقلة لا تستبدل السابقة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.3: فيديو موهبة حتى 10 دقائق ورقم تواصل خاص ومراجعة فيديو الإدارة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.5.9</title>
+<title>سيناريو وسيناريست – تحديث 6.8.3</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.5.12">
+<body data-platform-version="6.8.3">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -321,7 +321,7 @@ Main{padding:17px 11px}
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
 <button data-page="production">الإنتاج</button>
-<button data-page="account">حسابي</button>
+<button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="about">عن المنصة</button>
 </nav>
@@ -820,14 +820,14 @@ renderLibrary();
 <section id="directors" class="page">
   <div class="intro">
     <h2>دليل المخرجين</h2>
-    <p>مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
+    <p>تصفّح دليل المخرجين ومشاهدة الأعمال متاح للجميع دون تسجيل أو بريد إلكتروني. مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
   </div>
 
   <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
     <h3 style="color:var(--gold);margin-top:0">هل أنت مخرج؟ اعرض أعمالك على المنصة</h3>
-    <p>أنشئ ملفك المهني، أضف نبذة عن خبرتك ودراستك، وارفع نماذج من أعمالك أو أضف روابط المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
-    <button class="btn primary" type="button" onclick="startDirectorRegistration()">أنشئ ملفك كمخرج</button>
-    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">لديك حساب بالفعل؟ اضغط الزر وسجّل الدخول.</span>
+    <p>كل زائر يستطيع تصفّح الموقع ومشاهدة الأعمال دون إنشاء حساب. وإذا رغبت كمخرج في نشر ملفك وأعمالك، يمكنك إنشاء حساب اختياري لحماية ملفك وإدارة مشاركاتك؛ لا نطلب التسجيل لمجرد الدخول أو المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
+    <button class="btn primary" type="button" onclick="startDirectorRegistration()">اختياري: قدّم ملفك وأعمالك كمخرج</button>
+    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">التصفح والمشاهدة لا يحتاجان إلى حساب. الحساب مطلوب فقط لحفظ ملفك وإدارة أعمالك المنشورة.</span>
   </div>
 
   <div class="section-heading">
@@ -844,51 +844,68 @@ renderLibrary();
 <section id="talents" class="page">
   <div class="intro">
     <h2>بوابة المواهب</h2>
-    <p>كل موهبة تستحق فرصة. مساحة للممثلين ومقدمي البرامج والمذيعين والمواهب الإذاعية لعرض أنفسهم ونماذج أعمالهم.</p>
+    <p>منصة مفتوحة لاكتشاف الممثلين ومقدمي البرامج والمواهب الإذاعية. تصفّح الملفات وشاهد نماذج الأعمال دون تسجيل أو بريد إلكتروني.</p>
+  </div>
+
+  <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
+    <h3 style="color:var(--gold);margin-top:0">موهبتك تستحق أن تُرى</h3>
+    <p>يمكنك تقديم بياناتك ونموذج عملك مباشرة دون إنشاء حساب. التسجيل ليس شرطًا للتصفح أو التقديم من هذا النموذج. تراجع الإدارة كل طلب قبل نشره، ووسيلة التواصل التي تكتبها تبقى خاصة بالإدارة ولا تظهر في ملفك العام.</p>
+    <button class="btn primary" type="button" onclick="showTalentForm()">اعرض موهبتك مجانًا – دون تسجيل</button>
   </div>
 
   <div class="section-heading">
-    <h2>اكتشف المواهب</h2>
-    <p>اختار المجال الذي تبحث عنه</p>
+    <h2>دليل المواهب</h2>
+    <p>اكتشف الوجوه والأصوات الجديدة وابحث حسب المجال أو الاسم أو المدينة</p>
   </div>
 
-  <div class="panel">
-    <select id="talentCategory">
-      <option value="">كل المواهب</option>
+  <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+    <select id="talentCategory" aria-label="تصفية المواهب حسب المجال">
+      <option value="">كل المجالات</option>
       <option value="تمثيل">التمثيل</option>
       <option value="تقديم برامج">تقديم البرامج</option>
       <option value="إذاعة">الإذاعة والتعليق الصوتي</option>
     </select>
-    <input id="talentsSearch" placeholder="ابحث بالاسم أو التخصص...">
+    <input id="talentsSearch" type="search" placeholder="ابحث بالاسم أو التخصص أو المدينة..." aria-label="ابحث في دليل المواهب">
   </div>
-  <div id="talentsItems" class="grid"></div>
+  <div id="talentsItems" class="grid" aria-live="polite">
+    <div class="panel" style="grid-column:1/-1;text-align:center">جارٍ تحميل ملفات المواهب المعتمدة...</div>
+  </div>
 
-  <div class="spotlight">
-    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1000&q=85" alt="اختبار أداء">
-    <div class="spotlight-content">
-      <h2>اعرض موهبتك</h2>
-      <p>جهّز ملفك الشخصي ونماذج أعمالك، ليتمكن المهتمون من التعرف على موهبتك والتواصل معك وفق ضوابط المنصة.</p>
-      <button class="btn primary" onclick="showTalentForm()">تسجيل موهبة</button>
+  <div class="panel" id="talentForm" style="display:none;margin-top:22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h3 style="color:var(--gold);margin:0">استمارة تقديم موهبة</h3>
+      <button class="btn" type="button" onclick="document.getElementById('talentForm').style.display='none'">إغلاق</button>
     </div>
-  </div>
-
-  <div class="panel" id="talentForm" style="display:none">
-    <h3 style="color:var(--gold)">بيانات الموهبة</h3>
-    <form id="talentRegisterForm">
-      <input id="talentName" required placeholder="الاسم">
+    <p class="muted">املأ البيانات الأساسية فقط. لا نطلب بريدًا إلكترونيًا ولا إنشاء حساب. لا تنشر الإدارة أي بيانات تواصل خاصة.</p>
+    <form id="talentRegisterForm" style="display:grid;gap:12px;margin-top:14px">
+      <label for="talentName">الاسم أو الاسم الفني *</label>
+      <input id="talentName" required maxlength="160" autocomplete="name" placeholder="الاسم الذي تريد الظهور به">
+      <label for="talentType">مجال الموهبة *</label>
       <select id="talentType" required>
         <option value="">اختر المجال</option>
-        <option value="تمثيل">تمثيل</option>
-        <option value="تقديم برامج">تقديم برامج</option>
-        <option value="إذاعة">إذاعة وتعليق صوتي</option>
+        <option value="تمثيل">التمثيل – سينما وتلفزيون ومسرح</option>
+        <option value="تقديم برامج">تقديم البرامج – تلفزيون وإذاعة ومنصات</option>
+        <option value="إذاعة">الإذاعة والتعليق الصوتي والأداء الصوتي</option>
       </select>
-      <input id="talentCity" placeholder="المدينة">
-      <input id="talentContact" placeholder="وسيلة تواصل عامة">
-      <textarea id="talentBio" placeholder="نبذة عن الموهبة والخبرات"></textarea>
-      <input id="talentWork" placeholder="رابط نموذج أعمال (اختياري)">
-      <button class="btn primary" type="submit">إرسال البيانات للمراجعة</button>
+      <label for="talentCity">المدينة أو بلد الإقامة</label>
+      <input id="talentCity" maxlength="100" autocomplete="address-level2" placeholder="مثال: الإسكندرية">
+      <label for="talentSpecialty">التخصص أو نوع الأداء</label>
+      <input id="talentSpecialty" maxlength="160" placeholder="مثال: كوميدي، دراما، تقديم حواري، تعليق وثائقي">
+      <label for="talentBio">نبذة عنك وخبراتك</label>
+      <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
+      <label for="talentVideo">ارفع فيديو تعريفي أو نموذج أداء (حتى 10 دقائق)</label>
+      <input id="talentVideo" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" aria-describedby="talentVideoHelp">
+      <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
+      <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
+      <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
+      <label for="talentWork">رابط بديل لنموذج أداء (اختياري إذا لم ترفع فيديو)</label>
+      <input id="talentWork" type="url" inputmode="url" placeholder="رابط YouTube أو Vimeo أو نموذج صوتي">
+      <label for="talentContact">رقم الموبايل أو واتساب للتواصل معك *</label>
+      <input id="talentContact" type="tel" inputmode="tel" autocomplete="tel" maxlength="25" required placeholder="مثال: +20 10 0000 0000">
+      <p class="muted" style="font-size:12px;margin:0">رقمك يظهر للإدارة فقط للتواصل بشأن طلبك، ولا يظهر في ملفك العام. لا نطلب إنشاء حساب أو بريد إلكتروني.</p>
+      <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
+      <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
-    <p style="color:var(--muted);font-size:12px">سيُرسل طلبك إلى إدارة المنصة للمراجعة، ولن يظهر للعامة إلا بعد الموافقة.</p>
   </div>
 </section>
 
@@ -911,6 +928,7 @@ renderLibrary();
   </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script>
 /* بيانات الأقسام */
 let creativeProfiles = {
@@ -947,7 +965,7 @@ function profileCard(item, type){
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(item.bio || item.description || "")}</p>
-        ${item.work ? `<a class="btn" href="${safeHttpUrl(item.work)}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>` : ""}
+        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
       </div>
     </article>`;
 }
@@ -1010,11 +1028,10 @@ function renderTalents(){
   const q = (document.getElementById("talentsSearch")?.value || "").toLowerCase();
   const category = document.getElementById("talentCategory")?.value || "";
 
-  const list = creativeProfiles.talents.filter(x =>
-    (!category || x.category === category) &&
-    ((x.name || "").toLowerCase().includes(q) ||
-     (x.bio || "").toLowerCase().includes(q))
-  );
+  const list = creativeProfiles.talents.filter(x => {
+    const searchable=[x.name,x.bio,x.specialty,x.city].join(" ").toLowerCase();
+    return (!category || x.category === category) && (!q || searchable.includes(q));
+  });
 
   box.innerHTML = list.length
     ? list.map(x=>profileCard(x,"talents")).join("")
@@ -1030,37 +1047,75 @@ function renderShortFilms(){
     : `<div class="panel" style="grid-column:1/-1;text-align:center">شاشة الأفلام القصيرة في انتظار الأعمال المشاركة.</div>`;
 }
 
+/* التحقق من مدة فيديو الموهبة محليًا قبل الرفع */
+function validateTalentVideoDuration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const video=document.createElement("video");
+    video.preload="metadata";
+    const finish=(error)=>{URL.revokeObjectURL(url);video.removeAttribute("src");video.load();error?reject(error):resolve();};
+    video.onloadedmetadata=()=>{const duration=Number(video.duration);if(!Number.isFinite(duration)||duration<=0){finish(new Error("تعذر قراءة مدة الفيديو. جرّب ملف MP4 واضحًا."));return;}if(duration>600){finish(new Error("مدة الفيديو أطول من 10 دقائق. اختر فيديو أقصر."));return;}finish();};
+    video.onerror=()=>finish(new Error("تعذر قراءة الفيديو. استخدم MP4 أو WebM أو MOV."));
+    video.src=url;
+  });
+}
+
 /* إظهار نموذج تسجيل موهبة */
 function showTalentForm(){
   const form = document.getElementById("talentForm");
   if(!form) return;
   form.style.display = "block";
   form.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("talentName")?.focus({preventScroll:true});
 }
 
-/* إرسال طلب الموهبة إلى قاعدة البيانات للمراجعة */
+/* إرسال طلب الموهبة مع فيديو اختياري إلى قاعدة البيانات للمراجعة */
 document.getElementById("talentRegisterForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const item={
-    submission_type:"talent",
-    name:document.getElementById("talentName").value.trim(),
-    category:document.getElementById("talentType").value,
-    city:document.getElementById("talentCity").value.trim(),
-    contact:document.getElementById("talentContact").value.trim(),
-    bio:document.getElementById("talentBio").value.trim(),
-    work_url:document.getElementById("talentWork").value.trim() || null
-  };
-  if(!item.name || !item.category){alert("من فضلك أدخل الاسم والمجال.");return;}
-  if(item.work_url && !safeHttpUrl(item.work_url)){alert("رابط نموذج العمل يجب أن يبدأ بـ https:// أو http://");return;}
+  const button=this.querySelector("button[type=submit]");
+  const message=document.getElementById("talentFormMessage");
+  const progress=document.getElementById("talentVideoProgress");
+  const videoStatus=document.getElementById("talentVideoStatus");
+  const videoFile=document.getElementById("talentVideo")?.files?.[0]||null;
+  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:document.getElementById("talentWork").value.trim()||null};
+  const phoneDigits=(item.contact.match(/\d/g)||[]).length;
+  if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
+  if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
+  if(item.work_url&&!safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.";return;}
+  if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
+  if(videoFile&&item.work_url){if(message)message.textContent="ارفع الفيديو أو استخدم الرابط الخارجي، وليس الاثنين معًا.";return;}
+  let uploadedPath=null;
   try{
     button.disabled=true;button.textContent="جارٍ إرسال الطلب...";
+    if(videoFile){
+      const ext=(videoFile.name.split(".").pop()||"").toLowerCase();
+      const mimeByExt={mp4:"video/mp4",webm:"video/webm",mov:"video/quicktime"};
+      const allowedMime=["video/mp4","video/webm","video/quicktime"];
+      const mime=allowedMime.includes(videoFile.type)?videoFile.type:(mimeByExt[ext]||"");
+      if(!mime)throw new Error("صيغة الفيديو غير مدعومة. استخدم MP4 أو WebM أو MOV.");
+      if(videoFile.size>50*1024*1024)throw new Error("حجم الفيديو أكبر من 50 ميجابايت. قلّل حجم الملف ثم أعد المحاولة.");
+      if(!window.tus?.Upload)throw new Error("أداة رفع الفيديو لم تُحمّل. حدّث الصفحة وحاول مرة أخرى.");
+      if(videoStatus)videoStatus.textContent="جارٍ فحص مدة الفيديو...";
+      await validateTalentVideoDuration(videoFile);
+      const safeExt=ext==="webm"?"webm":ext==="mov"?"mov":"mp4";
+      uploadedPath="pending/"+crypto.randomUUID()+"."+safeExt;
+      const projectRef=new URL(ADMIN_SUPABASE_URL).hostname.split(".")[0];
+      const endpoint="https://"+projectRef+".storage.supabase.co/storage/v1/upload/resumable";
+      if(progress){progress.style.display="block";progress.value=0;}
+      if(videoStatus)videoStatus.textContent="جارٍ رفع الفيديو... يمكنك متابعة نسبة الرفع هنا.";
+      await new Promise((resolve,reject)=>{
+        const upload=new window.tus.Upload(videoFile,{endpoint,headers:{authorization:"Bearer "+ADMIN_SUPABASE_KEY,apikey:ADMIN_SUPABASE_KEY},retryDelays:[0,3000,5000,10000,20000],uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,chunkSize:6*1024*1024,metadata:{bucketName:"talent-submission-videos",objectName:uploadedPath,contentType:mime,cacheControl:"3600",metadata:JSON.stringify({purpose:"talent-audition"})},onProgress:(sent,total)=>{const pct=total?Math.round(sent/total*100):0;if(progress)progress.value=pct;if(videoStatus)videoStatus.textContent="تم رفع "+pct+"% من الفيديو";},onError:reject,onSuccess:resolve});
+        upload.start();
+      });
+      item.work_url="talent-video:"+uploadedPath;
+      if(videoStatus)videoStatus.textContent="اكتمل رفع الفيديو. جارٍ إرسال طلبك...";
+    }
     const {error}=await ideasGetClient().from("community_submissions").insert(item);
-    if(error) throw error;
-    this.reset();document.getElementById("talentForm").style.display="none";
-    alert("تم استلام طلبك. ستراجعه الإدارة قبل نشره.");
-  }catch(error){alert("تعذر إرسال الطلب. تأكد من تنفيذ ملف SQL ثم حاول مرة أخرى. "+(error.message||""));}
-  finally{button.disabled=false;button.textContent="إرسال البيانات للمراجعة";}
+    if(error)throw error;
+    this.reset();if(progress){progress.value=0;progress.style.display="none";}if(videoStatus)videoStatus.textContent="";
+    if(message)message.textContent="تم استلام طلبك بنجاح. ستراجع الإدارة بياناتك والفيديو قبل نشر ملفك.";
+  }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");if(videoStatus)videoStatus.textContent="";}
+  finally{button.disabled=false;button.textContent="إرسال الموهبة للمراجعة";}
 });
 
 /* البحث والتصفية */
@@ -1809,10 +1864,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="account" class="page">
   <div class="intro">
     <h2>حساب المبدع</h2>
-    <p>أنشئ حسابًا لحفظ بياناتك والتعريف بمجالك الإبداعي. التصفح العام متاح دون تسجيل.</p>
+    <p><strong>الدخول والتصفح والقراءة والاستماع ومشاهدة المحتوى متاحة للجميع دون تسجيل أو بريد إلكتروني.</strong> إنشاء الحساب اختياري، ويُستخدم فقط إذا أردت إنشاء ملف مهني أو إرسال أعمالك أو إدارة مشاركاتك.</p>
   </div>
   <div class="panel" id="accountAuthPanel">
-    <h3 style="color:var(--gold)">إنشاء حساب جديد</h3>
+    <h3 style="color:var(--gold)">حساب اختياري للمبدعين المشاركين</h3>
+    <p class="muted">لا تحتاج إلى حساب لمجرد زيارة المنصة أو الاستفادة من محتواها.</p>
     <form id="accountSignupForm">
       <input id="accountName" required maxlength="120" placeholder="الاسم الذي سيظهر في ملفك">
       <select id="accountType" required>
@@ -1823,7 +1879,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountSignupEmail" type="email" required autocomplete="email" placeholder="البريد الإلكتروني">
       <input id="accountSignupPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور (8 أحرف على الأقل)">
-      <button class="btn primary" type="submit">إنشاء الحساب</button>
+      <button class="btn primary" type="submit">إنشاء حساب للمشاركة (اختياري)</button>
     </form>
     <hr style="border-color:var(--border);margin:22px 0">
     <h3 style="color:var(--gold)">لديك حساب بالفعل؟</h3>
@@ -1867,7 +1923,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountEditCity" maxlength="120" placeholder="المدينة (اختياري)">
       <input id="accountEditSpecialty" maxlength="160" placeholder="التخصص أو المجال الفني">
-      <input id="accountEditImage" type="url" placeholder="رابط صورة شخصية عامة (https://...)" autocomplete="url">
       <input id="accountEditWork" type="url" placeholder="رابط نموذج عمل عام (https://...)" autocomplete="url">
       <textarea id="accountEditBio" maxlength="2000" placeholder="نبذة مهنية عنك وخبراتك وأعمالك"></textarea>
       <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
@@ -2535,11 +2590,19 @@ async function adminLoadCommunitySubmissions(){
   const {data,error}=await adminSupabase.from("community_submissions").select("*").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد طلبات جديدة للمراجعة.</div>';return;}
-  box.innerHTML=data.map(item=>{
+  const reviewRows=await Promise.all(data.map(async item=>{
+    if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
+    const path=item.work_url.slice("talent-video:".length);
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
+    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
+  }));
+  box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
-    const details=isTalent?`المجال: ${item.category||""} • المدينة: ${item.city||"غير محددة"}`:`النوع: ${item.category||""} • صاحب المشروع: ${item.owner_name||""}`;
-    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity('${item.id}','approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity('${item.id}','rejected')">رفض</button></div></article>`;
+    const details=isTalent?"المجال: "+(item.category||"")+" • المدينة: "+(item.city||"غير محددة"):"النوع: "+(item.category||"")+" • صاحب المشروع: "+(item.owner_name||"");
+    const isStoredVideo=String(item.work_url||"").startsWith("talent-video:");
+    const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
+    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
   }).join("");
 }
 async function adminReviewCommunity(id,status){
@@ -3584,6 +3647,18 @@ function distributePublicContent(records){
   renderFilms();
 }
 
+/* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
+async function loadApprovedTalentVideos(){
+  if(!publicContentClient)return;
+  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:"));
+  for(const item of items){
+    const path=item.work.slice("talent-video:".length);
+    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrl(path,3600);
+    if(error){console.warn("تعذر تجهيز فيديو موهبة منشور",error.message);item.work="";continue;}
+    item.work=data?.signedUrl||"";item.workIsVideo=!!item.work;
+  }
+  renderTalents();
+}
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
 async function loadApprovedMemberProfiles(){
   if(!publicContentClient)return;
@@ -3651,6 +3726,7 @@ async function loadPublicContent(){
 
     distributePublicContent(data || []);
     await loadApprovedMemberProfiles();
+    await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
     publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
@@ -4182,7 +4258,7 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
   if(file&&externalRaw){message.textContent="اختر رفع الفيديو أو الرابط الخارجي، وليس الاثنين معًا.";return;}
   if(!file&&!externalRaw&&!directorWorkEditingId){message.textContent="ارفع فيديو أو أضف رابط مشاهدة.";return;}
   if(externalRaw&&!external_url){message.textContent="الرابط غير صالح؛ استخدم http أو https.";return;}
-  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
+  if(file&&((file.type&&!["video/mp4","video/webm","video/quicktime"].includes(file.type))||!/\.(mp4|webm|mov)$/i.test(file.name)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 50 ميجابايت.";return;}
   button.disabled=true;message.textContent="جارٍ تجهيز الفيديو وإرساله للمراجعة...";
   let uploadedPath=null,oldPath=null;
   try{
@@ -4301,8 +4377,9 @@ async function adminReviewDirectorWork(id,status){
   const note=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من المخرج:":"ملاحظة للمدير (اختياري):","");
   if(note===null)return;
   if(status==="rejected"&&!note.trim()){alert("اكتب سبب طلب التعديل.");return;}
-  const {error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending");
+  const {data:reviewed,error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending").select("id,status").maybeSingle();
   if(error){alert("تعذرت مراجعة العمل: "+error.message);return;}
+  if(!reviewed){alert("هذا العمل لم يعد قيد المراجعة؛ حدّث القائمة للتأكد من حالته الحالية.");await adminLoadDirectorWorks();return;}
   alert(status==="approved"?"تم اعتماد نموذج العمل.":"تم إرسال ملاحظات التعديل إلى المخرج.");
   await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
 }
