@@ -613,8 +613,17 @@ function renderLessonIndex(materials = []){
   lessonsContainer.innerHTML = academyLessons.map((lesson,index)=>{
     const material=byTitle.get(lesson);
     const available=!!material;
-    return `<article class="feature">
-      <div class="feature-content">
+    const poster=material?.image_url ? safeHttpUrl(material.image_url) : "";
+    return `<article class="feature academy-lesson-card" style="overflow:hidden;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
+      ${poster
+        ? `<img src="${escapeHTML(poster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#111">`
+        : `<div aria-label="أفيش مؤقت للمحاضرة ${index+1}" style="aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:radial-gradient(circle at 50% 35%,#4b3820 0,#211b16 42%,#101010 100%);border-bottom:2px solid var(--gold)">
+            <div style="font-size:12px;letter-spacing:2px;color:var(--gold)">سيناريو وسيناريست</div>
+            <div style="font-size:42px;font-weight:800;color:var(--gold);margin:22px 0 12px">${String(index+1).padStart(2,"0")}</div>
+            <div style="font-size:18px;line-height:1.7;color:#fff;font-weight:700">${escapeHTML(lesson)}</div>
+            <div style="font-size:11px;color:#c7bda9;margin-top:18px">أكاديمية السيناريو</div>
+          </div>`}
+      <div class="feature-content" style="padding:16px">
         <div style="color:var(--gold);font-size:13px">المحاضرة ${index+1}</div>
         <h3>${escapeHTML(lesson)}</h3>
         <p>${available ? escapeHTML(material.description || "مادة المحاضرة متاحة.") : "سيتم نشر الشرح والتدريب من إدارة الأكاديمية."}</p>
@@ -633,8 +642,10 @@ function openLesson(index){
   const body=document.getElementById("lessonDialogBody");
   if(!dialog||!title||!body) return;
   title.textContent=`المحاضرة ${index+1}: ${lesson}`;
+  const poster=material?.image_url ? safeHttpUrl(material.image_url) : "";
   body.innerHTML=material
-    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مكتوب مضاف لهذه المحاضرة بعد.")}</p>${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
+    ? `${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" style="display:block;width:min(100%,420px);max-height:620px;object-fit:contain;margin:0 auto 22px;border-radius:12px;box-shadow:0 12px 35px rgba(0,0,0,.35)">` : ""}
+       <p>${escapeHTML(material.description||"لا يوجد شرح مكتوب مضاف لهذه المحاضرة بعد.")}</p>${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
     : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
   dialog.style.display="block";
   initializeInlineHlsVideos(dialog);
@@ -1933,8 +1944,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>الوصف أو التفاصيل</label>
         <textarea id="adminDescription" placeholder="اكتب التفاصيل هنا"></textarea>
 
-        <label>رابط الصورة أو الغلاف</label>
-        <input id="adminImage" type="url" placeholder="https://...">
+        <label>رابط أفيش المحاضرة أو صورة المحتوى</label>
+        <input id="adminImage" type="url" placeholder="ضع رابط الأفيش إن كان مرفوعًا بالفعل">
 
         <label>رابط الملف أو الفيديو أو البث (اختياري)</label>
         <input id="adminContentUrl" type="url" placeholder="https://...">
@@ -1943,8 +1954,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
         <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص في بطاقات الأقسام.</p>
 
-        <label>أو ارفع ملفًا من جهازك</label>
+        <label>رفع أفيش المحاضرة أو ملف المحتوى من جهازك</label>
         <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">لأفيش المحاضرة: اختر نوع المحتوى «صورة أو أفيش»، ثم ارفع صورة رأسية بجودة جيدة. يفضل مقاس 1000 × 1500 بكسل.</p>
         <p style="font-size:12px;color:var(--muted)">سيتم رفع الملف إلى مساحة site-media في Supabase بعد تنفيذ إعدادات قاعدة البيانات والتخزين.</p>
 
         <label style="display:flex;align-items:center;gap:8px;margin:12px 0">
