@@ -1597,7 +1597,8 @@ let radioStations = [{
   id:"quran-recitation-live",
   name:"إذاعة القرآن الكريم – تلاوات الحصري",
   description:"بث صوتي مباشر لتلاوات الشيخ محمود خليل الحصري عبر رابط MP3 مباشر.",
-  stream:"https://qurango.net/radio/mahmoud_khalil_alhussary_warsh"
+  stream:"https://qurango.net/radio/mahmoud_khalil_alhussary_warsh",
+  fallbackStream:"https://backup.qurango.net/radio/mahmoud_khalil_alhussary_warsh"
 }];
 
 /* بطاقات الراديو */
@@ -1648,20 +1649,30 @@ function playRadioStation(id){
   if(!player || !title || !status) return;
   if(activeRadioHlsPlayer){activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
   player.pause();player.removeAttribute("src");player.load();
-  title.textContent=station.name;status.textContent="جارٍ تحميل المحطة...";
-  const isHls=/\.m3u8($|\?)/i.test(station.stream);
-  const play=()=>player.play().then(()=>{status.textContent="يتم تشغيل: "+station.name;}).catch(()=>{status.textContent="اضغط زر التشغيل داخل المشغل لبدء الاستماع.";});
-  if(isHls && window.Hls && Hls.isSupported()){
-    activeRadioHlsPlayer=new Hls();
-    activeRadioHlsPlayer.loadSource(station.stream);
-    activeRadioHlsPlayer.attachMedia(player);
-    activeRadioHlsPlayer.on(Hls.Events.MANIFEST_PARSED,play);
-    activeRadioHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
-      if(data.fatal){status.textContent="تعذر تشغيل المحطة؛ تحقق من رابط البث أو صلاحية تضمينه.";activeRadioHlsPlayer.destroy();activeRadioHlsPlayer=null;}
+  title.textContent=station.name;
+  status.textContent="جارٍ الاتصال بالبث...";
+  let triedFallback=false;
+  const startAudio=(url)=>{
+    player.src=url;
+    player.load();
+    player.play().then(()=>{
+      status.textContent="يتم تشغيل: "+station.name;
+    }).catch(()=>{
+      status.textContent="اضغط زر التشغيل ▶ داخل مشغل الصوت لبدء الاستماع.";
     });
-  }else{
-    player.src=station.stream;player.load();play();
-  }
+  };
+  player.onerror=()=>{
+    if(!triedFallback && station.fallbackStream){
+      triedFallback=true;
+      status.textContent="نجرب رابط البث الاحتياطي...";
+      startAudio(station.fallbackStream);
+      return;
+    }
+    status.textContent="تعذر تشغيل البث من هذا الاتصال. جرّب إعادة المحاولة بعد قليل.";
+  };
+  player.onplaying=()=>{status.textContent="يتم تشغيل: "+station.name;};
+  player.onwaiting=()=>{status.textContent="جارٍ تحميل البث...";};
+  startAudio(station.stream);
 }
 
 /* البحث والتصفية */
