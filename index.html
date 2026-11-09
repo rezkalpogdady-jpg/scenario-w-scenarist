@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.7: بحث متقدم في دليل المواهب حسب المجال والمدينة والتخصص. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.10: معاينة الصور وإعادة ملفات الأعضاء للمراجعة بعد كل تعديل. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.7</title>
+<title>سيناريو وسيناريست – تحديث 6.8.10</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.9">
+<body data-platform-version="6.8.10">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2026,6 +2026,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
       <label>سنوات الخبرة في الكتابة (اختياري)</label><input id="accountEditExperience" type="number" min="0" max="60" placeholder="عدد السنوات">
       <label>رفع صورة شخصية من جهازك (JPG أو PNG أو WEBP، حتى 5 ميجابايت)</label><input id="accountEditPhoto" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+      <div id="accountPhotoPreviewWrap" style="display:none;margin:8px 0"><img id="accountPhotoPreview" alt="معاينة الصورة الشخصية قبل الإرسال" style="width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)"><p class="admin-status">معاينة الصورة قبل إرسالها لمراجعة الإدارة</p></div>
       <label>أو رابط صورة شخصية (اختياري)</label><input id="accountEditImage" type="url" placeholder="https://..." autocomplete="url">
       <label>رقم هاتف أو واتساب (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
       <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
@@ -2437,6 +2438,16 @@ document.getElementById("accountResetForm")?.addEventListener("submit",async fun
   }catch(error){accountMessage("تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));}
   finally{button.disabled=false;}
 });
+document.getElementById("accountEditPhoto")?.addEventListener("change",function(){
+  const file=this.files?.[0]||null,wrap=document.getElementById("accountPhotoPreviewWrap"),img=document.getElementById("accountPhotoPreview");
+  if(!wrap||!img)return;
+  if(!file){wrap.style.display="none";img.removeAttribute("src");return;}
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){wrap.style.display="none";img.removeAttribute("src");return;}
+  const reader=new FileReader();
+  reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";};
+  reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");};
+  reader.readAsDataURL(file);
+});
 document.getElementById("accountProfileForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); if(!accountUser) return; const button=this.querySelector('button[type="submit"]');
   const display_name=document.getElementById("accountEditName").value.trim();
@@ -2456,6 +2467,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   if(experience_years!==null&&(!Number.isInteger(experience_years)||experience_years<0||experience_years>60)){accountMessage("أدخل عدد سنوات خبرة صحيحًا بين صفر و60.");return;}
   if(contactPublic&&!phone){accountMessage("أدخل رقم التواصل قبل اختيار عرضه للجمهور.");return;}
   if(photoFile&&(!/^image\/(jpeg|png|webp)$/i.test(photoFile.type)||photoFile.size>5*1024*1024)){accountMessage("الصورة يجب أن تكون JPG أو PNG أو WEBP وبحجم لا يتجاوز 5 ميجابايت.");return;}
+  if(photoFile&&image_url){accountMessage("اختر رفع الصورة من جهازك أو إدخال رابط صورة، وليس الاثنين معًا.");return;}
   if(image_url&&!safeHttpUrl(image_url)){accountMessage("رابط الصورة غير صالح؛ استخدم رابط http أو https.");return;}
   if(work_url&&!safeHttpUrl(work_url)){accountMessage("رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.");return;}
   try{
@@ -2467,7 +2479,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
       if(uploadError)throw uploadError;
       finalImageUrl=client.storage.from("platform-images").getPublicUrl(uploaded.path).data.publicUrl;
     }
-    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,profile_status:"pending",updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(error)throw error;
     const {error:contactError}=await client.from("writer_contact").upsert({user_id:accountUser.id,phone,is_public:contactPublic,updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(contactError)throw contactError;
@@ -2726,7 +2738,7 @@ async function adminLoadMemberProfiles(){
     const actions=item.profile_status==="approved"
       ? '<button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">إلغاء الاعتماد</button>'
       : '<button class="btn primary" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'approved\')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">رفض الملف</button>';
-    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}</div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<div style="margin:10px 0"><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer"><img src="${adminEscape(item.image_url)}" alt="صورة ${adminEscape(item.display_name)}" loading="lazy" style="width:112px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--gold)"></a><p class="admin-status">الصورة الشخصية المرسلة للمراجعة</p></div>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}</div></article>`;
   }).join("");
 }
 async function adminReviewMemberProfile(userId,status){
