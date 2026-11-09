@@ -1549,68 +1549,12 @@ renderProjects();
   لا نضع روابط بث عشوائية أو غير مرخصة.
 */
 
-let tvChannels = [{
-  id:"saudi-quran-tv-live",
-  name:"قناة القرآن الكريم السعودية",
-  category:"عربية",
-  description:"البث الرسمي لقناة القرآن الكريم من المسجد الحرام عبر يوتيوب.",
-  youtubeVideoId:"XcjKDB1bj1w",
-  officialUrl:"https://www.youtube.com/watch?v=XcjKDB1bj1w"
-},{
-  id:"rotana-classic-official",
-  name:"روتانا كلاسيك",
-  category:"سينما",
-  description:"قناة الأفلام العربية الكلاسيكية؛ المشاهدة من صفحة البث الرسمية لروتانا.",
-  officialUrl:"https://rotana.net/ar?tv=live-classic"
-}];
 let radioStations = [{
   id:"quran-recitation-live",
   name:"إذاعة القرآن الكريم – تلاوات الحصري",
   description:"بث صوتي مباشر لتلاوات الشيخ محمود خليل الحصري عبر رابط MP3 مباشر.",
   stream:"https://qurango.net/radio/mahmoud_khalil_alhussary_warsh"
 }];
-
-/* إنشاء بطاقة قناة */
-function tvCard(channel){
-  return `
-    <article class="feature">
-      ${channel.image
-        ? `<img src="${safeHttpUrl(channel.image)}" alt="">`
-        : `<div style="height:145px;background:linear-gradient(135deg,#332719,#111);display:grid;place-items:center;font-size:45px"></div>`}
-      <div class="feature-content">
-        <h3>${escapeHTML(channel.name)}</h3>
-        <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        ${channel.youtubeVideoId
-          ? `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">شاهد داخل المنصة</button>`
-          : channel.officialUrl
-            ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">شاهد البث الرسمي</a>`
-            : `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>`}
-      </div>
-    </article>`;
-}
-
-/* عرض القنوات */
-function renderTVChannels(){
-  const box = document.getElementById("tvChannels");
-  if(!box) return;
-
-  const q = (document.getElementById("tvSearch")?.value || "").toLowerCase();
-  const category = document.getElementById("tvCategory")?.value || "";
-
-  const list = tvChannels.filter(channel =>
-    (!category || channel.category === category) &&
-    (channel.name || "").toLowerCase().includes(q)
-  );
-
-  box.innerHTML = list.length
-    ? list.map(tvCard).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">
-        <h3 style="color:var(--gold)">دليل القنوات قيد التجهيز</h3>
-        <p>ستظهر هنا القنوات التي تضيفها الإدارة من مصادر بث رسمية أو مرخصة.</p>
-      </div>`;
-}
-
-/* تشغيل القنوات موحّد في جزء دعم HLS أسفل الصفحة. */
 
 /* بطاقات الراديو */
 function radioCard(station){
@@ -1677,11 +1621,8 @@ function playRadioStation(id){
 }
 
 /* البحث والتصفية */
-document.getElementById("tvSearch")?.addEventListener("input",renderTVChannels);
-document.getElementById("tvCategory")?.addEventListener("change",renderTVChannels);
 document.getElementById("radioSearch")?.addEventListener("input",renderRadioStations);
 
-renderTVChannels();
 renderRadioStations();
 </script>
 
@@ -3878,99 +3819,6 @@ document.getElementById("filmsSearch")
 
 document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
-
-/* =========================
-   دعم بث HLS للتلفزيون
-========================= */
-
-let activeHlsPlayer=null;
-
-function playTVChannel(id){
-  const channel=tvChannels.find(item=>String(item.id)===String(id));
-  const youtubeFrame=document.getElementById("tvYouTubePlayer");
-  const player=document.getElementById("tvPlayer");
-  const placeholder=document.getElementById("tvPlaceholder");
-  const status=document.getElementById("tvStatus");
-  if(!channel){alert("القناة غير موجودة.");return;}
-  if(channel.youtubeVideoId){
-    if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
-    if(player){player.pause();player.removeAttribute("src");player.load();player.style.display="none";}
-    if(youtubeFrame){
-      youtubeFrame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(channel.youtubeVideoId)+"?autoplay=1&playsinline=1";
-      youtubeFrame.style.display="block";
-    }
-    if(placeholder)placeholder.style.display="none";
-    document.getElementById("tvNowTitle").textContent=channel.name;
-    if(status)status.textContent="يتم تحميل البث الرسمي من يوتيوب. إذا لم يبدأ، تحقق من إتاحة التضمين لدى القناة.";
-    return;
-  }
-  if(!channel.stream){
-    alert("هذا المصدر متاح حاليًا عبر الصفحة الرسمية الخارجية فقط.");
-    return;
-  }
-  if(youtubeFrame){youtubeFrame.src="";youtubeFrame.style.display="none";}
-  if(player)player.style.display="block";
-  if(!player || !placeholder || !status){
-    console.warn("مشغل التلفزيون غير موجود في الصفحة.");
-    return;
-  }
-
-  if(activeHlsPlayer){
-    activeHlsPlayer.destroy();
-    activeHlsPlayer=null;
-  }
-
-  player.pause();
-  player.removeAttribute("src");
-  player.load();
-
-  document.getElementById("tvNowTitle").textContent=channel.name;
-  placeholder.style.display="none";
-  status.textContent="جارٍ تحميل القناة...";
-
-  const isHls=/\.m3u8($|\?)/i.test(channel.stream);
-
-  if(isHls && window.Hls && Hls.isSupported()){
-    activeHlsPlayer=new Hls();
-
-    activeHlsPlayer.loadSource(channel.stream);
-    activeHlsPlayer.attachMedia(player);
-
-    activeHlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{
-      player.play().then(()=>{
-        status.textContent="يتم تشغيل: "+channel.name;
-      }).catch(()=>{
-        status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-      });
-    });
-
-    activeHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
-      if(data.fatal){
-        status.textContent="تعذر تشغيل البث. قد يكون المصدر غير متاح أو يمنع التضمين.";
-        activeHlsPlayer.destroy();
-        activeHlsPlayer=null;
-      }
-    });
-
-  }else if(isHls && player.canPlayType("application/vnd.apple.mpegurl")){
-    player.src=channel.stream;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-    });
-
-  }else{
-    player.src=channel.stream;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="تعذر التشغيل التلقائي. اضغط زر التشغيل أو تحقق من رابط البث.";
-    });
-  }
-}
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
