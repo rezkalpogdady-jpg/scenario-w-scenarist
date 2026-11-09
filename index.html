@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.42: إضافة قسم الرعاة وإدارته من لوحة التحكم. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.43: دعم رفع فيديوهات الأفلام والمسلسلات مع الأفيش. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.42</title>
+<title>سيناريو وسيناريست – تحديث 6.8.43</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.42">
+<body data-platform-version="6.8.43">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -3510,7 +3510,7 @@ adminInitialize();
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>الصورة / الأفيش</label><input name="image" type="file" accept="image/*" ><p class="muted" style="font-size:12px">اختر الصورة مباشرة من معرض الهاتف أو ملفاته، ثم اكتب الوصف والتفاصيل.</p><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button class="btn primary" type="submit">حفظ ونشر</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>صورة الأفيش (اختياري)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع الأفيش والفيديو معًا من الهاتف. لو لم ترفع فيديو، يمكنك وضع رابط مشاهدة مصرح به في الحقل التالي.</p><label>رابط الفيديو أو المشاهدة (اختياري)</label><input name="url" type="url" placeholder="https://..."><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button class="btn primary" type="submit">حفظ ونشر</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
 </section>
 
 <!-- مكتبة دعم بث HLS -->
@@ -5131,15 +5131,34 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
  }finally{btn.disabled=false;}
 });
 document.getElementById('filmsAdminForm')?.addEventListener('submit',async function(e){
- e.preventDefault();if(!adminSession||!adminSupabase)return;
- const form=this,fd=new FormData(form),msg=document.getElementById('filmsAdminMessage'),btn=form.querySelector('[type=submit]');let uploaded=null;
- try{btn.disabled=true;msg.textContent='جارٍ الرفع والحفظ...';
- const file=fd.get('image');if(file?.size)uploaded=await adminInlineUpload(file,'site-media','films',50*1024*1024);
- const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:uploaded?.url||null,content_url:String(fd.get('url')||'').trim()||null,extra_data:{media_kind:'video',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
- const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
- form.reset();msg.textContent='تم حفظ الفيلم وإضافته إلى القسم.';await loadPublicContent();
- }catch(err){if(uploaded)await adminSupabase.storage.from('site-media').remove([uploaded.path]);msg.textContent='تعذر النشر: '+err.message;}
- finally{btn.disabled=false;}
+ e.preventDefault();if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
+ const form=this,fd=new FormData(form),msg=document.getElementById('filmsAdminMessage'),btn=form.querySelector('[type=submit]');let poster=null,video=null;
+ try{
+  btn.disabled=true;msg.textContent='جارٍ رفع الأفيش والفيديو وحفظ بيانات العمل...';
+  const posterFile=fd.get('image'),videoFile=fd.get('video');
+  if(posterFile?.size){
+   if(!['image/jpeg','image/png','image/webp'].includes(posterFile.type))throw new Error('اختر أفيش JPG أو PNG أو WEBP.');
+   poster=await adminInlineUpload(posterFile,'site-media','films',20*1024*1024);
+  }
+  let videoUrl=String(fd.get('url')||'').trim();
+  if(videoFile?.size){
+   const videoName=String(videoFile.name||'').toLowerCase();
+   const validExtension=/\.(mp4|webm)$/.test(videoName);
+   const validType=['video/mp4','video/webm'].includes(videoFile.type);
+   if(!validExtension||(videoFile.type&&!validType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');
+   video=await adminInlineUpload(videoFile,'site-media','films',50*1024*1024);
+   videoUrl=video.url;
+  }
+  if(videoUrl&&!/^https?:\/\//i.test(videoUrl))throw new Error('رابط الفيديو يجب أن يبدأ بـ https:// أو http://');
+  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||null,content_url:videoUrl||null,extra_data:{media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
+  const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
+  form.reset();msg.textContent=video?'تم رفع الفيديو وحفظ العمل ونشره.':(videoUrl?'تم حفظ العمل ورابط الفيديو.':'تم حفظ العمل وإضافته إلى القسم.');
+  await loadPublicContent();
+ }catch(err){
+  const paths=[poster?.path,video?.path].filter(Boolean);
+  if(paths.length)await adminSupabase.storage.from('site-media').remove(paths);
+  msg.textContent='تعذر النشر: '+(err.message||'حاول مرة أخرى.');
+ }finally{btn.disabled=false;}
 });
 document.getElementById('archiveAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase)return;
