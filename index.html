@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.5.9: فصل مسؤولية المدير عن إقرار العضو وتحسين الوصول إلى نموذج مكتبة السيناريوهات؛ نسخة مستقلة لا تستبدل السابقة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.0: تدقيق وتحسين تجربة المخرجين والتحقق من ملفات الفيديو ومتانة مراجعة الإدارة؛ فرع مستقل للاختبار. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.5.9</title>
+<title>سيناريو وسيناريست – تحديث 6.8.0</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.5.12">
+<body data-platform-version="6.8.0">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1867,7 +1867,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountEditCity" maxlength="120" placeholder="المدينة (اختياري)">
       <input id="accountEditSpecialty" maxlength="160" placeholder="التخصص أو المجال الفني">
-      <input id="accountEditImage" type="url" placeholder="رابط صورة شخصية عامة (https://...)" autocomplete="url">
       <input id="accountEditWork" type="url" placeholder="رابط نموذج عمل عام (https://...)" autocomplete="url">
       <textarea id="accountEditBio" maxlength="2000" placeholder="نبذة مهنية عنك وخبراتك وأعمالك"></textarea>
       <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
@@ -4182,7 +4181,7 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
   if(file&&externalRaw){message.textContent="اختر رفع الفيديو أو الرابط الخارجي، وليس الاثنين معًا.";return;}
   if(!file&&!externalRaw&&!directorWorkEditingId){message.textContent="ارفع فيديو أو أضف رابط مشاهدة.";return;}
   if(externalRaw&&!external_url){message.textContent="الرابط غير صالح؛ استخدم http أو https.";return;}
-  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
+  if(file&&((file.type&&!["video/mp4","video/webm","video/quicktime"].includes(file.type))||!/\.(mp4|webm|mov)$/i.test(file.name)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 50 ميجابايت.";return;}
   button.disabled=true;message.textContent="جارٍ تجهيز الفيديو وإرساله للمراجعة...";
   let uploadedPath=null,oldPath=null;
   try{
@@ -4301,8 +4300,9 @@ async function adminReviewDirectorWork(id,status){
   const note=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من المخرج:":"ملاحظة للمدير (اختياري):","");
   if(note===null)return;
   if(status==="rejected"&&!note.trim()){alert("اكتب سبب طلب التعديل.");return;}
-  const {error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending");
+  const {data:reviewed,error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending").select("id,status").maybeSingle();
   if(error){alert("تعذرت مراجعة العمل: "+error.message);return;}
+  if(!reviewed){alert("هذا العمل لم يعد قيد المراجعة؛ حدّث القائمة للتأكد من حالته الحالية.");await adminLoadDirectorWorks();return;}
   alert(status==="approved"?"تم اعتماد نموذج العمل.":"تم إرسال ملاحظات التعديل إلى المخرج.");
   await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
 }
