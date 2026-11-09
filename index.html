@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.10</title>
+<title>سيناريو وسيناريست – تحديث 6.8.12</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -1491,6 +1491,7 @@ renderProjects();
   <div class="section-heading"><h2>الكتب المعروضة للبيع</h2><p>تصفح العناوين وابحث حسب نوع الكتاب</p></div>
   <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
     <input id="bookSearch" type="search" placeholder="ابحث باسم الكتاب أو المؤلف...">
+    <select id="bookSort"><option value="newest">الأحدث إضافة</option><option value="price-asc">السعر: من الأقل للأعلى</option><option value="price-desc">السعر: من الأعلى للأقل</option><option value="title">ترتيب أبجدي</option></select>
     <select id="bookTypeFilter"><option value="">كل الأنواع</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
   </div>
   <div id="bookListingsGrid" class="grid"><div class="panel">جارٍ تحميل الكتب المعروضة...</div></div>
@@ -4377,6 +4378,13 @@ function renderBookListings(){
   const type=document.getElementById("bookTypeFilter")?.value||"";
   const rows=bookMarketplaceRows.filter(item=>(!type||item.book_type===type)&&
     (String(item.title||"")+" "+String(item.author_name||"")+" "+String(item.description||"")).toLowerCase().includes(q));
+  const sort=document.getElementById("bookSort")?.value||"newest";
+  rows.sort((a,b)=>{
+    if(sort==="price-asc")return Number(a.price)-Number(b.price);
+    if(sort==="price-desc")return Number(b.price)-Number(a.price);
+    if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"ar");
+    return new Date(b.created_at||0)-new Date(a.created_at||0);
+  });
   if(!rows.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">لا توجد كتب معروضة حاليًا</h3><p>كن أول من يضيف كتابه إلى سوق الكتب.</p></div>';return;}
   box.innerHTML=rows.map(item=>{
     const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
@@ -4399,6 +4407,7 @@ async function loadBookListings(){
 }
 document.getElementById("bookSearch")?.addEventListener("input",renderBookListings);
 document.getElementById("bookTypeFilter")?.addEventListener("change",renderBookListings);
+document.getElementById("bookSort")?.addEventListener("change",renderBookListings);
 document.getElementById("bookCoverFile")?.addEventListener("change",function(){
   const file=this.files?.[0]||null,wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
   if(!wrap||!img)return;
