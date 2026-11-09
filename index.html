@@ -403,11 +403,11 @@ Main{padding:17px 11px}
 </article>
 
 <article class="feature">
-<img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=800&q=80" alt="التلفزيون">
+<img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=800&q=80" alt="سوق الكتب">
 <div class="feature-content">
-<h3>سيناريو TV</h3>
-<p>دليل قنوات تلفزيونية سينمائية وثقافية ووثائقية ببث رسمي.</p>
-<button class="btn" onclick="showPage('tv')">دخول التلفزيون</button>
+<h3>اعرض كتابك للبيع</h3>
+<p>روايات وقصص وكتب في مختلف المجالات؛ أضف الغلاف والسعر وتواصل مع القراء.</p>
+<button class="btn" onclick="showPage('books')">ادخل سوق الكتب</button>
 </div>
 </article>
 
@@ -2224,7 +2224,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <option value="stories">الجرائم والحكايات</option>
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-        <option value="tv">التلفزيون</option>
         <option value="radio">الراديو</option>
         <option value="production">الإنتاج</option>
       </select>
@@ -3692,21 +3691,6 @@ function distributePublicContent(records){
     renderStories();
     renderNews();
     renderProjects();
-  }
-
-  if(typeof tvChannels!=="undefined"){
-    const publicTVChannels=(grouped.tv || []).map(item=>({
-      id:item.id,
-      name:item.title,
-      category:item.category,
-      image:item.image,
-      stream:item.stream
-    }));
-    if(publicTVChannels.length){
-      const mergedTV=[...tvChannels,...publicTVChannels];
-      replaceArray(tvChannels,mergedTV.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
-    }
-    renderTVChannels();
   }
 
   if(typeof radioStations!=="undefined"){
