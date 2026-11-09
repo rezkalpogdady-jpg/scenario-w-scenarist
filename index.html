@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.3: فيديو موهبة حتى 10 دقائق ورقم تواصل خاص ومراجعة فيديو الإدارة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.4: صفحة ملف مهني تفصيلية للمواهب المعتمدة مع الحفاظ على خصوصية التواصل. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.3</title>
+<title>سيناريو وسيناريست – تحديث 6.8.4</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.3">
+<body data-platform-version="6.8.4">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -907,6 +907,17 @@ renderLibrary();
       <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
   </div>
+
+  <div id="talentProfileModal" role="presentation" onclick="if(event.target===this)closeTalentProfile()" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.88);overflow:auto;padding:20px">
+    <div role="dialog" aria-modal="true" aria-labelledby="talentProfileTitle" style="max-width:820px;margin:4vh auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <h2 id="talentProfileTitle" style="color:var(--gold);margin:0">الملف المهني للموهبة</h2>
+        <button class="btn" type="button" onclick="closeTalentProfile()">إغلاق الملف</button>
+      </div>
+      <div id="talentProfileContent" style="margin-top:16px"></div>
+      <p class="muted" style="font-size:12px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:0">بيانات الاتصال الخاصة لا تُعرض في الملفات العامة. جميع الملفات المنشورة خضعت لمراجعة الإدارة.</p>
+    </div>
+  </div>
 </section>
 
 <section id="shorts" class="page">
@@ -941,7 +952,7 @@ let creativeProfiles = {
 /* إنشاء بطاقة تعريف */
 function profileCard(item, type){
   const image = item.image
-    ? `<img src="${safeHttpUrl(item.image)}" alt="">`
+    ? `<img src="${safeHttpUrl(item.image)}" alt="" loading="lazy">`
     : `<div style="height:145px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:45px"></div>`;
 
   let details = "";
@@ -950,13 +961,18 @@ function profileCard(item, type){
   }else if(type === "directors"){
     details = `<p>${escapeHTML(item.specialty || "مخرج")}</p>`;
   }else if(type === "talents"){
-    details = `<p>المجال: ${escapeHTML(item.category)}</p>`;
+    details = `<p>المجال: ${escapeHTML(item.category || "موهبة")}</p>`;
     if(item.specialty) details += `<p>${escapeHTML(item.specialty)}</p>`;
-    details += `<p>${escapeHTML(item.city || "")}</p>`;
+    if(item.city) details += `<p>المدينة: ${escapeHTML(item.city)}</p>`;
   }else{
     details = `<p>المخرج: ${escapeHTML(item.director || "غير محدد")}</p>`;
     details += `<p>المدة: ${escapeHTML(item.duration || "غير محددة")}</p>`;
   }
+
+  const talentIndex = type === "talents" ? creativeProfiles.talents.indexOf(item) : -1;
+  const talentAction = talentIndex >= 0
+    ? `<button class="btn" type="button" onclick="showTalentProfile(${talentIndex})">عرض الملف المهني</button>`
+    : "";
 
   return `
     <article class="feature">
@@ -966,6 +982,7 @@ function profileCard(item, type){
         ${details}
         <p>${escapeHTML(item.bio || item.description || "")}</p>
         ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
+        ${talentAction}
       </div>
     </article>`;
 }
@@ -1037,6 +1054,45 @@ function renderTalents(){
     ? list.map(x=>profileCard(x,"talents")).join("")
     : `<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد مواهب منشورة في هذا التصنيف حاليًا.</div>`;
 }
+
+/* عرض صفحة الملف المهني للموهبة دون كشف بيانات الاتصال الخاصة */
+function showTalentProfile(index){
+  const item=creativeProfiles.talents[Number(index)];
+  const modal=document.getElementById("talentProfileModal");
+  const box=document.getElementById("talentProfileContent");
+  if(!item||!modal||!box)return;
+  const image=item.image
+    ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="" loading="lazy" style="width:100%;max-height:340px;object-fit:cover;border-radius:10px">'
+    : "";
+  const category=escapeHTML(item.category||"موهبة");
+  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':"";
+  const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
+  const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':"";
+  const experience=item.experienceYears!==null&&item.experienceYears!==undefined
+    ? '<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>' : "";
+  const biography=item.bio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(item.bio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
+  let work="";
+  if(item.work){
+    work=item.workIsVideo
+      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="metadata" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
+      : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
+  }
+  box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
+    (image?'<div>'+image+'</div>':'')+
+    '<div><p class="admin-status">ملف موهبة معتمد • '+category+'</p><h3 style="color:var(--gold);font-size:24px;margin:8px 0">'+escapeHTML(item.name||"موهبة")+'</h3>'+
+    specialty+city+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+'</div></div>'+work;
+  modal.style.display="block";
+  document.body.style.overflow="hidden";
+  modal.querySelector("button")?.focus();
+}
+function closeTalentProfile(){
+  const modal=document.getElementById("talentProfileModal");
+  if(modal)modal.style.display="none";
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(event){
+  if(event.key==="Escape")closeTalentProfile();
+});
 
 /* عرض الأفلام القصيرة */
 function renderShortFilms(){
