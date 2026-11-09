@@ -4973,6 +4973,7 @@ async function adminReviewBookListing(id,status){
 
 <script>
 /* النشر المباشر داخل الأقسام — متاح بعد تحقق جلسة مدير المنصة فقط */
+if(typeof adminSession!=='undefined'&&adminSession) adminSetInlinePublishingVisible(true);
 function adminSetInlinePublishingVisible(visible){
  document.querySelectorAll('[data-admin-inline="1"]').forEach(el=>el.style.display=visible?'block':'none');
  if(!visible) ['library','films','archive'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
