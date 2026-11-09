@@ -941,7 +941,7 @@ renderLibrary();
       <label for="talentBio">نبذة عنك وخبراتك</label>
       <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
       <label for="talentVideo">ارفع فيديو تعريفي أو نموذج أداء (حتى 10 دقائق)</label>
-      <input id="talentVideo" type="file" accept="video/mp4,video/webm,.mp4,.webm" aria-describedby="talentVideoHelp">
+      <input id="talentVideo" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" aria-describedby="talentVideoHelp">
       <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
       <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
       <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
@@ -982,12 +982,12 @@ renderLibrary();
   </div>
   <div id="shortsAdminPublish" class="panel" style="display:none;margin:16px 0">
     <h3 style="color:var(--gold)">رفع فيلم قصير</h3>
-    <p>ارفع فيديو MP4 أو WebM أو MOV حتى 50 ميجابايت، وأضف بيانات الفيلم. يمكنك حفظه كمسودة ثم نشره بعد المراجعة.</p>
+    <p>ارفع فيديو MP4 أو WebM حتى 50 ميجابايت، وأضف بيانات الفيلم. يمكنك حفظه كمسودة ثم نشره بعد المراجعة.</p>
     <form id="shortsAdminForm">
       <label>اسم الفيلم</label><input name="title" required maxlength="180" placeholder="عنوان الفيلم">
       <label>التصنيف</label><input name="category" maxlength="100" placeholder="دراما، كوميدي، وثائقي...">
       <label>وصف مختصر</label><textarea name="description" rows="3" maxlength="3000" placeholder="نبذة عن الفيلم"></textarea>
-      <label>ملف الفيديو</label><input name="video" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" required>
+      <label>ملف الفيديو</label><input name="video" type="file" accept="video/mp4,video/webm,.mp4,.webm" required>
       <label>أفيش الفيلم (اختياري)</label><input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
       <label>اسم المخرج</label><input name="director" maxlength="160">
       <label>اسم الكاتب</label><input name="writer" maxlength="160">
@@ -5090,7 +5090,7 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
   btn.disabled=true;msg.textContent='جارٍ رفع الفيديو...';
   const videoFile=fd.get('video');
   if(!videoFile?.size)throw new Error('اختر ملف الفيديو أولاً.');
-  if(!['video/mp4','video/webm'].includes(videoFile.type))throw new Error('الصيغ المتاحة MP4 أو WebM أو MOV.');
+  if(!['video/mp4','video/webm'].includes(videoFile.type))throw new Error('الصيغ المتاحة MP4 أو WebM فقط.');
   video=await adminInlineUpload(videoFile,'site-media','shorts',50*1024*1024);
   const posterFile=fd.get('poster');
   if(posterFile?.size){
