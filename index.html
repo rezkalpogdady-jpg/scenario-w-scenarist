@@ -1301,9 +1301,11 @@ function tvCard(channel){
       <div class="feature-content">
         <h3>${escapeHTML(channel.name)}</h3>
         <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        ${channel.officialUrl
-          ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">شاهد البث الرسمي</a>`
-          : `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>`}
+        ${channel.youtubeVideoId
+          ? `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">شاهد داخل المنصة</button>`
+          : channel.officialUrl
+            ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">شاهد البث الرسمي</a>`
+            : `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>`}
       </div>
     </article>`;
 }
