@@ -4452,7 +4452,14 @@ function renderBookListings(){
     if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"ar");
     return new Date(b.created_at||0)-new Date(a.created_at||0);
   });
-  if(!rows.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">لا توجد كتب معروضة حاليًا</h3><p>كن أول من يضيف كتابه إلى سوق الكتب.</p></div>';return;}
+  if(!rows.length){
+    const emptyTitle=bookMarketplaceRows.length?"لا توجد نتائج مطابقة":"لا توجد كتب معروضة حاليًا";
+    const emptyText=bookMarketplaceRows.length
+      ?"جرّب تغيير كلمات البحث أو الفلاتر، أو اضغط «إعادة ضبط البحث والفلاتر»."
+      :"كن أول من يضيف كتابه إلى سوق الكتب.";
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">'+emptyTitle+'</h3><p>'+emptyText+'</p></div>';
+    return;
+  }
   box.innerHTML=rows.map(item=>{
     const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
     const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع واتساب</a>':'';
@@ -4460,8 +4467,11 @@ function renderBookListings(){
     const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
       ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
       :"";
-    return '<article class="feature">'+(item.cover_url?'<img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="height:260px;object-fit:contain;background:#151515">':'<div style="height:220px;display:grid;place-items:center">غلاف الكتاب</div>')+
-      '<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p><p>'+escapeHTML(item.description||"")+'</p><p>البائع: '+escapeHTML(item.seller_name||"")+'</p>'+(publishedDate?'<p style="color:var(--muted);font-size:12px;margin-top:10px">تاريخ العرض: '+escapeHTML(publishedDate)+'</p>':"")+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')">عرض تفاصيل الكتاب</button>'+contact+'</div></div></article>';
+    const cover=item.cover_url
+      ?'<button type="button" aria-label="عرض تفاصيل '+escapeHTML(item.title)+'" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="display:block;width:100%;padding:0;border:0;background:#151515;cursor:pointer"><img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="width:100%;height:260px;object-fit:contain;background:#151515"></button>'
+      :'<button type="button" aria-label="عرض تفاصيل '+escapeHTML(item.title)+'" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="width:100%;height:220px;display:grid;place-items:center;border:0;background:#151515;color:var(--muted);cursor:pointer">عرض تفاصيل الكتاب</button>';
+    return '<article class="feature">'+cover+
+      '<div class="feature-content"><h3 style="margin:0 0 7px"><button type="button" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="padding:0;border:0;background:transparent;color:var(--gold);font:inherit;font-weight:800;text-align:right;cursor:pointer">'+escapeHTML(item.title)+'</button></h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p>'+(publishedDate?'<p style="color:var(--muted);font-size:12px;margin-top:10px">تاريخ العرض: '+escapeHTML(publishedDate)+'</p>':"")+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'+contact+'</div></div></article>';
   }).join("");
 }
 function openBookDetails(id){
