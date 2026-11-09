@@ -1859,7 +1859,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
     <div class="panel" id="directorWorksPanel" style="display:none;margin-top:18px">
       <h3 style="color:var(--gold)">نماذج أعمالي الإخراجية</h3>
-      <p class="muted" style="font-size:13px">اعرض نماذج من أعمالك: فيلم قصير، مشهد، فيديو كليب، حلقة برنامج، إعلان، وثائقي أو أي عمل مرئي. الحد الأقصى لكل فيديو 10 دقائق وحجم الملف 100 ميجابايت. لن يظهر العمل قبل اعتماد ملفك الشخصي وموافقة الإدارة على العمل.</p>
+      <p class="muted" style="font-size:13px">اعرض نماذج من أعمالك: فيلم قصير، مشهد، فيديو كليب، حلقة برنامج، إعلان، وثائقي أو أي عمل مرئي. الحد الأقصى لكل فيديو 10 دقائق وحجم الملف 50 ميجابايت. لن يظهر العمل قبل اعتماد ملفك الشخصي وموافقة الإدارة على العمل.</p>
       <form id="directorWorkForm">
         <input id="directorWorkId" type="hidden">
         <label>عنوان العمل</label><input id="directorWorkTitle" required maxlength="180" placeholder="اسم العمل">
@@ -1870,7 +1870,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>نبذة عن العمل (اختياري)</label><textarea id="directorWorkDescription" maxlength="2500" rows="3" placeholder="دورك في العمل وأي معلومات ترغب في إضافتها"></textarea>
         <label>سنة الإنتاج (اختياري)</label><input id="directorWorkYear" type="number" min="1900" max="2100" placeholder="مثال: 2025">
         <label>مدة العمل بالدقائق</label><input id="directorWorkDuration" type="number" min="1" max="10" step="0.1" required placeholder="حتى 10 دقائق">
-        <label>رفع فيديو (MP4 أو WebM أو MOV، حتى 100 ميجابايت)</label><input id="directorWorkFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov">
+        <label>رفع فيديو (MP4 أو WebM أو MOV، حتى 50 ميجابايت)</label><input id="directorWorkFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov">
         <label>أو رابط مشاهدة (YouTube أو Vimeo أو رابط فيديو مباشر)</label><input id="directorWorkUrl" type="url" maxlength="1000" placeholder="https://...">
         <label style="display:flex;align-items:flex-start;gap:8px"><input id="directorWorkRights" type="checkbox" required style="width:auto;margin-top:8px"><span>أقر أنني أملك حقوق عرض هذا العمل أو لدي تصريح بعرضه، وأوافق على مراجعته قبل نشره.</span></label>
         <button class="btn primary" id="directorWorkSubmit" type="submit">إرسال العمل لمراجعة الإدارة</button>
@@ -4166,7 +4166,7 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
   if(file&&externalRaw){message.textContent="اختر رفع الفيديو أو الرابط الخارجي، وليس الاثنين معًا.";return;}
   if(!file&&!externalRaw&&!directorWorkEditingId){message.textContent="ارفع فيديو أو أضف رابط مشاهدة.";return;}
   if(externalRaw&&!external_url){message.textContent="الرابط غير صالح؛ استخدم http أو https.";return;}
-  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>100*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
+  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
   button.disabled=true;message.textContent="جارٍ تجهيز الفيديو وإرساله للمراجعة...";
   let uploadedPath=null,oldPath=null;
   try{
