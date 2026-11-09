@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.35">
+<body data-platform-version="6.8.36">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2780,9 +2780,29 @@ async function adminLoadCommunitySubmissions(){
 async function adminReviewCommunity(id,status){
   if(!adminSupabase||!adminSession)return;
   if(!["approved","rejected"].includes(status))return;
+  let rejectedVideoPath=null;
+  if(status==="rejected"){
+    const {data:submission,error:lookupError}=await adminSupabase
+      .from("community_submissions")
+      .select("work_url,submission_type")
+      .eq("id",id)
+      .maybeSingle();
+    if(lookupError){alert("تعذر التحقق من بيانات الطلب قبل رفضه: "+lookupError.message);return;}
+    if(submission?.submission_type==="talent"&&String(submission.work_url||"").startsWith("talent-video:")){
+      rejectedVideoPath=submission.work_url.slice("talent-video:".length);
+    }
+    if(!confirm("هل تريد رفض هذا الطلب؟"+(rejectedVideoPath?" سيتم أيضًا حذف فيديو الأداء من التخزين الخاص حفاظًا على خصوصية صاحبه.":"")))return;
+  }
   const {data,error}=await adminSupabase.rpc("admin_review_community_submission",{p_submission_id:id,p_status:status});
   if(error){alert("تعذرت مراجعة الطلب: "+error.message);return;}
-  alert(status==="approved"?"تم اعتماد الطلب ونشره.":"تم رفض الطلب.");
+  let cleanupWarning="";
+  if(status==="rejected"&&rejectedVideoPath){
+    const {error:removeError}=await adminSupabase.storage
+      .from("talent-submission-videos")
+      .remove([rejectedVideoPath]);
+    if(removeError)cleanupWarning="\nتنبيه: تم رفض الطلب، لكن تعذر حذف فيديو الأداء من التخزين الخاص. راجع صلاحيات حذف ملفات bucket.";
+  }
+  alert((status==="approved"?"تم اعتماد الطلب ونشره.":"تم رفض الطلب.")+cleanupWarning);
   await adminLoadCommunitySubmissions();
   await adminLoadRecords();
   await loadPublicContent();
