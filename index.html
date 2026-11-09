@@ -1507,16 +1507,17 @@ renderProjects();
       <div id="bookDetailsContent" style="display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:20px;align-items:start;padding-top:18px"></div>
     </div>
   </div>
-  <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>املأ البيانات وأرفق صورة واضحة للغلاف. لن يظهر الإعلان إلا بعد موافقة الإدارة.</p></div>
+  <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>الإعلان مجاني حاليًا. املأ بيانات كتابك مرة واحدة، وبعد موافقة الإدارة سيظهر للقراء.</p></div>
+  <div class="panel" style="margin-bottom:12px"><strong style="color:var(--gold)">طريقة العرض ببساطة</strong><p style="margin:8px 0 0">ارفع أفيش الكتاب، واكتب بياناته وسعره. لو النسخة إلكترونية، وضّح في النبذة هل التسليم PDF أم القراءة أونلاين. البيع والتواصل مباشرة بينك وبين القارئ عبر واتساب، والمنصة لا تحصل على عمولة حاليًا.</p></div>
   <div class="panel">
     <form id="bookListingForm">
       <label>اسم الكتاب *</label><input id="bookTitle" required maxlength="180" placeholder="عنوان الرواية أو الكتاب">
       <label>اسم المؤلف *</label><input id="bookAuthor" required maxlength="160" placeholder="اسم الكاتب أو المؤلف">
       <label>نوع الكتاب *</label>
       <select id="bookType" required><option value="">اختر نوع الكتاب</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
-      <label>صيغة الكتاب *</label>
+      <label>صيغة الكتاب * <span style="color:var(--muted);font-size:12px;font-weight:normal">— لو إلكتروني، وضّح PDF أو أونلاين في النبذة</span></label>
       <select id="bookFormat" required><option value="ورقي">كتاب ورقي</option><option value="إلكتروني">كتاب إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
-      <label>السعر *</label>
+      <label>السعر * <span style="color:var(--muted);font-size:12px;font-weight:normal">— اكتب 0 إذا كان الكتاب مجانيًا</span></label>
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px"><input id="bookPrice" type="number" required min="0" max="10000000" step="0.01" placeholder="مثال: 150"><select id="bookCurrency"><option value="جنيه مصري">جنيه مصري</option><option value="ريال سعودي">ريال سعودي</option><option value="دولار أمريكي">دولار أمريكي</option><option value="درهم إماراتي">درهم إماراتي</option></select></div>
       <label>صورة غلاف الكتاب (JPG أو PNG أو WEBP — حتى 5 ميجابايت) *</label><input id="bookCoverFile" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required style="width:100%;padding:10px">
       <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold)"></div>
@@ -4585,7 +4586,7 @@ document.getElementById("bookListingForm")?.addEventListener("submit",async func
     this.reset();document.getElementById("bookCoverPreviewWrap").style.display="none";document.getElementById("bookCoverPreview").removeAttribute("src");
     document.getElementById("sellerManageId").value="";
     document.getElementById("sellerManageToken").value="";
-    bookMarketplaceMessage("تم استلام الإعلان. احتفظ برقم الإعلان ورمز الإدارة التاليين؛ لن نعرض الرمز مرة أخرى. رقم الإعلان: "+created.id+" — رمز الإدارة: "+sellerToken);
+    bookMarketplaceMessage("تم استلام الإعلان بنجاح، وهو الآن بانتظار مراجعة الإدارة. احفظ هذه البيانات في مكان آمن لتعديل إعلانك لاحقًا: رقم الإعلان: "+created.id+" — رمز الإدارة: "+sellerToken);
   }catch(error){bookMarketplaceMessage("تعذر إرسال الإعلان: "+(error.message||"حاول مرة أخرى بعد إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
 });
