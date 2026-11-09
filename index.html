@@ -941,7 +941,7 @@ renderLibrary();
       <label for="talentBio">نبذة عنك وخبراتك</label>
       <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
       <label for="talentVideo">ارفع فيديو تعريفي أو نموذج أداء (حتى 10 دقائق)</label>
-      <input id="talentVideo" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" aria-describedby="talentVideoHelp">
+      <input id="talentVideo" type="file" accept="video/mp4,video/webm,.mp4,.webm" aria-describedby="talentVideoHelp">
       <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
       <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
       <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
@@ -5090,7 +5090,7 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
   btn.disabled=true;msg.textContent='جارٍ رفع الفيديو...';
   const videoFile=fd.get('video');
   if(!videoFile?.size)throw new Error('اختر ملف الفيديو أولاً.');
-  if(!['video/mp4','video/webm','video/quicktime'].includes(videoFile.type))throw new Error('الصيغ المتاحة MP4 أو WebM أو MOV.');
+  if(!['video/mp4','video/webm'].includes(videoFile.type))throw new Error('الصيغ المتاحة MP4 أو WebM أو MOV.');
   video=await adminInlineUpload(videoFile,'site-media','shorts',50*1024*1024);
   const posterFile=fd.get('poster');
   if(posterFile?.size){
