@@ -844,51 +844,63 @@ renderLibrary();
 <section id="talents" class="page">
   <div class="intro">
     <h2>بوابة المواهب</h2>
-    <p>كل موهبة تستحق فرصة. مساحة للممثلين ومقدمي البرامج والمذيعين والمواهب الإذاعية لعرض أنفسهم ونماذج أعمالهم.</p>
+    <p>منصة مفتوحة لاكتشاف الممثلين ومقدمي البرامج والمواهب الإذاعية. تصفّح الملفات وشاهد نماذج الأعمال دون تسجيل أو بريد إلكتروني.</p>
+  </div>
+
+  <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
+    <h3 style="color:var(--gold);margin-top:0">موهبتك تستحق أن تُرى</h3>
+    <p>يمكنك تقديم بياناتك ونموذج عملك مباشرة دون إنشاء حساب. التسجيل ليس شرطًا للتصفح أو التقديم من هذا النموذج. تراجع الإدارة كل طلب قبل نشره، ووسيلة التواصل التي تكتبها تبقى خاصة بالإدارة ولا تظهر في ملفك العام.</p>
+    <button class="btn primary" type="button" onclick="showTalentForm()">اعرض موهبتك مجانًا – دون تسجيل</button>
   </div>
 
   <div class="section-heading">
-    <h2>اكتشف المواهب</h2>
-    <p>اختار المجال الذي تبحث عنه</p>
+    <h2>دليل المواهب</h2>
+    <p>اكتشف الوجوه والأصوات الجديدة وابحث حسب المجال أو الاسم أو المدينة</p>
   </div>
 
-  <div class="panel">
-    <select id="talentCategory">
-      <option value="">كل المواهب</option>
+  <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+    <select id="talentCategory" aria-label="تصفية المواهب حسب المجال">
+      <option value="">كل المجالات</option>
       <option value="تمثيل">التمثيل</option>
       <option value="تقديم برامج">تقديم البرامج</option>
       <option value="إذاعة">الإذاعة والتعليق الصوتي</option>
     </select>
-    <input id="talentsSearch" placeholder="ابحث بالاسم أو التخصص...">
+    <input id="talentsSearch" type="search" placeholder="ابحث بالاسم أو التخصص أو المدينة..." aria-label="ابحث في دليل المواهب">
   </div>
-  <div id="talentsItems" class="grid"></div>
+  <div id="talentsItems" class="grid" aria-live="polite">
+    <div class="panel" style="grid-column:1/-1;text-align:center">جارٍ تحميل ملفات المواهب المعتمدة...</div>
+  </div>
 
-  <div class="spotlight">
-    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1000&q=85" alt="اختبار أداء">
-    <div class="spotlight-content">
-      <h2>اعرض موهبتك</h2>
-      <p>جهّز ملفك الشخصي ونماذج أعمالك، ليتمكن المهتمون من التعرف على موهبتك والتواصل معك وفق ضوابط المنصة.</p>
-      <button class="btn primary" onclick="showTalentForm()">تسجيل موهبة</button>
+  <div class="panel" id="talentForm" style="display:none;margin-top:22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h3 style="color:var(--gold);margin:0">استمارة تقديم موهبة</h3>
+      <button class="btn" type="button" onclick="document.getElementById('talentForm').style.display='none'">إغلاق</button>
     </div>
-  </div>
-
-  <div class="panel" id="talentForm" style="display:none">
-    <h3 style="color:var(--gold)">بيانات الموهبة</h3>
-    <form id="talentRegisterForm">
-      <input id="talentName" required placeholder="الاسم">
+    <p class="muted">املأ البيانات الأساسية فقط. لا نطلب بريدًا إلكترونيًا ولا إنشاء حساب. لا تنشر الإدارة أي بيانات تواصل خاصة.</p>
+    <form id="talentRegisterForm" style="display:grid;gap:12px;margin-top:14px">
+      <label for="talentName">الاسم أو الاسم الفني *</label>
+      <input id="talentName" required maxlength="160" autocomplete="name" placeholder="الاسم الذي تريد الظهور به">
+      <label for="talentType">مجال الموهبة *</label>
       <select id="talentType" required>
         <option value="">اختر المجال</option>
-        <option value="تمثيل">تمثيل</option>
-        <option value="تقديم برامج">تقديم برامج</option>
-        <option value="إذاعة">إذاعة وتعليق صوتي</option>
+        <option value="تمثيل">التمثيل – سينما وتلفزيون ومسرح</option>
+        <option value="تقديم برامج">تقديم البرامج – تلفزيون وإذاعة ومنصات</option>
+        <option value="إذاعة">الإذاعة والتعليق الصوتي والأداء الصوتي</option>
       </select>
-      <input id="talentCity" placeholder="المدينة">
-      <input id="talentContact" placeholder="وسيلة تواصل عامة">
-      <textarea id="talentBio" placeholder="نبذة عن الموهبة والخبرات"></textarea>
-      <input id="talentWork" placeholder="رابط نموذج أعمال (اختياري)">
-      <button class="btn primary" type="submit">إرسال البيانات للمراجعة</button>
+      <label for="talentCity">المدينة أو بلد الإقامة</label>
+      <input id="talentCity" maxlength="100" autocomplete="address-level2" placeholder="مثال: الإسكندرية">
+      <label for="talentSpecialty">التخصص أو نوع الأداء</label>
+      <input id="talentSpecialty" maxlength="160" placeholder="مثال: كوميدي، دراما، تقديم حواري، تعليق وثائقي">
+      <label for="talentBio">نبذة عنك وخبراتك</label>
+      <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
+      <label for="talentWork">رابط نموذج أداء أو عمل (اختياري)</label>
+      <input id="talentWork" type="url" inputmode="url" placeholder="رابط YouTube أو Vimeo أو نموذج صوتي">
+      <label for="talentContact">وسيلة تواصل خاصة بالإدارة (اختياري)</label>
+      <input id="talentContact" maxlength="160" placeholder="هاتف أو واتساب أو حساب تواصل">
+      <p class="muted" style="font-size:12px;margin:0">تنبيه خصوصية: وسيلة التواصل لا تظهر للزوار، وتستخدمها الإدارة عند الحاجة لمراجعة الطلب فقط. لا ترسل بيانات حساسة أو مستندات شخصية.</p>
+      <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
+      <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
-    <p style="color:var(--muted);font-size:12px">سيُرسل طلبك إلى إدارة المنصة للمراجعة، ولن يظهر للعامة إلا بعد الموافقة.</p>
   </div>
 </section>
 
