@@ -3985,6 +3985,7 @@ async function accountLoadWriterIdeas(){
   const rows=data||[],labels={pending:"قيد مراجعة المدير",approved:"تم الاعتماد والنشر",rejected:"مطلوب تعديل"};
   box.innerHTML=rows.length?rows.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>'+(item.slot===1?"الفكرة الأولى":"الفكرة الثانية")+' • '+(item.format==="short"?"فيلم قصير":"فيلم طويل")+' • '+escapeHTML(item.genre||"")+'</p><p>'+escapeHTML(item.summary)+'</p><p class="admin-status">'+labels[item.status]+'</p>'+(item.review_notes?'<p>ملاحظات المدير: '+escapeHTML(item.review_notes)+'</p>':"")+(item.status==="rejected"?'<button class="btn primary" type="button" onclick="writerIdeaEdit(\''+item.id+'\')">تعديل وإعادة الإرسال</button>':"")+'</article>').join(""):'<p class="muted">لم ترسل أي أفكار حتى الآن. يمكنك تقديم فكرتين كحد أقصى.</p>';
   [1,2].forEach(slot=>{const item=rows.find(row=>row.slot===slot),option=document.querySelector('#writerIdeaSlot option[value="'+slot+'"]');if(option){option.disabled=!!item&&item.status!=="rejected";option.textContent=(slot===1?"الفكرة الأولى":"الفكرة الثانية")+(item?" — "+labels[item.status]:" — متاحة");}});
+  if(!writerIdeaEditingId){const select=document.getElementById("writerIdeaSlot"),next=[...(select?.options||[])].find(option=>!option.disabled);if(next)select.value=next.value;}
 }
 async function writerIdeaEdit(id){
   if(!accountUser)return;
