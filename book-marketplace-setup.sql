@@ -147,6 +147,51 @@ begin
 end;
 $;
 
+
+create or replace function public.seller_update_book_listing(
+  p_id uuid, p_token text, p_title text, p_author_name text,
+  p_book_type text, p_book_format text, p_description text,
+  p_price numeric, p_currency text, p_seller_name text, p_contact_phone text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, extensions
+as $
+declare v_updated uuid;
+begin
+  if p_token is null or length(p_token) <> 64 then return false; end if;
+  update public.book_marketplace_listings
+  set title = btrim(p_title),
+      author_name = btrim(p_author_name),
+      book_type = btrim(p_book_type),
+      book_format = p_book_format,
+      description = btrim(p_description),
+      price = p_price,
+      currency = p_currency,
+      seller_name = btrim(p_seller_name),
+      contact_phone = btrim(p_contact_phone),
+      status = 'pending',
+      updated_at = now()
+  where id = p_id
+    and seller_token_hash = encode(extensions.digest(convert_to(p_token,'UTF8'),'sha256'),'hex')
+    and char_length(btrim(p_title)) between 2 and 180
+    and char_length(btrim(p_author_name)) between 2 and 160
+    and char_length(btrim(p_book_type)) between 2 and 80
+    and p_book_format in ('ورقي','إلكتروني','ورقي وإلكتروني')
+    and char_length(btrim(p_description)) between 10 and 2500
+    and p_price between 0 and 10000000
+    and p_currency in ('جنيه مصري','ريال سعودي','دولار أمريكي','درهم إماراتي')
+    and char_length(btrim(p_seller_name)) between 2 and 120
+    and char_length(btrim(p_contact_phone)) between 8 and 30
+  returning id into v_updated;
+  return v_updated is not null;
+end;
+$;
+
+revoke all on function public.seller_update_book_listing(uuid,text,text,text,text,text,text,numeric,text,text,text) from public;
+grant execute on function public.seller_update_book_listing(uuid,text,text,text,text,text,text,numeric,text,text,text) to anon, authenticated;
+
 revoke all on function public.seller_get_book_listing(uuid,text) from public;
 revoke all on function public.seller_delete_book_listing(uuid,text) from public;
 grant execute on function public.seller_get_book_listing(uuid,text) to anon, authenticated;
