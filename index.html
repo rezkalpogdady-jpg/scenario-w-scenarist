@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.7">
+<body data-platform-version="6.8.8">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -991,9 +991,10 @@ function profileCard(item, type){
     : "";
 
   return `
-    <article class="feature">
+    <article class="feature" ${type==="talents"&&item.isFeatured?'style="border:1px solid var(--gold);box-shadow:0 0 0 1px rgba(212,175,55,.18)' : ""}>
       ${image}
       <div class="feature-content">
+        ${type==="talents"&&item.isFeatured?'<p class="admin-status" style="color:var(--gold)">★ موهبة مميزة</p>':""}
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(cardBio)}</p>
@@ -1072,7 +1073,7 @@ function renderTalents(){
       && (!q || nameBio.includes(q) || city.includes(q) || specialty.includes(q))
       && (!cityQuery || city.includes(cityQuery))
       && (!specialtyQuery || specialty.includes(specialtyQuery));
-  });
+  }).sort((a,b)=>Number(!!b.isFeatured)-Number(!!a.isFeatured));
 
   const count=document.getElementById("talentsResultCount");
   if(count)count.textContent="عدد الملفات المطابقة: "+list.length+" من "+creativeProfiles.talents.length;
@@ -2987,10 +2988,35 @@ function adminRenderRecords(){
       </p>
       <div class="admin-actions">
         <button class="btn" onclick="adminEditRecord('${item.id}')">تعديل</button>
+        ${item.content_type==="talents" ? '<button class="btn" onclick="adminToggleTalentFeatured(\''+item.id+'\')">'+(item.extra_data?.featured?"إلغاء التمييز":"تمييز الموهبة")+'</button><button class="btn" onclick="adminToggleTalentPublished(\''+item.id+'\')">'+(item.published?"إخفاء الملف مؤقتًا":"إعادة إظهار الملف")+'</button>' : ""}
         <button class="btn" onclick="adminDeleteRecord('${item.id}')">حذف</button>
       </div>
     </article>
   `).join("");
+}
+
+/* أدوات إدارة ملفات المواهب المنشورة: تمييز أو إخفاء مؤقت دون حذف */
+async function adminUpdateTalentRecord(id,changes){
+  if(!adminSupabase||!adminSession)return;
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item){alert("ملف الموهبة غير موجود في سجلات الإدارة.");return;}
+  const {error}=await adminSupabase.from("site_content").update(changes).eq("id",id);
+  if(error){alert("تعذر تحديث ملف الموهبة: "+error.message);return;}
+  await adminLoadRecords();
+  await loadPublicContent();
+}
+async function adminToggleTalentFeatured(id){
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item)return;
+  const extra={...(item.extra_data||{}),featured:!item.extra_data?.featured};
+  await adminUpdateTalentRecord(id,{extra_data:extra});
+}
+async function adminToggleTalentPublished(id){
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item)return;
+  const next=!item.published;
+  if(!confirm(next?"إعادة إظهار ملف الموهبة للزوار؟":"إخفاء ملف الموهبة مؤقتًا من الدليل العام؟"))return;
+  await adminUpdateTalentRecord(id,{published:next});
 }
 
 /* رفع ملف إلى Supabase Storage باسم آمن */
@@ -3689,7 +3715,8 @@ function distributePublicContent(records){
       (grouped.talents || []).map(item=>({
         ...item,
         city:item.city,
-        category:item.type
+        category:item.type,
+        isFeatured:!!item.extra?.featured
       }))
     );
 
