@@ -1,8 +1,3 @@
 {
-  "modules": [
-    {
-      "id": "academy-capstone",
-      "file": "modules/academy-capstone.js"
-    }
-  ]
+  "modules": []
 }
