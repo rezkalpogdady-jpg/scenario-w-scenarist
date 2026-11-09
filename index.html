@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.16: حذف إعلانات الكتب وصور أغلفتها من لوحة الإدارة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.17: تصدير نتائج سوق الكتب من لوحة الإدارة إلى CSV. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.16</title>
+<title>سيناريو وسيناريست – تحديث 6.8.17</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2170,6 +2170,10 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <select id="adminBookStatusFilter">
           <option value="">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معروض للبيع</option><option value="rejected">مرفوض / مخفي</option>
         </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+        <button class="btn primary" type="button" onclick="adminExportBookListingsCsv()">تصدير نتائج البحث CSV</button>
+        <span style="color:var(--muted);font-size:12px;align-self:center">يتم تصدير الإعلانات المحمّلة بعد تطبيق البحث والحالة المختارة.</span>
       </div>
       <div id="adminBookListingsList" class="grid">افتح مراجعة عروض الكتب لتحميل الإعلانات.</div>
     </div>
@@ -4598,6 +4602,30 @@ function adminRenderBookListings(){
       + '<button class="btn" type="button" onclick="adminDeleteBookListing(\''+item.id+'\')">حذف نهائي</button>';
     return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
   }).join("");
+}
+function adminExportBookListingsCsv(){
+  const q=(document.getElementById("adminBookSearch")?.value||"").trim().toLowerCase();
+  const status=(document.getElementById("adminBookStatusFilter")?.value||"");
+  const rows=adminBookListingsCache.filter(item=>(!status||item.status===status)&&
+    [item.title,item.author_name,item.seller_name,item.contact_phone].some(v=>String(v||"").toLowerCase().includes(q)));
+  if(!rows.length){alert("لا توجد نتائج لتصديرها. غيّر البحث أو الحالة.");return;}
+  const headers=["رقم الإعلان","عنوان الكتاب","المؤلف","التصنيف","الصيغة","السعر","العملة","اسم البائع","رقم التواصل","الحالة","تاريخ النشر","آخر تحديث"];
+  const statusLabels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
+  const safe=value=>{
+    let v=String(value??"");
+    if(/^[\\s\\u0000-\\u001f]*[=+@-]/.test(v))v="'"+v;
+    return '"'+v.replace(/"/g,'""')+'"';
+  };
+  const csv=[headers,...rows.map(item=>[
+    item.id,item.title,item.author_name,item.book_type,item.book_format,item.price,item.currency,
+    item.seller_name,item.contact_phone,statusLabels[item.status]||item.status,item.created_at,item.updated_at
+  ])].map(row=>row.map(safe).join(",")).join("\r\n");
+  const blob=new Blob(["\\uFEFF",csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="سيناريو-وسيناريست-إعلانات-الكتب-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
 }
 async function adminLoadBookListings(){
   const box=document.getElementById("adminBookListingsList");
