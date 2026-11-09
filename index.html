@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.33">
+<body data-platform-version="6.8.34">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -3535,8 +3535,8 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
   try{
     button.disabled=true;button.textContent="جارٍ الحفظ...";
     if(file){
-      const safeName=(file.name.normalize("NFKC").replace(/[^A-Za-z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-90)||"scenario.pdf");
-      storagePath=`published/${crypto.randomUUID()}-${safeName}`;
+      // ASCII-only object key avoids Storage rejecting Unicode source filenames.
+      storagePath=`published/${crypto.randomUUID()}.pdf`;
       const {error:uploadError}=await adminSupabase.storage.from("scenario-scripts").upload(storagePath,file,{upsert:false,contentType:"application/pdf",cacheControl:"300"});
       if(uploadError)throw uploadError;
     }
