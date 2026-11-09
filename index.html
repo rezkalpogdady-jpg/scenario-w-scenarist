@@ -3049,14 +3049,63 @@ function showScenarioReader(titleText,noticeText){
   frame.innerHTML='<div role="status" style="padding:28px;color:white;text-align:center"><p>جارٍ تحميل صفحات السيناريو...</p><div style="height:5px;max-width:220px;margin:14px auto;background:#444;border-radius:9px;overflow:hidden"><div style="height:100%;width:45%;background:var(--gold);animation:scenarioReaderPulse 1.2s ease-in-out infinite alternate"></div></div></div>';
   modal.style.display="block";modal.scrollIntoView({behavior:"smooth",block:"start"});return frame;
 }
-function renderScenarioPdf(frame,url,titleText,downloadLabel){
+let scenarioPdfJsPromise=null;
+function loadScenarioPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+  if(scenarioPdfJsPromise)return scenarioPdfJsPromise;
+  scenarioPdfJsPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement("script");
+    script.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.async=true;
+    script.onload=()=>{if(!window.pdfjsLib){reject(new Error("تعذر تجهيز قارئ PDF."));return;}window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";resolve(window.pdfjsLib);};
+    script.onerror=()=>reject(new Error("تعذر تحميل مكوّن قراءة ملفات PDF. تحقق من اتصال الإنترنت."));
+    document.head.appendChild(script);
+  });
+  return scenarioPdfJsPromise;
+}
+async function renderScenarioPdf(frame,url,titleText,downloadLabel){
   const safeUrl=safeHttpUrl(url);if(!safeUrl)throw new Error("رابط ملف السيناريو غير صالح.");
-  frame.innerHTML=`<iframe title="${escapeHTML(titleText||"السيناريو")}" src="${escapeHTML(safeUrl)}#toolbar=1&navpanes=0&view=FitH" loading="eager" referrerpolicy="no-referrer" allow="fullscreen" style="display:block;width:100%;height:78vh;min-height:420px;border:0;background:#fff"></iframe><div class="scenario-reader-tools" style="padding:10px;background:#171717"><span style="color:#ddd;font-size:12px;flex:1">إذا لم يظهر الملف داخل القارئ، يمكنك فتح نسخة القراءة من هنا.</span><a class="btn" href="${escapeHTML(safeUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(downloadLabel||"فتح نسخة بديلة")}</a></div>`;
+  const token=String(Date.now())+Math.random().toString(36).slice(2);frame.dataset.readerToken=token;
+  frame.innerHTML='<div class="scenario-pdf-reader" style="height:78vh;min-height:420px;overflow:auto;background:#333;padding:12px;box-sizing:border-box"><div class="scenario-pdf-status" role="status" style="position:sticky;top:0;z-index:2;background:#171717;color:#fff;padding:12px;text-align:center;border-radius:8px">جارٍ تجهيز قارئ السيناريو...</div><div class="scenario-pdf-pages" style="max-width:900px;margin:12px auto"></div></div>';
+  const status=frame.querySelector(".scenario-pdf-status"),pagesBox=frame.querySelector(".scenario-pdf-pages");
+  try{
+    const pdfjs=await loadScenarioPdfJs();if(frame.dataset.readerToken!==token)return;
+    status.textContent="جارٍ تحميل بيانات الملف...";
+    const task=pdfjs.getDocument({url:safeUrl,rangeChunkSize:65536,disableRange:false,disableStream:true,disableAutoFetch:true});
+    task.onProgress=progress=>{if(frame.dataset.readerToken!==token)return;const pct=progress.total?Math.round(progress.loaded/progress.total*100):0;status.textContent=pct?("جارٍ تحميل الملف... "+pct+"%"):"جارٍ تحميل الملف...";};
+    const pdf=await task.promise;if(frame.dataset.readerToken!==token)return;
+    status.textContent="تم تجهيز الملف. يتم تحميل الصفحات عند الوصول إليها.";
+    const pageNodes=[];
+    for(let n=1;n<=pdf.numPages;n++){
+      const page=await pdf.getPage(n);if(frame.dataset.readerToken!==token)return;
+      const base=page.getViewport({scale:1}),holder=document.createElement("section");
+      holder.style.cssText="margin:0 auto 16px;background:#fff;max-width:100%;box-shadow:0 2px 12px #0008;position:relative";
+      holder.dataset.page=String(n);holder.style.aspectRatio=base.width+"/"+base.height;holder.style.width="min(100%, "+Math.round(base.width*1.25)+"px)";
+      const label=document.createElement("div");label.textContent="صفحة "+n;label.style.cssText="position:absolute;top:6px;right:8px;color:#777;font-size:11px;z-index:1;background:#ffffffcc;padding:2px 6px;border-radius:4px";
+      holder.appendChild(label);pagesBox.appendChild(holder);pageNodes.push({holder,page,base,rendered:false});
+    }
+    status.textContent="الملف جاهز للقراءة داخل المنصة.";
+    const reader=frame.querySelector(".scenario-pdf-reader");
+    const renderOne=async entry=>{
+      if(entry.rendered||frame.dataset.readerToken!==token)return;entry.rendered=true;
+      const width=Math.max(280,Math.min(entry.holder.clientWidth||reader.clientWidth-24,900));
+      const scale=width/entry.base.width,viewport=entry.page.getViewport({scale}),dpr=Math.min(window.devicePixelRatio||1,1.6);
+      const canvas=document.createElement("canvas");canvas.width=Math.floor(viewport.width*dpr);canvas.height=Math.floor(viewport.height*dpr);
+      canvas.style.cssText="display:block;width:100%;height:auto";
+      entry.holder.style.aspectRatio="auto";entry.holder.replaceChildren(canvas);
+      const context=canvas.getContext("2d",{alpha:false});
+      await entry.page.render({canvasContext:context,viewport,transform:dpr!==1?[dpr,0,0,dpr,0,0]:null}).promise;
+    };
+    if("IntersectionObserver" in window){
+      const observer=new IntersectionObserver(entries=>{entries.forEach(hit=>{if(hit.isIntersecting){const item=pageNodes.find(x=>x.holder===hit.target);if(item)renderOne(item);observer.unobserve(hit.target);}});},{root:reader,rootMargin:"700px 0px"});
+      pageNodes.forEach(x=>observer.observe(x.holder));
+    }else{for(const entry of pageNodes){await renderOne(entry);}}
+  }catch(error){if(frame.dataset.readerToken!==token)return;status.textContent="تعذر عرض الملف داخل القارئ: "+(error.message||"خطأ غير معروف");}
 }
 function openLegacyScenario(index){
   const item=scenarioLibrary[Number(index)];if(!item||!item.file)return;
   const frame=showScenarioReader(item.title,`الكاتب: ${item.author||"غير محدد"} • قراءة داخل المنصة`);if(!frame)return;
-  try{renderScenarioPdf(frame,item.file,item.title,"فتح نسخة بديلة");}
+  try{await renderScenarioPdf(frame,item.file,item.title,"");}
   catch(error){frame.innerHTML=`<p style="padding:24px;color:white">تعذر فتح الملف: ${escapeHTML(error.message||"الرابط غير صالح")}</p>`;}
 }
 async function openScenarioScript(id){
@@ -3072,7 +3121,7 @@ async function openScenarioScript(id){
     if(!row?.rights_confirmed||row.rights_status==="unverified"||!String(row.rights_holder||"").trim())throw new Error("هذا العمل غير متاح للقراءة لحين استكمال التحقق من حقوق نشره.");
     if(!row.storage_path)throw new Error("ملف السيناريو غير مرتبط بسجل المكتبة. أبلغ الإدارة.");
     const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,1800);if(signedError)throw signedError;
-    renderScenarioPdf(frame,signed.signedUrl,item.title,"فتح نسخة بديلة");
+    await renderScenarioPdf(frame,signed.signedUrl,item.title,"");
     const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • أساس الإتاحة: ${row.rights_holder} • رابط القراءة مؤقت لمدة 30 دقيقة.`;
   }catch(error){frame.innerHTML=`<div style="padding:24px;color:white;text-align:center"><p>تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p><button class="btn" type="button" onclick="closeScenarioReader()">إغلاق</button></div>`;}
 }
