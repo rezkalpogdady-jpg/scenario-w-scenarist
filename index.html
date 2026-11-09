@@ -823,6 +823,13 @@ renderLibrary();
     <p>مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
   </div>
 
+  <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
+    <h3 style="color:var(--gold);margin-top:0">هل أنت مخرج؟ اعرض أعمالك على المنصة</h3>
+    <p>أنشئ ملفك المهني، أضف نبذة عن خبرتك ودراستك، وارفع نماذج من أعمالك أو أضف روابط المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
+    <button class="btn primary" type="button" onclick="startDirectorRegistration()">أنشئ ملفك كمخرج</button>
+    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">لديك حساب بالفعل؟ اضغط الزر وسجّل الدخول.</span>
+  </div>
+
   <div class="section-heading">
     <h2>صناع الصورة</h2>
     <p>ملفات مهنية وفيديوهات مختارة للمشاهدة</p>
@@ -965,6 +972,21 @@ function renderWriters(){
     const contact=phone?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><a class="btn" href="tel:'+escapeHTML(phone)+'">اتصال بالكاتب</a><a class="btn" href="https://wa.me/'+escapeHTML(phone.replace(/\D/g,""))+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>':"";
     return '<article class="feature" style="padding:16px"><div class="feature-content">'+image+'<h3 style="color:var(--gold);margin:12px 0 4px">'+escapeHTML(x.name||"كاتب سيناريو")+'</h3><p class="admin-status">كاتب معتمد'+(x.specialty?' • '+escapeHTML(x.specialty):"")+'</p><p>'+escapeHTML(x.bio||"")+'</p>'+(x.education?'<p class="admin-status">الدراسة: '+escapeHTML(x.education)+'</p>':"")+(x.experienceYears!==null&&x.experienceYears!==undefined?'<p class="admin-status">الخبرة: '+Number(x.experienceYears)+' سنة</p>':"")+(x.city?'<p class="admin-status">المدينة: '+escapeHTML(x.city)+'</p>':"")+(ideas?'<h4 style="color:var(--gold);margin:18px 0 6px">أفكار وأعمال مختارة</h4>'+ideas:'<p class="admin-status">لم يضف الكاتب أفكارًا منشورة بعد.</p>')+contact+(x.work?'<p><a class="btn" href="'+safeHttpUrl(x.work)+'" target="_blank" rel="noopener noreferrer">نموذج عمل إضافي</a></p>':"")+'</div></article>';
   }).join("");
+}
+
+/* بدء إنشاء ملف المخرج من الدليل العام */
+function startDirectorRegistration(){
+  const signupType=document.getElementById("accountType");
+  const editType=document.getElementById("accountEditType");
+  if(accountUser){
+    if(editType) editType.value="director";
+    const status=document.getElementById("accountProfileStatus");
+    if(status) status.textContent="تم اختيار مجال المخرج. راجع بيانات ملفك ثم احفظه لإرساله إلى الإدارة للمراجعة.";
+  }else if(signupType){
+    signupType.value="director";
+  }
+  showPage("account");
+  if(!accountUser) accountMessage("اخترنا لك مجال «مخرج». أكمل إنشاء الحساب أو سجّل الدخول إذا كان لديك حساب بالفعل.");
 }
 
 /* عرض المخرجين */
