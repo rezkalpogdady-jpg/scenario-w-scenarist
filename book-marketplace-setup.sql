@@ -81,4 +81,75 @@ create policy "Anyone can upload pending book marketplace covers"
     and lower(storage.extension(name)) = any (array['jpg','jpeg','png','webp'])
   );
 
+
+-- إدارة إعلان البائع دون إنشاء حساب: رمز عشوائي قوي، ويُخزن تجزئته فقط.
+create extension if not exists pgcrypto with schema extensions;
+
+alter table public.book_marketplace_listings
+  add column if not exists seller_token_hash text;
+
+-- لا يُسمح بإعلان جديد دون تجزئة رمز إدارة قوي بطول SHA-256 hex.
+drop policy if exists "Anyone can submit pending book listings" on public.book_marketplace_listings;
+create policy "Anyone can submit pending book listings"
+  on public.book_marketplace_listings
+  for insert to anon, authenticated
+  with check (
+    status = 'pending'
+    and seller_token_hash ~ '^[0-9a-f]{64}
+
+  );
+
+-- لا نكشف تجزئة الرمز في استعلامات REST العامة أو لوحة الإدارة.
+revoke select on public.book_marketplace_listings from anon, authenticated;
+grant select (
+  id,title,author_name,book_type,book_format,description,price,currency,
+  seller_name,contact_phone,cover_path,cover_url,status,created_at,updated_at
+) on public.book_marketplace_listings to anon, authenticated;
+
+create or replace function public.seller_get_book_listing(p_id uuid, p_token text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $
+declare v_row public.book_marketplace_listings%rowtype;
+begin
+  if p_token is null or length(p_token) <> 64 then return null; end if;
+  select * into v_row
+  from public.book_marketplace_listings
+  where id = p_id
+    and seller_token_hash = encode(extensions.digest(convert_to(p_token,'UTF8'),'sha256'),'hex');
+  if not found then return null; end if;
+  return jsonb_build_object(
+    'id',v_row.id,'title',v_row.title,'author_name',v_row.author_name,
+    'book_type',v_row.book_type,'book_format',v_row.book_format,
+    'description',v_row.description,'price',v_row.price,'currency',v_row.currency,
+    'seller_name',v_row.seller_name,'contact_phone',v_row.contact_phone,
+    'cover_url',v_row.cover_url,'status',v_row.status,'created_at',v_row.created_at
+  );
+end;
+$;
+
+create or replace function public.seller_delete_book_listing(p_id uuid, p_token text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, extensions
+as $
+declare v_deleted uuid;
+begin
+  if p_token is null or length(p_token) <> 64 then return false; end if;
+  delete from public.book_marketplace_listings
+  where id = p_id
+    and seller_token_hash = encode(extensions.digest(convert_to(p_token,'UTF8'),'sha256'),'hex')
+  returning id into v_deleted;
+  return v_deleted is not null;
+end;
+$;
+
+revoke all on function public.seller_get_book_listing(uuid,text) from public;
+revoke all on function public.seller_delete_book_listing(uuid,text) from public;
+grant execute on function public.seller_get_book_listing(uuid,text) to anon, authenticated;
+grant execute on function public.seller_delete_book_listing(uuid,text) to anon, authenticated;
+
 commit;
