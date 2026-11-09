@@ -1224,6 +1224,7 @@ renderProjects();
     <h3 style="color:var(--gold)" id="tvNowTitle">شاشة سيناريو TV</h3>
     <div style="position:relative;background:#000;border:1px solid var(--border);border-radius:10px;overflow:hidden;aspect-ratio:16/9">
       <video id="tvPlayer" controls playsinline style="width:100%;height:100%;background:#000"></video>
+      <iframe id="tvYouTubePlayer" title="مشغل القناة المباشرة" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#000"></iframe>
       <div id="tvPlaceholder" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#ddd;background:linear-gradient(135deg,#171717,#080808)">
         <div>
           <div style="font-size:50px"></div>
@@ -1270,10 +1271,17 @@ renderProjects();
 */
 
 let tvChannels = [{
+  id:"saudi-quran-tv-live",
+  name:"قناة القرآن الكريم السعودية",
+  category:"عربية",
+  description:"البث الرسمي لقناة القرآن الكريم من المسجد الحرام عبر يوتيوب.",
+  youtubeVideoId:"XcjKDB1bj1w",
+  officialUrl:"https://www.youtube.com/watch?v=XcjKDB1bj1w"
+},{
   id:"rotana-classic-official",
   name:"روتانا كلاسيك",
   category:"سينما",
-  description:"البث عبر الموقع الرسمي لشبكة روتانا.",
+  description:"قناة الأفلام العربية الكلاسيكية؛ المشاهدة من صفحة البث الرسمية لروتانا.",
   officialUrl:"https://rotana.net/ar?tv=live-classic"
 }];
 let radioStations = [{
@@ -3417,13 +3425,29 @@ let activeHlsPlayer=null;
 
 function playTVChannel(id){
   const channel=tvChannels.find(item=>String(item.id)===String(id));
-
-  if(!channel || !channel.stream){
-    alert("رابط البث غير متاح لهذه القناة.");
+  const youtubeFrame=document.getElementById("tvYouTubePlayer");
+  const player=document.getElementById("tvPlayer");
+  const placeholder=document.getElementById("tvPlaceholder");
+  const status=document.getElementById("tvStatus");
+  if(!channel){alert("القناة غير موجودة.");return;}
+  if(channel.youtubeVideoId){
+    if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
+    if(player){player.pause();player.removeAttribute("src");player.load();player.style.display="none";}
+    if(youtubeFrame){
+      youtubeFrame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(channel.youtubeVideoId)+"?autoplay=1&playsinline=1";
+      youtubeFrame.style.display="block";
+    }
+    if(placeholder)placeholder.style.display="none";
+    document.getElementById("tvNowTitle").textContent=channel.name;
+    if(status)status.textContent="يتم تحميل البث الرسمي من يوتيوب. إذا لم يبدأ، تحقق من إتاحة التضمين لدى القناة.";
     return;
   }
-
-  const player=document.getElementById("tvPlayer");
+  if(!channel.stream){
+    alert("هذا المصدر متاح حاليًا عبر الصفحة الرسمية الخارجية فقط.");
+    return;
+  }
+  if(youtubeFrame){youtubeFrame.src="";youtubeFrame.style.display="none";}
+  if(player)player.style.display="block";
   const placeholder=document.getElementById("tvPlaceholder");
   const status=document.getElementById("tvStatus");
   if(!player || !placeholder || !status){
