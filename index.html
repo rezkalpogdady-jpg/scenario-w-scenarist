@@ -1520,7 +1520,7 @@ renderProjects();
       <label>السعر * <span style="color:var(--muted);font-size:12px;font-weight:normal">— اكتب 0 إذا كان الكتاب مجانيًا</span></label>
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px"><input id="bookPrice" type="number" required min="0" max="10000000" step="0.01" placeholder="مثال: 150"><select id="bookCurrency"><option value="جنيه مصري">جنيه مصري</option><option value="ريال سعودي">ريال سعودي</option><option value="دولار أمريكي">دولار أمريكي</option><option value="درهم إماراتي">درهم إماراتي</option></select></div>
       <label>صورة غلاف الكتاب (JPG أو PNG أو WEBP — حتى 5 ميجابايت) *</label><input id="bookCoverFile" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required style="width:100%;padding:10px">
-      <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold)"></div>
+      <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><p style="margin:0 0 8px;color:var(--muted);font-size:13px">معاينة الغلاف قبل نشر الإعلان:</p><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold);display:block"><button class="btn" id="bookCoverRemove" type="button" style="margin-top:8px">إزالة الغلاف واختيار صورة أخرى</button></div>
       <label>نبذة عن الكتاب *</label><textarea id="bookDescription" required maxlength="2500" rows="4" placeholder="اكتب نبذة تشجع القارئ على اقتناء الكتاب"></textarea>
       <label>اسم صاحب الإعلان *</label><input id="bookSellerName" required maxlength="120" placeholder="الاسم الذي سيظهر في الإعلان">
       <label>رقم الهاتف أو واتساب للتواصل مع البائع *</label><input id="bookContact" required type="tel" maxlength="30" placeholder="اكتب الرقم مع مفتاح الدولة" dir="ltr">
@@ -4545,8 +4545,22 @@ document.getElementById("bookCoverFile")?.addEventListener("change",function(){
   const file=this.files?.[0]||null,wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
   if(!wrap||!img)return;
   if(!file){wrap.style.display="none";img.removeAttribute("src");return;}
-  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){wrap.style.display="none";img.removeAttribute("src");return;}
-  const reader=new FileReader();reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";};reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");};reader.readAsDataURL(file);
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){
+    wrap.style.display="none";img.removeAttribute("src");
+    bookMarketplaceMessage("الصورة غير مناسبة. اختر JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت.");
+    this.value="";return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";if(img.src)bookMarketplaceMessage("تم اختيار الغلاف. يمكنك معاينته أو تغييره قبل إرسال الإعلان.");};
+  reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");bookMarketplaceMessage("تعذرت قراءة الصورة. جرّب اختيار صورة أخرى.");};
+  reader.readAsDataURL(file);
+});
+document.getElementById("bookCoverRemove")?.addEventListener("click",()=>{
+  const input=document.getElementById("bookCoverFile"),wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
+  if(input)input.value="";
+  if(wrap)wrap.style.display="none";
+  if(img)img.removeAttribute("src");
+  bookMarketplaceMessage("تمت إزالة الغلاف. اختر صورة جديدة لإكمال الإعلان.");
 });
 document.getElementById("bookListingForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
