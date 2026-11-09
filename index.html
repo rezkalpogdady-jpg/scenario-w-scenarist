@@ -1527,6 +1527,20 @@ renderProjects();
       <button class="btn" id="sellerDeleteListing" type="button">حذف الإعلان نهائيًا</button>
     </div>
     <p id="sellerManageMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+    <div id="sellerEditPanel" style="display:none;border-top:1px solid var(--border);margin-top:18px;padding-top:18px">
+      <h3 style="color:var(--gold)">تعديل بيانات الإعلان</h3>
+      <label>اسم الكتاب</label><input id="sellerEditTitle" maxlength="180">
+      <label>اسم المؤلف</label><input id="sellerEditAuthor" maxlength="160">
+      <label>نوع الكتاب</label><select id="sellerEditType"><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
+      <label>صيغة الكتاب</label><select id="sellerEditFormat"><option>ورقي</option><option>إلكتروني</option><option>ورقي وإلكتروني</option></select>
+      <label>السعر</label><input id="sellerEditPrice" type="number" min="0" max="10000000" step="0.01">
+      <label>العملة</label><select id="sellerEditCurrency"><option>جنيه مصري</option><option>ريال سعودي</option><option>دولار أمريكي</option><option>درهم إماراتي</option></select>
+      <label>نبذة عن الكتاب</label><textarea id="sellerEditDescription" maxlength="2500" rows="4"></textarea>
+      <label>اسم صاحب الإعلان</label><input id="sellerEditSeller" maxlength="120">
+      <label>رقم التواصل</label><input id="sellerEditPhone" maxlength="30" dir="ltr">
+      <p style="color:var(--muted);font-size:13px">بعد حفظ التعديلات، يعود الإعلان للمراجعة ولن يظهر للبيع حتى موافقة الإدارة. صورة الغلاف الحالية ستظل كما هي.</p>
+      <button class="btn primary" id="sellerSaveChanges" type="button">حفظ التعديلات وإرسالها للمراجعة</button>
+    </div>
   </div>
   <p style="font-size:12px;color:var(--muted)">تنبيه: المنصة تعرض بيانات البائع للتواصل المباشر، ولا تستلم ثمن الكتاب أو تضمن عملية البيع في هذه المرحلة. اتفق مع البائع على طريقة الدفع والتسليم قبل الشراء.</p>
 </section>
@@ -4463,12 +4477,12 @@ document.getElementById("bookListingForm")?.addEventListener("submit",async func
       seller_name:document.getElementById("bookSellerName").value.trim(),
       contact_phone:phone,status:"pending"
     };
-    const {error}=await client.from("book_marketplace_listings").insert(listing);
+    const {data:created,error}=await client.from("book_marketplace_listings").insert(listing).select("id").single();
     if(error){await client.storage.from("book-marketplace-covers").remove([uploaded.path]);throw error;}
     this.reset();document.getElementById("bookCoverPreviewWrap").style.display="none";document.getElementById("bookCoverPreview").removeAttribute("src");
     document.getElementById("sellerManageId").value="";
     document.getElementById("sellerManageToken").value="";
-    bookMarketplaceMessage("تم استلام الإعلان. احتفظ برقم الإعلان ورمز الإدارة التاليين؛ لن نعرض الرمز مرة أخرى. رقم الإعلان: "+uploaded.path.split("/").pop()+" — رمز الإدارة: "+sellerToken);
+    bookMarketplaceMessage("تم استلام الإعلان. احتفظ برقم الإعلان ورمز الإدارة التاليين؛ لن نعرض الرمز مرة أخرى. رقم الإعلان: "+created.id+" — رمز الإدارة: "+sellerToken);
   }catch(error){bookMarketplaceMessage("تعذر إرسال الإعلان: "+(error.message||"حاول مرة أخرى بعد إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
 });
@@ -4484,8 +4498,44 @@ document.getElementById("sellerLoadListing")?.addEventListener("click",async()=>
   try{
     const data=await sellerBookRpc("seller_get_book_listing",{p_id:id,p_token:token});
     if(!data){sellerManageMessage("لم نعثر على إعلان بهذه البيانات. راجع الرقم والرمز.");return;}
-    sellerManageMessage("تم التحقق من ملكية الإعلان: "+data.title+" — الحالة: "+({pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض"}[data.status]||data.status)+". تعديل البيانات متاح في التحديث التالي.");
+    document.getElementById("sellerEditTitle").value=data.title||"";
+    document.getElementById("sellerEditAuthor").value=data.author_name||"";
+    document.getElementById("sellerEditType").value=data.book_type||"رواية";
+    document.getElementById("sellerEditFormat").value=data.book_format||"ورقي";
+    document.getElementById("sellerEditPrice").value=data.price??0;
+    document.getElementById("sellerEditCurrency").value=data.currency||"جنيه مصري";
+    document.getElementById("sellerEditDescription").value=data.description||"";
+    document.getElementById("sellerEditSeller").value=data.seller_name||"";
+    document.getElementById("sellerEditPhone").value=data.contact_phone||"";
+    document.getElementById("sellerEditPanel").style.display="block";
+    sellerManageMessage("تم التحقق من ملكية الإعلان: "+data.title+" — الحالة: "+({pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض"}[data.status]||data.status)+". يمكنك تعديل البيانات أدناه.");
   }catch(error){sellerManageMessage("تعذر استرجاع الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+});
+document.getElementById("sellerSaveChanges")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  const price=Number(document.getElementById("sellerEditPrice").value);
+  const phone=document.getElementById("sellerEditPhone").value.trim();
+  const title=document.getElementById("sellerEditTitle").value.trim();
+  const author=document.getElementById("sellerEditAuthor").value.trim();
+  const description=document.getElementById("sellerEditDescription").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة أولًا.");return;}
+  if(title.length<2||author.length<2||description.length<10||!Number.isFinite(price)||price<0||price>10000000||phone.replace(/\D/g,"").length<8){sellerManageMessage("راجع العنوان والمؤلف والنبذة والسعر ورقم التواصل.");return;}
+  const button=document.getElementById("sellerSaveChanges");button.disabled=true;
+  try{
+    const saved=await sellerBookRpc("seller_update_book_listing",{
+      p_id:id,p_token:token,p_title:title,p_author_name:author,
+      p_book_type:document.getElementById("sellerEditType").value,
+      p_book_format:document.getElementById("sellerEditFormat").value,
+      p_description:description,p_price:price,
+      p_currency:document.getElementById("sellerEditCurrency").value,
+      p_seller_name:document.getElementById("sellerEditSeller").value.trim(),
+      p_contact_phone:phone
+    });
+    sellerManageMessage(saved?"تم حفظ التعديلات وإرسال الإعلان لمراجعة الإدارة.":"لم يتم الحفظ؛ تحقق من بيانات الملكية.");
+    if(saved){document.getElementById("sellerEditPanel").style.display="none";await loadBookListings();}
+  }catch(error){sellerManageMessage("تعذر حفظ التعديلات: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+  finally{button.disabled=false;}
 });
 document.getElementById("sellerDeleteListing")?.addEventListener("click",async()=>{
   const id=document.getElementById("sellerManageId").value.trim();
