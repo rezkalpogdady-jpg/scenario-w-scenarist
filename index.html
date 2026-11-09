@@ -1269,8 +1269,19 @@ renderProjects();
   لا نضع روابط بث عشوائية أو غير مرخصة.
 */
 
-let tvChannels = [];
-let radioStations = [];
+let tvChannels = [{
+  id:"rotana-classic-official",
+  name:"روتانا كلاسيك",
+  category:"سينما",
+  description:"البث عبر الموقع الرسمي لشبكة روتانا.",
+  officialUrl:"https://rotana.net/ar?tv=live-classic"
+}];
+let radioStations = [{
+  id:"quran-radio-egypt-official",
+  name:"إذاعة القرآن الكريم من القاهرة",
+  description:"استمع إلى البث من البوابة الرسمية لإذاعة القرآن الكريم المصرية.",
+  officialUrl:"https://misrquran.gov.eg/"
+}];
 
 /* إنشاء بطاقة قناة */
 function tvCard(channel){
@@ -1282,7 +1293,9 @@ function tvCard(channel){
       <div class="feature-content">
         <h3>${escapeHTML(channel.name)}</h3>
         <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        <button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>
+        ${channel.officialUrl
+          ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">شاهد البث الرسمي</a>`
+          : `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>`}
       </div>
     </article>`;
 }
@@ -1320,7 +1333,9 @@ function radioCard(station){
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
         <p>${escapeHTML(station.description || "محطة إذاعية")}</p>
-        <button class="btn" onclick="playRadioStation('${escapeHTML(station.id)}')">استمع الآن</button>
+        ${station.officialUrl
+          ? `<a class="btn" href="${safeHttpUrl(station.officialUrl)}" target="_blank" rel="noopener noreferrer">استمع من المصدر الرسمي</a>`
+          : `<button class="btn" onclick="playRadioStation('${escapeHTML(station.id)}')">استمع الآن</button>`}
       </div>
     </article>`;
 }
@@ -3289,28 +3304,37 @@ function distributePublicContent(records){
   }
 
   if(typeof tvChannels!=="undefined"){
-    replaceArray(tvChannels,
-      (grouped.tv || []).map(item=>({
-        id:item.id,
-        name:item.title,
-        category:item.category,
-        image:item.image,
-        stream:item.stream
-      }))
-    );
+    const publicTVChannels=(grouped.tv || []).map(item=>({
+      id:item.id,
+      name:item.title,
+      category:item.category,
+      image:item.image,
+      stream:item.stream
+    }));
+    replaceArray(tvChannels,publicTVChannels.length ? publicTVChannels : [{
+      id:"rotana-classic-official",
+      name:"روتانا كلاسيك",
+      category:"سينما",
+      description:"البث عبر الموقع الرسمي لشبكة روتانا.",
+      officialUrl:"https://rotana.net/ar?tv=live-classic"
+    }]);
     renderTVChannels();
   }
 
   if(typeof radioStations!=="undefined"){
-    replaceArray(radioStations,
-      (grouped.radio || []).map(item=>({
-        id:item.id,
-        name:item.title,
-        description:item.description,
-        image:item.image,
-        stream:item.stream
-      }))
-    );
+    const publicRadioStations=(grouped.radio || []).map(item=>({
+      id:item.id,
+      name:item.title,
+      description:item.description,
+      image:item.image,
+      stream:item.stream
+    }));
+    replaceArray(radioStations,publicRadioStations.length ? publicRadioStations : [{
+      id:"quran-radio-egypt-official",
+      name:"إذاعة القرآن الكريم من القاهرة",
+      description:"استمع إلى البث من البوابة الرسمية لإذاعة القرآن الكريم المصرية.",
+      officialUrl:"https://misrquran.gov.eg/"
+    }]);
     renderRadioStations();
   }
 
