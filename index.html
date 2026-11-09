@@ -2194,8 +2194,8 @@ async function accountLoadProfile(user){
     const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status").eq("user_id",user.id).maybeSingle();
     if(error) throw error;
     accountShowUser(user,data||null);
-    await accountLoadWriterContact();
-    await accountLoadWriterIdeas();
+    if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
+    if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
   }catch(error){
@@ -4062,6 +4062,7 @@ document.getElementById("accountEditType")?.addEventListener("change",()=>{
   const isWriter=document.getElementById("accountEditType").value==="writer",panel=document.getElementById("writerIdeasPanel");
   if(panel)panel.style.display=isWriter?"block":"none";
 });
+if(accountUser){accountLoadWriterContact();accountLoadWriterIdeas();}
 </script>
 
 </body>
