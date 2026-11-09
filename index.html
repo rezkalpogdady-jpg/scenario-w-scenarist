@@ -3450,8 +3450,6 @@ function playTVChannel(id){
   }
   if(youtubeFrame){youtubeFrame.src="";youtubeFrame.style.display="none";}
   if(player)player.style.display="block";
-  const placeholder=document.getElementById("tvPlaceholder");
-  const status=document.getElementById("tvStatus");
   if(!player || !placeholder || !status){
     console.warn("مشغل التلفزيون غير موجود في الصفحة.");
     return;
