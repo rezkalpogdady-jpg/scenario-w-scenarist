@@ -979,6 +979,9 @@ function profileCard(item, type){
     details += `<p>المدة: ${escapeHTML(item.duration || "غير محددة")}</p>`;
   }
 
+  const cardBio = type === "talents"
+    ? String(item.bio || "").split(/\r?\n/).filter(line=>!["التخصص:","السن:","الدراسة:","سنوات الخبرة:","نموذج عمل 2:","نموذج عمل 3:"].some(prefix=>line.trim().startsWith(prefix))).join("\n").trim()
+    : (item.bio || item.description || "");
   const talentIndex = type === "talents" ? creativeProfiles.talents.indexOf(item) : -1;
   const talentAction = talentIndex >= 0
     ? `<button class="btn" type="button" onclick="showTalentProfile(${talentIndex})">عرض الملف المهني</button>`
@@ -990,7 +993,7 @@ function profileCard(item, type){
       <div class="feature-content">
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
-        <p>${escapeHTML(item.bio || item.description || "")}</p>
+        <p>${escapeHTML(cardBio)}</p>
         ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
         ${talentAction}
       </div>
