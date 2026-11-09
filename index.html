@@ -2949,6 +2949,7 @@ document.getElementById("platformContactForm")?.addEventListener("submit",async 
 /* التحقق من أن الحساب مدير فعلاً */
 async function adminVerifyAdmin(session){
   adminSession=session;
+  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
 
   const {data,error}=await adminSupabase.auth.getUser();
 
@@ -2974,6 +2975,7 @@ async function adminVerifyAdmin(session){
 
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
+  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
   await adminLoadRecords();
