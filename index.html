@@ -893,11 +893,16 @@ renderLibrary();
       <input id="talentSpecialty" maxlength="160" placeholder="مثال: كوميدي، دراما، تقديم حواري، تعليق وثائقي">
       <label for="talentBio">نبذة عنك وخبراتك</label>
       <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
-      <label for="talentWork">رابط نموذج أداء أو عمل (اختياري)</label>
+      <label for="talentVideo">ارفع فيديو تعريفي أو نموذج أداء (حتى 10 دقائق)</label>
+      <input id="talentVideo" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" aria-describedby="talentVideoHelp">
+      <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
+      <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
+      <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
+      <label for="talentWork">رابط بديل لنموذج أداء (اختياري إذا لم ترفع فيديو)</label>
       <input id="talentWork" type="url" inputmode="url" placeholder="رابط YouTube أو Vimeo أو نموذج صوتي">
-      <label for="talentContact">وسيلة تواصل خاصة بالإدارة (اختياري)</label>
-      <input id="talentContact" maxlength="160" placeholder="هاتف أو واتساب أو حساب تواصل">
-      <p class="muted" style="font-size:12px;margin:0">تنبيه خصوصية: وسيلة التواصل لا تظهر للزوار، وتستخدمها الإدارة عند الحاجة لمراجعة الطلب فقط. لا ترسل بيانات حساسة أو مستندات شخصية.</p>
+      <label for="talentContact">رقم الموبايل أو واتساب للتواصل معك *</label>
+      <input id="talentContact" type="tel" inputmode="tel" autocomplete="tel" maxlength="25" required placeholder="مثال: +20 10 0000 0000">
+      <p class="muted" style="font-size:12px;margin:0">رقمك يظهر للإدارة فقط للتواصل بشأن طلبك، ولا يظهر في ملفك العام. لا نطلب إنشاء حساب أو بريد إلكتروني.</p>
       <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
       <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
@@ -923,6 +928,7 @@ renderLibrary();
   </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script>
 /* بيانات الأقسام */
 let creativeProfiles = {
@@ -959,7 +965,7 @@ function profileCard(item, type){
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(item.bio || item.description || "")}</p>
-        ${item.work ? `<a class="btn" href="${safeHttpUrl(item.work)}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>` : ""}
+        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
       </div>
     </article>`;
 }
@@ -1039,6 +1045,19 @@ function renderShortFilms(){
   box.innerHTML = creativeProfiles.shorts.length
     ? creativeProfiles.shorts.map(x=>profileCard(x,"shorts")).join("")
     : `<div class="panel" style="grid-column:1/-1;text-align:center">شاشة الأفلام القصيرة في انتظار الأعمال المشاركة.</div>`;
+}
+
+/* التحقق من مدة فيديو الموهبة محليًا قبل الرفع */
+function validateTalentVideoDuration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const video=document.createElement("video");
+    video.preload="metadata";
+    const finish=(error)=>{URL.revokeObjectURL(url);video.removeAttribute("src");video.load();error?reject(error):resolve();};
+    video.onloadedmetadata=()=>{const duration=Number(video.duration);if(!Number.isFinite(duration)||duration<=0){finish(new Error("تعذر قراءة مدة الفيديو. جرّب ملف MP4 واضحًا."));return;}if(duration>600){finish(new Error("مدة الفيديو أطول من 10 دقائق. اختر فيديو أقصر."));return;}finish();};
+    video.onerror=()=>finish(new Error("تعذر قراءة الفيديو. استخدم MP4 أو WebM أو MOV."));
+    video.src=url;
+  });
 }
 
 /* إظهار نموذج تسجيل موهبة */
@@ -3600,6 +3619,18 @@ function distributePublicContent(records){
   renderFilms();
 }
 
+/* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
+async function loadApprovedTalentVideos(){
+  if(!publicContentClient)return;
+  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:"));
+  for(const item of items){
+    const path=item.work.slice("talent-video:".length);
+    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrl(path,3600);
+    if(error){console.warn("تعذر تجهيز فيديو موهبة منشور",error.message);item.work="";continue;}
+    item.work=data?.signedUrl||"";item.workIsVideo=!!item.work;
+  }
+  renderTalents();
+}
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
 async function loadApprovedMemberProfiles(){
   if(!publicContentClient)return;
@@ -3667,6 +3698,7 @@ async function loadPublicContent(){
 
     distributePublicContent(data || []);
     await loadApprovedMemberProfiles();
+    await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
     publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
