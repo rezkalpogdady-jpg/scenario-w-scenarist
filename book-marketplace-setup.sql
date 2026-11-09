@@ -24,7 +24,7 @@ create table if not exists public.book_marketplace_listings (
 alter table public.book_marketplace_listings enable row level security;
 
 grant select, insert on public.book_marketplace_listings to anon, authenticated;
-grant update on public.book_marketplace_listings to authenticated;
+grant update, delete on public.book_marketplace_listings to authenticated;
 
 drop policy if exists "Public can view approved book listings" on public.book_marketplace_listings;
 create policy "Public can view approved book listings"
@@ -95,9 +95,7 @@ create policy "Anyone can submit pending book listings"
   for insert to anon, authenticated
   with check (
     status = 'pending'
-    and seller_token_hash ~ '^[0-9a-f]{64}
-
-  );
+    and seller_token_hash ~ '^[0-9a-f]{64}$'  );
 
 -- لا نكشف تجزئة الرمز في استعلامات REST العامة أو لوحة الإدارة.
 revoke select on public.book_marketplace_listings from anon, authenticated;
@@ -111,7 +109,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $seller_get$
 declare v_row public.book_marketplace_listings%rowtype;
 begin
   if p_token is null or length(p_token) <> 64 then return null; end if;
@@ -128,14 +126,14 @@ begin
     'cover_url',v_row.cover_url,'status',v_row.status,'created_at',v_row.created_at
   );
 end;
-$;
+$seller_get$;
 
 create or replace function public.seller_delete_book_listing(p_id uuid, p_token text)
 returns boolean
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $seller_delete$
 declare v_deleted uuid;
 begin
   if p_token is null or length(p_token) <> 64 then return false; end if;
@@ -145,7 +143,7 @@ begin
   returning id into v_deleted;
   return v_deleted is not null;
 end;
-$;
+$seller_delete$;
 
 
 create or replace function public.seller_update_book_listing(
@@ -157,7 +155,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = public, extensions
-as $
+as $seller_update$
 declare v_updated uuid;
 begin
   if p_token is null or length(p_token) <> 64 then return false; end if;
@@ -187,7 +185,7 @@ begin
   returning id into v_updated;
   return v_updated is not null;
 end;
-$;
+$seller_update$;
 
 revoke all on function public.seller_update_book_listing(uuid,text,text,text,text,text,text,numeric,text,text,text) from public;
 grant execute on function public.seller_update_book_listing(uuid,text,text,text,text,text,text,numeric,text,text,text) to anon, authenticated;
