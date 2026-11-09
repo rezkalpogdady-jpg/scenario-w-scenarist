@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.15: إحصاءات وفلاتر بحث لوحة سوق الكتب. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.16: حذف إعلانات الكتب وصور أغلفتها من لوحة الإدارة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.15</title>
+<title>سيناريو وسيناريست – تحديث 6.8.16</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -4592,9 +4592,10 @@ function adminRenderBookListings(){
   const labels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
   box.innerHTML=filtered.map(item=>{
     const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+adminEscape(item.currency);
-    const actions=item.status==="approved"
-      ? '<button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">إخفاء الإعلان</button>'
-      : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">رفض الإعلان</button>';
+    const actions=(item.status==="approved"
+      ? '<button class="btn" type="button" onclick="adminReviewBookListing(\\''+item.id+'\\',\\'rejected\\')">إخفاء الإعلان</button>'
+      : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\\''+item.id+'\\',\\'approved\\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\\''+item.id+'\\',\\'rejected\\')">رفض الإعلان</button>')
+      + '<button class="btn" type="button" onclick="adminDeleteBookListing(\\''+item.id+'\\')">حذف نهائي</button>';
     return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
   }).join("");
 }
@@ -4611,6 +4612,23 @@ async function adminLoadBookListings(){
 }
 document.getElementById("adminBookSearch")?.addEventListener("input",adminRenderBookListings);
 document.getElementById("adminBookStatusFilter")?.addEventListener("change",adminRenderBookListings);
+async function adminDeleteBookListing(id){
+  if(!adminSupabase||!adminSession)return;
+  const item=adminBookListingsCache.find(row=>row.id===id);
+  if(!item){alert("الإعلان غير موجود في القائمة الحالية. حدّث القائمة.");return;}
+  if(!confirm("حذف إعلان «"+item.title+"» نهائيًا؟ سيتم حذف سجل الإعلان وصورة الغلاف."))return;
+  const {data,error}=await adminSupabase.from("book_marketplace_listings").delete().eq("id",id).select("id").maybeSingle();
+  if(error){alert("تعذر حذف الإعلان: "+error.message);return;}
+  if(!data){alert("لم يُحذف الإعلان. راجع صلاحية المدير في قاعدة البيانات.");return;}
+  let note="";
+  if(item.cover_path){
+    const {error:storageError}=await adminSupabase.storage.from("book-marketplace-covers").remove([item.cover_path]);
+    if(storageError)note=" تم حذف الإعلان، لكن تعذر حذف صورة الغلاف: "+storageError.message;
+  }
+  alert("تم حذف الإعلان نهائيًا."+note);
+  await adminLoadBookListings();
+  await loadBookListings();
+}
 async function adminReviewBookListing(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
   const {data,error}=await adminSupabase.from("book_marketplace_listings").update({status,updated_at:new Date().toISOString()}).eq("id",id).select("id,status").maybeSingle();
