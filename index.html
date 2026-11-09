@@ -561,11 +561,7 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     <div id="scenarioReaderFrame" style="margin-top:12px;min-height:65vh;background:#111;border-radius:8px;overflow:hidden"></div>
   </div>
 
-  <div class="panel" id="librarySubmitInfo">
-    <h3 style="color:var(--gold)">قدّم سيناريوك إلى المكتبة</h3>
-    <p>لو عندك سيناريو أو عمل مكتوب، سجّل الدخول إلى حسابك ثم افتح نموذج «إرسال عمل جديد». يمكنك رفع ملف PDF أو Word أو TXT، أو إضافة رابط للعمل. يُحفظ العمل في مساحة خاصة ولا يظهر للعامة أثناء المراجعة. يجب أن تكون صاحب الحقوق أو تملك تصريحًا، ولن يُضاف إلى المكتبة إلا بعد مراجعة العمل وإقرار الحقوق وموافقة الإدارة.</p>
-    <button class="btn primary" type="button" onclick="showPage('account')">قدّم عملك من حسابك</button>
-  </div>
+
 </section>
 
 <script>
@@ -1849,34 +1845,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
     </form>
     <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
-    <hr style="border-color:var(--border);margin:22px 0">
-    <h3 style="color:var(--gold)">إرسال سيناريو أو عمل للمكتبة</h3>
-    <p style="color:var(--muted);font-size:13px">يمكنك رفع ملف PDF أو Word مباشرة من هاتفك، أو إرسال رابط خارجي. يحتفظ الموقع بالملف مخصصًا للمراجعة ولا ينشره في المكتبة إلا بعد موافقة الإدارة.</p>
-    <form id="memberWorkForm">
-      <input id="memberWorkTitle" required maxlength="200" placeholder="عنوان السيناريو أو العمل">
-      <select id="memberWorkCategory" required>
-        <option value="">نوع العمل</option>
-        <option value="سيناريو فيلم">سيناريو فيلم</option>
-        <option value="سيناريو مسلسل">سيناريو مسلسل</option>
-        <option value="فيلم قصير">فيلم قصير</option>
-        <option value="معالجة درامية">معالجة درامية</option>
-        <option value="فكرة مشروع">فكرة مشروع</option>
-      </select>
-      <textarea id="memberWorkSummary" required maxlength="4000" placeholder="ملخص العمل ونبذة عنه"></textarea>
-      <label>رفع ملف من الهاتف (PDF أو Word — حتى 25 ميجابايت)</label>
-      <input id="memberWorkFile" type="file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" style="width:100%;padding:10px">
-      <label>أو رابط خارجي للعمل (اختياري إذا رفعت ملفًا)</label>
-      <input id="memberWorkUrl" type="url" placeholder="https://...">
-      <label style="display:flex;align-items:flex-start;gap:9px;margin:14px 0;color:var(--white)">
-        <input id="memberWorkRightsConfirmed" type="checkbox" required style="width:auto;margin-top:7px">
-        <span>أقر بأنني صاحب حقوق هذا العمل أو أملك تصريحًا يسمح بنشره، وأتحمل وحدي مسؤولية صحة هذا الإقرار وأي مطالبة أو نزاع يتعلق بملكية العمل أو حقوقه، وأتعهد بإبلاغ الإدارة فورًا إذا ظهر خلاف ذلك.</span>
-      </label>
-      <p id="memberWorkEditNotice" style="display:none;color:var(--gold)">أنت تعدّل عملاً مرفوضًا لإعادة إرساله للمراجعة.</p>
-      <button class="btn primary" id="memberWorkSubmitButton" type="submit">إرسال العمل للمراجعة</button>
-      <button class="btn" id="memberWorkCancelEdit" type="button" style="display:none" onclick="memberWorkCancelResubmission()">إلغاء التعديل</button>
-    </form>
-    <p id="memberWorkMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
-    <div id="memberWorkHistory" class="grid"></div>
     <button class="btn" id="accountLogout" type="button" style="margin-top:12px">تسجيل الخروج</button>
   </div>
 </section>
@@ -2098,8 +2066,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminCommunityList" class="grid"><div class="panel">تظهر الطلبات بعد تسجيل دخول المدير وإعداد قاعدة البيانات.</div></div>
     <div class="section-heading"><h2>مراجعة الملفات الشخصية للأعضاء</h2><p>ملفات الكُتّاب والمخرجين والممثلين والمواهب لا تظهر للعامة إلا بعد اعتماد الإدارة</p></div>
     <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>مراجعة أعمال الأعضاء</h2><p>السيناريوهات والأعمال المرسلة من حسابات الأعضاء لا تدخل المكتبة إلا بعد الموافقة</p></div>
-    <div id="adminMemberWorksList" class="grid"><div class="panel">تظهر أعمال الأعضاء بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
     <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
 
