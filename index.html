@@ -2637,6 +2637,7 @@ async function adminVerifyAdmin(session){
   await adminLoadCommunitySubmissions();
   await adminLoadMemberProfiles();
   await adminLoadMemberWorks();
+  if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
 }
