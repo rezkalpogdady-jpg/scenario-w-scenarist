@@ -1492,6 +1492,7 @@ renderProjects();
   <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
     <input id="bookSearch" type="search" placeholder="ابحث باسم الكتاب أو المؤلف...">
     <select id="bookSort"><option value="newest">الأحدث إضافة</option><option value="price-asc">السعر: من الأقل للأعلى</option><option value="price-desc">السعر: من الأعلى للأقل</option><option value="title">ترتيب أبجدي</option></select>
+    <select id="bookFormatFilter"><option value="">كل الصيغ</option><option value="ورقي">ورقي</option><option value="إلكتروني">إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
     <select id="bookTypeFilter"><option value="">كل الأنواع</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
   </div>
   <div id="bookListingsGrid" class="grid"><div class="panel">جارٍ تحميل الكتب المعروضة...</div></div>
@@ -4376,7 +4377,8 @@ function renderBookListings(){
   const box=document.getElementById("bookListingsGrid");if(!box)return;
   const q=(document.getElementById("bookSearch")?.value||"").trim().toLowerCase();
   const type=document.getElementById("bookTypeFilter")?.value||"";
-  const rows=bookMarketplaceRows.filter(item=>(!type||item.book_type===type)&&
+  const format=document.getElementById("bookFormatFilter")?.value||"";
+  const rows=bookMarketplaceRows.filter(item=>(!type||item.book_type===type)&&(!format||item.book_format===format)&&
     (String(item.title||"")+" "+String(item.author_name||"")+" "+String(item.description||"")).toLowerCase().includes(q));
   const sort=document.getElementById("bookSort")?.value||"newest";
   rows.sort((a,b)=>{
@@ -4408,6 +4410,7 @@ async function loadBookListings(){
 document.getElementById("bookSearch")?.addEventListener("input",renderBookListings);
 document.getElementById("bookTypeFilter")?.addEventListener("change",renderBookListings);
 document.getElementById("bookSort")?.addEventListener("change",renderBookListings);
+document.getElementById("bookFormatFilter")?.addEventListener("change",renderBookListings);
 document.getElementById("bookCoverFile")?.addEventListener("change",function(){
   const file=this.files?.[0]||null,wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
   if(!wrap||!img)return;
