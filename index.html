@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.4: صفحة ملف مهني تفصيلية للمواهب المعتمدة مع الحفاظ على خصوصية التواصل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.5: استكمال البيانات المهنية لطلبات المواهب مع الحفاظ على نموذج التقديم المفتوح وخصوصية التواصل. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.4</title>
+<title>سيناريو وسيناريست – تحديث 6.8.5</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.4">
+<body data-platform-version="6.8.5">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -889,6 +889,12 @@ renderLibrary();
       </select>
       <label for="talentCity">المدينة أو بلد الإقامة</label>
       <input id="talentCity" maxlength="100" autocomplete="address-level2" placeholder="مثال: الإسكندرية">
+      <label for="talentAge">السن (اختياري)</label>
+      <input id="talentAge" type="number" min="16" max="100" inputmode="numeric" placeholder="السن بالسنوات">
+      <label for="talentEducation">الدراسة أو المؤهل (اختياري)</label>
+      <input id="talentEducation" maxlength="180" placeholder="مثال: معهد فنون مسرحية – إعلام – تدريب تمثيل">
+      <label for="talentExperience">سنوات الخبرة (اختياري)</label>
+      <input id="talentExperience" type="number" min="0" max="80" inputmode="numeric" placeholder="عدد سنوات الخبرة">
       <label for="talentSpecialty">التخصص أو نوع الأداء</label>
       <input id="talentSpecialty" maxlength="160" placeholder="مثال: كوميدي، دراما، تقديم حواري، تعليق وثائقي">
       <label for="talentBio">نبذة عنك وخبراتك</label>
@@ -1065,12 +1071,21 @@ function showTalentProfile(index){
     ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="" loading="lazy" style="width:100%;max-height:340px;object-fit:cover;border-radius:10px">'
     : "";
   const category=escapeHTML(item.category||"موهبة");
-  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':"";
+  const bioText=String(item.bio||"");
+  const readBioField=(label)=>{const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':"";
   const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
   const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':"";
   const experience=item.experienceYears!==null&&item.experienceYears!==undefined
     ? '<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>' : "";
-  const biography=item.bio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(item.bio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
+  const biography=item.bio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(item.bio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';");const match=bioText.match(new RegExp("(?:^|\\n\\n)"+escaped+":\\s*([^\\n]+)"));return match?match[1].trim():"";};
+  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':(readBioField("التخصص")?'<p><strong>التخصص:</strong> '+escapeHTML(readBioField("التخصص"))+'</p>':"");
+  const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
+  const age=readBioField("السن")?'<p><strong>السن:</strong> '+escapeHTML(readBioField("السن"))+' سنة</p>':"";
+  const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':(readBioField("الدراسة")?'<p><strong>الدراسة:</strong> '+escapeHTML(readBioField("الدراسة"))+'</p>':"");
+  const experience=item.experienceYears!==null&&item.experienceYears!==undefined
+    ? '<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>' : (readBioField("سنوات الخبرة")?'<p><strong>سنوات الخبرة:</strong> '+escapeHTML(readBioField("سنوات الخبرة"))+'</p>':"");
+  const cleanBio=bioText.replace(/(?:^|\n\n)(?:التخصص|السن|الدراسة|سنوات الخبرة):\s*[^\n]*/g,"").trim();
+  const biography=cleanBio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(cleanBio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
   let work="";
   if(item.work){
     work=item.workIsVideo
@@ -1080,7 +1095,7 @@ function showTalentProfile(index){
   box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
     (image?'<div>'+image+'</div>':'')+
     '<div><p class="admin-status">ملف موهبة معتمد • '+category+'</p><h3 style="color:var(--gold);font-size:24px;margin:8px 0">'+escapeHTML(item.name||"موهبة")+'</h3>'+
-    specialty+city+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+'</div></div>'+work;
+    specialty+city+age+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+'</div></div>'+work;
   modal.style.display="block";
   document.body.style.overflow="hidden";
   modal.querySelector("button")?.focus();
@@ -1133,9 +1148,14 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
   const progress=document.getElementById("talentVideoProgress");
   const videoStatus=document.getElementById("talentVideoStatus");
   const videoFile=document.getElementById("talentVideo")?.files?.[0]||null;
-  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:document.getElementById("talentWork").value.trim()||null};
+  const talentAge=document.getElementById("talentAge")?.value.trim()||"";
+  const talentEducation=document.getElementById("talentEducation")?.value.trim()||"";
+  const talentExperience=document.getElementById("talentExperience")?.value.trim()||"";
+  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",talentAge?"السن: "+talentAge:"",talentEducation?"الدراسة: "+talentEducation:"",talentExperience?"سنوات الخبرة: "+talentExperience:"",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:document.getElementById("talentWork").value.trim()||null};
   const phoneDigits=(item.contact.match(/\d/g)||[]).length;
   if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
+  if(talentAge&&(Number(talentAge)<16||Number(talentAge)>100)){if(message)message.textContent="السن المدخل غير صحيح؛ اترك الحقل فارغًا إذا لم ترغب في ذكره.";return;}
+  if(talentExperience&&(Number(talentExperience)<0||Number(talentExperience)>80)){if(message)message.textContent="عدد سنوات الخبرة غير صحيح.";return;}
   if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
   if(item.work_url&&!safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.";return;}
   if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
