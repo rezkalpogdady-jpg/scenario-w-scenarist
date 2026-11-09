@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.13: فلترة سوق الكتب حسب الصيغة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.14: إدارة آمنة لإعلانات الكتب برمز ملكية خاص. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.13</title>
+<title>سيناريو وسيناريست – تحديث 6.8.14</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -1517,6 +1517,16 @@ renderProjects();
       <button class="btn primary" type="submit">إرسال الكتاب للمراجعة</button>
     </form>
     <p id="bookListingMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+  </div>
+  <div class="section-heading"><h2>إدارة إعلانك</h2><p>استخدم رقم الإعلان ورمز الإدارة اللذين استلمتهما عند الإضافة.</p></div>
+  <div class="panel">
+    <label>رقم الإعلان</label><input id="sellerManageId" placeholder="رقم الإعلان الذي احتفظت به" dir="ltr">
+    <label>رمز إدارة الإعلان</label><input id="sellerManageToken" type="password" autocomplete="off" placeholder="رمز الإدارة الخاص بك" dir="ltr">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+      <button class="btn primary" id="sellerLoadListing" type="button">استرجاع الإعلان</button>
+      <button class="btn" id="sellerDeleteListing" type="button">حذف الإعلان نهائيًا</button>
+    </div>
+    <p id="sellerManageMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
   <p style="font-size:12px;color:var(--muted)">تنبيه: المنصة تعرض بيانات البائع للتواصل المباشر، ولا تستلم ثمن الكتاب أو تضمن عملية البيع في هذه المرحلة. اتفق مع البائع على طريقة الدفع والتسليم قبل الشراء.</p>
 </section>
@@ -4438,7 +4448,11 @@ document.getElementById("bookListingForm")?.addEventListener("submit",async func
     const {data:uploaded,error:uploadError}=await client.storage.from("book-marketplace-covers").upload(path,file,{upsert:false,contentType:file.type});
     if(uploadError)throw uploadError;
     const coverUrl=client.storage.from("book-marketplace-covers").getPublicUrl(uploaded.path).data.publicUrl;
+    const sellerToken=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(v=>v.toString(16).padStart(2,"0")).join("");
+    const tokenDigest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(sellerToken));
+    const sellerTokenHash=Array.from(new Uint8Array(tokenDigest)).map(v=>v.toString(16).padStart(2,"0")).join("");
     const listing={
+      seller_token_hash:sellerTokenHash,
       title:document.getElementById("bookTitle").value.trim(),
       author_name:document.getElementById("bookAuthor").value.trim(),
       book_type:document.getElementById("bookType").value,
@@ -4452,9 +4466,37 @@ document.getElementById("bookListingForm")?.addEventListener("submit",async func
     const {error}=await client.from("book_marketplace_listings").insert(listing);
     if(error){await client.storage.from("book-marketplace-covers").remove([uploaded.path]);throw error;}
     this.reset();document.getElementById("bookCoverPreviewWrap").style.display="none";document.getElementById("bookCoverPreview").removeAttribute("src");
-    bookMarketplaceMessage("وصل إعلانك بنجاح، وهو الآن بانتظار مراجعة الإدارة قبل ظهوره في سوق الكتب.");
+    document.getElementById("sellerManageId").value="";
+    document.getElementById("sellerManageToken").value="";
+    bookMarketplaceMessage("تم استلام الإعلان. احتفظ برقم الإعلان ورمز الإدارة التاليين؛ لن نعرض الرمز مرة أخرى. رقم الإعلان: "+uploaded.path.split("/").pop()+" — رمز الإدارة: "+sellerToken);
   }catch(error){bookMarketplaceMessage("تعذر إرسال الإعلان: "+(error.message||"حاول مرة أخرى بعد إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
+});
+function sellerManageMessage(message){const node=document.getElementById("sellerManageMessage");if(node)node.textContent=message;}
+async function sellerBookRpc(name,args){
+  const {data,error}=await bookMarketplaceGetClient().rpc(name,args);
+  if(error)throw error;return data;
+}
+document.getElementById("sellerLoadListing")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة.");return;}
+  try{
+    const data=await sellerBookRpc("seller_get_book_listing",{p_id:id,p_token:token});
+    if(!data){sellerManageMessage("لم نعثر على إعلان بهذه البيانات. راجع الرقم والرمز.");return;}
+    sellerManageMessage("تم التحقق من ملكية الإعلان: "+data.title+" — الحالة: "+({pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض"}[data.status]||data.status)+". تعديل البيانات متاح في التحديث التالي.");
+  }catch(error){sellerManageMessage("تعذر استرجاع الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+});
+document.getElementById("sellerDeleteListing")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة.");return;}
+  if(!confirm("هل أنت متأكد من حذف الإعلان نهائيًا؟ لا يمكن التراجع عن الحذف."))return;
+  try{
+    const deleted=await sellerBookRpc("seller_delete_book_listing",{p_id:id,p_token:token});
+    sellerManageMessage(deleted?"تم حذف الإعلان.":"لم يتم الحذف؛ راجع رقم الإعلان ورمز الإدارة.");
+    if(deleted){document.getElementById("sellerManageId").value="";document.getElementById("sellerManageToken").value="";await loadBookListings();}
+  }catch(error){sellerManageMessage("تعذر حذف الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
 });
 async function adminLoadBookListings(){
   const box=document.getElementById("adminBookListingsList");
