@@ -20,7 +20,7 @@ begin
       using errcode = '42501';
   end if;
 
-  if p_status not in ('approved', 'rejected') then
+  if p_status is null or p_status not in ('approved', 'rejected') then
     raise exception 'حالة المراجعة غير صالحة'
       using errcode = '22023';
   end if;
