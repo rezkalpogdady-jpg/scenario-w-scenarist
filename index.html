@@ -805,19 +805,16 @@ renderLibrary();
 
 <section id="writers" class="page">
   <div class="intro">
-    <h2>دليل الكُتّاب</h2>
-    <p>مساحة للتعريف بكتّاب السيناريو والمؤلفين وأصحاب الأفكار، وعرض أعمالهم ومشروعاتهم.</p>
+    <h2>مؤلفين السيناريو</h2>
+    <p>مساحة احترافية للتعريف بكُتّاب السيناريو، وعرض نبذتهم وأفكارهم السينمائية، وفتح باب التواصل والتعاون مع صناع الأفلام.</p>
+    <button class="btn primary" type="button" onclick="showPage('account')">أنشئ ملفك كمؤلف سيناريو</button>
   </div>
-
-  <div class="section-heading">
-    <h2>أقلام تصنع الحكايات</h2>
-    <p>تعرف على الكُتّاب وأعمالهم</p>
-  </div>
-
+  <div class="section-heading"><h2>كتّاب وأفكار تستحق أن تُروى</h2><p>تظهر الملفات والأفكار بعد مراجعة واعتماد إدارة المنصة</p></div>
   <div class="panel">
-    <input id="writersSearch" placeholder="ابحث عن كاتب...">
+    <input id="writersSearch" type="search" placeholder="ابحث باسم الكاتب أو نوع الكتابة أو عنوان العمل...">
+    <p class="muted" style="font-size:12px;margin:8px 0 0">يُعرض ملخص الفكرة فقط. لا تُنشر السيناريوهات الكاملة أو بيانات الاتصال الخاصة إلا بموافقة صاحبها.</p>
   </div>
-  <div id="writersItems" class="grid"></div>
+  <div id="writersItems" class="grid"><div class="panel">جارٍ تحميل ملفات المؤلفين المعتمدة...</div></div>
 </section>
 
 <section id="directors" class="page">
@@ -950,15 +947,24 @@ function profileCard(item, type){
 
 /* عرض الكُتّاب */
 function renderWriters(){
-  const box = document.getElementById("writersItems");
-  if(!box) return;
-  const q = (document.getElementById("writersSearch")?.value || "").toLowerCase();
-  const list = creativeProfiles.writers.filter(x =>
-    (x.name || "").toLowerCase().includes(q)
-  );
-  box.innerHTML = list.length
-    ? list.map(x=>profileCard(x,"writers")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">سيتم عرض ملفات الكُتّاب هنا بعد إضافتها واعتمادها.</div>`;
+  const box=document.getElementById("writersItems");if(!box)return;
+  const q=(document.getElementById("writersSearch")?.value||"").trim().toLowerCase();
+  const list=creativeProfiles.writers.filter(x=>{
+    const searchable=[x.name,x.bio,x.specialty,...(x.ideas||[]).flatMap(i=>[i.title,i.genre,i.summary])].join(" ").toLowerCase();
+    return !q||searchable.includes(q);
+  });
+  if(!list.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد ملفات مؤلفين معتمدة تطابق البحث حاليًا.</div>';return;}
+  box.innerHTML=list.map(x=>{
+    const image=x.image?'<img src="'+safeHttpUrl(x.image)+'" alt="" loading="lazy" style="width:100%;height:220px;object-fit:cover;border-radius:10px">':'<div style="height:220px;border-radius:10px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:56px;color:var(--gold)">✍</div>';
+    const ideas=(x.ideas||[]).map(idea=>{
+      const format=idea.format==="short"?"فيلم قصير":"فيلم روائي طويل";
+      const stage={idea:"فكرة أولية",treatment:"معالجة مكتوبة",script:"سيناريو مكتمل"}[idea.development_stage]||"فكرة";
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong style="color:var(--gold)">'+escapeHTML(idea.title)+'</strong><span class="admin-status">'+format+'</span><span class="admin-status">'+escapeHTML(idea.genre||"")+'</span></div><p>'+escapeHTML(idea.summary)+'</p><p class="admin-status">'+stage+(idea.duration_minutes?' • '+Number(idea.duration_minutes)+' دقيقة':'')+(idea.collaboration_open?' • متاحة للتعاون':'')+'</p></div>';
+    }).join("");
+    const phone=String(x.contactPhone||"").replace(/[^0-9+]/g,"");
+    const contact=phone?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><a class="btn" href="tel:'+escapeHTML(phone)+'">اتصال بالكاتب</a><a class="btn" href="https://wa.me/'+escapeHTML(phone.replace(/\D/g,""))+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>':"";
+    return '<article class="feature" style="padding:16px"><div class="feature-content">'+image+'<h3 style="color:var(--gold);margin:12px 0 4px">'+escapeHTML(x.name||"كاتب سيناريو")+'</h3><p class="admin-status">كاتب معتمد'+(x.specialty?' • '+escapeHTML(x.specialty):"")+'</p><p>'+escapeHTML(x.bio||"")+'</p>'+(x.education?'<p class="admin-status">الدراسة: '+escapeHTML(x.education)+'</p>':"")+(x.experienceYears!==null&&x.experienceYears!==undefined?'<p class="admin-status">الخبرة: '+Number(x.experienceYears)+' سنة</p>':"")+(x.city?'<p class="admin-status">المدينة: '+escapeHTML(x.city)+'</p>':"")+(ideas?'<h4 style="color:var(--gold);margin:18px 0 6px">أفكار وأعمال مختارة</h4>'+ideas:'<p class="admin-status">لم يضف الكاتب أفكارًا منشورة بعد.</p>')+contact+(x.work?'<p><a class="btn" href="'+safeHttpUrl(x.work)+'" target="_blank" rel="noopener noreferrer">نموذج عمل إضافي</a></p>':"")+'</div></article>';
+  }).join("");
 }
 
 /* عرض المخرجين */
@@ -1842,9 +1848,34 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <input id="accountEditImage" type="url" placeholder="رابط صورة شخصية عامة (https://...)" autocomplete="url">
       <input id="accountEditWork" type="url" placeholder="رابط نموذج عمل عام (https://...)" autocomplete="url">
       <textarea id="accountEditBio" maxlength="2000" placeholder="نبذة مهنية عنك وخبراتك وأعمالك"></textarea>
+      <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
+      <label>سنوات الخبرة في الكتابة (اختياري)</label><input id="accountEditExperience" type="number" min="0" max="60" placeholder="عدد السنوات">
+      <label>رفع صورة شخصية من جهازك (JPG أو PNG أو WEBP، حتى 5 ميجابايت)</label><input id="accountEditPhoto" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+      <label>أو رابط صورة شخصية (اختياري)</label><input id="accountEditImage" type="url" placeholder="https://..." autocomplete="url">
+      <label>رقم هاتف أو واتساب (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
+      <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
       <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
     </form>
     <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
+    <div class="panel" id="writerIdeasPanel" style="margin-top:18px">
+      <h3 style="color:var(--gold)">أفكاري السينمائية</h3>
+      <p class="muted" style="font-size:13px">يحق لكل كاتب عرض فكرتين فقط. اكتب ملخصًا يحمي تفاصيل فكرتك، وحدد نوع العمل وحالته. لا تظهر الفكرة للجمهور إلا بعد اعتماد المدير.</p>
+      <form id="writerIdeaForm">
+        <input id="writerIdeaId" type="hidden">
+        <label>الفكرة رقم</label><select id="writerIdeaSlot" required><option value="1">الفكرة الأولى</option><option value="2">الفكرة الثانية</option></select>
+        <label>عنوان العمل</label><input id="writerIdeaTitle" required maxlength="180" placeholder="عنوان مقترح للعمل">
+        <label>نوع العمل</label><select id="writerIdeaFormat" required><option value="feature">فيلم روائي طويل</option><option value="short">فيلم قصير</option></select>
+        <label>التصنيف الدرامي</label><select id="writerIdeaGenre" required><option value="">اختر التصنيف</option><option>اجتماعي</option><option>دراما</option><option>كوميدي</option><option>رومانسي</option><option>تشويق</option><option>جريمة</option><option>رعب</option><option>تاريخي</option><option>أكشن</option><option>خيال علمي</option><option>أخرى</option></select>
+        <label>ملخص الفكرة (من 40 إلى 2500 حرف)</label><textarea id="writerIdeaSummary" required minlength="40" maxlength="2500" rows="5" placeholder="اعرض الفكرة بشكل جذاب دون كشف كل أسرار الحبكة أو تفاصيلها الحساسة..."></textarea>
+        <label>المدة المتوقعة بالدقائق (اختياري)</label><input id="writerIdeaDuration" type="number" min="1" max="300" placeholder="مثال: 100">
+        <label>مرحلة العمل</label><select id="writerIdeaStage"><option value="idea">فكرة أولية</option><option value="treatment">معالجة مكتوبة</option><option value="script">سيناريو مكتمل</option></select>
+        <label style="display:flex;align-items:center;gap:8px"><input id="writerIdeaCollaboration" type="checkbox" style="width:auto"> الفكرة متاحة للتعاون أو الإنتاج</label>
+        <label style="display:flex;align-items:flex-start;gap:8px"><input id="writerIdeaRights" type="checkbox" required style="width:auto;margin-top:8px"><span>أقر أنني صاحب هذه الفكرة أو أملك حق عرضها، وأن البيانات والملخص من إعدادي، وأتحمل مسؤولية صحة هذا الإقرار. وأفهم أن نشر الملخص لا يعني التنازل عن حقوقي الفكرية.</span></label>
+        <button class="btn primary" id="writerIdeaSubmit" type="submit">إرسال الفكرة لمراجعة المدير</button><button class="btn" id="writerIdeaCancel" type="button" style="display:none">إلغاء التعديل</button>
+      </form>
+      <p id="writerIdeaMessage" role="status" aria-live="polite" class="muted"></p>
+      <div id="myWriterIdeas" class="grid"><p class="muted">سجّل الدخول لعرض أفكارك وحالات مراجعتها.</p></div>
+    </div>
     <button class="btn" id="accountLogout" type="button" style="margin-top:12px">تسجيل الخروج</button>
   </div>
 </section>
@@ -2066,6 +2097,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminCommunityList" class="grid"><div class="panel">تظهر الطلبات بعد تسجيل دخول المدير وإعداد قاعدة البيانات.</div></div>
     <div class="section-heading"><h2>مراجعة الملفات الشخصية للأعضاء</h2><p>ملفات الكُتّاب والمخرجين والممثلين والمواهب لا تظهر للعامة إلا بعد اعتماد الإدارة</p></div>
     <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
+    <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
+    <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
     <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
 
@@ -2148,15 +2181,20 @@ function accountShowUser(user,profile){
   document.getElementById("accountEditImage").value=profile?.image_url||"";
   document.getElementById("accountEditWork").value=profile?.work_url||"";
   document.getElementById("accountEditBio").value=profile?.bio||"";
+  const educationField=document.getElementById("accountEditEducation");if(educationField)educationField.value=profile?.education||"";
+  const experienceField=document.getElementById("accountEditExperience");if(experienceField)experienceField.value=profile?.experience_years??"";
+  const photoField=document.getElementById("accountEditPhoto");if(photoField)photoField.value="";
   const profileStatus=document.getElementById("accountProfileStatus");
   if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور ومعتمد. أي تعديل جديد سيعيده للمراجعة." : profile?.profile_status==="rejected" ? "الملف لم يُعتمد. عدّل بياناتك ثم أعد إرساله للمراجعة." : "ملفك قيد المراجعة أو لم يُرسل بعد، ولن يظهر للعامة قبل الموافقة.";
 }
 async function accountLoadProfile(user){
   try{
     const client=accountClient();
-    const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",user.id).maybeSingle();
+    const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status").eq("user_id",user.id).maybeSingle();
     if(error) throw error;
     accountShowUser(user,data||null);
+    await accountLoadWriterContact();
+    await accountLoadWriterIdeas();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
   }catch(error){
@@ -2206,16 +2244,35 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   const image_url=document.getElementById("accountEditImage").value.trim();
   const work_url=document.getElementById("accountEditWork").value.trim();
   const bio=document.getElementById("accountEditBio").value.trim();
+  const education=document.getElementById("accountEditEducation").value.trim();
+  const experienceRaw=document.getElementById("accountEditExperience").value.trim();
+  const experience_years=experienceRaw===""?null:Number(experienceRaw);
+  const phone=document.getElementById("accountEditPhone").value.trim();
+  const contactPublic=document.getElementById("accountEditContactPublic").checked;
+  const photoFile=document.getElementById("accountEditPhoto").files?.[0]||null;
   if(!display_name){accountMessage("اكتب الاسم الذي سيظهر في ملفك.");return;}
+  if(experience_years!==null&&(!Number.isInteger(experience_years)||experience_years<0||experience_years>60)){accountMessage("أدخل عدد سنوات خبرة صحيحًا بين صفر و60.");return;}
+  if(contactPublic&&!phone){accountMessage("أدخل رقم التواصل قبل اختيار عرضه للجمهور.");return;}
+  if(photoFile&&(!/^image\/(jpeg|png|webp)$/i.test(photoFile.type)||photoFile.size>5*1024*1024)){accountMessage("الصورة يجب أن تكون JPG أو PNG أو WEBP وبحجم لا يتجاوز 5 ميجابايت.");return;}
   if(image_url&&!safeHttpUrl(image_url)){accountMessage("رابط الصورة غير صالح؛ استخدم رابط http أو https.");return;}
   if(work_url&&!safeHttpUrl(work_url)){accountMessage("رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.");return;}
-  try{button.disabled=true;const client=accountClient();
-    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:image_url||null,work_url:work_url||null,bio,updated_at:new Date().toISOString()},{onConflict:"user_id"});
-    if(error) throw error;
+  try{
+    button.disabled=true;const client=accountClient();let finalImageUrl=image_url||null;
+    if(photoFile){
+      const extension=photoFile.type==="image/png"?"png":photoFile.type==="image/webp"?"webp":"jpg";
+      const path=accountUser.id+"/member-avatars/"+crypto.randomUUID()+"."+extension;
+      const {data:uploaded,error:uploadError}=await client.storage.from("platform-images").upload(path,photoFile,{upsert:false,contentType:photoFile.type});
+      if(uploadError)throw uploadError;
+      finalImageUrl=client.storage.from("platform-images").getPublicUrl(uploaded.path).data.publicUrl;
+    }
+    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    if(error)throw error;
+    const {error:contactError}=await client.from("writer_contact").upsert({user_id:accountUser.id,phone,is_public:contactPublic,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    if(contactError)throw contactError;
     const {error:metaError}=await client.auth.updateUser({data:{display_name,account_type}});
-    if(metaError) throw metaError;
-    const {data:profile}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",accountUser.id).maybeSingle();
-    accountShowUser(accountUser,profile);
+    if(metaError)throw metaError;
+    const {data:profile}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status").eq("user_id",accountUser.id).maybeSingle();
+    accountShowUser(accountUser,profile);await accountLoadWriterContact();
     accountMessage("تم حفظ بياناتك وإرسال الملف لمراجعة الإدارة قبل نشره.");
   }catch(error){accountMessage("تعذر حفظ الملف الشخصي: "+(error.message||"راجع إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
@@ -2450,11 +2507,11 @@ async function adminReviewCommunity(id,status){
 async function adminLoadMemberProfiles(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminMemberProfilesList");if(!box)return;
-  const {data,error}=await adminSupabase.from("member_profiles").select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,profile_status,updated_at").in("profile_status",["pending","rejected"]).order("updated_at",{ascending:false}).limit(100);
+  const {data,error}=await adminSupabase.from("member_profiles").select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,updated_at").in("profile_status",["pending","rejected"]).order("updated_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية جديدة للمراجعة.</div>';return;}
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
-  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button></div></article>`).join("");
+  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button></div></article>`).join("");
 }
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
@@ -3480,7 +3537,7 @@ function distributePublicContent(records){
 async function loadApprovedMemberProfiles(){
   if(!publicContentClient)return;
   const {data,error}=await publicContentClient.from("member_profiles")
-    .select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status,updated_at")
+    .select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,updated_at")
     .eq("profile_status","approved").order("updated_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل ملفات الأعضاء المعتمدة",error.message);return;}
   const rows=data||[];
@@ -3489,7 +3546,7 @@ async function loadApprovedMemberProfiles(){
   creativeProfiles.directors=strip(creativeProfiles.directors);
   creativeProfiles.talents=strip(creativeProfiles.talents);
   rows.forEach(row=>{
-    const item={memberProfileRow:true,name:row.display_name,bio:row.bio||"",city:row.city||"",specialty:row.specialty||"",image:row.image_url||"",work:row.work_url||""};
+    const item={memberProfileRow:true,userId:row.user_id,name:row.display_name,bio:row.bio||"",city:row.city||"",specialty:row.specialty||"",education:row.education||"",experienceYears:row.experience_years,image:row.image_url||"",work:row.work_url||"",ideas:[],contactPhone:""};
     if(row.account_type==="writer")creativeProfiles.writers.push(item);
     else if(row.account_type==="director")creativeProfiles.directors.push(item);
     else if(["actor","presenter","voice"].includes(row.account_type)){
@@ -3497,6 +3554,17 @@ async function loadApprovedMemberProfiles(){
       creativeProfiles.talents.push(item);
     }
   });
+  const [ideasResult,contactsResult]=await Promise.all([
+    publicContentClient.from("writer_ideas").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open").eq("status","approved").order("created_at",{ascending:false}),
+    publicContentClient.from("writer_contact").select("user_id,phone").eq("is_public",true)
+  ]);
+  if(ideasResult.error)console.warn("تعذر تحميل أفكار المؤلفين",ideasResult.error.message);
+  if(contactsResult.error)console.warn("تعذر تحميل بيانات التواصل العامة",contactsResult.error.message);
+  const ideasByUser=new Map();
+  (ideasResult.data||[]).forEach(idea=>{if(!ideasByUser.has(idea.user_id))ideasByUser.set(idea.user_id,[]);ideasByUser.get(idea.user_id).push(idea);});
+  const contactsByUser=new Map((contactsResult.data||[]).map(contact=>[contact.user_id,contact.phone]));
+  creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";}});
+
   renderWriters();renderDirectors();renderTalents();
 }
 
@@ -3895,6 +3963,99 @@ loadApprovedIdeas();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => api.start(), { once: true });
   else api.start();
 })();
+</script>
+
+
+<script>
+async function accountLoadWriterContact(){
+  if(!accountUser)return;
+  const {data,error}=await accountClient().from("writer_contact").select("phone,is_public").eq("user_id",accountUser.id).maybeSingle();
+  if(error){console.warn("writer contact",error.message);return;}
+  const phone=document.getElementById("accountEditPhone");if(phone)phone.value=data?.phone||"";
+  const visible=document.getElementById("accountEditContactPublic");if(visible)visible.checked=!!data?.is_public;
+}
+let writerIdeaEditingId=null;
+async function accountLoadWriterIdeas(){
+  const box=document.getElementById("myWriterIdeas");if(!box)return;
+  if(!accountUser){box.innerHTML='<p class="muted">سجّل الدخول لعرض أفكارك.</p>';return;}
+  const {data,error}=await accountClient().from("writer_ideas").select("id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open,status,review_notes,rights_confirmed").eq("user_id",accountUser.id).order("slot");
+  if(error){box.textContent="تعذر تحميل أفكارك: "+error.message;return;}
+  const rows=data||[],labels={pending:"قيد مراجعة المدير",approved:"تم الاعتماد والنشر",rejected:"مطلوب تعديل"};
+  box.innerHTML=rows.length?rows.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>'+(item.slot===1?"الفكرة الأولى":"الفكرة الثانية")+' • '+(item.format==="short"?"فيلم قصير":"فيلم طويل")+' • '+escapeHTML(item.genre||"")+'</p><p>'+escapeHTML(item.summary)+'</p><p class="admin-status">'+labels[item.status]+'</p>'+(item.review_notes?'<p>ملاحظات المدير: '+escapeHTML(item.review_notes)+'</p>':"")+(item.status==="rejected"?'<button class="btn primary" type="button" onclick="writerIdeaEdit(\''+item.id+'\')">تعديل وإعادة الإرسال</button>':"")+'</article>').join(""):'<p class="muted">لم ترسل أي أفكار حتى الآن. يمكنك تقديم فكرتين كحد أقصى.</p>';
+  [1,2].forEach(slot=>{const item=rows.find(row=>row.slot===slot),option=document.querySelector('#writerIdeaSlot option[value="'+slot+'"]');if(option){option.disabled=!!item&&item.status!=="rejected";option.textContent=(slot===1?"الفكرة الأولى":"الفكرة الثانية")+(item?" — "+labels[item.status]:" — متاحة");}});
+}
+async function writerIdeaEdit(id){
+  if(!accountUser)return;
+  const {data,error}=await accountClient().from("writer_ideas").select("*").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
+  if(error||!data||data.status!=="rejected"){alert("يمكن تعديل الفكرة بعد طلب المدير تعديلها فقط.");return;}
+  writerIdeaEditingId=data.id;
+  document.getElementById("writerIdeaId").value=data.id;
+  document.getElementById("writerIdeaSlot").value=String(data.slot);
+  document.getElementById("writerIdeaTitle").value=data.title||"";
+  document.getElementById("writerIdeaFormat").value=data.format||"feature";
+  document.getElementById("writerIdeaGenre").value=data.genre||"";
+  document.getElementById("writerIdeaSummary").value=data.summary||"";
+  document.getElementById("writerIdeaDuration").value=data.duration_minutes||"";
+  document.getElementById("writerIdeaStage").value=data.development_stage||"idea";
+  document.getElementById("writerIdeaCollaboration").checked=!!data.collaboration_open;
+  document.getElementById("writerIdeaRights").checked=!!data.rights_confirmed;
+  document.getElementById("writerIdeaSubmit").textContent="إعادة إرسال الفكرة بعد التعديل";
+  document.getElementById("writerIdeaCancel").style.display="inline-block";
+  document.getElementById("writerIdeaForm")?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+document.getElementById("writerIdeaCancel")?.addEventListener("click",()=>{
+  writerIdeaEditingId=null;document.getElementById("writerIdeaForm")?.reset();
+  document.getElementById("writerIdeaId").value="";
+  document.getElementById("writerIdeaSubmit").textContent="إرسال الفكرة لمراجعة المدير";
+  document.getElementById("writerIdeaCancel").style.display="none";
+});
+document.getElementById("writerIdeaForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  if(!accountUser){document.getElementById("writerIdeaMessage").textContent="سجّل الدخول أولًا من صفحة حسابي.";return;}
+  if(document.getElementById("accountEditType")?.value!=="writer"){document.getElementById("writerIdeaMessage").textContent="غيّر نوع حسابك إلى كاتب من ملفك الشخصي أولًا، ثم احفظه.";return;}
+  if(!document.getElementById("writerIdeaRights").checked){document.getElementById("writerIdeaMessage").textContent="يجب تأكيد إقرار الملكية قبل الإرسال.";return;}
+  const payload={user_id:accountUser.id,slot:Number(document.getElementById("writerIdeaSlot").value),title:document.getElementById("writerIdeaTitle").value.trim(),format:document.getElementById("writerIdeaFormat").value,genre:document.getElementById("writerIdeaGenre").value,summary:document.getElementById("writerIdeaSummary").value.trim(),duration_minutes:document.getElementById("writerIdeaDuration").value?Number(document.getElementById("writerIdeaDuration").value):null,development_stage:document.getElementById("writerIdeaStage").value,collaboration_open:document.getElementById("writerIdeaCollaboration").checked,rights_confirmed:true,status:"pending",updated_at:new Date().toISOString()};
+  if(payload.summary.length<40){document.getElementById("writerIdeaMessage").textContent="الملخص يجب ألا يقل عن 40 حرفًا.";return;}
+  const button=document.getElementById("writerIdeaSubmit");button.disabled=true;document.getElementById("writerIdeaMessage").textContent="جارٍ إرسال الفكرة إلى إدارة المنصة...";
+  try{
+    const client=accountClient();let result;
+    if(writerIdeaEditingId){result=await client.from("writer_ideas").update(payload).eq("id",writerIdeaEditingId).eq("user_id",accountUser.id);}
+    else{
+      const {data:existing,error:existingError}=await client.from("writer_ideas").select("id,status").eq("user_id",accountUser.id).eq("slot",payload.slot).maybeSingle();
+      if(existingError)throw existingError;
+      if(existing)throw new Error("هذه الخانة مستخدمة بالفعل. استخدم زر تعديل وإعادة الإرسال إذا طلب المدير تعديل الفكرة.");
+      result=await client.from("writer_ideas").insert(payload);
+    }
+    if(result.error)throw result.error;
+    this.reset();writerIdeaEditingId=null;document.getElementById("writerIdeaId").value="";
+    document.getElementById("writerIdeaSubmit").textContent="إرسال الفكرة لمراجعة المدير";document.getElementById("writerIdeaCancel").style.display="none";
+    document.getElementById("writerIdeaMessage").textContent="وصلت فكرتك إلى الإدارة. لن تظهر للزوار قبل الموافقة.";
+    await accountLoadWriterIdeas();
+  }catch(error){document.getElementById("writerIdeaMessage").textContent="تعذر إرسال الفكرة: "+(error.message||"حاول مرة أخرى.");}
+  finally{button.disabled=false;}
+});
+async function adminLoadWriterIdeas(){
+  if(!adminSupabase||!adminSession)return;
+  const box=document.getElementById("adminWriterIdeasList");if(!box)return;
+  const {data,error}=await adminSupabase.from("writer_ideas").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open,rights_confirmed,created_at,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
+  if(error){box.textContent="تعذر تحميل أفكار المؤلفين: "+error.message;return;}
+  if(!data?.length){box.innerHTML='<div class="panel">لا توجد أفكار جديدة للمراجعة.</div>';return;}
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>الكاتب: '+adminEscape(item.member_profiles?.display_name||"عضو")+' • '+(item.slot===1?"الفكرة الأولى":"الفكرة الثانية")+'</p><p>'+(item.format==="short"?"فيلم قصير":"فيلم روائي طويل")+' • '+adminEscape(item.genre||"")+'</p><p>'+adminEscape(item.summary)+'</p><p>المدة: '+(item.duration_minutes?Number(item.duration_minutes)+" دقيقة":"غير محددة")+' • المرحلة: '+({idea:"فكرة أولية",treatment:"معالجة",script:"سيناريو مكتمل"}[item.development_stage]||"")+'</p><p>إقرار الملكية: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • '+(item.collaboration_open?"متاحة للتعاون":"غير محددة للتعاون")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>').join("");
+}
+async function adminReviewWriterIdea(id,status){
+  if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const note=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من الكاتب:":"ملاحظة للكاتب (اختياري):","");
+  if(note===null)return;if(status==="rejected"&&!note.trim()){alert("اكتب سبب طلب التعديل.");return;}
+  const {error}=await adminSupabase.rpc("admin_review_writer_idea",{p_idea_id:id,p_status:status,p_review_notes:note.trim()||null});
+  if(error){alert("تعذرت مراجعة الفكرة: "+error.message);return;}
+  alert(status==="approved"?"تم اعتماد الفكرة ونشر ملخصها.":"تم إرسال ملاحظات التعديل إلى الكاتب.");
+  await adminLoadWriterIdeas();await loadPublicContent();
+}
+document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
+document.getElementById("accountEditType")?.addEventListener("change",()=>{
+  const isWriter=document.getElementById("accountEditType").value==="writer",panel=document.getElementById("writerIdeasPanel");
+  if(panel)panel.style.display=isWriter?"block":"none";
+});
 </script>
 
 </body>
