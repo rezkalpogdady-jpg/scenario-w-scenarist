@@ -3709,21 +3709,47 @@ function initializeInlineHlsVideos(root=document){
   });
 }
 
+/* قنوات أساسية موثقة المصدر، مع إتاحة إضافة قنوات أخرى من الإدارة */
+const DEFAULT_TV_CHANNELS = [
+  {
+    id:"ksa-quran-tv",
+    title:"قناة القرآن الكريم السعودية",
+    description:"البث الرسمي لقناة القرآن الكريم من المسجد الحرام. المشاهدة داخل المنصة عبر مشغل YouTube الرسمي.",
+    stream:"https://www.youtube.com/watch?v=Cm1v4bteXbI",
+    sourceLabel:"البث الرسمي على YouTube"
+  },
+  {
+    id:"rotana-classic",
+    title:"روتانا كلاسيك",
+    description:"قناة للأفلام والعروض العربية الكلاسيكية. البث متاح عبر صفحة روتانا الرسمية؛ لم يتوفر رابط تضمين رسمي مؤكد للمشغل الداخلي.",
+    officialUrl:"https://rotana.net/ar?tv=live-classic",
+    sourceLabel:"مشاهدة عبر موقع روتانا الرسمي"
+  }
+];
+
 /* عرض القنوات التلفزيونية في صفحة الراديو نفسها */
 function renderTvChannels(items){
   const box=document.getElementById("tvChannels");
   if(!box)return;
-  const channels=(items||[]).filter(item=>item && item.title);
-  box.innerHTML=channels.length ? channels.map(channel=>`
-    <article class="feature">
-      ${channel.image ? `<img src="${safeHttpUrl(channel.image)}" alt="">` : `<div style="height:145px;background:linear-gradient(135deg,#302319,#111);display:grid;place-items:center;font-size:45px">📺</div>`}
-      <div class="feature-content">
-        <h3>${escapeHTML(channel.title)}</h3>
-        <p>${escapeHTML(channel.description || "قناة تلفزيونية")}</p>
-        ${channel.work ? directVideoMarkup(channel.work,"شاهد القناة داخل المنصة") : channel.stream ? directVideoMarkup(channel.stream,"شاهد القناة داخل المنصة") : channel.content_url ? directVideoMarkup(channel.content_url,"شاهد القناة داخل المنصة") : `<span class="muted">رابط المشاهدة غير متاح حاليًا</span>`}
-      </div>
-    </article>
-  `).join("") : `<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">القنوات التلفزيونية قيد التجهيز</h3><p>ستظهر القنوات بعد أن تضيف الإدارة روابط البث الرسمية.</p></div>`;
+  const adminChannels=(items||[]).filter(item=>item && item.title);
+  const channels=[...DEFAULT_TV_CHANNELS,...adminChannels.filter(item=>!DEFAULT_TV_CHANNELS.some(base=>base.id===item.id))];
+  box.innerHTML=channels.map(channel=>{
+    const mediaUrl=channel.work || channel.stream || channel.content_url || "";
+    const media=mediaUrl
+      ? directVideoMarkup(mediaUrl,"شاهد القناة داخل المنصة")
+      : channel.officialUrl
+        ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(channel.sourceLabel || "مشاهدة عبر الموقع الرسمي")}</a>`
+        : `<span class="muted">رابط المشاهدة غير متاح حاليًا</span>`;
+    return `
+      <article class="feature">
+        ${channel.image ? `<img src="${safeHttpUrl(channel.image)}" alt="">` : `<div style="height:145px;background:linear-gradient(135deg,#302319,#111);display:grid;place-items:center;font-size:45px">📺</div>`}
+        <div class="feature-content">
+          <h3>${escapeHTML(channel.title)}</h3>
+          <p>${escapeHTML(channel.description || "قناة تلفزيونية")}</p>
+          ${media}
+        </div>
+      </article>`;
+  }).join("");
   initializeInlineHlsVideos(box);
 }
 
