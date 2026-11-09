@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.19: إظهار تاريخ النشر وآخر تحديث في لوحة سوق الكتب. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.29: رسائل التواصل مع الإدارة وزر واتساب مباشر. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.19</title>
+<title>سيناريو وسيناريست – تحديث 6.8.29</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.11">
+<body data-platform-version="6.8.29">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -318,6 +318,7 @@ Main{padding:17px 11px}
 <button data-page="production">الإنتاج</button>
 <button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
+<button data-page="contact">تواصل مع الإدارة</button>
 <button data-page="about">عن المنصة</button>
 </nav>
 </div>
@@ -2140,6 +2141,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="section-heading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
+    <div class="panel"><div id="adminContactMessages" class="grid"><p>سجّل الدخول لعرض رسائل الزوار.</p></div></div>
+
     <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
     <div class="panel"><div id="adminDirectorWorksList" class="grid">سجّل الدخول لتحميل نماذج الأعمال المعلقة.</div></div>
     <div class="section-heading"><h2>مراجعة المجتمع والتعليقات</h2><p>اعتماد أو رفض موضوعات الأعضاء وردودهم وتعليقاتهم قبل ظهورها للجمهور</p></div>
@@ -2887,6 +2891,81 @@ async function adminInitialize(){
   }
 }
 
+
+/* رسائل التواصل مع إدارة المنصة */
+function adminEscapeContact(value){
+  return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+async function adminLoadContactMessages(){
+  const box=document.getElementById("adminContactMessages");
+  if(!box || !adminSupabase || !adminSession) return;
+  box.innerHTML="<div class='panel'>جارٍ تحميل الرسائل...</div>";
+  const {data,error}=await adminSupabase.from("platform_contact_messages")
+    .select("id,name,email,subject,message,status,created_at")
+    .order("created_at",{ascending:false}).limit(100);
+  if(error){
+    box.innerHTML="<div class='panel'>تعذر تحميل الرسائل: "+adminEscapeContact(error.message)+"</div>";
+    return;
+  }
+  if(!data?.length){
+    box.innerHTML="<div class='panel'>لا توجد رسائل حتى الآن.</div>";
+    return;
+  }
+  box.innerHTML=data.map(item=>{
+    const id=adminEscapeContact(item.id);
+    const status=item.status==="new"?"جديدة":item.status==="read"?"مقروءة":"مؤرشفة";
+    const date=new Date(item.created_at).toLocaleString("ar-EG");
+    return "<article class='feature'><div class='feature-content'>"+
+      "<div style='display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap'><h3>"+adminEscapeContact(item.subject)+"</h3><span>"+status+"</span></div>"+
+      "<p><strong>"+adminEscapeContact(item.name)+"</strong> · <a href='mailto:"+encodeURIComponent(item.email)+"'>"+adminEscapeContact(item.email)+"</a></p>"+
+      "<p style='white-space:pre-wrap'>"+adminEscapeContact(item.message)+"</p>"+
+      "<small style='color:var(--muted)'>"+adminEscapeContact(date)+"</small>"+
+      "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-top:12px'>"+
+      (item.status!=="read"?"<button class='btn primary' type='button' onclick=\"adminSetContactStatus('"+id+"','read')\">تمت القراءة</button>":"")+
+      (item.status!=="archived"?"<button class='btn' type='button' onclick=\"adminSetContactStatus('"+id+"','archived')\">أرشفة</button>":"")+
+      "</div></div></article>";
+  }).join("");
+}
+async function adminSetContactStatus(id,status){
+  if(!adminSupabase || !adminSession || !["read","archived"].includes(status)) return;
+  const {error}=await adminSupabase.from("platform_contact_messages").update({status,updated_at:new Date().toISOString()}).eq("id",id);
+  if(error){alert("تعذر تحديث حالة الرسالة: "+error.message);return;}
+  await adminLoadContactMessages();
+}
+document.getElementById("platformContactForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const form=this,button=document.getElementById("contactSubmit"),status=document.getElementById("contactFormStatus");
+  if(document.getElementById("contactWebsite")?.value.trim()) return;
+  const now=Date.now();
+  if(form.dataset.lastSent && now-Number(form.dataset.lastSent)<30000){
+    status.textContent="انتظر نصف دقيقة قبل إرسال رسالة أخرى.";
+    return;
+  }
+  if(!window.supabase || typeof ADMIN_SUPABASE_URL==="undefined" || !ADMIN_SUPABASE_KEY){
+    status.textContent="خدمة الرسائل غير متاحة حاليًا. يمكنك التواصل عبر واتساب.";
+    return;
+  }
+  button.disabled=true;button.textContent="جارٍ إرسال الرسالة...";
+  status.textContent="";
+  try{
+    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const payload={
+      name:document.getElementById("contactName").value.trim(),
+      email:document.getElementById("contactEmail").value.trim(),
+      subject:document.getElementById("contactSubject").value.trim(),
+      message:document.getElementById("contactMessage").value.trim()
+    };
+    const {error}=await client.from("platform_contact_messages").insert(payload);
+    if(error) throw error;
+    form.reset();form.dataset.lastSent=String(Date.now());
+    status.textContent="وصلت رسالتك إلى إدارة المنصة بنجاح. شكرًا لتواصلك.";
+  }catch(error){
+    status.textContent="تعذر إرسال الرسالة: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");
+  }finally{
+    button.disabled=false;button.textContent="إرسال الرسالة";
+  }
+});
+
 /* التحقق من أن الحساب مدير فعلاً */
 async function adminVerifyAdmin(session){
   adminSession=session;
@@ -2927,6 +3006,7 @@ async function adminVerifyAdmin(session){
   if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
+  await adminLoadContactMessages();
 }
 
 /* تسجيل الدخول */
@@ -4038,6 +4118,33 @@ loadApprovedIdeas();
   <div id="communityTopics" class="grid"><div class="panel">جارٍ تحميل المناقشات...</div></div>
 </section>
 
+<section id="contact" class="page">
+  <div class="intro">
+    <h2>تواصل مع إدارة المنصة</h2>
+    <p>يسعدنا استقبال استفساراتك ومقترحاتك. يمكنك إرسال رسالة مكتوبة أو التواصل مباشرة عبر واتساب.</p>
+    <a class="btn primary" href="https://wa.me/966536277236" target="_blank" rel="noopener noreferrer">راسلنا على واتساب</a>
+  </div>
+  <div class="panel">
+    <h3 style="color:var(--gold)">إرسال رسالة للإدارة</h3>
+    <form id="platformContactForm">
+      <label for="contactName">الاسم</label>
+      <input id="contactName" name="name" type="text" minlength="2" maxlength="100" autocomplete="name" required placeholder="اكتب اسمك">
+      <label for="contactEmail">البريد الإلكتروني</label>
+      <input id="contactEmail" name="email" type="email" maxlength="254" autocomplete="email" required placeholder="example@email.com">
+      <label for="contactSubject">موضوع الرسالة</label>
+      <input id="contactSubject" name="subject" type="text" minlength="2" maxlength="120" required placeholder="موضوع رسالتك">
+      <label for="contactMessage">الرسالة</label>
+      <textarea id="contactMessage" name="message" minlength="10" maxlength="5000" required placeholder="اكتب رسالتك بالتفصيل"></textarea>
+      <div aria-hidden="true" style="position:absolute;right:-10000px;width:1px;height:1px;overflow:hidden">
+        <label for="contactWebsite">اترك هذا الحقل فارغًا</label>
+        <input id="contactWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <button class="btn primary" id="contactSubmit" type="submit">إرسال الرسالة</button>
+    </form>
+    <p id="contactFormStatus" role="status" aria-live="polite" style="color:var(--muted)"></p>
+  </div>
+</section>
+
 <section id="about" class="page">
   <div class="intro">
     <h2>عن منصة سيناريو وسيناريست</h2>
@@ -4050,8 +4157,10 @@ loadApprovedIdeas();
   </div>
 </section>
 
+<a href="https://wa.me/966536277236" target="_blank" rel="noopener noreferrer" aria-label="تواصل مع إدارة المنصة عبر واتساب" style="position:fixed;left:18px;bottom:18px;z-index:500;background:#168b52;color:#fff;padding:11px 16px;border-radius:30px;box-shadow:0 4px 18px #0008;font-weight:800">واتساب الإدارة</a>
 <footer>
   <h2>سيناريو وسيناريست</h2>
+  <p><button class="btn" type="button" onclick="showPage('contact')">تواصل مع إدارة المنصة</button></p>
   <p>منصة عربية لصناعة السينما والدراما واكتشاف المواهب</p>
   <p>© 2026 سيناريو وسيناريست – جميع الحقوق محفوظة.</p>
 </footer>
