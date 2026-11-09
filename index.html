@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.10: معاينة الصور وإعادة ملفات الأعضاء للمراجعة بعد كل تعديل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.11: استبدال التلفزيون بسوق الكتب وإعلانات البيع. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.10">
+<body data-platform-version="6.8.11">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -316,7 +316,7 @@ Main{padding:17px 11px}
 <button data-page="news">الأخبار الفنية</button>
 <button data-page="archive">أرشيف السينما زمان</button>
 <button data-page="community">مجتمع ونقاشات</button>
-<button data-page="tv">سيناريو TV</button>
+<button data-page="books">اعرض كتابك للبيع</button>
 <button data-page="radio">الراديو</button>
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
@@ -477,6 +477,7 @@ document.querySelectorAll('.page').forEach(page=>page.classList.remove('active')
 const target=document.getElementById(id);
 if(target) target.classList.add('active');
 if(id==='library' && typeof loadPublishedScenarioScripts==='function') loadPublishedScenarioScripts();
+if(id==='books' && typeof loadBookListings==='function') loadBookListings();
 document.querySelectorAll('#mainNav button').forEach(button=>{
 button.classList.toggle('active',button.dataset.page===id);
 });
@@ -1480,46 +1481,41 @@ renderProjects();
      الجزء الخامس: التلفزيون والراديو
 =========================  -->
 
-<section id="tv" class="page">
+
+<section id="books" class="page">
   <div class="intro">
-    <h2>سيناريو TV</h2>
-    <p>شاشة تلفزيونية داخل المنصة، تضم دليل قنوات سينمائية وثقافية وتعليمية ووثائقية، مع استخدام روابط البث الرسمية أو المرخصة التي تسمح بالتضمين.</p>
+    <h2>سوق الكتب — اعرض كتابك للبيع</h2>
+    <p>عندك رواية أو قصة أو ديوان أو كتاب في أي مجال؟ اعرض كتابك بصورة الغلاف والسعر وبيانات التواصل، وبعد مراجعة الإدارة يظهر للقراء والمهتمين بالشراء.</p>
+    <button class="btn primary" type="button" onclick="document.getElementById('bookListingForm')?.scrollIntoView({behavior:'smooth',block:'start'})">أضف كتابك الآن</button>
   </div>
-
-  <div class="section-heading">
-    <h2>دليل القنوات</h2>
-    <p>اختر القناة لعرض البث المتاح</p>
+  <div class="section-heading"><h2>الكتب المعروضة للبيع</h2><p>تصفح العناوين وابحث حسب نوع الكتاب</p></div>
+  <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    <input id="bookSearch" type="search" placeholder="ابحث باسم الكتاب أو المؤلف...">
+    <select id="bookTypeFilter"><option value="">كل الأنواع</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
   </div>
-
+  <div id="bookListingsGrid" class="grid"><div class="panel">جارٍ تحميل الكتب المعروضة...</div></div>
+  <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>املأ البيانات وأرفق صورة واضحة للغلاف. لن يظهر الإعلان إلا بعد موافقة الإدارة.</p></div>
   <div class="panel">
-    <select id="tvCategory">
-      <option value="">كل القنوات</option>
-      <option value="مصرية">قنوات مصرية</option>
-      <option value="عربية">قنوات عربية</option>
-      <option value="سينما">سينما وأفلام</option>
-      <option value="وثائقي">وثائقيات</option>
-      <option value="ثقافة">ثقافة وتعليم</option>
-    </select>
-    <input id="tvSearch" placeholder="ابحث عن قناة...">
+    <form id="bookListingForm">
+      <label>اسم الكتاب *</label><input id="bookTitle" required maxlength="180" placeholder="عنوان الرواية أو الكتاب">
+      <label>اسم المؤلف *</label><input id="bookAuthor" required maxlength="160" placeholder="اسم الكاتب أو المؤلف">
+      <label>نوع الكتاب *</label>
+      <select id="bookType" required><option value="">اختر نوع الكتاب</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
+      <label>صيغة الكتاب *</label>
+      <select id="bookFormat" required><option value="ورقي">كتاب ورقي</option><option value="إلكتروني">كتاب إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
+      <label>السعر *</label>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px"><input id="bookPrice" type="number" required min="0" max="10000000" step="0.01" placeholder="مثال: 150"><select id="bookCurrency"><option value="جنيه مصري">جنيه مصري</option><option value="ريال سعودي">ريال سعودي</option><option value="دولار أمريكي">دولار أمريكي</option><option value="درهم إماراتي">درهم إماراتي</option></select></div>
+      <label>صورة غلاف الكتاب (JPG أو PNG أو WEBP — حتى 5 ميجابايت) *</label><input id="bookCoverFile" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required style="width:100%;padding:10px">
+      <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold)"></div>
+      <label>نبذة عن الكتاب *</label><textarea id="bookDescription" required maxlength="2500" rows="4" placeholder="اكتب نبذة تشجع القارئ على اقتناء الكتاب"></textarea>
+      <label>اسم صاحب الإعلان *</label><input id="bookSellerName" required maxlength="120" placeholder="الاسم الذي سيظهر في الإعلان">
+      <label>رقم الهاتف أو واتساب للتواصل مع البائع *</label><input id="bookContact" required type="tel" maxlength="30" placeholder="اكتب الرقم مع مفتاح الدولة" dir="ltr">
+      <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0"><input id="bookRightsConfirm" type="checkbox" required style="width:auto;margin-top:6px"><span>أقر أنني صاحب الكتاب أو لدي الحق في عرضه للبيع، وأن بيانات الإعلان والسعر صحيحة.</span></label>
+      <button class="btn primary" type="submit">إرسال الكتاب للمراجعة</button>
+    </form>
+    <p id="bookListingMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
-
-  <div class="panel">
-    <h3 style="color:var(--gold)" id="tvNowTitle">شاشة سيناريو TV</h3>
-    <div style="position:relative;background:#000;border:1px solid var(--border);border-radius:10px;overflow:hidden;aspect-ratio:16/9">
-      <video id="tvPlayer" controls playsinline style="width:100%;height:100%;background:#000"></video>
-      <iframe id="tvYouTubePlayer" title="مشغل القناة المباشرة" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#000"></iframe>
-      <div id="tvPlaceholder" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#ddd;background:linear-gradient(135deg,#171717,#080808)">
-        <div>
-          <div style="font-size:50px"></div>
-          <h3>مرحبًا بك في سيناريو TV</h3>
-          <p>اختر قناة من الدليل لبدء المشاهدة عند توفر رابط بث مناسب.</p>
-        </div>
-      </div>
-    </div>
-    <p id="tvStatus" style="color:var(--muted);font-size:13px">لم يتم اختيار قناة بعد.</p>
-  </div>
-
-  <div id="tvChannels" class="grid"></div>
+  <p style="font-size:12px;color:var(--muted)">تنبيه: المنصة تعرض بيانات البائع للتواصل المباشر، ولا تستلم ثمن الكتاب أو تضمن عملية البيع في هذه المرحلة. اتفق مع البائع على طريقة الدفع والتسليم قبل الشراء.</p>
 </section>
 
 <section id="radio" class="page">
@@ -2185,13 +2181,16 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>سيناريو TV</h3><p>إضافة القنوات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('tv')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
         <article class="admin-section-card"><h3>الراديو</h3><p>إضافة المحطات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('radio')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الإنتاج والتعاون</h3><p>عرض المشروعات والفرص والصور والملفات التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('production')">إدارة القسم ورفع محتوى</button></article>
       </div>
     </div>
 
-    <div class="section-heading" id="adminContentEditorHeading">
+    <div class="section-heading"><h2>سوق الكتب — مراجعة إعلانات البيع</h2><p>راجع الغلاف والبيانات والسعر ووسيلة التواصل قبل اعتماد الإعلان</p></div>
+    <div class="panel" id="adminBookListingsPanel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="color:var(--gold)">إعلانات الكتب</h3><button class="btn" type="button" onclick="adminLoadBookListings()">تحديث القائمة</button></div><div id="adminBookListingsList" class="grid">افتح مراجعة عروض الكتب لتحميل الإعلانات.</div></div>
+
+<div class="section-heading" id="adminContentEditorHeading">
       <h2 id="adminEditorSectionTitle">إضافة أو تعديل محتوى</h2>
       <p id="adminEditorSectionHint">اختر قسمًا من البطاقات بالأعلى لبدء رفع المحتوى.</p>
     </div>
@@ -2212,8 +2211,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <option value="stories">الجرائم والحكايات</option>
           <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-          <option value="tv">قنوات التلفزيون</option>
-          <option value="radio">محطات الراديو</option>
+                    <option value="radio">محطات الراديو</option>
           <option value="production">مشروعات الإنتاج</option>
         </select>
 
@@ -2909,7 +2907,6 @@ const ADMIN_SECTION_META={
   stories:{name:"الجرائم والحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
   news:{name:"الأخبار الفنية",hint:"اكتب الخبر وأرفق صورته؛ يمكن إضافة رابط المصدر في حقل الرابط.",accept:"image/*,.pdf"},
   archive:{name:"أرشيف السينما",hint:"ارفع صورة أو أفيشًا أو مستندًا أرشيفيًا مع توثيق المصدر في الوصف.",accept:"image/*,.pdf,.doc,.docx"},
-  tv:{name:"سيناريو TV",hint:"أضف اسم القناة وتصنيفها ورابط بث رسمي وصورة القناة.",accept:"image/*"},
   radio:{name:"الراديو",hint:"أضف اسم المحطة ورابط البث وصورتها.",accept:"image/*,audio/*"},
   production:{name:"الإنتاج والتعاون",hint:"أضف بيانات المشروع وصورته ورابط ملفه أو عرضه.",accept:"image/*,video/*,.pdf,.doc,.docx"}
 };
@@ -4526,6 +4523,116 @@ async function adminReviewDirectorWork(id,status){
   await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
 }
 document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
+</script>
+
+
+<script>
+/* سوق الكتب: الإعلانات لا تظهر للجمهور إلا بعد اعتماد الإدارة */
+let bookMarketplaceClient=null;
+let bookMarketplaceRows=[];
+function bookMarketplaceGetClient(){
+  if(bookMarketplaceClient)return bookMarketplaceClient;
+  if(!window.supabase||!adminConfigReady())throw new Error("خدمة قاعدة البيانات غير متاحة الآن.");
+  bookMarketplaceClient=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+  return bookMarketplaceClient;
+}
+function bookMarketplaceMessage(message){
+  const node=document.getElementById("bookListingMessage");if(node)node.textContent=message;
+}
+function renderBookListings(){
+  const box=document.getElementById("bookListingsGrid");if(!box)return;
+  const q=(document.getElementById("bookSearch")?.value||"").trim().toLowerCase();
+  const type=document.getElementById("bookTypeFilter")?.value||"";
+  const rows=bookMarketplaceRows.filter(item=>(!type||item.book_type===type)&&
+    (String(item.title||"")+" "+String(item.author_name||"")+" "+String(item.description||"")).toLowerCase().includes(q));
+  if(!rows.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">لا توجد كتب معروضة حاليًا</h3><p>كن أول من يضيف كتابه إلى سوق الكتب.</p></div>';return;}
+  box.innerHTML=rows.map(item=>{
+    const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
+    const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع واتساب</a>':'';
+    const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
+    return '<article class="feature">'+(item.cover_url?'<img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="height:260px;object-fit:contain;background:#151515">':'<div style="height:220px;display:grid;place-items:center">غلاف الكتاب</div>')+
+      '<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p><p>'+escapeHTML(item.description||"")+'</p><p>البائع: '+escapeHTML(item.seller_name||"")+'</p>'+contact+'</div></article>';
+  }).join("");
+}
+async function loadBookListings(){
+  const box=document.getElementById("bookListingsGrid");if(!box)return;
+  try{
+    const {data,error}=await bookMarketplaceGetClient().from("book_marketplace_listings").select("id,title,author_name,book_type,book_format,description,price,currency,seller_name,contact_phone,cover_url,created_at").eq("status","approved").order("created_at",{ascending:false});
+    if(error)throw error;
+    bookMarketplaceRows=data||[];renderBookListings();
+  }catch(error){
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">سوق الكتب قيد الإعداد؛ سيتم فتح عرض الكتب بعد تنفيذ ملف إعداد قاعدة البيانات.</div>';
+    console.warn("book marketplace",error.message||error);
+  }
+}
+document.getElementById("bookSearch")?.addEventListener("input",renderBookListings);
+document.getElementById("bookTypeFilter")?.addEventListener("change",renderBookListings);
+document.getElementById("bookCoverFile")?.addEventListener("change",function(){
+  const file=this.files?.[0]||null,wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
+  if(!wrap||!img)return;
+  if(!file){wrap.style.display="none";img.removeAttribute("src");return;}
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){wrap.style.display="none";img.removeAttribute("src");return;}
+  const reader=new FileReader();reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";};reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");};reader.readAsDataURL(file);
+});
+document.getElementById("bookListingForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const file=document.getElementById("bookCoverFile").files?.[0];
+  const price=Number(document.getElementById("bookPrice").value);
+  const phone=document.getElementById("bookContact").value.trim();
+  if(!file||!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){bookMarketplaceMessage("اختر صورة غلاف JPG أو PNG أو WEBP لا تتجاوز 5 ميجابايت.");return;}
+  if(!Number.isFinite(price)||price<0||price>10000000){bookMarketplaceMessage("اكتب سعرًا صحيحًا للكتاب.");return;}
+  if(phone.replace(/\D/g,"").length<8){bookMarketplaceMessage("اكتب رقم تواصل صحيحًا مع مفتاح الدولة.");return;}
+  if(!document.getElementById("bookRightsConfirm").checked){bookMarketplaceMessage("يجب تأكيد حقك في عرض الكتاب للبيع.");return;}
+  try{
+    button.disabled=true;bookMarketplaceMessage("جارٍ رفع صورة الغلاف وإرسال الإعلان...");
+    const client=bookMarketplaceGetClient();
+    const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
+    const path="pending/"+crypto.randomUUID()+"."+ext;
+    const {data:uploaded,error:uploadError}=await client.storage.from("book-marketplace-covers").upload(path,file,{upsert:false,contentType:file.type});
+    if(uploadError)throw uploadError;
+    const coverUrl=client.storage.from("book-marketplace-covers").getPublicUrl(uploaded.path).data.publicUrl;
+    const listing={
+      title:document.getElementById("bookTitle").value.trim(),
+      author_name:document.getElementById("bookAuthor").value.trim(),
+      book_type:document.getElementById("bookType").value,
+      book_format:document.getElementById("bookFormat").value,
+      price,currency:document.getElementById("bookCurrency").value,
+      cover_url:coverUrl,cover_path:uploaded.path,
+      description:document.getElementById("bookDescription").value.trim(),
+      seller_name:document.getElementById("bookSellerName").value.trim(),
+      contact_phone:phone,status:"pending"
+    };
+    const {error}=await client.from("book_marketplace_listings").insert(listing);
+    if(error){await client.storage.from("book-marketplace-covers").remove([uploaded.path]);throw error;}
+    this.reset();document.getElementById("bookCoverPreviewWrap").style.display="none";document.getElementById("bookCoverPreview").removeAttribute("src");
+    bookMarketplaceMessage("وصل إعلانك بنجاح، وهو الآن بانتظار مراجعة الإدارة قبل ظهوره في سوق الكتب.");
+  }catch(error){bookMarketplaceMessage("تعذر إرسال الإعلان: "+(error.message||"حاول مرة أخرى بعد إعداد قاعدة البيانات."));}
+  finally{button.disabled=false;}
+});
+async function adminLoadBookListings(){
+  const box=document.getElementById("adminBookListingsList");
+  if(!box||!adminSupabase||!adminSession){if(box)box.textContent="سجّل دخول المدير أولًا.";return;}
+  box.textContent="جارٍ تحميل إعلانات الكتب...";
+  const {data,error}=await adminSupabase.from("book_marketplace_listings").select("*").order("created_at",{ascending:false}).limit(200);
+  if(error){box.textContent="تعذر تحميل إعلانات الكتب: "+error.message;return;}
+  if(!data?.length){box.textContent="لا توجد إعلانات كتب حتى الآن.";return;}
+  const labels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض"};
+  box.innerHTML=data.map(item=>{
+    const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+adminEscape(item.currency);
+    const actions=item.status==="approved"
+      ? '<button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">إخفاء الإعلان</button>'
+      : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">رفض الإعلان</button>';
+    return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
+  }).join("");
+}
+async function adminReviewBookListing(id,status){
+  if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const {data,error}=await adminSupabase.from("book_marketplace_listings").update({status,updated_at:new Date().toISOString()}).eq("id",id).select("id,status").maybeSingle();
+  if(error){alert("تعذرت مراجعة الإعلان: "+error.message);return;}
+  if(!data){alert("لم يتغير الإعلان؛ حدّث القائمة وتأكد من صلاحيات الإدارة.");return;}
+  await adminLoadBookListings();await loadBookListings();
+}
 </script>
 
 </body></html>
