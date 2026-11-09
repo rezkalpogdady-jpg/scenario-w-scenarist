@@ -2971,30 +2971,57 @@ function publicContentMessage(message){
   console.log("[سيناريو وسيناريست] " + message);
 }
 
+/* الاحتفاظ بالبيانات العامة اللازمة للعرض فقط، ومنع تسريب ملاحظات الإدارة */
+function sanitizePublicContentRecord(item){
+  const source=item && item.extra_data && typeof item.extra_data==="object" && !Array.isArray(item.extra_data)
+    ? item.extra_data : {};
+  const safe={};
+  ["name","author","writer","specialty","type","city","director","duration","owner",
+   "rights_status","source_url","source","year","body","lesson_text"].forEach(key=>{
+    const value=source[key];
+    if(typeof value==="string" || typeof value==="number") safe[key]=value;
+  });
+  if(Array.isArray(source.resources)){
+    safe.resources=source.resources.filter(resource=>resource && typeof resource==="object" && !Array.isArray(resource))
+      .map(resource=>{
+        const clean={};
+        ["title","url","description"].forEach(key=>{
+          if(typeof resource[key]==="string") clean[key]=resource[key];
+        });
+        return clean;
+      });
+  }
+  return {...item,extra_data:safe};
+}
+
 function mapContentRecord(item){
-  const extra=item.extra_data && typeof item.extra_data==="object" ? item.extra_data : {};
+  const safeRecord=sanitizePublicContentRecord(item);
+  const extra=safeRecord.extra_data;
   return {
-    id:item.id,
-    title:item.title || "",
-    name:extra.name || item.title || "",
+    id:safeRecord.id,
+    title:safeRecord.title || "",
+    name:extra.name || safeRecord.title || "",
     author:extra.author || extra.writer || "",
-    category:item.category || "",
-    specialty:extra.specialty || item.category || "",
-    type:extra.type || item.category || "",
+    category:safeRecord.category || "",
+    specialty:extra.specialty || safeRecord.category || "",
+    type:extra.type || safeRecord.category || "",
     city:extra.city || "",
     director:extra.director || "",
     duration:extra.duration || "",
     owner:extra.owner || "",
-    description:item.description || "",
-    summary:item.description || "",
-    bio:item.description || "",
-    image:item.image_url || "",
-    cover:item.image_url || "",
-    work:item.content_url || "",
-    url:item.content_url || "",
-    stream:item.content_url || "",
-    file:item.content_url || "",
-    published:!!item.published
+    description:safeRecord.description || "",
+    summary:safeRecord.description || "",
+    bio:safeRecord.description || "",
+    image:safeRecord.image_url || "",
+    cover:safeRecord.image_url || "",
+    work:safeRecord.content_url || "",
+    url:safeRecord.content_url || "",
+    stream:safeRecord.content_url || "",
+    file:safeRecord.content_url || "",
+    rightsStatus:extra.rights_status || "",
+    sourceUrl:extra.source_url || "",
+    extra:extra,
+    published:!!safeRecord.published
   };
 }
 
@@ -3112,10 +3139,11 @@ function initializeInlineHlsVideos(root=document){
 
 /* توزيع سجلات قاعدة البيانات على أقسام الموقع */
 function distributePublicContent(records){
-  publicContentRecords=records;
+  const safeRecords=(records||[]).map(sanitizePublicContentRecord);
+  publicContentRecords=safeRecords;
 
   const grouped={};
-  records.forEach(item=>{
+  safeRecords.forEach(item=>{
     if(!grouped[item.content_type]) grouped[item.content_type]=[];
     grouped[item.content_type].push(mapContentRecord(item));
   });
