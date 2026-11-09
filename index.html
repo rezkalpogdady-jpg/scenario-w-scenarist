@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.18: إظهار تاريخ عرض الكتاب في بطاقات السوق. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.19: إظهار تاريخ النشر وآخر تحديث في لوحة سوق الكتب. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.18</title>
+<title>سيناريو وسيناريست – تحديث 6.8.19</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -4579,6 +4579,12 @@ document.getElementById("sellerDeleteListing")?.addEventListener("click",async()
   }catch(error){sellerManageMessage("تعذر حذف الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
 });
 let adminBookListingsCache=[];
+function adminFormatBookDate(value){
+  if(!value)return "";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "";
+  return date.toLocaleString("ar-EG",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
 function adminRenderBookListings(){
   const box=document.getElementById("adminBookListingsList");if(!box)return;
   const rows=adminBookListingsCache;
@@ -4599,11 +4605,15 @@ function adminRenderBookListings(){
   const labels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
   box.innerHTML=filtered.map(item=>{
     const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+adminEscape(item.currency);
+    const publishedAt=adminFormatBookDate(item.created_at);
+    const updatedAt=adminFormatBookDate(item.updated_at);
+    const dateDetails=(publishedAt?'<p class="admin-book-date">تاريخ النشر: '+adminEscape(publishedAt)+'</p>':"")
+      +(updatedAt?'<p class="admin-book-date">آخر تحديث: '+adminEscape(updatedAt)+'</p>':"");
     const actions=(item.status==="approved"
       ? '<button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">إخفاء الإعلان</button>'
       : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">رفض الإعلان</button>')
       + '<button class="btn" type="button" onclick="adminDeleteBookListing(\''+item.id+'\')">حذف نهائي</button>';
-    return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
+    return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+dateDetails+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
   }).join("");
 }
 function adminExportBookListingsCsv(){
