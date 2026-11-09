@@ -4179,6 +4179,7 @@ loadApprovedIdeas();
     try{const {data,error}=await client().from('site_content').select('*').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(200);if(error)throw error;archiveRows=data||[];renderArchive();}
     catch(e){box.innerHTML=`<div class="panel">تعذر تحميل الأرشيف. تأكد من إعداد قاعدة البيانات واتصال الموقع. ${esc(e.message)}</div>`;}
   }
+  window.adminRefreshArchive=loadArchive;
   async function loadArchiveFeedback(item){
     const root=document.querySelector(`.archive-feedback[data-content-id="${CSS.escape(item.id)}"]`);if(!root)return;
     try{
@@ -5010,7 +5011,7 @@ document.getElementById('archiveAdminForm')?.addEventListener('submit',async fun
  uploaded=await adminInlineUpload(file,'site-media','archive',20*1024*1024);
  const record={content_type:'archive',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:uploaded.url,content_url:String(fd.get('url')||'').trim()||null,extra_data:{media_kind:'image',section_label:'أرشيف السينما',source:'',rights_note:'تم الرفع بواسطة مدير المنصة'},published:fd.get('published')==='on'};
  const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
- form.reset();msg.textContent='تم حفظ الأفيش وإضافته إلى الأرشيف.';await loadArchive();
+ form.reset();msg.textContent='تم حفظ الأفيش وإضافته إلى الأرشيف.';if(window.adminRefreshArchive)await window.adminRefreshArchive();
  }catch(err){if(uploaded)await adminSupabase.storage.from('site-media').remove([uploaded.path]);msg.textContent='تعذر النشر: '+err.message;}
  finally{btn.disabled=false;}
 });
