@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.5: واجهة 6.4 محفوظة؛ تقوية الصلاحيات تُفرض من قاعدة البيانات عبر Migration مستقل. -->
+<!-- سيناريو وسيناريست | تحديث 6.5.9: فصل مسؤولية المدير عن إقرار العضو وتحسين الوصول إلى نموذج مكتبة السيناريوهات؛ نسخة مستقلة لا تستبدل السابقة. -->
 
 <html lang="ar" dir="rtl">
 <head>
+<!-- تحديث 6.5.3: إضافة إقرار حقوق النشر والتحقق قبل إتاحة السيناريوهات، واستكمال إجراءات اعتماد ملفات الأعضاء. لا تُضمّن مفاتيح سرية في هذا الملف. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست</title>
+<title>سيناريو وسيناريست – تحديث 6.5.9</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -254,10 +255,30 @@ Main{padding:17px 11px}
 .feature-content{padding:10px}
 .section-heading h2{font-size:22px}
 }
+
+/* 6.5.4 — تحسين قارئ ومكتبة السيناريو على الهاتف */
+#library .panel input,#library .panel select{width:100%;min-width:0;box-sizing:border-box}
+#library .panel:has(#librarySearch){display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,1fr);gap:12px}
+#libraryItems .feature{min-width:0;overflow:hidden}
+#libraryItems .feature-content{min-width:0;overflow-wrap:anywhere}
+#scenarioReader{scroll-margin-top:16px}
+@keyframes scenarioReaderPulse{from{width:18%}to{width:92%}}
+#scenarioReaderFrame iframe{display:block;width:100%;height:min(78vh,1000px);min-height:420px;border:0;background:#fff}
+.scenario-card-meta{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.scenario-card-meta span{font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:20px;color:var(--muted)}
+.scenario-reader-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media(max-width:640px){
+ #library .panel:has(#librarySearch){grid-template-columns:1fr}
+ #libraryItems{grid-template-columns:minmax(0,1fr)!important}
+ #scenarioReader{padding:12px}
+ #scenarioReaderFrame iframe{height:72vh;min-height:360px}
+ #scenarioReader>div:first-child{align-items:flex-start!important}
+ #scenarioReader>div:first-child>div{min-width:0;flex:1}
+}
 </style>
 </head>
 
-<body>
+<body data-platform-version="6.5.12">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -483,15 +504,9 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     <p>30 محاضرة من البداية إلى الاحتراف</p>
   </div>
 
-  <div class="panel" id="academyStudentProgress" style="display:none">
-    <h3 style="color:var(--gold)">متابعة تقدمك في الأكاديمية</h3>
-    <p id="academyProgressText">جارٍ تحميل تقدمك...</p>
-    <div style="height:10px;background:#292929;border-radius:20px;overflow:hidden"><div id="academyProgressBar" style="height:100%;width:0;background:var(--gold);transition:width .25s"></div></div>
-  </div>
-
   <div class="panel">
     <h3 style="color:var(--gold)">ابدأ من الأساسيات</h3>
-    <p>كل محاضرة لها شرح مكتوب، ومساحة للفيديو التعليمي، وتدريب تطبيقي. سجّل دخولك لحفظ تقدمك وتسليم التدريبات.</p>
+    <p>كل محاضرة لها شرح مكتوب، ومساحة للفيديو التعليمي، وتدريب تطبيقي. ستتم إضافة محتوى المحاضرات والفيديوهات من لوحة الإدارة في الجزء الخاص بها.</p>
     <div id="lessonsList" class="grid"></div>
   </div>
 
@@ -502,37 +517,6 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       <div style="font-size:45px">▶</div>
       <p>سيظهر الفيديو التعليمي هنا عند إضافته من الإدارة.</p>
     </div>
-  </div>
-
-  <div class="panel" id="academyFinalProjectPanel">
-    <h3 style="color:var(--gold)">المشروع النهائي للطالب</h3>
-    <p>طبّق ما تعلمته في المحاضرات على مشروع فيلم متكامل: من الفكرة والجملة التعريفية إلى الملخص والمعالجة والسيناريو. يمكنك حفظ مسودة ثم إرسالها للمراجعة.</p>
-    <div id="academyFinalProjectAccount" style="color:var(--muted)">سجّل الدخول لحفظ مشروعك ومتابعة تقييم الإدارة.</div>
-    <form id="academyFinalProjectForm" style="display:none">
-      <input id="academyFinalProjectId" type="hidden">
-      <label for="academyFinalProjectTitle">عنوان المشروع</label>
-      <input id="academyFinalProjectTitle" maxlength="180" required placeholder="اكتب عنوان الفيلم">
-      <label for="academyFinalProjectGenre">النوع الدرامي</label>
-      <select id="academyFinalProjectGenre" required>
-        <option value="">اختر النوع</option><option>دراما</option><option>اجتماعي</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>جريمة</option><option>تاريخي</option><option>رومانسي</option><option>خيال علمي</option><option>وثائقي</option>
-      </select>
-      <label for="academyFinalProjectLogline">الفكرة في جملة واحدة (Logline)</label>
-      <textarea id="academyFinalProjectLogline" maxlength="700" minlength="10" required rows="3" placeholder="البطل + هدفه + العقبة + المخاطرة"></textarea>
-      <label for="academyFinalProjectSynopsis">الملخص السينمائي</label>
-      <textarea id="academyFinalProjectSynopsis" maxlength="6000" minlength="50" required rows="6" placeholder="احكِ القصة من بدايتها حتى نهايتها باختصار واضح..."></textarea>
-      <label for="academyFinalProjectTreatment">المعالجة الدرامية</label>
-      <textarea id="academyFinalProjectTreatment" maxlength="20000" minlength="100" required rows="8" placeholder="اكتب تطور الأحداث والمشاهد الرئيسية ومسار الشخصيات..."></textarea>
-      <label for="academyFinalProjectScreenplay">السيناريو</label>
-      <textarea id="academyFinalProjectScreenplay" maxlength="120000" minlength="100" required rows="12" placeholder="اكتب السيناريو بتنسيق المشاهد والحوار..."></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-        <button class="btn" type="button" id="academyFinalProjectSaveDraft">حفظ كمسودة</button>
-        <button class="btn primary" type="submit">إرسال المشروع للمراجعة</button>
-        <button class="btn" type="button" id="academyFinalProjectCancel" style="display:none">إلغاء التعديل</button>
-      </div>
-      <p id="academyFinalProjectMessage" aria-live="polite"></p>
-    </form>
-    <div class="section-heading"><h3 style="color:var(--gold)">مشروعاتك وحالة التقييم</h3><button class="btn" type="button" id="academyFinalProjectRefresh">تحديث القائمة</button></div>
-    <div id="academyFinalProjectList"><p class="muted">ستظهر مشروعاتك هنا بعد تسجيل الدخول.</p></div>
   </div>
 
   <div id="lessonDialog" class="panel" role="dialog" aria-modal="true" aria-labelledby="lessonDialogTitle" style="display:none;margin-top:18px">
@@ -578,9 +562,10 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     <div id="scenarioReaderFrame" style="margin-top:12px;min-height:65vh;background:#111;border-radius:8px;overflow:hidden"></div>
   </div>
 
-  <div class="panel">
-    <h3 style="color:var(--gold)">كيف تنضم أعمالك للمكتبة؟</h3>
-    <p>سيكون رفع السيناريوهات وملفات PDF وWord وإضافة بيانات الكاتب والغلاف والتصنيف والملخص من خلال حساب المستخدم ولوحة الإدارة بعد إعداد صلاحيات التخزين.</p>
+  <div class="panel" id="librarySubmitInfo">
+    <h3 style="color:var(--gold)">قدّم سيناريوك إلى المكتبة</h3>
+    <p>لو عندك سيناريو أو عمل مكتوب، سجّل الدخول إلى حسابك ثم افتح نموذج «إرسال عمل جديد». يمكنك رفع ملف PDF أو Word أو TXT، أو إضافة رابط للعمل. يُحفظ العمل في مساحة خاصة ولا يظهر للعامة أثناء المراجعة. يجب أن تكون صاحب الحقوق أو تملك تصريحًا، ولن يُضاف إلى المكتبة إلا بعد مراجعة العمل وإقرار الحقوق وموافقة الإدارة.</p>
+    <button class="btn primary" type="button" onclick="showPage('account')">قدّم عملك من حسابك</button>
   </div>
 </section>
 
@@ -638,108 +623,21 @@ function renderLessonIndex(materials = []){
   }).join("");
 }
 
-async function openLesson(index){
+function openLesson(index){
   const lesson=academyLessons[index];
   if(!lesson) return;
-  const lessonNumber=index+1;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
   const dialog=document.getElementById("lessonDialog");
   const title=document.getElementById("lessonDialogTitle");
   const body=document.getElementById("lessonDialogBody");
   if(!dialog||!title||!body) return;
-  title.textContent=`المحاضرة ${lessonNumber}: ${lesson}`;
-  const lessonBody=material && material.extra_data && typeof material.extra_data.body==="string" ? material.extra_data.body : "";
-  const formattedBody=lessonBody ? `<div class="lesson-content" style="line-height:2;white-space:pre-wrap;margin:18px 0">${escapeHTML(lessonBody)}</div>` : "";
+  title.textContent=`المحاضرة ${index+1}: ${lesson}`;
   body.innerHTML=material
-    ? `<p>${escapeHTML(material.description||"")}</p>${formattedBody}${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
-    : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p>`;
-  body.insertAdjacentHTML("beforeend",`<section class="panel" style="margin-top:22px">
-    <h3 style="color:var(--gold)">تدريب المحاضرة ${lessonNumber}</h3>
-    <p>اكتب إجابتك أو تطبيقك العملي هنا، وسيُحفظ في حسابك لتراجعه الإدارة.</p>
-    <div id="academyLessonAccountState" style="color:var(--muted)">جارٍ التحقق من حسابك...</div>
-    <div id="academyLessonControls"></div>
-    <div id="academyAssignmentHistory"></div>
-  </section>`);
+    ? `<p>${escapeHTML(material.description||"لا يوجد شرح مكتوب مضاف لهذه المحاضرة بعد.")}</p>${material.content_url ? directVideoMarkup(material.content_url,"مشاهدة فيديو المحاضرة") : "<p style='color:var(--muted)'>لا يوجد فيديو مرفق حاليًا.</p>"}`
+    : `<p>هذه المحاضرة ضمن منهج الأكاديمية. لم تنشر الإدارة مادتها التعليمية بعد.</p><p style="color:var(--muted)">سيظهر هنا الشرح المكتوب والفيديو والتدريب فور اعتمادها ونشرها.</p>`;
   dialog.style.display="block";
   initializeInlineHlsVideos(dialog);
   dialog.scrollIntoView({behavior:"smooth",block:"start"});
-  await loadAcademyLessonWorkspace(lessonNumber);
-}
-
-async function loadAcademyLessonWorkspace(lessonNumber){
-  const state=document.getElementById("academyLessonAccountState");
-  const controls=document.getElementById("academyLessonControls");
-  const history=document.getElementById("academyAssignmentHistory");
-  if(!state||!controls||!history) return;
-  if(!accountUser){
-    state.textContent="يجب تسجيل الدخول أولًا حتى تحفظ تقدمك وترسل التدريب.";
-    controls.innerHTML='<button class="btn" type="button" onclick="showPage(\'account\')">الانتقال إلى حساب العضوية</button>';
-    return;
-  }
-  try{
-    const client=accountClient();
-    const [progressResult,assignmentResult]=await Promise.all([
-      client.from("academy_progress").select("completed").eq("user_id",accountUser.id).eq("lesson_number",lessonNumber).maybeSingle(),
-      client.from("academy_assignments").select("id,status,admin_feedback,submitted_at").eq("user_id",accountUser.id).eq("lesson_number",lessonNumber).order("submitted_at",{ascending:false}).limit(5)
-    ]);
-    if(progressResult.error) throw progressResult.error;
-    if(assignmentResult.error) throw assignmentResult.error;
-    const completed=!!progressResult.data?.completed;
-    state.textContent="أنت مسجل الدخول: "+(accountUser.email||"عضو المنصة");
-    controls.innerHTML=`<button class="btn ${completed?"primary":""}" type="button" onclick="academyMarkLessonComplete(${lessonNumber})">${completed?"تم تسجيل إتمام المحاضرة ✓":"تسجيل إتمام المحاضرة"}</button>
-      <form id="academyAssignmentForm" style="margin-top:16px">
-        <label for="academyAssignmentAnswer">إجابتك على التدريب</label>
-        <textarea id="academyAssignmentAnswer" maxlength="12000" required rows="6" placeholder="اكتب إجابتك هنا..." style="width:100%;margin:8px 0"></textarea>
-        <button class="btn primary" type="submit">إرسال التدريب للمراجعة</button>
-      </form>
-      <p id="academyAssignmentMessage" aria-live="polite"></p>`;
-    history.innerHTML=assignmentResult.data?.length ? '<h4 style="color:var(--gold)">آخر تسليماتك</h4>'+assignmentResult.data.map(item=>`<div class="panel"><strong>${item.status==="approved"?"تمت الموافقة":item.status==="needs_revision"?"مطلوب تعديل":"قيد المراجعة"}</strong><p>${escapeHTML(item.admin_feedback||"لا توجد ملاحظات من الإدارة حتى الآن.")}</p><small>${new Date(item.submitted_at).toLocaleString("ar-EG")}</small></div>`).join("") : "<p>لم ترسل تدريبًا لهذه المحاضرة بعد.</p>";
-    document.getElementById("academyAssignmentForm")?.addEventListener("submit",async event=>{
-      event.preventDefault();
-      const answer=document.getElementById("academyAssignmentAnswer").value.trim();
-      const button=event.currentTarget.querySelector('button[type="submit"]');
-      const message=document.getElementById("academyAssignmentMessage");
-      if(!answer){message.textContent="اكتب إجابتك قبل الإرسال.";return;}
-      button.disabled=true;message.textContent="جارٍ إرسال التدريب...";
-      try{
-        const {error}=await client.from("academy_assignments").insert({user_id:accountUser.id,lesson_number:lessonNumber,answer});
-        if(error) throw error;
-        message.textContent="تم حفظ التدريب وإرساله للمراجعة.";
-        await loadAcademyLessonWorkspace(lessonNumber);
-      }catch(error){message.textContent="تعذر إرسال التدريب: "+(error.message||"حاول مرة أخرى.");}
-      finally{button.disabled=false;}
-    });
-  }catch(error){
-    state.textContent="تعذر تحميل مساحة التدريب: "+(error.message||"تحقق من اتصالك.");
-  }
-}
-
-async function academyMarkLessonComplete(lessonNumber){
-  if(!accountUser){alert("سجل الدخول أولًا.");return;}
-  try{
-    const {error}=await accountClient().from("academy_progress").upsert({
-      user_id:accountUser.id,lesson_number:lessonNumber,completed:true,completed_at:new Date().toISOString(),updated_at:new Date().toISOString()
-    },{onConflict:"user_id,lesson_number"});
-    if(error) throw error;
-    await renderAcademyProgressSummary();
-    await loadAcademyLessonWorkspace(lessonNumber);
-  }catch(error){alert("تعذر حفظ التقدم: "+(error.message||"حاول مرة أخرى."));}
-}
-
-async function renderAcademyProgressSummary(){
-  const panel=document.getElementById("academyStudentProgress");
-  const label=document.getElementById("academyProgressText");
-  const bar=document.getElementById("academyProgressBar");
-  if(!panel||!label||!bar) return;
-  if(!accountUser){panel.style.display="none";return;}
-  panel.style.display="block";
-  try{
-    const {data,error}=await accountClient().from("academy_progress").select("lesson_number").eq("user_id",accountUser.id).eq("completed",true);
-    if(error) throw error;
-    const count=new Set((data||[]).map(row=>row.lesson_number)).size;
-    label.textContent=`أنهيت ${count} من 30 محاضرة (${Math.round(count/30*100)}٪).`;
-    bar.style.width=(count/30*100)+"%";
-  }catch(error){label.textContent="تعذر تحميل نسبة التقدم حاليًا.";}
 }
 
 function closeLesson(){
@@ -1795,6 +1693,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   <div class="panel" id="accountProfilePanel" style="display:none">
     <h3 style="color:var(--gold)">ملفي الشخصي</h3>
     <p id="accountProfileSummary"></p>
+    <div class="panel" id="memberNotificationsPanel" style="margin:14px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h3 style="color:var(--gold);margin:0">إشعاراتي <span id="memberNotificationCount" class="admin-status"></span></h3>
+        <button class="btn" type="button" id="memberNotificationsRefresh">تحديث الإشعارات</button>
+      </div>
+      <div id="memberNotificationsList" aria-live="polite" style="margin-top:12px">جارٍ تحميل الإشعارات...</div>
+    </div>
     <p style="color:var(--muted);font-size:13px">يمكنك تحديث اسم العرض ومجالك. لا تمنح هذه البيانات أي صلاحيات إدارية.</p>
     <form id="accountProfileForm">
       <input id="accountEditName" required maxlength="120" placeholder="الاسم الذي سيظهر للجمهور">
@@ -1829,7 +1734,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <input id="memberWorkFile" type="file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" style="width:100%;padding:10px">
       <label>أو رابط خارجي للعمل (اختياري إذا رفعت ملفًا)</label>
       <input id="memberWorkUrl" type="url" placeholder="https://...">
-      <button class="btn primary" type="submit">إرسال العمل للمراجعة</button>
+      <label style="display:flex;align-items:flex-start;gap:9px;margin:14px 0;color:var(--white)">
+        <input id="memberWorkRightsConfirmed" type="checkbox" required style="width:auto;margin-top:7px">
+        <span>أقر بأنني صاحب حقوق هذا العمل أو أملك تصريحًا يسمح بنشره، وأتحمل وحدي مسؤولية صحة هذا الإقرار وأي مطالبة أو نزاع يتعلق بملكية العمل أو حقوقه، وأتعهد بإبلاغ الإدارة فورًا إذا ظهر خلاف ذلك.</span>
+      </label>
+      <p id="memberWorkEditNotice" style="display:none;color:var(--gold)">أنت تعدّل عملاً مرفوضًا لإعادة إرساله للمراجعة.</p>
+      <button class="btn primary" id="memberWorkSubmitButton" type="submit">إرسال العمل للمراجعة</button>
+      <button class="btn" id="memberWorkCancelEdit" type="button" style="display:none" onclick="memberWorkCancelResubmission()">إلغاء التعديل</button>
     </form>
     <p id="memberWorkMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
     <div id="memberWorkHistory" class="grid"></div>
@@ -1863,7 +1774,10 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <h3 style="color:var(--gold);margin:0">مرحبًا بك في الإدارة</h3>
           <p id="adminUserEmail" style="color:var(--muted);font-size:13px"></p>
         </div>
-        <button class="btn" id="adminLogout">تسجيل الخروج</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" type="button" onclick="document.getElementById('adminScenarioLibrarySection')?.scrollIntoView({behavior:'smooth',block:'start'})">فتح إدارة مكتبة السيناريوهات</button>
+          <button class="btn" id="adminLogout">تسجيل الخروج</button>
+        </div>
       </div>
     </div>
 
@@ -1874,9 +1788,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى المعلقة</h3><div id="adminContentComments" class="grid"></div>
     </div>
 
-    <div class="section-heading">
+    <div class="section-heading" id="adminScenarioLibrarySection">
       <h2>إدارة مكتبة السيناريوهات الكاملة</h2>
-      <p>رفع ملفات PDF كاملة، ثم نشرها للأعضاء بعد المراجعة</p>
+      <p>ارفع العمل واختر بنفسك حفظه كمسودة أو إتاحته للأعضاء. قرار النشر من صلاحية مدير المنصة.</p>
     </div>
     <div class="panel">
       <form id="adminScenarioScriptForm">
@@ -1894,7 +1808,26 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
         <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
         <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
-        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء</label>
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h4 style="color:var(--gold)">بيانات الحقوق ومسؤولية الإتاحة</h4>
+        <label>صاحب العمل أو أساس قرار الإتاحة</label>
+        <input id="adminScenarioScriptRightsHolder" maxlength="200" placeholder="اسم صاحب العمل أو اكتب: إقرار مدير المنصة">
+        <label>أساس الإتاحة</label>
+        <select id="adminScenarioScriptRightsStatus" required>
+          <option value="unverified">لم يتم التحقق بعد</option>
+          <option value="original_author">عمل أصلي لصاحب الحقوق</option>
+          <option value="permission_granted">تصريح نشر موثق</option>
+          <option value="licensed">ترخيص نشر</option>
+          <option value="public_domain">عمل في الملكية العامة</option>
+          <option value="admin_responsibility">قرار إتاحة بإقرار مدير المنصة</option>
+        </select>
+        <label>ملاحظات قرار الإتاحة (اختياري)</label>
+        <textarea id="adminScenarioScriptRightsNote" maxlength="2000" placeholder="اكتب أي توضيح تراه مناسبًا بشأن قرار النشر"></textarea>
+        <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:var(--white)">
+          <input id="adminScenarioScriptRightsConfirmed" type="checkbox" style="width:auto;margin-top:7px">
+          <span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد أنني أملك حق نشره أو أتحمل مسؤولية قرار نشره.</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء بقرار مني كمدير للمنصة</label>
         <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
       </form>
       <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
@@ -1902,8 +1835,30 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     </div>
 
     <div class="section-heading">
-      <h2>إضافة أو تعديل محتوى</h2>
-      <p>المحتوى يُحفظ في قاعدة البيانات بعد إعدادها</p>
+      <h2>إدارة ورفع المحتوى حسب القسم</h2>
+      <p>افتح القسم المطلوب لتظهر لك أدوات رفع محتواه وسجلاته فقط</p>
+    </div>
+    <div class="panel">
+      <div id="adminSectionCards" class="grid">
+        <article class="admin-section-card"><h3>الأكاديمية والمحاضرات</h3><p>فيديوهات تعليمية ومواد المحاضرات والملفات المساندة.</p><button class="btn primary" type="button" onclick="adminOpenSection('academy')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>مكتبة السيناريوهات</h3><p>ملفات PDF كاملة مع بيانات المؤلف والتصنيف وحقوق النشر.</p><button class="btn primary" type="button" onclick="adminOpenSection('library')">فتح إدارة السيناريوهات</button></article>
+        <article class="admin-section-card"><h3>الكُتّاب</h3><p>إضافة نبذات وصور وأعمال تعريفية للكُتّاب.</p><button class="btn primary" type="button" onclick="adminOpenSection('writers')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>المخرجون</h3><p>إضافة نبذات وصور وروابط نماذج أعمال المخرجين.</p><button class="btn primary" type="button" onclick="adminOpenSection('directors')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الأفلام والمسلسلات</h3><p>ملصقات وصور وفيديوهات دعائية وروابط المشاهدة.</p><button class="btn primary" type="button" onclick="adminOpenSection('films')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الأفلام القصيرة</h3><p>رفع الفيلم أو رابطه وإضافة الملصق وبيانات صُنّاعه.</p><button class="btn primary" type="button" onclick="adminOpenSection('shorts')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>سيناريو TV</h3><p>إضافة القنوات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('tv')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الراديو</h3><p>إضافة المحطات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('radio')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>الإنتاج والتعاون</h3><p>عرض المشروعات والفرص والصور والملفات التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('production')">إدارة القسم ورفع محتوى</button></article>
+      </div>
+    </div>
+
+    <div class="section-heading" id="adminContentEditorHeading">
+      <h2 id="adminEditorSectionTitle">إضافة أو تعديل محتوى</h2>
+      <p id="adminEditorSectionHint">اختر قسمًا من البطاقات بالأعلى لبدء رفع المحتوى.</p>
     </div>
 
     <div class="panel">
@@ -1926,6 +1881,17 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <option value="radio">محطات الراديو</option>
           <option value="production">مشروعات الإنتاج</option>
         </select>
+
+        <label>نوع المحتوى الذي ستضيفه</label>
+        <select id="adminMediaKind" required>
+          <option value="article">محتوى مكتوب / خبر / وصف</option>
+          <option value="video">فيديو</option>
+          <option value="image">صورة أو أفيش</option>
+          <option value="audio">ملف صوتي</option>
+          <option value="document">ملف PDF أو Word</option>
+          <option value="link">رابط خارجي</option>
+        </select>
+        <p id="adminMediaKindHint" style="font-size:12px;color:var(--muted)">اختر نوع المحتوى؛ ستتغير أنواع الملفات المقبولة حسب اختيارك.</p>
 
         <label>عنوان المحتوى</label>
         <input id="adminTitle" required placeholder="اكتب العنوان">
@@ -1997,12 +1963,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة أعمال الأعضاء</h2><p>السيناريوهات والأعمال المرسلة من حسابات الأعضاء لا تدخل المكتبة إلا بعد الموافقة</p></div>
     <div id="adminMemberWorksList" class="grid"><div class="panel">تظهر أعمال الأعضاء بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>مراجعة تدريبات الأكاديمية</h2><p>تظهر إجابات الطلاب هنا لمراجعتها وإرسال الملاحظات</p></div>
-    <div id="adminAcademyAssignments" class="grid"><div class="panel">تظهر التدريبات بعد دخول المدير.</div></div>
-
-    <div class="section-heading"><h2>مراجعة المشروعات النهائية</h2><p>تقييم مشروعات الطلاب وإرسال الملاحظات قبل اعتماد إتمام الأكاديمية</p></div>
-    <div id="adminAcademyFinalProjects" class="grid"><div class="panel">تظهر المشروعات بعد دخول المدير.</div></div>
-
     <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
     <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
 
@@ -2020,6 +1980,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 .admin-item h3{color:var(--gold)}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .admin-status{font-size:12px;color:var(--muted)}
+.admin-section-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:15px;display:flex;flex-direction:column;gap:8px}
+.admin-section-card h3{color:var(--gold);margin:0}
+.admin-section-card p{color:var(--muted);font-size:13px;margin:0 0 8px;flex:1}
+.admin-section-card .btn{width:100%;font-size:13px;padding:8px 10px}
+#adminContentEditorHeading{scroll-margin-top:85px}
 </style>
 
 <!-- مكتبة Supabase الرسمية -->
@@ -2089,8 +2054,8 @@ async function accountLoadProfile(user){
     const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,profile_status").eq("user_id",user.id).maybeSingle();
     if(error) throw error;
     accountShowUser(user,data||null);
-    await renderAcademyProgressSummary();
     await accountLoadMemberWorks();
+    await accountLoadNotifications();
   }catch(error){
     accountShowUser(user,null);
     accountMessage("تم تسجيل الدخول، لكن تعذر تحميل بيانات الملف الشخصي. تأكد من تنفيذ تحديث قاعدة البيانات.");
@@ -2169,12 +2134,71 @@ document.getElementById("accountNewPasswordForm")?.addEventListener("submit",asy
   }catch(error){accountMessage("تعذر تغيير كلمة المرور: "+(error.message||"حاول فتح رابط الاستعادة مرة أخرى."));}
   finally{button.disabled=false;}
 });
+let editingMemberWorkId = null;
+async function accountLoadNotifications(){
+  const box=document.getElementById("memberNotificationsList");
+  const count=document.getElementById("memberNotificationCount");
+  if(!box||!accountUser)return;
+  box.textContent="جارٍ تحميل الإشعارات...";
+  const {data,error}=await accountClient().from("member_notifications")
+    .select("id,notification_type,title,message,is_read,created_at,related_work_id")
+    .eq("user_id",accountUser.id).order("created_at",{ascending:false}).limit(30);
+  if(error){box.textContent="تعذر تحميل الإشعارات: "+error.message;return;}
+  const rows=data||[];
+  const unread=rows.filter(n=>!n.is_read).length;
+  if(count)count.textContent=unread?`(${unread} غير مقروء)`:"(لا توجد إشعارات جديدة)";
+  box.innerHTML=rows.length?rows.map(n=>`<article class="admin-item" style="margin-bottom:9px;${n.is_read?"opacity:.78":"border-inline-start:4px solid var(--gold)"}">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${escapeHTML(n.title)}</strong><small>${new Date(n.created_at).toLocaleString("ar-EG")}</small></div>
+    <p style="margin:8px 0">${escapeHTML(n.message)}</p>
+    ${n.is_read?'<small>مقروء</small>':`<button class="btn" type="button" onclick="accountMarkNotificationRead('${n.id}')">تحديد كمقروء</button>`}
+  </article>`).join(""):'<p style="color:var(--muted)">لا توجد إشعارات حتى الآن. ستصلك رسالة هنا عند مراجعة ملفك أو أعمالك.</p>';
+}
+async function accountMarkNotificationRead(id){
+  if(!accountUser||!id)return;
+  const {error}=await accountClient().from("member_notifications").update({is_read:true}).eq("id",id).eq("user_id",accountUser.id);
+  if(error){accountMessage("تعذر تحديث الإشعار: "+error.message);return;}
+  await accountLoadNotifications();
+}
+document.getElementById("memberNotificationsRefresh")?.addEventListener("click",accountLoadNotifications);
+
 async function accountLoadMemberWorks(){
   const box=document.getElementById("memberWorkHistory");
   if(!box || !accountUser) return;
-  const {data,error}=await accountClient().from("member_works").select("id,title,category,status,created_at").eq("user_id",accountUser.id).order("created_at",{ascending:false}).limit(30);
+  const {data,error}=await accountClient().from("member_works").select("id,title,category,status,created_at,reviewed_at,review_notes,revision_count,summary,work_url,storage_path,rights_confirmed").eq("user_id",accountUser.id).order("created_at",{ascending:false}).limit(30);
   if(error){box.textContent="تعذر تحميل أعمالك السابقة: "+error.message;return;}
-  box.innerHTML=data?.length ? data.map(item=>`<article class="admin-item"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.category)} • ${item.status==="pending"?"قيد المراجعة":item.status==="approved"?"تم الاعتماد": "لم يتم الاعتماد"}</p></article>`).join("") : '<p style="color:var(--muted)">لم ترسل أعمالًا بعد.</p>';
+  box.innerHTML=data?.length ? data.map(item=>{
+    const state=item.status==="pending"?"قيد المراجعة":item.status==="approved"?"تم الاعتماد والنشر":"مطلوب تعديل العمل";
+    const note=item.review_notes?`<p><strong>ملاحظات الإدارة:</strong> ${escapeHTML(item.review_notes)}</p>`:"";
+    const revise=item.status==="rejected"?`<button class="btn primary" type="button" onclick="memberWorkPrepareResubmission('${item.id}')">استكمال التعديلات وإعادة الإرسال</button>`:"";
+    const revision=item.revision_count?`<p>عدد مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>`:"";
+    return `<article class="admin-item"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.category)} • ${state}</p>${revision}${note}${revise}</article>`;
+  }).join("") : '<p style="color:var(--muted)">لم ترسل أعمالًا بعد.</p>';
+}
+function memberWorkCancelResubmission(){
+  editingMemberWorkId=null;
+  const form=document.getElementById("memberWorkForm");
+  if(form)form.reset();
+  const notice=document.getElementById("memberWorkEditNotice");if(notice)notice.style.display="none";
+  const cancel=document.getElementById("memberWorkCancelEdit");if(cancel)cancel.style.display="none";
+  const submit=document.getElementById("memberWorkSubmitButton");if(submit)submit.textContent="إرسال العمل للمراجعة";
+  const message=document.getElementById("memberWorkMessage");if(message)message.textContent="";
+}
+async function memberWorkPrepareResubmission(id){
+  if(!accountUser)return;
+  const {data,error}=await accountClient().from("member_works").select("id,title,category,summary,work_url,status,rights_confirmed").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
+  if(error||!data){alert("تعذر فتح العمل للتعديل.");return;}
+  if(data.status!=="rejected"){alert("يمكن إعادة إرسال الأعمال التي طلبت الإدارة تعديلها فقط.");return;}
+  editingMemberWorkId=id;
+  document.getElementById("memberWorkTitle").value=data.title||"";
+  document.getElementById("memberWorkCategory").value=data.category||"";
+  document.getElementById("memberWorkSummary").value=data.summary||"";
+  document.getElementById("memberWorkUrl").value=data.work_url||"";
+  document.getElementById("memberWorkFile").value="";
+  document.getElementById("memberWorkRightsConfirmed").checked=!!data.rights_confirmed;
+  const notice=document.getElementById("memberWorkEditNotice");if(notice)notice.style.display="block";
+  const cancel=document.getElementById("memberWorkCancelEdit");if(cancel)cancel.style.display="inline-flex";
+  const submit=document.getElementById("memberWorkSubmitButton");if(submit)submit.textContent="إعادة إرسال العمل بعد التعديل";
+  document.getElementById("memberWorkForm")?.scrollIntoView({behavior:"smooth",block:"center"});
 }
 document.getElementById("memberWorkForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
@@ -2182,16 +2206,23 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
   if(!accountUser){accountMessage("سجل الدخول أولًا لإرسال عملك.");return;}
   const file=document.getElementById("memberWorkFile")?.files?.[0]||null;
   const work_url=document.getElementById("memberWorkUrl").value.trim();
-  if(!file && !work_url){accountMessage("ارفع ملف العمل أو أضف رابطًا خارجيًا.");return;}
+  if(!file && !work_url && !editingMemberWorkId){accountMessage("ارفع ملف العمل أو أضف رابطًا خارجيًا.");return;}
   if(work_url && !safeHttpUrl(work_url)){accountMessage("رابط العمل غير صالح. استخدم رابط http أو https.");return;}
   if(file && file.size>25*1024*1024){accountMessage("حجم الملف أكبر من 25 ميجابايت.");return;}
   const allowedTypes=["application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","text/plain"];
   const allowedExt=/\.(pdf|doc|docx|txt)$/i.test(file?.name||"");
   if(file && !(allowedTypes.includes(file.type)||(!file.type&&allowedExt))){accountMessage("نوع الملف غير مدعوم. استخدم PDF أو Word أو TXT.");return;}
-  let storagePath=null;
+  let storagePath=null,oldStoragePath=null;
   try{
-    button.disabled=true;button.textContent="جارٍ رفع العمل وإرساله...";
+    button.disabled=true;button.textContent=editingMemberWorkId?"جارٍ حفظ التعديلات وإعادة الإرسال...":"جارٍ رفع العمل وإرساله...";
     const client=accountClient();
+    let existing=null;
+    if(editingMemberWorkId){
+      const {data,error}=await client.from("member_works").select("id,status,storage_path,work_url").eq("id",editingMemberWorkId).eq("user_id",accountUser.id).maybeSingle();
+      if(error||!data)throw error||new Error("العمل المطلوب تعديله غير موجود.");
+      if(data.status!=="rejected")throw new Error("حالة العمل تغيرت؛ حدّث الصفحة وتحقق من حالة المراجعة.");
+      existing=data;oldStoragePath=data.storage_path||null;
+    }
     if(file){
       const safeName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-100)||"work.pdf";
       const extension=(safeName.split(".").pop()||"pdf").toLowerCase();
@@ -2201,13 +2232,29 @@ document.getElementById("memberWorkForm")?.addEventListener("submit",async funct
       const {error:uploadError}=await client.storage.from("member-submissions").upload(storagePath,file,{upsert:false,contentType:uploadMime});
       if(uploadError)throw uploadError;
     }
-    const payload={user_id:accountUser.id,title:document.getElementById("memberWorkTitle").value.trim(),category:document.getElementById("memberWorkCategory").value,summary:document.getElementById("memberWorkSummary").value.trim(),work_url:work_url||null,storage_path:storagePath};
-    const {error}=await client.from("member_works").insert(payload);
-    if(error){if(storagePath)await client.storage.from("member-submissions").remove([storagePath]);throw error;}
-    this.reset();const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="وصل عملك إلى الإدارة بشكل آمن، وسيظهر في المكتبة بعد الموافقة.";
+    const rightsConfirmed=document.getElementById("memberWorkRightsConfirmed")?.checked===true;
+    if(!rightsConfirmed)throw new Error("يجب تأكيد امتلاك الحقوق أو وجود تصريح قبل الإرسال.");
+    if(editingMemberWorkId){
+      const nextPath=storagePath||existing.storage_path||null;
+      const nextUrl=work_url||existing.work_url||null;
+      if(!nextPath&&!nextUrl)throw new Error("ارفع ملف العمل أو أضف رابطًا خارجيًا.");
+      const payload={title:document.getElementById("memberWorkTitle").value.trim(),category:document.getElementById("memberWorkCategory").value,summary:document.getElementById("memberWorkSummary").value.trim(),work_url:nextUrl,storage_path:nextPath,status:"pending",rights_confirmed:true};
+      const {error}=await client.from("member_works").update(payload).eq("id",editingMemberWorkId).eq("user_id",accountUser.id);
+      if(error)throw error;
+      if(storagePath&&oldStoragePath)await client.storage.from("member-submissions").remove([oldStoragePath]);
+      this.reset();editingMemberWorkId=null;
+      const notice=document.getElementById("memberWorkEditNotice");if(notice)notice.style.display="none";
+      const cancel=document.getElementById("memberWorkCancelEdit");if(cancel)cancel.style.display="none";
+      const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تم استلام تعديلاتك وإعادة إرسال العمل إلى الإدارة للمراجعة.";
+    }else{
+      const payload={user_id:accountUser.id,title:document.getElementById("memberWorkTitle").value.trim(),category:document.getElementById("memberWorkCategory").value,summary:document.getElementById("memberWorkSummary").value.trim(),work_url:work_url||null,storage_path:storagePath,rights_confirmed:rightsConfirmed};
+      const {error}=await client.from("member_works").insert(payload);
+      if(error)throw error;
+      this.reset();const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="وصل عملك إلى الإدارة بشكل آمن، وسيظهر في المكتبة بعد الموافقة.";
+    }
     await accountLoadMemberWorks();
-  }catch(error){const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.");}
-  finally{button.disabled=false;button.textContent="إرسال العمل للمراجعة";}
+  }catch(error){if(storagePath)await accountClient().storage.from("member-submissions").remove([storagePath]);const msg=document.getElementById("memberWorkMessage");if(msg)msg.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.");}
+  finally{button.disabled=false;button.textContent=editingMemberWorkId?"إعادة إرسال العمل بعد التعديل":"إرسال العمل للمراجعة";}
 });
 document.getElementById("accountLogout")?.addEventListener("click",async()=>{
   try{const {error}=await accountClient().auth.signOut();if(error)throw error;accountShowUser(null,null);accountMessage("تم تسجيل الخروج.");}
@@ -2224,7 +2271,6 @@ try{
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
       accountShowUser(null,null);
-      renderAcademyProgressSummary();
     }
   });
 }catch(error){console.warn("account auth listener",error.message||error);}
@@ -2318,7 +2364,7 @@ async function adminReviewMemberProfile(userId,status){
 async function adminLoadMemberWorks(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminMemberWorksList");if(!box)return;
-  const {data,error}=await adminSupabase.from("member_works").select("id,user_id,title,category,summary,work_url,storage_path,created_at,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await adminSupabase.from("member_works").select("id,user_id,title,category,summary,work_url,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل أعمال الأعضاء: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد أعمال جديدة للمراجعة.</div>';return;}
   const cards=await Promise.all(data.map(async item=>{
@@ -2327,12 +2373,15 @@ async function adminLoadMemberWorks(){
       const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
       if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
     }
-    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
+    return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
   }));
   box.innerHTML=cards.join("");
 }
 async function adminReviewMemberWork(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const reviewNotes=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من العضو:":"ملاحظة للعضو (اختياري):","");
+  if(reviewNotes===null)return;
+  if(status==="rejected"&&!reviewNotes.trim()){alert("اكتب ملاحظة توضح المطلوب تعديله قبل الرفض.");return;}
   const {data:work,error:loadError}=await adminSupabase.from("member_works").select("id,work_url,storage_path,title").eq("id",id).maybeSingle();
   if(loadError||!work){alert("تعذر قراءة العمل المطلوب مراجعته.");return;}
   let publicUrl=null,publicPath=null;
@@ -2345,10 +2394,10 @@ async function adminReviewMemberWork(id,status){
     if(uploadError){alert("تعذر نقل الملف إلى المكتبة العامة: "+uploadError.message);return;}
     publicUrl=adminSupabase.storage.from("site-media").getPublicUrl(uploaded.path).data.publicUrl;
   }
-  const {error}=await adminSupabase.rpc("admin_review_member_work",{p_work_id:id,p_status:status,p_public_url:publicUrl});
+  const {error}=await adminSupabase.rpc("admin_review_member_work",{p_work_id:id,p_status:status,p_public_url:publicUrl,p_review_notes:reviewNotes.trim()||null});
   if(error){if(publicPath)await adminSupabase.storage.from("site-media").remove([publicPath]);alert("تعذرت مراجعة العمل: "+error.message);return;}
   if(work.storage_path)await adminSupabase.storage.from("member-submissions").remove([work.storage_path]);
-  alert(status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل.");
+  alert(status==="approved"?"تم اعتماد العمل وإضافته إلى المكتبة.":"تم رفض العمل وإرسال ملاحظات التعديل إلى صاحبه.");
   await adminLoadMemberWorks();await adminLoadRecords();await loadPublicContent();
 }
 
@@ -2427,8 +2476,6 @@ async function adminVerifyAdmin(session){
   await adminLoadCommunitySubmissions();
   await adminLoadMemberProfiles();
   await adminLoadMemberWorks();
-  await adminLoadAcademyAssignments();
-  await adminLoadAcademyFinalProjects();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
 }
@@ -2460,92 +2507,62 @@ document.getElementById("adminLoginForm")?.addEventListener("submit",async funct
   await adminVerifyAdmin(data.session);
 });
 
-/* مراجعة تدريبات الأكاديمية */
-async function adminLoadAcademyAssignments(){
-  if(!adminSupabase || !adminSession) return;
-  const box=document.getElementById("adminAcademyAssignments");
-  if(!box) return;
-  box.innerHTML="<div class='panel'>جارٍ تحميل تدريبات الطلاب...</div>";
-  const {data,error}=await adminSupabase.from("academy_assignments")
-    .select("id,user_id,lesson_number,answer,status,admin_feedback,submitted_at")
-    .order("submitted_at",{ascending:false}).limit(100);
-  if(error){box.textContent="تعذر تحميل التدريبات: "+error.message;return;}
-  if(!data?.length){box.innerHTML="<div class='panel'>لا توجد تدريبات مرسلة حتى الآن.</div>";return;}
-  const userIds=[...new Set(data.map(item=>item.user_id))];
-  const profilesResult=await adminSupabase.from("member_profiles")
-    .select("user_id,display_name").in("user_id",userIds);
-  const names=new Map((profilesResult.data||[]).map(item=>[item.user_id,item.display_name]));
-  box.innerHTML=data.map(item=>`<article class="admin-item">
-    <h3>المحاضرة ${item.lesson_number}: ${adminEscape(academyLessons[item.lesson_number-1]||"")}</h3>
-    <p class="admin-status">الطالب: ${adminEscape(names.get(item.user_id)||"عضو")} • ${new Date(item.submitted_at).toLocaleString("ar-EG")}</p>
-    <div style="white-space:pre-wrap;line-height:1.9;margin:12px 0">${adminEscape(item.answer)}</div>
-    <p class="admin-status">الحالة: ${item.status==="approved"?"تمت الموافقة":item.status==="needs_revision"?"مطلوب تعديل":"قيد المراجعة"}</p>
-    <p>${adminEscape(item.admin_feedback||"")}</p>
-    <div class="admin-actions">
-      <button class="btn primary" type="button" onclick="adminReviewAcademyAssignment('${item.id}','approved')">موافقة</button>
-      <button class="btn" type="button" onclick="adminReviewAcademyAssignment('${item.id}','needs_revision')">طلب تعديل</button>
-    </div>
-  </article>`).join("");
+/* إعداد أدوات الرفع بحسب القسم ونوع المادة */
+const ADMIN_SECTION_META={
+  academy:{name:"الأكاديمية والمحاضرات",hint:"أضف محاضرة مكتوبة أو فيديو تعليمي أو ملفًا مساعدًا.",accept:"video/*,image/*,audio/*,.pdf,.doc,.docx"},
+  library:{name:"مكتبة السيناريوهات",hint:"استخدم نموذج مكتبة السيناريوهات المستقل لرفع PDF وتوثيق الحقوق.",accept:"application/pdf,.pdf"},
+  writers:{name:"الكُتّاب",hint:"أضف صورة الكاتب ونبذته وروابط نماذج أعماله.",accept:"image/*,.pdf,.doc,.docx"},
+  directors:{name:"المخرجون",hint:"أضف صورة المخرج ونبذته وروابط أعماله.",accept:"image/*,video/*,.pdf"},
+  talents:{name:"المواهب",hint:"أضف صورة الموهبة أو فيديو/رابط نموذج الأداء.",accept:"image/*,video/*,audio/*"},
+  films:{name:"الأفلام والمسلسلات",hint:"أضف ملصق العمل ورابط التريلر أو المشاهدة المصرح بها.",accept:"image/*,video/*,.pdf"},
+  shorts:{name:"الأفلام القصيرة",hint:"أضف صورة الفيلم ورابطه أو ارفع ملف الفيديو.",accept:"image/*,video/*,.pdf"},
+  stories:{name:"الجرائم والحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
+  news:{name:"الأخبار الفنية",hint:"اكتب الخبر وأرفق صورته؛ يمكن إضافة رابط المصدر في حقل الرابط.",accept:"image/*,.pdf"},
+  archive:{name:"أرشيف السينما",hint:"ارفع صورة أو أفيشًا أو مستندًا أرشيفيًا مع توثيق المصدر في الوصف.",accept:"image/*,.pdf,.doc,.docx"},
+  tv:{name:"سيناريو TV",hint:"أضف اسم القناة وتصنيفها ورابط بث رسمي وصورة القناة.",accept:"image/*"},
+  radio:{name:"الراديو",hint:"أضف اسم المحطة ورابط البث وصورتها.",accept:"image/*,audio/*"},
+  production:{name:"الإنتاج والتعاون",hint:"أضف بيانات المشروع وصورته ورابط ملفه أو عرضه.",accept:"image/*,video/*,.pdf,.doc,.docx"}
+};
+function adminConfigureMediaKind(){
+  const kind=document.getElementById("adminMediaKind")?.value||"article";
+  const input=document.getElementById("adminFile");
+  const hint=document.getElementById("adminMediaKindHint");
+  const contentLabel=document.querySelector('label[for="adminContentUrl"]');
+  const accepts={video:"video/*",image:"image/*",audio:"audio/*",document:".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",article:"image/*,video/*,audio/*,.pdf,.doc,.docx",link:"image/*"};
+  if(input) input.accept=accepts[kind]||"*/*";
+  if(hint) hint.textContent=({video:"ارفع فيديو من جهازك أو ضع رابط الفيديو في حقل الرابط.",image:"ارفع صورة من جهازك؛ ستُستخدم كصورة أساسية للمحتوى.",audio:"ارفع ملفًا صوتيًا أو ضع رابط تشغيل مباشر.",document:"ارفع PDF أو Word كمرفق للمادة.",article:"يمكن إرفاق صورة أو فيديو أو ملف بالمحتوى المكتوب.",link:"ضع الرابط الخارجي في حقل الرابط ويمكنك إرفاق صورة غلاف."})[kind];
 }
-
-async function adminReviewAcademyAssignment(id,status){
-  if(!adminSupabase || !adminSession) return;
-  const feedback=prompt(status==="approved"?"ملاحظة للطالب (اختياري):":"اكتب المطلوب تعديله:");
-  if(feedback===null) return;
-  if(status==="needs_revision" && !feedback.trim()){alert("اكتب ملاحظة توضح المطلوب تعديله.");return;}
-  const {error}=await adminSupabase.from("academy_assignments").update({
-    status,admin_feedback:feedback.trim()||null,reviewed_at:new Date().toISOString()
-  }).eq("id",id);
-  if(error){alert("تعذر حفظ المراجعة: "+error.message);return;}
-  await adminLoadAcademyAssignments();
+function adminOpenSection(section){
+  const meta=ADMIN_SECTION_META[section];
+  if(!meta)return;
+  if(section==="library"){
+    document.getElementById("adminScenarioScriptForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+    scenarioScriptMessage("أنت الآن في إدارة مكتبة السيناريوهات: ارفع PDF، ثم اختر المسودة أو الإتاحة بقرارك كمدير.");
+    return;
+  }
+  const form=document.getElementById("adminContentForm");
+  if(form){form.reset();document.getElementById("adminRecordId").value="";}
+  const type=document.getElementById("adminContentType");
+  if(type) type.value=section;
+  const title=document.getElementById("adminEditorSectionTitle");
+  const hint=document.getElementById("adminEditorSectionHint");
+  if(title) title.textContent="إدارة محتوى: "+meta.name;
+  if(hint) hint.textContent=meta.hint;
+  const file=document.getElementById("adminFile");
+  if(file){file.accept=meta.accept;file.value="";}
+  const filter=document.getElementById("adminFilter");
+  if(filter){filter.value=section;adminRenderRecords();}
+  document.getElementById("adminSaveButton").textContent="حفظ محتوى "+meta.name;
+  adminConfigureMediaKind();
+  document.getElementById("adminContentEditorHeading")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
-
-/* مراجعة المشروعات النهائية للأكاديمية */
-async function adminLoadAcademyFinalProjects(){
-  if(!adminSupabase || !adminSession) return;
-  const box=document.getElementById("adminAcademyFinalProjects");
-  if(!box)return;
-  box.innerHTML="<div class='panel'>جارٍ تحميل مشروعات الطلاب...</div>";
-  const {data,error}=await adminSupabase.from("academy_final_projects")
-    .select("id,user_id,project_title,genre,logline,synopsis,treatment,screenplay,status,admin_feedback,submitted_at")
-    .order("submitted_at",{ascending:false}).limit(100);
-  if(error){box.textContent="تعذر تحميل المشروعات: "+error.message;return;}
-  const pending=(data||[]).filter(item=>["pending","needs_revision"].includes(item.status));
-  if(!pending.length){box.innerHTML="<div class='panel'>لا توجد مشروعات نهائية تنتظر المراجعة.</div>";return;}
-  const userIds=[...new Set(pending.map(item=>item.user_id))];
-  const profiles=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",userIds);
-  const names=new Map((profiles.data||[]).map(item=>[item.user_id,item.display_name]));
-  box.innerHTML=pending.map(item=>`<article class="admin-item">
-    <h3>${adminEscape(item.project_title)}</h3>
-    <p class="admin-status">الطالب: ${adminEscape(names.get(item.user_id)||"عضو")} • ${adminEscape(item.genre)} • ${new Date(item.submitted_at).toLocaleString("ar-EG")}</p>
-    <p><strong>الفكرة:</strong> ${adminEscape(item.logline)}</p>
-    <details class="panel"><summary>قراءة الملخص والمعالجة والسيناريو</summary>
-      <h4>الملخص</h4><div style="white-space:pre-wrap;line-height:1.9">${adminEscape(item.synopsis)}</div>
-      <h4>المعالجة</h4><div style="white-space:pre-wrap;line-height:1.9">${adminEscape(item.treatment)}</div>
-      <h4>السيناريو</h4><div style="white-space:pre-wrap;line-height:1.9;max-height:520px;overflow:auto">${adminEscape(item.screenplay)}</div>
-    </details>
-    <p class="admin-status">الحالة: ${item.status==="needs_revision"?"بانتظار تعديل الطالب":"قيد المراجعة"}</p>
-    <p>${adminEscape(item.admin_feedback||"لا توجد ملاحظات سابقة.")}</p>
-    <div class="admin-actions">
-      <button class="btn primary" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','approved')">اعتماد المشروع</button>
-      
-      <button class="btn" type="button" onclick="adminReviewAcademyFinalProject('${item.id}','needs_revision')">طلب تعديل</button>
-    </div>
-  </article>`).join("");
-}
-
-async function adminReviewAcademyFinalProject(id,status){
-  if(!adminSupabase || !adminSession)return;
-  const promptText=status==="approved"?"ملاحظات للطالب (اختياري):":"اكتب التعديلات المطلوبة من الطالب:";
-  const feedback=prompt(promptText);
-  if(feedback===null)return;
-  if(status!=="approved"&&!feedback.trim()){alert("اكتب ملاحظة توضح قرار المراجعة.");return;}
-  const {error}=await adminSupabase.from("academy_final_projects").update({
-    status,admin_feedback:feedback.trim()||null,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()
-  }).eq("id",id);
-  if(error){alert("تعذر حفظ المراجعة: "+error.message);return;}
-  await adminLoadAcademyFinalProjects();
-}
+document.getElementById("adminMediaKind")?.addEventListener("change",adminConfigureMediaKind);
+document.getElementById("adminContentType")?.addEventListener("change",()=>{
+  const section=document.getElementById("adminContentType").value;
+  const meta=ADMIN_SECTION_META[section];
+  if(meta){document.getElementById("adminEditorSectionTitle").textContent="إدارة محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;const file=document.getElementById("adminFile");if(file)file.accept=meta.accept;}
+  adminConfigureMediaKind();
+});
 
 /* جلب المحتوى */
 async function adminLoadRecords(){
@@ -2613,8 +2630,16 @@ async function adminUploadSelectedFile(){
   if(!adminSupabase || !adminSession) throw new Error("سجل دخول المدير أولاً.");
   const maxBytes=50*1024*1024;
   if(file.size>maxBytes) throw new Error("حجم الملف أكبر من 50 ميجابايت؛ هذا هو الحد الأقصى المتاح في الخطة المجانية.");
-  const allowed=file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/") || /\.(pdf|doc|docx)$/i.test(file.name);
-  if(!allowed) throw new Error("نوع الملف غير مدعوم. استخدم صورة أو فيديو أو صوتًا أو PDF أو Word.");
+  const kind=document.getElementById("adminMediaKind")?.value||"article";
+  const allowedByKind={
+    video:file.type.startsWith("video/"),
+    image:file.type.startsWith("image/"),
+    audio:file.type.startsWith("audio/"),
+    document:/\.(pdf|doc|docx)$/i.test(file.name),
+    article:file.type.startsWith("image/")||file.type.startsWith("video/")||file.type.startsWith("audio/")||/\.(pdf|doc|docx)$/i.test(file.name),
+    link:file.type.startsWith("image/")
+  };
+  if(!allowedByKind[kind]) throw new Error("الملف لا يطابق نوع المحتوى الذي اخترته. غيّر نوع المحتوى أو اختر ملفًا مناسبًا.");
   const cleanName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-100) || "upload";
   const path=`${document.getElementById("adminContentType").value}/${crypto.randomUUID()}-${cleanName}`;
   const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type || undefined});
@@ -2656,6 +2681,9 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
       return;
     }
   }
+
+  record.extra_data.media_kind=document.getElementById("adminMediaKind")?.value||"article";
+  record.extra_data.section_label=ADMIN_SECTION_META[record.content_type]?.name||record.content_type;
 
   if(!record.title){
     adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
@@ -2734,6 +2762,10 @@ function adminEditRecord(id){
   document.getElementById("adminImage").value=item.image_url || "";
   document.getElementById("adminContentUrl").value=item.content_url || "";
   document.getElementById("adminExtraData").value=JSON.stringify(item.extra_data || {},null,2);
+  document.getElementById("adminMediaKind").value=item.extra_data?.media_kind||"article";
+  adminConfigureMediaKind();
+  const meta=ADMIN_SECTION_META[item.content_type];
+  if(meta){document.getElementById("adminEditorSectionTitle").textContent="تعديل محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;}
   document.getElementById("adminPublished").checked=!!item.published;
 
   document.getElementById("adminSaveButton").textContent="حفظ التعديلات";
@@ -2782,16 +2814,21 @@ async function adminDeleteRecord(id){
 
 /* إعادة النموذج */
 function adminResetForm(){
+  const selectedSection=document.getElementById("adminContentType")?.value||"academy";
   document.getElementById("adminContentForm").reset();
+  document.getElementById("adminContentType").value=selectedSection;
   document.getElementById("adminRecordId").value="";
   const extra=document.getElementById("adminExtraData");
   if(extra) extra.value="";
-  document.getElementById("adminSaveButton").textContent="حفظ المحتوى";
+  const meta=ADMIN_SECTION_META[selectedSection];
+  document.getElementById("adminSaveButton").textContent=meta?"حفظ محتوى "+meta.name:"حفظ المحتوى";
+  adminConfigureMediaKind();
 }
 
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
 document.getElementById("adminSearch")?.addEventListener("input",adminRenderRecords);
 document.getElementById("adminFilter")?.addEventListener("change",adminRenderRecords);
+adminConfigureMediaKind();
 
 /* الخروج */
 document.getElementById("adminLogout")?.addEventListener("click",async()=>{
@@ -2845,11 +2882,13 @@ adminInitialize();
 <script>
 /* مكتبة قراءة السيناريوهات الكاملة — ملفات PDF خاصة للأعضاء */
 let scenarioScriptRecords=[];
+let adminScenarioScriptRecords=[];
 function scenarioLibraryClient(){
   if(typeof accountClient!="function") throw new Error("خدمة الحسابات غير جاهزة.");
   return accountClient();
 }
 function scenarioScriptMessage(message){const el=document.getElementById("adminScenarioScriptMessage");if(el)el.textContent=message;}
+function scenarioRightsStatusLabel(status){return ({unverified:"لم يتم التحقق",original_author:"عمل أصلي لصاحب الحقوق",permission_granted:"تصريح نشر",licensed:"ترخيص نشر",public_domain:"الملكية العامة",admin_responsibility:"إقرار مدير المنصة"})[status]||"غير محدد";}
 function resetAdminScenarioScriptForm(){
   const form=document.getElementById("adminScenarioScriptForm");if(form)form.reset();
   const id=document.getElementById("adminScenarioScriptId");if(id)id.value="";
@@ -2858,25 +2897,54 @@ function resetAdminScenarioScriptForm(){
 async function adminLoadScenarioScripts(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminScenarioScriptList");if(box)box.innerHTML="<p>جارٍ تحميل السيناريوهات...</p>";
-  const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,published,created_at").order("created_at",{ascending:false}).limit(200);
+  const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,published,created_at,rights_holder,rights_status,rights_note,rights_confirmed").order("created_at",{ascending:false}).limit(200);
   if(error){if(box)box.textContent="تعذر تحميل المكتبة: "+error.message;return;}
-  scenarioScriptRecords=data||[];
+  adminScenarioScriptRecords=data||[];
   if(!box)return;
-  box.innerHTML=scenarioScriptRecords.length?scenarioScriptRecords.map(item=>`<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.author)} • ${adminEscape(item.category)}</p><p>${item.published?"متاح للأعضاء":"مسودة غير منشورة"}</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript('${item.id}')">تعديل البيانات</button><button class="btn" type="button" onclick="adminToggleScenarioScript('${item.id}',${!item.published})">${item.published?"إيقاف النشر":"نشر للأعضاء"}</button><button class="btn" type="button" onclick="adminDeleteScenarioScript('${item.id}')">حذف</button></div></article>`).join(""):'<p style="color:var(--muted)">لم تتم إضافة سيناريوهات كاملة بعد.</p>';
+  box.innerHTML=adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>`<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.author)} • ${adminEscape(item.category)}</p><p>${item.published?"متاح للأعضاء":"مسودة غير منشورة"} • حالة الإتاحة: ${item.rights_confirmed?(item.rights_status==="admin_responsibility"?"بإقرار المدير":"تم استكمال بيانات الحقوق"):"غير مكتملة"}</p><p>بيانات الإتاحة: ${adminEscape(item.rights_holder||"غير محدد")} • الأساس: ${scenarioRightsStatusLabel(item.rights_status||"unverified")}</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript('${item.id}')">تعديل البيانات والحقوق</button>${!item.published&&!item.rights_confirmed?`<button class="btn primary" type="button" onclick="adminDeclareAndPublishScenarioScript('${item.id}')">إقرار المدير والنشر</button>`:""}<button class="btn" type="button" onclick="adminToggleScenarioScript('${item.id}',${!item.published})">${item.published?"إيقاف النشر":"نشر للأعضاء / إقرار المدير عند الحاجة"}</button><button class="btn" type="button" onclick="adminDeleteScenarioScript('${item.id}')">حذف</button></div></article>`).join(""):'<p style="color:var(--muted)">لم تتم إضافة سيناريوهات كاملة بعد.</p>';
 }
 function adminEditScenarioScript(id){
-  const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
+  const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
   document.getElementById("adminScenarioScriptId").value=item.id;
   document.getElementById("adminScenarioScriptTitle").value=item.title||"";
   document.getElementById("adminScenarioScriptAuthor").value=item.author||"";
   document.getElementById("adminScenarioScriptCategory").value=item.category||"";
   document.getElementById("adminScenarioScriptSummary").value=item.summary||"";
+  document.getElementById("adminScenarioScriptRightsHolder").value=item.rights_holder||"";
+  document.getElementById("adminScenarioScriptRightsStatus").value=item.rights_status||"unverified";
+  document.getElementById("adminScenarioScriptRightsNote").value=item.rights_note||"";
+  document.getElementById("adminScenarioScriptRightsConfirmed").checked=!!item.rights_confirmed;
   document.getElementById("adminScenarioScriptPublished").checked=!!item.published;
   scenarioScriptMessage("يمكنك تعديل البيانات أو اختيار ملف PDF جديد لاستبدال النسخة الحالية.");
   document.getElementById("adminScenarioScriptForm").scrollIntoView({behavior:"smooth",block:"center"});
 }
+async function adminDeclareAndPublishScenarioScript(id){
+  if(!adminSupabase||!adminSession){scenarioScriptMessage("سجّل الدخول بحساب مدير المنصة أولًا.");return;}
+  const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));
+  if(!item)return;
+  const accepted=confirm(`إقرار مدير المنصة ونشر العمل: ${item.title}؟\n\nبتأكيدك، تقر بأنك تملك حق إتاحة هذا العمل أو تتحمل مسؤولية قرار نشره.`);
+  if(!accepted)return;
+  const {error}=await adminSupabase.from("scenario_scripts").update({
+    rights_holder:"مدير المنصة",
+    rights_status:"admin_responsibility",
+    rights_note:"إقرار مدير المنصة: أكد المدير امتلاكه حق إتاحة هذا العمل أو تحمله مسؤولية قرار نشره.",
+    rights_confirmed:true,
+    published:true,
+    updated_at:new Date().toISOString()
+  }).eq("id",id);
+  if(error){scenarioScriptMessage("تعذر تنفيذ إقرار المدير والنشر: "+error.message);return;}
+  scenarioScriptMessage("تم تسجيل إقرارك كمدير وإتاحة السيناريو للأعضاء.");
+  await adminLoadScenarioScripts();
+  await loadPublishedScenarioScripts(true);
+}
+
 async function adminToggleScenarioScript(id,published){
-  if(!adminSupabase||!adminSession)return;
+  if(!adminSupabase||!adminSession){scenarioScriptMessage("سجّل الدخول بحساب مدير المنصة أولًا.");return;}
+  const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));
+  if(published&&(!item||!item.rights_confirmed||!String(item.rights_holder||"").trim()||item.rights_status==="unverified")){
+    await adminDeclareAndPublishScenarioScript(id);
+    return;
+  }
   const {error}=await adminSupabase.from("scenario_scripts").update({published}).eq("id",id);
   if(error){scenarioScriptMessage("تعذر تغيير حالة النشر: "+error.message);return;}
   scenarioScriptMessage(published?"تم إتاحة السيناريو للأعضاء.":"تم إيقاف إتاحة السيناريو.");
@@ -2885,7 +2953,7 @@ async function adminToggleScenarioScript(id,published){
 async function adminDeleteScenarioScript(id){
   if(!adminSupabase||!adminSession)return;
   if(!confirm("هل تريد حذف السيناريو وملفه نهائيًا؟"))return;
-  const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
+  const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
   const {error}=await adminSupabase.from("scenario_scripts").delete().eq("id",id);
   if(error){scenarioScriptMessage("تعذر حذف السجل: "+error.message);return;}
   if(item.storage_path){const {error:removeError}=await adminSupabase.storage.from("scenario-scripts").remove([item.storage_path]);if(removeError)scenarioScriptMessage("حُذف السجل، لكن تعذر حذف الملف: "+removeError.message);}
@@ -2898,18 +2966,25 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
   if(file&&(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name))){scenarioScriptMessage("ارفع ملف PDF فقط حتى يظهر داخل قارئ السيناريو.");return;}
   if(file&&file.size>50*1024*1024){scenarioScriptMessage("حجم الملف أكبر من 50 ميجابايت.");return;}
   const id=document.getElementById("adminScenarioScriptId").value;
-  const previous=scenarioScriptRecords.find(x=>String(x.id)===String(id));
+  const previous=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));
+  let rightsHolder=document.getElementById("adminScenarioScriptRightsHolder").value.trim();
+  const rightsStatus=document.getElementById("adminScenarioScriptRightsStatus").value;
+  const rightsConfirmed=document.getElementById("adminScenarioScriptRightsConfirmed").checked;
+  if(rightsStatus==="admin_responsibility"&&!rightsHolder)rightsHolder="إقرار مدير المنصة بتحمل مسؤولية قرار الإتاحة";
+  const wantsPublish=document.getElementById("adminScenarioScriptPublished").checked;
+  if(wantsPublish&&(!rightsHolder||rightsStatus==="unverified"||!rightsConfirmed)){scenarioScriptMessage("قبل الإتاحة، أكمل إقرارك كمدير وأكد مسؤوليتك عن قرار النشر.");return;}
   if(!id&&!file){scenarioScriptMessage("اختر ملف PDF للسيناريو قبل الحفظ.");return;}
   let storagePath=previous?.storage_path||null;
   try{
     button.disabled=true;button.textContent="جارٍ الحفظ...";
     if(file){
-      const safeName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-90)||"scenario.pdf";
+      const safeName=(file.name.normalize("NFKC").replace(/[^A-Za-z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-90)||"scenario.pdf");
       storagePath=`published/${crypto.randomUUID()}-${safeName}`;
       const {error:uploadError}=await adminSupabase.storage.from("scenario-scripts").upload(storagePath,file,{upsert:false,contentType:"application/pdf",cacheControl:"300"});
       if(uploadError)throw uploadError;
     }
-    const record={title:document.getElementById("adminScenarioScriptTitle").value.trim(),author:document.getElementById("adminScenarioScriptAuthor").value.trim(),category:document.getElementById("adminScenarioScriptCategory").value,summary:document.getElementById("adminScenarioScriptSummary").value.trim(),storage_path:storagePath,published:document.getElementById("adminScenarioScriptPublished").checked,updated_at:new Date().toISOString()};
+    const rightsNote=document.getElementById("adminScenarioScriptRightsNote").value.trim()||null;
+    const record={title:document.getElementById("adminScenarioScriptTitle").value.trim(),author:document.getElementById("adminScenarioScriptAuthor").value.trim(),category:document.getElementById("adminScenarioScriptCategory").value,summary:document.getElementById("adminScenarioScriptSummary").value.trim(),storage_path:storagePath,published:wantsPublish,rights_holder:rightsHolder||null,rights_status:rightsStatus,rights_note:rightsNote,rights_confirmed:rightsConfirmed,updated_at:new Date().toISOString()};
     const result=id?await adminSupabase.from("scenario_scripts").update(record).eq("id",id):await adminSupabase.from("scenario_scripts").insert(record);
     if(result.error)throw result.error;
     if(file&&previous?.storage_path){const {error:oldError}=await adminSupabase.storage.from("scenario-scripts").remove([previous.storage_path]);if(oldError)scenarioScriptMessage("تم الحفظ، لكن تعذر تنظيف ملف PDF القديم: "+oldError.message);}
@@ -2924,8 +2999,8 @@ async function loadPublishedScenarioScripts(force=false){
   if(!force&&box.dataset.scriptsLoaded==="1")return;
   box.dataset.scriptsLoaded="1";
   try{
-    const {data,error}=await scenarioLibraryClient().from("scenario_scripts").select("id,title,author,category,summary,published,created_at").eq("published",true).order("created_at",{ascending:false}).limit(100);
-    if(error)throw error;scenarioScriptRecords=data||[];renderScenarioScriptCards();
+    const {data,error}=await scenarioLibraryClient().from("scenario_scripts").select("id,title,author,category,summary,published,created_at,rights_holder,rights_status,rights_confirmed").eq("published",true).eq("rights_confirmed",true).order("created_at",{ascending:false}).limit(100);
+    if(error)throw error;scenarioScriptRecords=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());renderScenarioScriptCards();
   }catch(error){box.dataset.scriptsLoaded="0";box.innerHTML=`<div class="panel" style="grid-column:1/-1"><p>تعذر تحميل مكتبة السيناريوهات الكاملة: ${escapeHTML(error.message||"تحقق من إعداد قاعدة البيانات.")}</p></div>`;}
 }
 function renderScenarioScriptCards(){
@@ -2934,27 +3009,48 @@ function renderScenarioScriptCards(){
   const category=document.getElementById("libraryCategory")?.value||"";
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
-  const scriptCards=items.map(item=>`<article class="feature"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو كامل للقراءة</div><h3>${escapeHTML(item.title)}</h3><p>المؤلف: ${escapeHTML(item.author)}</p><p>التصنيف: ${escapeHTML(item.category)}</p><p>${escapeHTML(item.summary||"")}</p><button class="btn primary" type="button" onclick="openScenarioScript('${item.id}')">اقرأ السيناريو</button></div></article>`);
-  const legacyCards=legacy.map(item=>`<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<a class="btn" href="${safeHttpUrl(item.file)}" target="_blank" rel="noopener">فتح الملف</a>`:""}</div></article>`);
+  const scriptCards=items.map(item=>`<article class="feature scenario-library-card"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو متاح للأعضاء</div><h3>${escapeHTML(item.title)}</h3><div class="scenario-card-meta"><span>المؤلف: ${escapeHTML(item.author||"غير محدد")}</span><span>${escapeHTML(item.category||"غير مصنف")}</span><span>بيانات الإتاحة موثقة</span></div><p>${escapeHTML(item.summary||"لا يوجد ملخص متاح.")}</p><button class="btn primary" type="button" aria-label="قراءة سيناريو ${escapeHTML(item.title)}" onclick="openScenarioScript('${item.id}')">اقرأ السيناريو</button></div></article>`);
+  const legacyCards=legacy.map(item=>{const legacyIndex=scenarioLibrary.indexOf(item);return `<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="" loading="lazy">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<button class="btn primary" type="button" onclick="openLegacyScenario(${legacyIndex})">اقرأ السيناريو داخل المنصة</button>`:""}</div></article>`;});
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
   box.innerHTML=cards.join("");
 }
-async function openScenarioScript(id){
+function showScenarioReader(titleText,noticeText){
   const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame"),title=document.getElementById("scenarioReaderTitle"),notice=document.getElementById("scenarioReaderNotice");
-  const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item||!item.published)return;
-  if(!modal||!frame)return;
-  modal.style.display="block";title.textContent=item.title;frame.innerHTML='<p style="padding:24px;color:white">جارٍ تجهيز صفحات السيناريو...</p>';modal.scrollIntoView({behavior:"smooth",block:"start"});
+  if(!modal||!frame)return null;
+  title.textContent=titleText||"قارئ السيناريو";notice.textContent=noticeText||"جارٍ تجهيز القراءة...";
+  frame.innerHTML='<div role="status" style="padding:28px;color:white;text-align:center"><p>جارٍ تحميل صفحات السيناريو...</p><div style="height:5px;max-width:220px;margin:14px auto;background:#444;border-radius:9px;overflow:hidden"><div style="height:100%;width:45%;background:var(--gold);animation:scenarioReaderPulse 1.2s ease-in-out infinite alternate"></div></div></div>';
+  modal.style.display="block";modal.scrollIntoView({behavior:"smooth",block:"start"});return frame;
+}
+function renderScenarioPdf(frame,url,titleText,downloadLabel){
+  const safeUrl=safeHttpUrl(url);if(!safeUrl)throw new Error("رابط ملف السيناريو غير صالح.");
+  frame.innerHTML=`<iframe title="${escapeHTML(titleText||"السيناريو")}" src="${escapeHTML(safeUrl)}#toolbar=1&navpanes=0&view=FitH" loading="eager" referrerpolicy="no-referrer" allow="fullscreen" style="display:block;width:100%;height:78vh;min-height:420px;border:0;background:#fff"></iframe><div class="scenario-reader-tools" style="padding:10px;background:#171717"><span style="color:#ddd;font-size:12px;flex:1">إذا لم يظهر الملف داخل القارئ، يمكنك فتح نسخة القراءة من هنا.</span><a class="btn" href="${escapeHTML(safeUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(downloadLabel||"فتح نسخة بديلة")}</a></div>`;
+}
+function openLegacyScenario(index){
+  const item=scenarioLibrary[Number(index)];if(!item||!item.file)return;
+  const frame=showScenarioReader(item.title,`الكاتب: ${item.author||"غير محدد"} • قراءة داخل المنصة`);if(!frame)return;
+  try{renderScenarioPdf(frame,item.file,item.title,"فتح نسخة بديلة");}
+  catch(error){frame.innerHTML=`<p style="padding:24px;color:white">تعذر فتح الملف: ${escapeHTML(error.message||"الرابط غير صالح")}</p>`;}
+}
+async function openScenarioScript(id){
+  const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item||!item.published||!item.rights_confirmed)return;
+  const frame=showScenarioReader(item.title,`المؤلف: ${item.author||"غير محدد"} • قراءة للأعضاء المسجلين`);if(!frame)return;
   try{
-    const client=scenarioLibraryClient();const {data:userData,error:userError}=await client.auth.getUser();if(userError)throw userError;
-    if(!userData.user){frame.innerHTML='<div style="padding:24px;color:white;text-align:center"><p>قراءة السيناريوهات الكاملة متاحة للأعضاء المسجلين.</p><button class="btn primary" type="button" onclick="showPage(\'account\')">تسجيل الدخول أو إنشاء حساب</button></div>';return;}
-    const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path").eq("id",id).eq("published",true).single();if(rowError)throw rowError;
-    const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,3600);if(signedError)throw signedError;
-    frame.innerHTML=`<iframe title="${escapeHTML(item.title)}" src="${escapeHTML(signed.signedUrl)}#toolbar=0&navpanes=0&view=FitH" loading="lazy" style="width:100%;height:75vh;min-height:520px;border:0;background:#fff"></iframe>`;
-    notice.textContent=`المؤلف: ${item.author} • نسخة قراءة مؤقتة للأعضاء • حقوق النشر محفوظة`;
-  }catch(error){frame.innerHTML=`<p style="padding:24px;color:white">تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p>`;}
+    const client=scenarioLibraryClient();
+    // قراءة الجلسة محليًا لتجنب طلب تحقق إضافي قبل استعلام قاعدة البيانات؛ سيظل RLS هو الحارس الفعلي.
+    const {data:sessionData}=await client.auth.getSession();
+    if(!sessionData?.session?.user){frame.innerHTML='<div style="padding:24px;color:white;text-align:center"><p>قراءة السيناريوهات الكاملة متاحة للأعضاء المسجلين.</p><button class="btn primary" type="button" onclick="showPage(&quot;account&quot;)">تسجيل الدخول أو إنشاء حساب</button></div>';return;}
+    const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path,rights_holder,rights_status,rights_confirmed").eq("id",id).eq("published",true).eq("rights_confirmed",true).single();
+    if(rowError)throw rowError;
+    if(!row?.rights_confirmed||row.rights_status==="unverified"||!String(row.rights_holder||"").trim())throw new Error("هذا العمل غير متاح للقراءة لحين استكمال التحقق من حقوق نشره.");
+    if(!row.storage_path)throw new Error("ملف السيناريو غير مرتبط بسجل المكتبة. أبلغ الإدارة.");
+    const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,1800);if(signedError)throw signedError;
+    renderScenarioPdf(frame,signed.signedUrl,item.title,"فتح نسخة بديلة");
+    const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • أساس الإتاحة: ${row.rights_holder} • رابط القراءة مؤقت لمدة 30 دقيقة.`;
+  }catch(error){frame.innerHTML=`<div style="padding:24px;color:white;text-align:center"><p>تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p><button class="btn" type="button" onclick="closeScenarioReader()">إغلاق</button></div>`;}
 }
 function closeScenarioReader(){const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame");if(frame)frame.innerHTML="";if(modal)modal.style.display="none";}
+document.addEventListener("keydown",event=>{if(event.key==="Escape"){const reader=document.getElementById("scenarioReader");if(reader&&reader.style.display!=="none")closeScenarioReader();}});
 document.getElementById("librarySearch")?.addEventListener("input",()=>{renderLibrary();renderScenarioScriptCards();});
 document.getElementById("libraryCategory")?.addEventListener("change",()=>{renderLibrary();renderScenarioScriptCards();});
 </script>
@@ -2971,57 +3067,30 @@ function publicContentMessage(message){
   console.log("[سيناريو وسيناريست] " + message);
 }
 
-/* الاحتفاظ بالبيانات العامة اللازمة للعرض فقط، ومنع تسريب ملاحظات الإدارة */
-function sanitizePublicContentRecord(item){
-  const source=item && item.extra_data && typeof item.extra_data==="object" && !Array.isArray(item.extra_data)
-    ? item.extra_data : {};
-  const safe={};
-  ["name","author","writer","specialty","type","city","director","duration","owner",
-   "rights_status","source_url","source","year","body","lesson_text"].forEach(key=>{
-    const value=source[key];
-    if(typeof value==="string" || typeof value==="number") safe[key]=value;
-  });
-  if(Array.isArray(source.resources)){
-    safe.resources=source.resources.filter(resource=>resource && typeof resource==="object" && !Array.isArray(resource))
-      .map(resource=>{
-        const clean={};
-        ["title","url","description"].forEach(key=>{
-          if(typeof resource[key]==="string") clean[key]=resource[key];
-        });
-        return clean;
-      });
-  }
-  return {...item,extra_data:safe};
-}
-
 function mapContentRecord(item){
-  const safeRecord=sanitizePublicContentRecord(item);
-  const extra=safeRecord.extra_data;
+  const extra=item.extra_data && typeof item.extra_data==="object" ? item.extra_data : {};
   return {
-    id:safeRecord.id,
-    title:safeRecord.title || "",
-    name:extra.name || safeRecord.title || "",
+    id:item.id,
+    title:item.title || "",
+    name:extra.name || item.title || "",
     author:extra.author || extra.writer || "",
-    category:safeRecord.category || "",
-    specialty:extra.specialty || safeRecord.category || "",
-    type:extra.type || safeRecord.category || "",
+    category:item.category || "",
+    specialty:extra.specialty || item.category || "",
+    type:extra.type || item.category || "",
     city:extra.city || "",
     director:extra.director || "",
     duration:extra.duration || "",
     owner:extra.owner || "",
-    description:safeRecord.description || "",
-    summary:safeRecord.description || "",
-    bio:safeRecord.description || "",
-    image:safeRecord.image_url || "",
-    cover:safeRecord.image_url || "",
-    work:safeRecord.content_url || "",
-    url:safeRecord.content_url || "",
-    stream:safeRecord.content_url || "",
-    file:safeRecord.content_url || "",
-    rightsStatus:extra.rights_status || "",
-    sourceUrl:extra.source_url || "",
-    extra:extra,
-    published:!!safeRecord.published
+    description:item.description || "",
+    summary:item.description || "",
+    bio:item.description || "",
+    image:item.image_url || "",
+    cover:item.image_url || "",
+    work:item.content_url || "",
+    url:item.content_url || "",
+    stream:item.content_url || "",
+    file:item.content_url || "",
+    published:!!item.published
   };
 }
 
@@ -3139,11 +3208,10 @@ function initializeInlineHlsVideos(root=document){
 
 /* توزيع سجلات قاعدة البيانات على أقسام الموقع */
 function distributePublicContent(records){
-  const safeRecords=(records||[]).map(sanitizePublicContentRecord);
-  publicContentRecords=safeRecords;
+  publicContentRecords=records;
 
   const grouped={};
-  safeRecords.forEach(item=>{
+  records.forEach(item=>{
     if(!grouped[item.content_type]) grouped[item.content_type]=[];
     grouped[item.content_type].push(mapContentRecord(item));
   });
@@ -3631,120 +3699,5 @@ loadApprovedIdeas();
 })();
 </script>
 
-
-<script>
-/* أكاديمية سيناريو وسيناريست: المشروع النهائي للطالب */
-(function(){
-  const $ = id => document.getElementById(id);
-  const fields = {
-    project_title: "academyFinalProjectTitle",
-    genre: "academyFinalProjectGenre",
-    logline: "academyFinalProjectLogline",
-    synopsis: "academyFinalProjectSynopsis",
-    treatment: "academyFinalProjectTreatment",
-    screenplay: "academyFinalProjectScreenplay"
-  };
-  let editingProject = null;
-  let projects = [];
-  function projectMessage(message){ if($("academyFinalProjectMessage")) $("academyFinalProjectMessage").textContent=message; }
-  function projectStatus(status){
-    return status==="approved" ? "تمت الموافقة" : status==="needs_revision" ? "يحتاج إلى تعديل" : status==="pending" ? "قيد مراجعة الإدارة" : "مسودة محفوظة";
-  }
-  function resetProjectForm(){
-    $("academyFinalProjectForm")?.reset();
-    $("academyFinalProjectId").value="";
-    editingProject=null;
-    $("academyFinalProjectCancel").style.display="none";
-    projectMessage("");
-  }
-  function renderProjects(){
-    const box=$("academyFinalProjectList");
-    if(!box)return;
-    if(!projects.length){box.innerHTML='<div class="panel">لم تحفظ مشروعًا نهائيًا بعد. ابدأ بكتابة مشروعك أعلاه.</div>';return;}
-    box.innerHTML=projects.map(p=>{
-      const canEdit=["draft","needs_revision"].includes(p.status);
-      return `<article class="panel"><h4 style="color:var(--gold);margin:0 0 8px">${escapeHTML(p.project_title)}</h4>
-        <p>${escapeHTML(p.genre)} • <strong>${projectStatus(p.status)}</strong></p>
-        <p>${escapeHTML(p.admin_feedback||"لا توجد ملاحظات من الإدارة حتى الآن.")}</p>
-        <small>${p.submitted_at?new Date(p.submitted_at).toLocaleString("ar-EG"):""}</small>
-        ${canEdit?`<div style="margin-top:10px"><button class="btn" type="button" onclick="editAcademyFinalProject('${p.id}')">استكمال / تعديل المشروع</button></div>`:""}
-      </article>`;
-    }).join("");
-  }
-  window.loadAcademyFinalProjects=async function(){
-    const account=$("academyFinalProjectAccount"),form=$("academyFinalProjectForm");
-    if(!account||!form)return;
-    if(!accountUser){
-      account.textContent="سجّل الدخول أولًا حتى تحفظ مشروعك وتتابع ملاحظات الإدارة.";
-      form.style.display="none";
-      $("academyFinalProjectList").innerHTML='<div class="panel">سجّل الدخول لعرض مشروعاتك.</div>';
-      return;
-    }
-    account.textContent="أنت مسجل الدخول. اكتب مشروعك واحفظه أو أرسله للمراجعة.";
-    form.style.display="block";
-    try{
-      const {data,error}=await accountClient().from("academy_final_projects").select("id,project_title,genre,logline,synopsis,treatment,screenplay,status,admin_feedback,submitted_at,updated_at").order("updated_at",{ascending:false}).limit(30);
-      if(error)throw error;
-      projects=data||[];
-      renderProjects();
-      if(projects.length){
-        const current=projects[0];
-        if(["draft","needs_revision"].includes(current.status)){
-          window.editAcademyFinalProject(current.id);
-        }else{
-          form.style.display="none";
-          account.textContent="لديك مشروع نهائي محفوظ بالفعل. يمكنك متابعة حالته وملاحظات الإدارة من القائمة أدناه.";
-        }
-      }
-    }catch(error){
-      $("academyFinalProjectList").innerHTML='<div class="panel">تعذر تحميل المشروعات: '+escapeHTML(error.message||"تحقق من الاتصال والصلاحيات.")+'</div>';
-    }
-  };
-  window.editAcademyFinalProject=function(id){
-    const p=projects.find(x=>x.id===id);
-    if(!p||!["draft","needs_revision"].includes(p.status))return;
-    editingProject=p.id;
-    $("academyFinalProjectId").value=p.id;
-    Object.entries(fields).forEach(([key,id])=>{$(id).value=p[key]||"";});
-    $("academyFinalProjectCancel").style.display="inline-block";
-    projectMessage("أنت تعدّل مشروعًا محفوظًا. بعد الانتهاء أرسله للمراجعة.");
-    $("academyFinalProjectForm").scrollIntoView({behavior:"smooth",block:"start"});
-  };
-  async function saveProject(status){
-    if(!accountUser){projectMessage("سجّل الدخول أولًا.");return;}
-    if(!$("academyFinalProjectForm").reportValidity())return;
-    const payload={user_id:accountUser.id,status,updated_at:new Date().toISOString()};
-    if(status==="pending")payload.submitted_at=new Date().toISOString();
-    for(const [key,id] of Object.entries(fields))payload[key]=$(id).value.trim();
-    if(Object.values(fields).some(id=>!$(id).value.trim())){projectMessage("أكمل جميع عناصر المشروع قبل الحفظ أو الإرسال.");return;}
-    const submit=$("academyFinalProjectForm").querySelector('button[type="submit"]');
-    submit.disabled=true;
-    projectMessage(status==="pending"?"جارٍ إرسال المشروع للمراجعة...":"جارٍ حفظ المسودة...");
-    try{
-      const client=accountClient();
-      const result=editingProject
-        ? await client.from("academy_final_projects").update(payload).eq("id",editingProject)
-        : await client.from("academy_final_projects").insert(payload);
-      if(result.error)throw result.error;
-      projectMessage(status==="pending"?"تم إرسال المشروع للمراجعة. ستظهر ملاحظات الإدارة هنا.":"تم حفظ المسودة بنجاح.");
-      resetProjectForm();
-      await window.loadAcademyFinalProjects();
-    }catch(error){
-      projectMessage("تعذر حفظ المشروع: "+(error.message||"تحقق من الاتصال والصلاحيات."));
-    }finally{submit.disabled=false;}
-  }
-  $("academyFinalProjectForm")?.addEventListener("submit",event=>{event.preventDefault();saveProject("pending");});
-  $("academyFinalProjectSaveDraft")?.addEventListener("click",()=>saveProject("draft"));
-  $("academyFinalProjectCancel")?.addEventListener("click",resetProjectForm);
-  $("academyFinalProjectRefresh")?.addEventListener("click",()=>window.loadAcademyFinalProjects());
-  const previousShowPage=window.showPage;
-  if(typeof previousShowPage==="function"){
-    window.showPage=function(id){previousShowPage(id);if(id==="academy")window.loadAcademyFinalProjects();};
-  }
-  document.addEventListener("DOMContentLoaded",()=>{
-    if(document.getElementById("academyFinalProjectPanel")&&document.getElementById("academy")?.classList.contains("active"))window.loadAcademyFinalProjects();
-  });
-})();
-</script>
 </body>
 </html>
