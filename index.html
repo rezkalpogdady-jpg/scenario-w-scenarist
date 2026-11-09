@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.37">
+<body data-platform-version="6.8.38">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -982,18 +982,12 @@ renderLibrary();
   </div>
   <div id="shortsAdminPublish" class="panel" style="display:none;margin:16px 0">
     <h3 style="color:var(--gold)">رفع فيلم قصير</h3>
-    <p>اختار الفيديو مباشرة من معرض الهاتف أو ملفاته (MP4 أو WebM حتى 50 ميجابايت)، ويمكنك إضافة أفيش من الصور.</p>
+    <p>اختار الفيديو واكتب في الوصف أي تفاصيل تحبها عن الفيلم. لا توجد بيانات أخرى مطلوبة.</p>
     <form id="shortsAdminForm">
-      <label>اسم الفيلم</label><input name="title" required maxlength="180" placeholder="عنوان الفيلم">
-      <label>التصنيف</label><input name="category" maxlength="100" placeholder="دراما، كوميدي، وثائقي...">
-      <label>وصف مختصر</label><textarea name="description" rows="3" maxlength="3000" placeholder="نبذة عن الفيلم"></textarea>
-      <label>اختيار الفيديو من الهاتف</label><input name="video" type="file" accept="video/mp4,video/webm,.mp4,.webm" required>
-      <label>اختيار أفيش الفيلم من الصور (اختياري)</label><input name="poster" type="file" accept="image/*">
-      <label>اسم المخرج</label><input name="director" maxlength="160">
-      <label>اسم الكاتب</label><input name="writer" maxlength="160">
-      <label>مدة الفيلم</label><input name="duration" maxlength="60" placeholder="مثال: 12 دقيقة">
-      <label>سنة الإنتاج</label><input name="year" type="number" min="1900" max="2100">
-      <label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" style="width:auto"> نشر الفيلم للزوار بعد الحفظ</label>
+      <label>اختيار الفيديو من الهاتف (MP4 أو WebM حتى 50 ميجابايت)</label>
+      <input name="video" type="file" accept="video/mp4,video/webm,.mp4,.webm" required>
+      <label>الوصف</label>
+      <textarea name="description" rows="5" maxlength="5000" placeholder="اكتب هنا كل ما تريد عن الفيلم..." required></textarea>
       <button class="btn primary" type="submit">رفع وحفظ الفيلم</button>
       <p id="shortsAdminMessage" role="status" aria-live="polite"></p>
     </form>
@@ -1200,13 +1194,8 @@ function renderShortFilms(){
     const media=video&&extra.media_kind==="video"
       ? '<video controls playsinline preload="metadata"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' style="width:100%;max-height:420px;background:#000;border-radius:9px" src="'+escapeHTML(video)+'"></video>'
       : (poster?'<img src="'+escapeHTML(poster)+'" alt="" loading="lazy">':'');
-    return '<article class="feature">'+media+'<div class="feature-content"><h3>'+escapeHTML(item.title||"فيلم قصير")+'</h3>'+
-      (item.director?'<p>المخرج: '+escapeHTML(item.director)+'</p>':'')+
-      (extra.writer?'<p>الكاتب: '+escapeHTML(extra.writer)+'</p>':'')+
-      (item.duration?'<p>المدة: '+escapeHTML(item.duration)+'</p>':'')+
-      (extra.year?'<p>سنة الإنتاج: '+escapeHTML(extra.year)+'</p>':'')+
-      (item.category?'<p>التصنيف: '+escapeHTML(item.category)+'</p>':'')+
-      (item.description?'<p>'+escapeHTML(item.description)+'</p>':'')+
+    return '<article class="feature">'+media+'<div class="feature-content">'+
+      (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
       (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener">مشاهدة الفيلم</a>':'')+
       '</div></article>';
   }).join("");
@@ -5085,25 +5074,20 @@ async function adminInlineUpload(file,bucket,folder,limit){
 }
 document.getElementById('shortsAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase){alert('سجّل دخول المدير أولاً.');return;}
- const form=this,fd=new FormData(form),msg=document.getElementById('shortsAdminMessage'),btn=form.querySelector('[type=submit]');let video=null,poster=null;
+ const form=this,fd=new FormData(form),msg=document.getElementById('shortsAdminMessage'),btn=form.querySelector('[type=submit]');let video=null;
  try{
   btn.disabled=true;msg.textContent='جارٍ رفع الفيديو...';
   const videoFile=fd.get('video');
   if(!videoFile?.size)throw new Error('اختر ملف الفيديو أولاً.');
   if(!['video/mp4','video/webm'].includes(videoFile.type))throw new Error('اختر فيديو MP4 أو WebM.');
+  const description=String(fd.get('description')||'').trim();
+  if(!description)throw new Error('اكتب وصف الفيلم.');
   video=await adminInlineUpload(videoFile,'site-media','shorts',50*1024*1024);
-  const posterFile=fd.get('poster');
-  if(posterFile?.size){
-   if(!['image/jpeg','image/png','image/webp'].includes(posterFile.type))throw new Error('صيغة الأفيش JPG أو PNG أو WEBP.');
-   poster=await adminInlineUpload(posterFile,'site-media','shorts-posters',10*1024*1024);
-  }
-  const extra={media_kind:'video',section_label:'الأفلام القصيرة',director:String(fd.get('director')||'').trim(),writer:String(fd.get('writer')||'').trim(),duration:String(fd.get('duration')||'').trim(),year:String(fd.get('year')||'').trim()};
-  const record={content_type:'shorts',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||'').trim(),description:String(fd.get('description')||'').trim(),image_url:poster?.url||null,content_url:video.url,extra_data:extra,published:fd.get('published')==='on'};
+  const record={content_type:'shorts',title:'فيلم قصير',category:null,description,image_url:null,content_url:video.url,extra_data:{media_kind:'video',section_label:'الأفلام القصيرة'},published:true};
   const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
-  form.reset();msg.textContent='تم رفع الفيلم وحفظه بنجاح.';await loadPublicContent();if(typeof adminLoadRecords==='function')await adminLoadRecords();
+  form.reset();msg.textContent='تم رفع الفيلم وحفظه ونشره.';await loadPublicContent();if(typeof adminLoadRecords==='function')await adminLoadRecords();
  }catch(err){
-  const paths=[video?.path,poster?.path].filter(Boolean);
-  if(paths.length)await adminSupabase.storage.from('site-media').remove(paths);
+  if(video?.path)await adminSupabase.storage.from('site-media').remove([video.path]);
   msg.textContent='تعذر رفع الفيلم: '+(err.message||'حاول مرة أخرى.');
  }finally{btn.disabled=false;}
 });
