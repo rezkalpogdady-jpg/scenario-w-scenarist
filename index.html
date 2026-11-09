@@ -3595,6 +3595,7 @@ async function loadApprovedMemberProfiles(){
   creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";}});
 
   renderWriters();renderDirectors();renderTalents();
+  if(typeof loadApprovedDirectorWorks==="function") await loadApprovedDirectorWorks();
 }
 
 /* إنشاء اتصال عام لقراءة المحتوى المنشور */
@@ -4186,14 +4187,14 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
       const {data:existing,error:readError}=await accountClient().from("director_work_submissions").select("storage_path").eq("id",directorWorkEditingId).eq("user_id",accountUser.id).maybeSingle();
       if(readError)throw readError;
       oldPath=existing?.storage_path||null;
-      payload.storage_path=oldPath;
+      payload.storage_path=external_url?null:oldPath;
       payload.external_url=external_url||null;
     }
     let result;
     if(directorWorkEditingId)result=await accountClient().from("director_work_submissions").update(payload).eq("id",directorWorkEditingId).eq("user_id",accountUser.id);
     else result=await accountClient().from("director_work_submissions").insert(payload);
     if(result.error)throw result.error;
-    if(uploadedPath&&oldPath)await accountClient().storage.from("director-work-videos").remove([oldPath]);
+    if(oldPath&&(uploadedPath||external_url))await accountClient().storage.from("director-work-videos").remove([oldPath]);
     this.reset();directorWorkEditingId=null;
     document.getElementById("directorWorkId").value="";
     document.getElementById("directorWorkSubmit").textContent="إرسال العمل لمراجعة الإدارة";
