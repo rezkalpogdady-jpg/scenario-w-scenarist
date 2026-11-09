@@ -2184,6 +2184,7 @@ function accountShowUser(user,profile){
   const educationField=document.getElementById("accountEditEducation");if(educationField)educationField.value=profile?.education||"";
   const experienceField=document.getElementById("accountEditExperience");if(experienceField)experienceField.value=profile?.experience_years??"";
   const photoField=document.getElementById("accountEditPhoto");if(photoField)photoField.value="";
+  const writerPanel=document.getElementById("writerIdeasPanel");if(writerPanel)writerPanel.style.display=accountType==="writer"?"block":"none";
   const profileStatus=document.getElementById("accountProfileStatus");
   if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور ومعتمد. أي تعديل جديد سيعيده للمراجعة." : profile?.profile_status==="rejected" ? "الملف لم يُعتمد. عدّل بياناتك ثم أعد إرساله للمراجعة." : "ملفك قيد المراجعة أو لم يُرسل بعد، ولن يظهر للعامة قبل الموافقة.";
 }
@@ -3555,7 +3556,7 @@ async function loadApprovedMemberProfiles(){
     }
   });
   const [ideasResult,contactsResult]=await Promise.all([
-    publicContentClient.from("writer_ideas").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open").eq("status","approved").order("created_at",{ascending:false}),
+    publicContentClient.from("writer_ideas_public").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open").order("created_at",{ascending:false}),
     publicContentClient.from("writer_contact").select("user_id,phone").eq("is_public",true)
   ]);
   if(ideasResult.error)console.warn("تعذر تحميل أفكار المؤلفين",ideasResult.error.message);
@@ -4037,10 +4038,14 @@ document.getElementById("writerIdeaForm")?.addEventListener("submit",async funct
 async function adminLoadWriterIdeas(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminWriterIdeasList");if(!box)return;
-  const {data,error}=await adminSupabase.from("writer_ideas").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open,rights_confirmed,created_at,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await adminSupabase.from("writer_ideas").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open,rights_confirmed,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل أفكار المؤلفين: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد أفكار جديدة للمراجعة.</div>';return;}
-  box.innerHTML=data.map(item=>'<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>الكاتب: '+adminEscape(item.member_profiles?.display_name||"عضو")+' • '+(item.slot===1?"الفكرة الأولى":"الفكرة الثانية")+'</p><p>'+(item.format==="short"?"فيلم قصير":"فيلم روائي طويل")+' • '+adminEscape(item.genre||"")+'</p><p>'+adminEscape(item.summary)+'</p><p>المدة: '+(item.duration_minutes?Number(item.duration_minutes)+" دقيقة":"غير محددة")+' • المرحلة: '+({idea:"فكرة أولية",treatment:"معالجة",script:"سيناريو مكتمل"}[item.development_stage]||"")+'</p><p>إقرار الملكية: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • '+(item.collaboration_open?"متاحة للتعاون":"غير محددة للتعاون")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>').join("");
+  const ids=[...new Set(data.map(item=>item.user_id))];
+  const {data:profiles,error:profilesError}=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",ids);
+  if(profilesError){box.textContent="تعذر تحميل أسماء أصحاب الأفكار: "+profilesError.message;return;}
+  const names=new Map((profiles||[]).map(profile=>[profile.user_id,profile.display_name]));
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>الكاتب: '+adminEscape(names.get(item.user_id)||"عضو")+' • '+(item.slot===1?"الفكرة الأولى":"الفكرة الثانية")+'</p><p>'+(item.format==="short"?"فيلم قصير":"فيلم روائي طويل")+' • '+adminEscape(item.genre||"")+'</p><p>'+adminEscape(item.summary)+'</p><p>المدة: '+(item.duration_minutes?Number(item.duration_minutes)+" دقيقة":"غير محددة")+' • المرحلة: '+({idea:"فكرة أولية",treatment:"معالجة",script:"سيناريو مكتمل"}[item.development_stage]||"")+'</p><p>إقرار الملكية: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • '+(item.collaboration_open?"متاحة للتعاون":"غير محددة للتعاون")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewWriterIdea(\''+item.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>').join("");
 }
 async function adminReviewWriterIdea(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
