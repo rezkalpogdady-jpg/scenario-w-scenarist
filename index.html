@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.11: استبدال التلفزيون بسوق الكتب وإعلانات البيع. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.13: فلترة سوق الكتب حسب الصيغة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.12</title>
+<title>سيناريو وسيناريست – تحديث 6.8.13</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -1495,6 +1495,7 @@ renderProjects();
     <select id="bookFormatFilter"><option value="">كل الصيغ</option><option value="ورقي">ورقي</option><option value="إلكتروني">إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
     <select id="bookTypeFilter"><option value="">كل الأنواع</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
   </div>
+  <p id="bookResultsCount" style="color:var(--muted);font-size:13px;margin:10px 0" aria-live="polite">جارٍ تحميل الكتب...</p>
   <div id="bookListingsGrid" class="grid"><div class="panel">جارٍ تحميل الكتب المعروضة...</div></div>
   <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>املأ البيانات وأرفق صورة واضحة للغلاف. لن يظهر الإعلان إلا بعد موافقة الإدارة.</p></div>
   <div class="panel">
@@ -3909,7 +3910,8 @@ loadApprovedIdeas();
     const q=($('archiveSearch')?.value||'').trim().toLowerCase();
     const cat=$('archiveCategory')?.value||'';
     const rows=archiveRows.filter(x=>(!cat||x.category===cat)&&(`${x.title||''} ${x.description||''} ${x.extra_data?.year||''} ${x.extra_data?.artist||''} ${x.extra_data?.film||''}`).toLowerCase().includes(q));
-    if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
+    const count=document.getElementById("bookResultsCount");if(count)count.textContent="عدد الكتب المطابقة: "+rows.length;
+  if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
       const img=safeUrl(x.image_url),file=safeUrl(x.content_url);
       return `<article class="feature"><div class="feature-content">${img?`<img src="${esc(img)}" alt="${esc(x.title)}" loading="lazy" style="width:100%;max-height:300px;object-fit:contain;border-radius:10px">`:''}<small>${esc(x.category||'من الأرشيف')} ${x.extra_data?.year?' • '+esc(x.extra_data.year):''}</small><h3>${esc(x.title)}</h3><p>${esc(x.description||'')}</p>${x.extra_data?.source?`<p class="muted">المصدر: ${esc(x.extra_data.source)}</p>`:''}${file?`<a class="btn" href="${esc(file)}" target="_blank" rel="noopener">عرض المادة</a>`:''}<div class="archive-feedback" data-content-id="${esc(x.id)}"><div class="rating-line"><label>تقييمك:</label><select class="archive-rating" aria-label="تقييم المادة"><option value="">اختر</option><option value="1">1 نجمة</option><option value="2">2 نجمتان</option><option value="3">3 نجوم</option><option value="4">4 نجوم</option><option value="5">5 نجوم</option></select><button class="btn archive-rate" type="button">إرسال التقييم</button><span class="rating-summary" aria-live="polite">جارٍ تحميل التقييم</span></div><form class="archive-comment-form"><textarea maxlength="2000" required placeholder="اكتب تعليقك أو ذكرياتك عن هذه المادة..."></textarea><button class="btn" type="submit">إرسال التعليق</button></form><div class="archive-comments"></div></div></div></article>`;
