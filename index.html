@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.38">
+<body data-platform-version="6.8.39">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -984,8 +984,9 @@ renderLibrary();
     <h3 style="color:var(--gold)">رفع فيلم قصير</h3>
     <p>اختار الفيديو واكتب في الوصف أي تفاصيل تحبها عن الفيلم. لا توجد بيانات أخرى مطلوبة.</p>
     <form id="shortsAdminForm">
-      <label>اختيار الفيديو من الهاتف (MP4 أو WebM حتى 50 ميجابايت)</label>
-      <input name="video" type="file" accept="video/mp4,video/webm,.mp4,.webm" required>
+      <label>اختيار الفيديو من ملفات الهاتف (MP4 أو WebM حتى 50 ميجابايت)</label>
+      <input name="video" type="file" accept=".mp4,.webm" required>
+      <p class="muted" style="font-size:12px;margin:0">اختار «ملفاتي» ثم مجلد Videos أو أي مجلد محفوظ فيه الفيديو على الموبايل.</p>
       <label>الوصف</label>
       <textarea name="description" rows="5" maxlength="5000" placeholder="اكتب هنا كل ما تريد عن الفيلم..." required></textarea>
       <button class="btn primary" type="submit">رفع وحفظ الفيلم</button>
@@ -5079,7 +5080,10 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
   btn.disabled=true;msg.textContent='جارٍ رفع الفيديو...';
   const videoFile=fd.get('video');
   if(!videoFile?.size)throw new Error('اختر ملف الفيديو أولاً.');
-  if(!['video/mp4','video/webm'].includes(videoFile.type))throw new Error('اختر فيديو MP4 أو WebM.');
+  const videoName=String(videoFile.name||'').toLowerCase();
+   const validVideoExtension=/\.(mp4|webm)$/.test(videoName);
+   const validVideoType=['video/mp4','video/webm'].includes(videoFile.type);
+   if(!validVideoExtension||(videoFile.type&&!validVideoType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');
   const description=String(fd.get('description')||'').trim();
   if(!description)throw new Error('اكتب وصف الفيلم.');
   video=await adminInlineUpload(videoFile,'site-media','shorts',50*1024*1024);
