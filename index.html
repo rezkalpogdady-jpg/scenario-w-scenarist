@@ -2791,7 +2791,7 @@ async function adminReviewCommunity(id,status){
     if(submission?.submission_type==="talent"&&String(submission.work_url||"").startsWith("talent-video:")){
       rejectedVideoPath=submission.work_url.slice("talent-video:".length);
     }
-    if(!confirm("هل تريد رفض طلب الموهبة؟"+(rejectedVideoPath?" سيتم أيضًا حذف فيديو الأداء من التخزين الخاص حفاظًا على خصوصية صاحبه.":"")))return;
+    if(!confirm("هل تريد رفض هذا الطلب؟"+(rejectedVideoPath?" سيتم أيضًا حذف فيديو الأداء من التخزين الخاص حفاظًا على خصوصية صاحبه.":"")))return;
   }
   const {data,error}=await adminSupabase.rpc("admin_review_community_submission",{p_submission_id:id,p_status:status});
   if(error){alert("تعذرت مراجعة الطلب: "+error.message);return;}
