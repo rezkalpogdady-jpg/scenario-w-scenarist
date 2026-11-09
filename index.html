@@ -1072,19 +1072,14 @@ function showTalentProfile(index){
     : "";
   const category=escapeHTML(item.category||"موهبة");
   const bioText=String(item.bio||"");
-  const readBioField=(label)=>{const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':"";
-  const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
-  const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':"";
-  const experience=item.experienceYears!==null&&item.experienceYears!==undefined
-    ? '<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>' : "";
-  const biography=item.bio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(item.bio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';");const match=bioText.match(new RegExp("(?:^|\\n\\n)"+escaped+":\\s*([^\\n]+)"));return match?match[1].trim():"";};
+  const readBioField=(label)=>{const line=bioText.split(/\\r?\\n/).find(value=>value.trim().startsWith(label+":"));return line?line.trim().slice(label.length+1).trim():"";};
   const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':(readBioField("التخصص")?'<p><strong>التخصص:</strong> '+escapeHTML(readBioField("التخصص"))+'</p>':"");
   const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
   const age=readBioField("السن")?'<p><strong>السن:</strong> '+escapeHTML(readBioField("السن"))+' سنة</p>':"";
   const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':(readBioField("الدراسة")?'<p><strong>الدراسة:</strong> '+escapeHTML(readBioField("الدراسة"))+'</p>':"");
-  const experience=item.experienceYears!==null&&item.experienceYears!==undefined
-    ? '<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>' : (readBioField("سنوات الخبرة")?'<p><strong>سنوات الخبرة:</strong> '+escapeHTML(readBioField("سنوات الخبرة"))+'</p>':"");
-  const cleanBio=bioText.replace(/(?:^|\n\n)(?:التخصص|السن|الدراسة|سنوات الخبرة):\s*[^\n]*/g,"").trim();
+  const experience=item.experienceYears!==null&&item.experienceYears!==undefined?'<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>':(readBioField("سنوات الخبرة")?'<p><strong>سنوات الخبرة:</strong> '+escapeHTML(readBioField("سنوات الخبرة"))+'</p>':"");
+  const metadataLabels=["التخصص:","السن:","الدراسة:","سنوات الخبرة:"];
+  const cleanBio=bioText.split(/\\r?\\n/).filter(line=>!metadataLabels.some(label=>line.trim().startsWith(label))).join("\\n").trim();
   const biography=cleanBio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(cleanBio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
   let work="";
   if(item.work){
@@ -1093,7 +1088,7 @@ function showTalentProfile(index){
       : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
   }
   box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
-    (image?'<div>'+image+'</div>':'')+
+    (image?'<div>'+image+'</div>':"")+
     '<div><p class="admin-status">ملف موهبة معتمد • '+category+'</p><h3 style="color:var(--gold);font-size:24px;margin:8px 0">'+escapeHTML(item.name||"موهبة")+'</h3>'+
     specialty+city+age+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+'</div></div>'+work;
   modal.style.display="block";
