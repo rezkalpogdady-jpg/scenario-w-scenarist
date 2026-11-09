@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.34">
+<body data-platform-version="6.8.35">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -5019,8 +5019,8 @@ function adminToggleInlinePublish(id){
 async function adminInlineUpload(file,bucket,folder,limit){
  if(!file)return null;
  if(file.size>limit)throw new Error('حجم الملف أكبر من الحد المسموح.');
- const clean=(file.name.normalize('NFKC').replace(/[^\p{L}\p{N}._-]+/gu,'-').slice(-90)||'upload');
- const path=folder+'/'+crypto.randomUUID()+'-'+clean;
+ // Use an ASCII-only storage object key; keep the original filename in the form/database metadata.
+ const path=folder+'/'+crypto.randomUUID();
  const {data,error}=await adminSupabase.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type||'application/octet-stream',cacheControl:'3600'});
  if(error)throw error;
  return {path,url:adminSupabase.storage.from(bucket).getPublicUrl(path).data.publicUrl};
