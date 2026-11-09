@@ -321,7 +321,7 @@ Main{padding:17px 11px}
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
 <button data-page="production">الإنتاج</button>
-<button data-page="account">حسابي</button>
+<button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="about">عن المنصة</button>
 </nav>
@@ -820,14 +820,14 @@ renderLibrary();
 <section id="directors" class="page">
   <div class="intro">
     <h2>دليل المخرجين</h2>
-    <p>مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
+    <p>تصفّح دليل المخرجين ومشاهدة الأعمال متاح للجميع دون تسجيل أو بريد إلكتروني. مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
   </div>
 
   <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
     <h3 style="color:var(--gold);margin-top:0">هل أنت مخرج؟ اعرض أعمالك على المنصة</h3>
-    <p>أنشئ ملفك المهني، أضف نبذة عن خبرتك ودراستك، وارفع نماذج من أعمالك أو أضف روابط المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
-    <button class="btn primary" type="button" onclick="startDirectorRegistration()">أنشئ ملفك كمخرج</button>
-    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">لديك حساب بالفعل؟ اضغط الزر وسجّل الدخول.</span>
+    <p>كل زائر يستطيع تصفّح الموقع ومشاهدة الأعمال دون إنشاء حساب. وإذا رغبت كمخرج في نشر ملفك وأعمالك، يمكنك إنشاء حساب اختياري لحماية ملفك وإدارة مشاركاتك؛ لا نطلب التسجيل لمجرد الدخول أو المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
+    <button class="btn primary" type="button" onclick="startDirectorRegistration()">اختياري: قدّم ملفك وأعمالك كمخرج</button>
+    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">التصفح والمشاهدة لا يحتاجان إلى حساب. الحساب مطلوب فقط لحفظ ملفك وإدارة أعمالك المنشورة.</span>
   </div>
 
   <div class="section-heading">
@@ -1809,10 +1809,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="account" class="page">
   <div class="intro">
     <h2>حساب المبدع</h2>
-    <p>أنشئ حسابًا لحفظ بياناتك والتعريف بمجالك الإبداعي. التصفح العام متاح دون تسجيل.</p>
+    <p><strong>الدخول والتصفح والقراءة والاستماع ومشاهدة المحتوى متاحة للجميع دون تسجيل أو بريد إلكتروني.</strong> إنشاء الحساب اختياري، ويُستخدم فقط إذا أردت إنشاء ملف مهني أو إرسال أعمالك أو إدارة مشاركاتك.</p>
   </div>
   <div class="panel" id="accountAuthPanel">
-    <h3 style="color:var(--gold)">إنشاء حساب جديد</h3>
+    <h3 style="color:var(--gold)">حساب اختياري للمبدعين المشاركين</h3>
+    <p class="muted">لا تحتاج إلى حساب لمجرد زيارة المنصة أو الاستفادة من محتواها.</p>
     <form id="accountSignupForm">
       <input id="accountName" required maxlength="120" placeholder="الاسم الذي سيظهر في ملفك">
       <select id="accountType" required>
@@ -1823,7 +1824,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountSignupEmail" type="email" required autocomplete="email" placeholder="البريد الإلكتروني">
       <input id="accountSignupPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور (8 أحرف على الأقل)">
-      <button class="btn primary" type="submit">إنشاء الحساب</button>
+      <button class="btn primary" type="submit">إنشاء حساب للمشاركة (اختياري)</button>
     </form>
     <hr style="border-color:var(--border);margin:22px 0">
     <h3 style="color:var(--gold)">لديك حساب بالفعل؟</h3>
