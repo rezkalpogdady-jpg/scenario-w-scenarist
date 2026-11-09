@@ -1343,9 +1343,11 @@ function radioCard(station){
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
         <p>${escapeHTML(station.description || "محطة إذاعية")}</p>
-        ${station.officialUrl
-          ? `<a class="btn" href="${safeHttpUrl(station.officialUrl)}" target="_blank" rel="noopener noreferrer">استمع من المصدر الرسمي</a>`
-          : `<button class="btn" onclick="playRadioStation('${escapeHTML(station.id)}')">استمع الآن</button>`}
+        ${station.stream
+          ? `<button class="btn" onclick="playRadioStation('${escapeHTML(station.id)}')">استمع الآن داخل المنصة</button>`
+          : station.officialUrl
+            ? `<a class="btn" href="${safeHttpUrl(station.officialUrl)}" target="_blank" rel="noopener noreferrer">زيارة موقع المحطة</a>`
+            : `<span class="muted">البث غير متاح حاليًا</span>`}
       </div>
     </article>`;
 }
@@ -3321,13 +3323,10 @@ function distributePublicContent(records){
       image:item.image,
       stream:item.stream
     }));
-    replaceArray(tvChannels,publicTVChannels.length ? publicTVChannels : [{
-      id:"rotana-classic-official",
-      name:"روتانا كلاسيك",
-      category:"سينما",
-      description:"البث عبر الموقع الرسمي لشبكة روتانا.",
-      officialUrl:"https://rotana.net/ar?tv=live-classic"
-    }]);
+    if(publicTVChannels.length){
+      const mergedTV=[...tvChannels,...publicTVChannels];
+      replaceArray(tvChannels,mergedTV.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
+    }
     renderTVChannels();
   }
 
@@ -3339,12 +3338,10 @@ function distributePublicContent(records){
       image:item.image,
       stream:item.stream
     }));
-    replaceArray(radioStations,publicRadioStations.length ? publicRadioStations : [{
-      id:"quran-radio-egypt-official",
-      name:"إذاعة القرآن الكريم من القاهرة",
-      description:"استمع إلى البث من البوابة الرسمية لإذاعة القرآن الكريم المصرية.",
-      officialUrl:"https://misrquran.gov.eg/"
-    }]);
+    if(publicRadioStations.length){
+      const mergedRadio=[...radioStations,...publicRadioStations];
+      replaceArray(radioStations,mergedRadio.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
+    }
     renderRadioStations();
   }
 
