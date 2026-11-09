@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.0: تدقيق وتحسين تجربة المخرجين والتحقق من ملفات الفيديو ومتانة مراجعة الإدارة؛ فرع مستقل للاختبار. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.2: تطوير بوابة المواهب المفتوحة واستعادة مراجعة طلبات المواهب والمشروعات؛ فرع مستقل للاختبار. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.0</title>
+<title>سيناريو وسيناريست – تحديث 6.8.2</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.0">
+<body data-platform-version="6.8.2">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1060,7 +1060,7 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
     category:document.getElementById("talentType").value,
     city:document.getElementById("talentCity").value.trim(),
     contact:document.getElementById("talentContact").value.trim(),
-    bio:[document.getElementById("talentSpecialty").value.trim() ? "التخصص: "+document.getElementById("talentSpecialty").value.trim() : "",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\\n\\n"),
+    bio:[document.getElementById("talentSpecialty").value.trim() ? "التخصص: "+document.getElementById("talentSpecialty").value.trim() : "",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),
     work_url:document.getElementById("talentWork").value.trim() || null
   };
   const message=document.getElementById("talentFormMessage");
@@ -1076,7 +1076,7 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
     if(message)message.textContent="تم استلام طلبك بنجاح. سيظهر ملفك للزوار بعد مراجعة الإدارة واعتماده.";
     button.textContent="تم استلام الطلب";
   }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");}
-  finally{button.disabled=false;if(button.textContent==="جارٍ إرسال الطلب...")button.textContent="إرسال الموهبة للمراجعة";}
+  finally{button.disabled=false;button.textContent="إرسال الموهبة للمراجعة";}
 });
 
 /* البحث والتصفية */
