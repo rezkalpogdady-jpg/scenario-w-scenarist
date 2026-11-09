@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.17: تصدير نتائج سوق الكتب من لوحة الإدارة إلى CSV. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.18: إظهار تاريخ عرض الكتاب في بطاقات السوق. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.17</title>
+<title>سيناريو وسيناريست – تحديث 6.8.18</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -4445,8 +4445,11 @@ function renderBookListings(){
     const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
     const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع واتساب</a>':'';
     const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
+    const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
+      ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
+      :"";
     return '<article class="feature">'+(item.cover_url?'<img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="height:260px;object-fit:contain;background:#151515">':'<div style="height:220px;display:grid;place-items:center">غلاف الكتاب</div>')+
-      '<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p><p>'+escapeHTML(item.description||"")+'</p><p>البائع: '+escapeHTML(item.seller_name||"")+'</p>'+contact+'</div></article>';
+      '<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p><p>'+escapeHTML(item.description||"")+'</p><p>البائع: '+escapeHTML(item.seller_name||"")+'</p>'+(publishedDate?'<p style="color:var(--muted);font-size:12px;margin-top:10px">تاريخ العرض: '+escapeHTML(publishedDate)+'</p>':"")+contact+'</div></article>';
   }).join("");
 }
 async function loadBookListings(){
