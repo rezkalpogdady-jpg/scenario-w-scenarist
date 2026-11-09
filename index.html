@@ -559,6 +559,7 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       <div><h3 id="scenarioReaderTitle" style="color:var(--gold);margin:0">قارئ السيناريو</h3><p id="scenarioReaderNotice" style="font-size:12px;color:var(--muted)">قراءة مخصصة لأعضاء المنصة.</p></div>
       <button class="btn" type="button" onclick="closeScenarioReader()">إغلاق القراءة</button>
     </div>
+    <div id="scenarioReaderPoster" style="display:none;margin:16px auto 20px;text-align:center"><p style="color:var(--gold);margin:0 0 10px">أفيش الفيلم</p><img id="scenarioReaderPosterImage" alt="أفيش الفيلم" style="display:block;max-width:min(100%,380px);max-height:560px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;box-shadow:0 5px 24px #0008"></div>
     <div id="scenarioReaderFrame" style="margin-top:12px;min-height:65vh;background:#111;border-radius:8px;overflow:hidden"></div>
   </div>
 
@@ -1832,6 +1833,9 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         </select>
         <label>ملخص العمل</label>
         <textarea id="adminScenarioScriptSummary" required maxlength="4000" placeholder="نبذة مختصرة عن السيناريو"></textarea>
+        <label>أفيش الفيلم (اختياري — JPG أو PNG أو WEBP، حتى 10 ميجابايت)</label>
+        <input id="adminScenarioScriptPoster" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">يمكنك رفع الأفيش عند إضافة السيناريو أو لاحقًا من تعديل البيانات. إذا لم تختر صورة جديدة فسيظل الأفيش الحالي كما هو.</p>
         <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
         <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
         <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
@@ -2924,7 +2928,7 @@ function resetAdminScenarioScriptForm(){
 async function adminLoadScenarioScripts(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminScenarioScriptList");if(box)box.innerHTML="<p>جارٍ تحميل السيناريوهات...</p>";
-  const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,published,created_at,rights_holder,rights_status,rights_note,rights_confirmed").order("created_at",{ascending:false}).limit(200);
+  const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,poster_path,published,created_at,rights_holder,rights_status,rights_note,rights_confirmed").order("created_at",{ascending:false}).limit(200);
   if(error){if(box)box.textContent="تعذر تحميل المكتبة: "+error.message;return;}
   adminScenarioScriptRecords=data||[];
   if(!box)return;
@@ -2942,7 +2946,7 @@ function adminEditScenarioScript(id){
   document.getElementById("adminScenarioScriptRightsNote").value=item.rights_note||"";
   document.getElementById("adminScenarioScriptRightsConfirmed").checked=!!item.rights_confirmed;
   document.getElementById("adminScenarioScriptPublished").checked=!!item.published;
-  scenarioScriptMessage("يمكنك تعديل البيانات أو اختيار ملف PDF جديد لاستبدال النسخة الحالية.");
+  scenarioScriptMessage(item.poster_path?"الأفيش الحالي محفوظ. اختر صورة جديدة فقط إذا أردت استبداله؛ ويمكنك تعديل البيانات دون تغيير الملفات.":"لا يوجد أفيش مرفوع لهذا العمل حتى الآن. يمكنك رفعه من الحقل الاختياري.");
   document.getElementById("adminScenarioScriptForm").scrollIntoView({behavior:"smooth",block:"center"});
 }
 async function adminDeclareAndPublishScenarioScript(id){
@@ -2983,13 +2987,15 @@ async function adminDeleteScenarioScript(id){
   const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
   const {error}=await adminSupabase.from("scenario_scripts").delete().eq("id",id);
   if(error){scenarioScriptMessage("تعذر حذف السجل: "+error.message);return;}
-  if(item.storage_path){const {error:removeError}=await adminSupabase.storage.from("scenario-scripts").remove([item.storage_path]);if(removeError)scenarioScriptMessage("حُذف السجل، لكن تعذر حذف الملف: "+removeError.message);}
+  const paths=[item.storage_path,item.poster_path].filter(Boolean);if(paths.length){const {error:removeError}=await adminSupabase.storage.from("scenario-scripts").remove(paths);if(removeError)scenarioScriptMessage("حُذف السجل، لكن تعذر حذف بعض ملفاته: "+removeError.message);}
   await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
 }
 document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
   if(!adminSupabase||!adminSession){scenarioScriptMessage("سجل دخول المدير أولًا.");return;}
-  const button=this.querySelector('button[type="submit"]');const file=document.getElementById("adminScenarioScriptFile")?.files?.[0]||null;
+  const button=this.querySelector('button[type="submit"]');const file=document.getElementById("adminScenarioScriptFile")?.files?.[0]||null;const posterFile=document.getElementById("adminScenarioScriptPoster")?.files?.[0]||null;
+  if(posterFile&&(!["image/jpeg","image/png","image/webp"].includes(posterFile.type)&&! /\.(jpe?g|png|webp)$/i.test(posterFile.name))){scenarioScriptMessage("ارفع أفيشًا بصيغة JPG أو PNG أو WEBP فقط.");return;}
+  if(posterFile&&posterFile.size>10*1024*1024){scenarioScriptMessage("حجم الأفيش أكبر من 10 ميجابايت.");return;}
   if(file&&(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name))){scenarioScriptMessage("ارفع ملف PDF فقط حتى يظهر داخل قارئ السيناريو.");return;}
   if(file&&file.size>50*1024*1024){scenarioScriptMessage("حجم الملف أكبر من 50 ميجابايت.");return;}
   const id=document.getElementById("adminScenarioScriptId").value;
@@ -3001,7 +3007,7 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
   const wantsPublish=document.getElementById("adminScenarioScriptPublished").checked;
   if(wantsPublish&&(!rightsHolder||rightsStatus==="unverified"||!rightsConfirmed)){scenarioScriptMessage("قبل الإتاحة، أكمل إقرارك كمدير وأكد مسؤوليتك عن قرار النشر.");return;}
   if(!id&&!file){scenarioScriptMessage("اختر ملف PDF للسيناريو قبل الحفظ.");return;}
-  let storagePath=previous?.storage_path||null;
+  let storagePath=previous?.storage_path||null;let posterPath=previous?.poster_path||null;let uploadedPosterPath=null;
   try{
     button.disabled=true;button.textContent="جارٍ الحفظ...";
     if(file){
@@ -3010,15 +3016,21 @@ document.getElementById("adminScenarioScriptForm")?.addEventListener("submit",as
       const {error:uploadError}=await adminSupabase.storage.from("scenario-scripts").upload(storagePath,file,{upsert:false,contentType:"application/pdf",cacheControl:"300"});
       if(uploadError)throw uploadError;
     }
+    if(posterFile){
+      const ext=(posterFile.name.match(/\.(jpe?g|png|webp)$/i)||[])[1]?.toLowerCase()||(posterFile.type==="image/png"?"png":posterFile.type==="image/webp"?"webp":"jpg");
+      posterPath=`posters/${crypto.randomUUID()}.${ext}`;uploadedPosterPath=posterPath;
+      const {error:posterUploadError}=await adminSupabase.storage.from("scenario-scripts").upload(posterPath,posterFile,{upsert:false,contentType:posterFile.type||"image/jpeg",cacheControl:"3600"});
+      if(posterUploadError)throw posterUploadError;
+    }
     const rightsNote=document.getElementById("adminScenarioScriptRightsNote").value.trim()||null;
-    const record={title:document.getElementById("adminScenarioScriptTitle").value.trim(),author:document.getElementById("adminScenarioScriptAuthor").value.trim(),category:document.getElementById("adminScenarioScriptCategory").value,summary:document.getElementById("adminScenarioScriptSummary").value.trim(),storage_path:storagePath,published:wantsPublish,rights_holder:rightsHolder||null,rights_status:rightsStatus,rights_note:rightsNote,rights_confirmed:rightsConfirmed,updated_at:new Date().toISOString()};
+    const record={poster_path:posterPath,title:document.getElementById("adminScenarioScriptTitle").value.trim(),author:document.getElementById("adminScenarioScriptAuthor").value.trim(),category:document.getElementById("adminScenarioScriptCategory").value,summary:document.getElementById("adminScenarioScriptSummary").value.trim(),storage_path:storagePath,published:wantsPublish,rights_holder:rightsHolder||null,rights_status:rightsStatus,rights_note:rightsNote,rights_confirmed:rightsConfirmed,updated_at:new Date().toISOString()};
     const result=id?await adminSupabase.from("scenario_scripts").update(record).eq("id",id):await adminSupabase.from("scenario_scripts").insert(record);
     if(result.error)throw result.error;
-    if(file&&previous?.storage_path){const {error:oldError}=await adminSupabase.storage.from("scenario-scripts").remove([previous.storage_path]);if(oldError)scenarioScriptMessage("تم الحفظ، لكن تعذر تنظيف ملف PDF القديم: "+oldError.message);}
+    const oldPaths=[];if(file&&previous?.storage_path)oldPaths.push(previous.storage_path);if(posterFile&&previous?.poster_path)oldPaths.push(previous.poster_path);if(oldPaths.length){const {error:oldError}=await adminSupabase.storage.from("scenario-scripts").remove(oldPaths);if(oldError)scenarioScriptMessage("تم الحفظ، لكن تعذر تنظيف بعض الملفات القديمة: "+oldError.message);}
     this.reset();document.getElementById("adminScenarioScriptId").value="";
     if(!document.getElementById("adminScenarioScriptMessage").textContent.startsWith("تم الحفظ،"))scenarioScriptMessage("تم حفظ السيناريو بنجاح.");
     await adminLoadScenarioScripts();loadPublishedScenarioScripts(true);
-  }catch(error){if(file&&storagePath&&!previous?.storage_path){await adminSupabase.storage.from("scenario-scripts").remove([storagePath]);}scenarioScriptMessage("تعذر حفظ السيناريو: "+(error.message||"خطأ غير معروف"));}
+  }catch(error){const cleanup=[];if(file&&storagePath&&!previous?.storage_path)cleanup.push(storagePath);if(uploadedPosterPath)cleanup.push(uploadedPosterPath);if(cleanup.length)await adminSupabase.storage.from("scenario-scripts").remove(cleanup);scenarioScriptMessage("تعذر حفظ السيناريو: "+(error.message||"خطأ غير معروف"));}
   finally{button.disabled=false;button.textContent="حفظ السيناريو";}
 });
 async function loadPublishedScenarioScripts(force=false){
@@ -3026,7 +3038,7 @@ async function loadPublishedScenarioScripts(force=false){
   if(!force&&box.dataset.scriptsLoaded==="1")return;
   box.dataset.scriptsLoaded="1";
   try{
-    const {data,error}=await scenarioLibraryClient().from("scenario_scripts").select("id,title,author,category,summary,published,created_at,rights_holder,rights_status,rights_confirmed").eq("published",true).eq("rights_confirmed",true).order("created_at",{ascending:false}).limit(100);
+    const {data,error}=await scenarioLibraryClient().from("scenario_scripts").select("id,title,author,category,summary,poster_path,published,created_at,rights_holder,rights_status,rights_confirmed").eq("published",true).eq("rights_confirmed",true).order("created_at",{ascending:false}).limit(100);
     if(error)throw error;scenarioScriptRecords=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());renderScenarioScriptCards();
   }catch(error){box.dataset.scriptsLoaded="0";box.innerHTML=`<div class="panel" style="grid-column:1/-1"><p>تعذر تحميل مكتبة السيناريوهات الكاملة: ${escapeHTML(error.message||"تحقق من إعداد قاعدة البيانات.")}</p></div>`;}
 }
@@ -3046,6 +3058,7 @@ function showScenarioReader(titleText,noticeText){
   const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame"),title=document.getElementById("scenarioReaderTitle"),notice=document.getElementById("scenarioReaderNotice");
   if(!modal||!frame)return null;
   title.textContent=titleText||"قارئ السيناريو";notice.textContent=noticeText||"جارٍ تجهيز القراءة...";
+  const posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(posterBox)posterBox.style.display="none";if(posterImage)posterImage.removeAttribute("src");
   frame.innerHTML='<div role="status" style="padding:28px;color:white;text-align:center"><p>جارٍ تحميل صفحات السيناريو...</p><div style="height:5px;max-width:220px;margin:14px auto;background:#444;border-radius:9px;overflow:hidden"><div style="height:100%;width:45%;background:var(--gold);animation:scenarioReaderPulse 1.2s ease-in-out infinite alternate"></div></div></div>';
   modal.style.display="block";modal.scrollIntoView({behavior:"smooth",block:"start"});return frame;
 }
@@ -3116,16 +3129,17 @@ async function openScenarioScript(id){
     // قراءة الجلسة محليًا لتجنب طلب تحقق إضافي قبل استعلام قاعدة البيانات؛ سيظل RLS هو الحارس الفعلي.
     const {data:sessionData}=await client.auth.getSession();
     if(!sessionData?.session?.user){frame.innerHTML='<div style="padding:24px;color:white;text-align:center"><p>قراءة السيناريوهات الكاملة متاحة للأعضاء المسجلين.</p><button class="btn primary" type="button" onclick="showPage(&quot;account&quot;)">تسجيل الدخول أو إنشاء حساب</button></div>';return;}
-    const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path,rights_holder,rights_status,rights_confirmed").eq("id",id).eq("published",true).eq("rights_confirmed",true).single();
+    const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path,poster_path,rights_holder,rights_status,rights_confirmed").eq("id",id).eq("published",true).eq("rights_confirmed",true).single();
     if(rowError)throw rowError;
     if(!row?.rights_confirmed||row.rights_status==="unverified"||!String(row.rights_holder||"").trim())throw new Error("هذا العمل غير متاح للقراءة لحين استكمال التحقق من حقوق نشره.");
     if(!row.storage_path)throw new Error("ملف السيناريو غير مرتبط بسجل المكتبة. أبلغ الإدارة.");
+    if(row.poster_path){const {data:posterData,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(row.poster_path,1800);if(posterError)throw posterError;const posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(posterImage&&posterBox){posterImage.src=posterData.signedUrl;posterImage.alt="أفيش فيلم "+(item.title||"");posterBox.style.display="block";}}
     const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,1800);if(signedError)throw signedError;
     await renderScenarioPdf(frame,signed.signedUrl,item.title,"");
     const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • أساس الإتاحة: ${row.rights_holder} • رابط القراءة مؤقت لمدة 30 دقيقة.`;
   }catch(error){frame.innerHTML=`<div style="padding:24px;color:white;text-align:center"><p>تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p><button class="btn" type="button" onclick="closeScenarioReader()">إغلاق</button></div>`;}
 }
-function closeScenarioReader(){const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame");if(frame)frame.innerHTML="";if(modal)modal.style.display="none";}
+function closeScenarioReader(){const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame"),posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(frame)frame.innerHTML="";if(posterBox)posterBox.style.display="none";if(posterImage)posterImage.removeAttribute("src");if(modal)modal.style.display="none";}
 document.addEventListener("keydown",event=>{if(event.key==="Escape"){const reader=document.getElementById("scenarioReader");if(reader&&reader.style.display!=="none")closeScenarioReader();}});
 document.getElementById("librarySearch")?.addEventListener("input",()=>{renderLibrary();renderScenarioScriptCards();});
 document.getElementById("libraryCategory")?.addEventListener("change",()=>{renderLibrary();renderScenarioScriptCards();});
