@@ -1069,32 +1069,52 @@ function showTalentForm(){
   document.getElementById("talentName")?.focus({preventScroll:true});
 }
 
-/* إرسال طلب الموهبة إلى قاعدة البيانات للمراجعة */
+/* إرسال طلب الموهبة مع فيديو اختياري إلى قاعدة البيانات للمراجعة */
 document.getElementById("talentRegisterForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const item={
-    submission_type:"talent",
-    name:document.getElementById("talentName").value.trim(),
-    category:document.getElementById("talentType").value,
-    city:document.getElementById("talentCity").value.trim(),
-    contact:document.getElementById("talentContact").value.trim(),
-    bio:[document.getElementById("talentSpecialty").value.trim() ? "التخصص: "+document.getElementById("talentSpecialty").value.trim() : "",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),
-    work_url:document.getElementById("talentWork").value.trim() || null
-  };
+  const button=this.querySelector("button[type=submit]");
   const message=document.getElementById("talentFormMessage");
-  if(!item.name || !item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
-  if(item.work_url && !safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابطًا يبدأ بـ https:// أو http://.";return;}
-  if(item.contact.length>160 || item.bio.length>1900){if(message)message.textContent="راجع طول البيانات المدخلة ثم حاول مرة أخرى.";return;}
+  const progress=document.getElementById("talentVideoProgress");
+  const videoStatus=document.getElementById("talentVideoStatus");
+  const videoFile=document.getElementById("talentVideo")?.files?.[0]||null;
+  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:document.getElementById("talentWork").value.trim()||null};
+  const phoneDigits=(item.contact.match(/\d/g)||[]).length;
+  if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
+  if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
+  if(item.work_url&&!safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.";return;}
+  if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
+  if(videoFile&&item.work_url){if(message)message.textContent="ارفع الفيديو أو استخدم الرابط الخارجي، وليس الاثنين معًا.";return;}
+  let uploadedPath=null;
   try{
     button.disabled=true;button.textContent="جارٍ إرسال الطلب...";
-    if(message)message.textContent="جارٍ إرسال بياناتك إلى الإدارة...";
+    if(videoFile){
+      const ext=(videoFile.name.split(".").pop()||"").toLowerCase();
+      const mimeByExt={mp4:"video/mp4",webm:"video/webm",mov:"video/quicktime"};
+      const allowedMime=["video/mp4","video/webm","video/quicktime"];
+      const mime=allowedMime.includes(videoFile.type)?videoFile.type:(mimeByExt[ext]||"");
+      if(!mime)throw new Error("صيغة الفيديو غير مدعومة. استخدم MP4 أو WebM أو MOV.");
+      if(videoFile.size>50*1024*1024)throw new Error("حجم الفيديو أكبر من 50 ميجابايت. قلّل حجم الملف ثم أعد المحاولة.");
+      if(!window.tus?.Upload)throw new Error("أداة رفع الفيديو لم تُحمّل. حدّث الصفحة وحاول مرة أخرى.");
+      if(videoStatus)videoStatus.textContent="جارٍ فحص مدة الفيديو...";
+      await validateTalentVideoDuration(videoFile);
+      const safeExt=ext==="webm"?"webm":ext==="mov"?"mov":"mp4";
+      uploadedPath="pending/"+crypto.randomUUID()+"."+safeExt;
+      const projectRef=new URL(ADMIN_SUPABASE_URL).hostname.split(".")[0];
+      const endpoint="https://"+projectRef+".storage.supabase.co/storage/v1/upload/resumable";
+      if(progress){progress.style.display="block";progress.value=0;}
+      if(videoStatus)videoStatus.textContent="جارٍ رفع الفيديو... يمكنك متابعة نسبة الرفع هنا.";
+      await new Promise((resolve,reject)=>{
+        const upload=new window.tus.Upload(videoFile,{endpoint,headers:{authorization:"Bearer "+ADMIN_SUPABASE_KEY,apikey:ADMIN_SUPABASE_KEY},retryDelays:[0,3000,5000,10000,20000],uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,chunkSize:6*1024*1024,metadata:{bucketName:"talent-submission-videos",objectName:uploadedPath,contentType:mime,cacheControl:"3600",metadata:JSON.stringify({purpose:"talent-audition"})},onProgress:(sent,total)=>{const pct=total?Math.round(sent/total*100):0;if(progress)progress.value=pct;if(videoStatus)videoStatus.textContent="تم رفع "+pct+"% من الفيديو";},onError:reject,onSuccess:resolve});
+        upload.start();
+      });
+      item.work_url="talent-video:"+uploadedPath;
+      if(videoStatus)videoStatus.textContent="اكتمل رفع الفيديو. جارٍ إرسال طلبك...";
+    }
     const {error}=await ideasGetClient().from("community_submissions").insert(item);
-    if(error) throw error;
-    this.reset();
-    if(message)message.textContent="تم استلام طلبك بنجاح. سيظهر ملفك للزوار بعد مراجعة الإدارة واعتماده.";
-    button.textContent="تم استلام الطلب";
-  }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");}
+    if(error)throw error;
+    this.reset();if(progress){progress.value=0;progress.style.display="none";}if(videoStatus)videoStatus.textContent="";
+    if(message)message.textContent="تم استلام طلبك بنجاح. ستراجع الإدارة بياناتك والفيديو قبل نشر ملفك.";
+  }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");if(videoStatus)videoStatus.textContent="";}
   finally{button.disabled=false;button.textContent="إرسال الموهبة للمراجعة";}
 });
 
