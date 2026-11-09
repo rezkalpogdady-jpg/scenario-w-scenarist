@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.5: استكمال البيانات المهنية لطلبات المواهب مع الحفاظ على نموذج التقديم المفتوح وخصوصية التواصل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.6: معرض نماذج أعمال متعددة للمواهب مع الحفاظ على نموذج التقديم المفتوح وخصوصية التواصل. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.5</title>
+<title>سيناريو وسيناريست – تحديث 6.8.6</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.5">
+<body data-platform-version="6.8.6">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -904,11 +904,15 @@ renderLibrary();
       <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
       <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
       <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
-      <label for="talentWork">رابط بديل لنموذج أداء (اختياري إذا لم ترفع فيديو)</label>
+      <label for="talentWork">رابط نموذج العمل الأول (اختياري إذا لم ترفع فيديو)</label>
       <input id="talentWork" type="url" inputmode="url" placeholder="رابط YouTube أو Vimeo أو نموذج صوتي">
+      <label for="talentWork2">رابط نموذج العمل الثاني (اختياري)</label>
+      <input id="talentWork2" type="url" inputmode="url" placeholder="رابط مشهد أو برنامج أو تسجيل صوتي">
+      <label for="talentWork3">رابط نموذج العمل الثالث (اختياري)</label>
+      <input id="talentWork3" type="url" inputmode="url" placeholder="رابط عمل إضافي">
       <label for="talentContact">رقم الموبايل أو واتساب للتواصل معك *</label>
       <input id="talentContact" type="tel" inputmode="tel" autocomplete="tel" maxlength="25" required placeholder="مثال: +20 10 0000 0000">
-      <p class="muted" style="font-size:12px;margin:0">رقمك يظهر للإدارة فقط للتواصل بشأن طلبك، ولا يظهر في ملفك العام. لا نطلب إنشاء حساب أو بريد إلكتروني.</p>
+      <p class="muted" style="font-size:12px;margin:0">يمكنك إضافة حتى 3 روابط لأعمالك بدل الفيديو. رقمك يظهر للإدارة فقط ولا يظهر في ملفك العام. لا نطلب حسابًا أو بريدًا إلكترونيًا.</p>
       <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
       <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
@@ -1078,8 +1082,9 @@ function showTalentProfile(index){
   const age=readBioField("السن")?'<p><strong>السن:</strong> '+escapeHTML(readBioField("السن"))+' سنة</p>':"";
   const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':(readBioField("الدراسة")?'<p><strong>الدراسة:</strong> '+escapeHTML(readBioField("الدراسة"))+'</p>':"");
   const experience=item.experienceYears!==null&&item.experienceYears!==undefined?'<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>':(readBioField("سنوات الخبرة")?'<p><strong>سنوات الخبرة:</strong> '+escapeHTML(readBioField("سنوات الخبرة"))+'</p>':"");
-  const metadataLabels=["التخصص:","السن:","الدراسة:","سنوات الخبرة:"];
+  const metadataLabels=["التخصص:","السن:","الدراسة:","سنوات الخبرة:","نموذج عمل 2:","نموذج عمل 3:"];
   const cleanBio=bioText.split(/\r?\n/).filter(line=>!metadataLabels.some(label=>line.trim().startsWith(label))).join("\n").trim();
+  const portfolioLinks=bioText.split(/\r?\n/).map(line=>line.trim()).filter(line=>/^نموذج عمل [23]:/.test(line)).map(line=>({label:line.split(":")[0],url:line.slice(line.indexOf(":")+1).trim()})).filter(item=>safeHttpUrl(item.url));
   const biography=cleanBio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(cleanBio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
   let work="";
   if(item.work){
@@ -1087,10 +1092,11 @@ function showTalentProfile(index){
       ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="metadata" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
       : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
   }
+  const extraWorks=portfolioLinks.length?'<div style="margin-top:18px"><h4 style="color:var(--gold)">نماذج أعمال إضافية</h4>'+portfolioLinks.map(link=>'<p><a class="btn" href="'+escapeHTML(safeHttpUrl(link.url))+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(link.label)+'</a></p>').join("")+'</div>':"";
   box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
     (image?'<div>'+image+'</div>':"")+
     '<div><p class="admin-status">ملف موهبة معتمد • '+category+'</p><h3 style="color:var(--gold);font-size:24px;margin:8px 0">'+escapeHTML(item.name||"موهبة")+'</h3>'+
-    specialty+city+age+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+'</div></div>'+work;
+    specialty+city+age+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+extraWorks+'</div></div>'+work;
   modal.style.display="block";
   document.body.style.overflow="hidden";
   modal.querySelector("button")?.focus();
@@ -1146,15 +1152,17 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
   const talentAge=document.getElementById("talentAge")?.value.trim()||"";
   const talentEducation=document.getElementById("talentEducation")?.value.trim()||"";
   const talentExperience=document.getElementById("talentExperience")?.value.trim()||"";
-  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",talentAge?"السن: "+talentAge:"",talentEducation?"الدراسة: "+talentEducation:"",talentExperience?"سنوات الخبرة: "+talentExperience:"",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:document.getElementById("talentWork").value.trim()||null};
+  const talentWorkLinks=[document.getElementById("talentWork")?.value.trim(),document.getElementById("talentWork2")?.value.trim(),document.getElementById("talentWork3")?.value.trim()].filter(Boolean);
+  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",talentAge?"السن: "+talentAge:"",talentEducation?"الدراسة: "+talentEducation:"",talentExperience?"سنوات الخبرة: "+talentExperience:"",...talentWorkLinks.slice(1).map((url,index)=>"نموذج عمل "+(index+2)+": "+url),document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:talentWorkLinks[0]||null};
   const phoneDigits=(item.contact.match(/\d/g)||[]).length;
   if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
   if(talentAge&&(Number(talentAge)<16||Number(talentAge)>100)){if(message)message.textContent="السن المدخل غير صحيح؛ اترك الحقل فارغًا إذا لم ترغب في ذكره.";return;}
   if(talentExperience&&(Number(talentExperience)<0||Number(talentExperience)>80)){if(message)message.textContent="عدد سنوات الخبرة غير صحيح.";return;}
   if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
-  if(item.work_url&&!safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.";return;}
+  if(talentWorkLinks.some(url=>!safeHttpUrl(url))){if(message)message.textContent="أحد روابط نماذج الأعمال غير صالح؛ استخدم روابط تبدأ بـ http أو https.";return;}
+  if(talentWorkLinks.length>3){if(message)message.textContent="يمكن إضافة ثلاثة روابط أعمال كحد أقصى.";return;}
   if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
-  if(videoFile&&item.work_url){if(message)message.textContent="ارفع الفيديو أو استخدم الرابط الخارجي، وليس الاثنين معًا.";return;}
+  if(videoFile&&talentWorkLinks.length){if(message)message.textContent="اختر إما رفع فيديو واحد أو إضافة روابط نماذج الأعمال، وليس الاثنين معًا.";return;}
   let uploadedPath=null;
   try{
     button.disabled=true;button.textContent="جارٍ إرسال الطلب...";
