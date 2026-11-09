@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.29: رسائل التواصل مع الإدارة وزر واتساب مباشر. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.41: إيقاف واتساب الإدارة مؤقتًا والإبقاء على الرسائل المكتوبة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.40">
+<body data-platform-version="6.8.41">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2989,7 +2989,7 @@ document.getElementById("platformContactForm")?.addEventListener("submit",async 
     return;
   }
   if(!window.supabase || typeof ADMIN_SUPABASE_URL==="undefined" || !ADMIN_SUPABASE_KEY){
-    status.textContent="خدمة الرسائل غير متاحة حاليًا. يمكنك التواصل عبر واتساب.";
+    status.textContent="خدمة الرسائل غير متاحة حاليًا. حاول مرة أخرى لاحقًا.";
     return;
   }
   button.disabled=true;button.textContent="جارٍ إرسال الرسالة...";
@@ -4183,8 +4183,7 @@ loadApprovedIdeas();
 <section id="contact" class="page">
   <div class="intro">
     <h2>تواصل مع إدارة المنصة</h2>
-    <p>يسعدنا استقبال استفساراتك ومقترحاتك. يمكنك إرسال رسالة مكتوبة أو التواصل مباشرة عبر واتساب.</p>
-    <a class="btn primary" href="https://wa.me/966536277236" target="_blank" rel="noopener noreferrer">راسلنا على واتساب</a>
+    <p>يسعدنا استقبال استفساراتك ومقترحاتك. التواصل مع إدارة المنصة متاح حاليًا من خلال الرسائل المكتوبة فقط.</p>
   </div>
   <div class="panel">
     <h3 style="color:var(--gold)">إرسال رسالة للإدارة</h3>
@@ -4219,7 +4218,7 @@ loadApprovedIdeas();
   </div>
 </section>
 
-<a href="https://wa.me/966536277236" target="_blank" rel="noopener noreferrer" aria-label="تواصل مع إدارة المنصة عبر واتساب" style="position:fixed;left:18px;bottom:18px;z-index:500;background:#168b52;color:#fff;padding:11px 16px;border-radius:30px;box-shadow:0 4px 18px #0008;font-weight:800">واتساب الإدارة</a>
+
 <footer>
   <h2>سيناريو وسيناريست</h2>
   <p><button class="btn" type="button" onclick="showPage('contact')">تواصل مع إدارة المنصة</button></p>
