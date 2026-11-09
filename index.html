@@ -1022,11 +1022,10 @@ function renderTalents(){
   const q = (document.getElementById("talentsSearch")?.value || "").toLowerCase();
   const category = document.getElementById("talentCategory")?.value || "";
 
-  const list = creativeProfiles.talents.filter(x =>
-    (!category || x.category === category) &&
-    ((x.name || "").toLowerCase().includes(q) ||
-     (x.bio || "").toLowerCase().includes(q))
-  );
+  const list = creativeProfiles.talents.filter(x => {
+    const searchable=[x.name,x.bio,x.specialty,x.city].join(" ").toLowerCase();
+    return (!category || x.category === category) && (!q || searchable.includes(q));
+  });
 
   box.innerHTML = list.length
     ? list.map(x=>profileCard(x,"talents")).join("")
@@ -1048,6 +1047,7 @@ function showTalentForm(){
   if(!form) return;
   form.style.display = "block";
   form.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("talentName")?.focus({preventScroll:true});
 }
 
 /* إرسال طلب الموهبة إلى قاعدة البيانات للمراجعة */
@@ -1060,19 +1060,23 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
     category:document.getElementById("talentType").value,
     city:document.getElementById("talentCity").value.trim(),
     contact:document.getElementById("talentContact").value.trim(),
-    bio:document.getElementById("talentBio").value.trim(),
+    bio:[document.getElementById("talentSpecialty").value.trim() ? "التخصص: "+document.getElementById("talentSpecialty").value.trim() : "",document.getElementById("talentBio").value.trim()].filter(Boolean).join("\\n\\n"),
     work_url:document.getElementById("talentWork").value.trim() || null
   };
-  if(!item.name || !item.category){alert("من فضلك أدخل الاسم والمجال.");return;}
-  if(item.work_url && !safeHttpUrl(item.work_url)){alert("رابط نموذج العمل يجب أن يبدأ بـ https:// أو http://");return;}
+  const message=document.getElementById("talentFormMessage");
+  if(!item.name || !item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
+  if(item.work_url && !safeHttpUrl(item.work_url)){if(message)message.textContent="رابط نموذج العمل غير صالح؛ استخدم رابطًا يبدأ بـ https:// أو http://.";return;}
+  if(item.contact.length>160 || item.bio.length>1900){if(message)message.textContent="راجع طول البيانات المدخلة ثم حاول مرة أخرى.";return;}
   try{
     button.disabled=true;button.textContent="جارٍ إرسال الطلب...";
+    if(message)message.textContent="جارٍ إرسال بياناتك إلى الإدارة...";
     const {error}=await ideasGetClient().from("community_submissions").insert(item);
     if(error) throw error;
-    this.reset();document.getElementById("talentForm").style.display="none";
-    alert("تم استلام طلبك. ستراجعه الإدارة قبل نشره.");
-  }catch(error){alert("تعذر إرسال الطلب. تأكد من تنفيذ ملف SQL ثم حاول مرة أخرى. "+(error.message||""));}
-  finally{button.disabled=false;button.textContent="إرسال البيانات للمراجعة";}
+    this.reset();
+    if(message)message.textContent="تم استلام طلبك بنجاح. سيظهر ملفك للزوار بعد مراجعة الإدارة واعتماده.";
+    button.textContent="تم استلام الطلب";
+  }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");}
+  finally{button.disabled=false;if(button.textContent==="جارٍ إرسال الطلب...")button.textContent="إرسال الموهبة للمراجعة";}
 });
 
 /* البحث والتصفية */
