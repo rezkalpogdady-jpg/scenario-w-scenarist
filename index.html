@@ -820,16 +820,16 @@ renderLibrary();
 <section id="directors" class="page">
   <div class="intro">
     <h2>دليل المخرجين</h2>
-    <p>منصة للتعريف بالمخرجين وأعمالهم ورؤيتهم الفنية ومشروعاتهم الجديدة.</p>
+    <p>مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
   </div>
 
   <div class="section-heading">
     <h2>صناع الصورة</h2>
-    <p>ملفات تعريفية ونماذج أعمال</p>
+    <p>ملفات مهنية وفيديوهات مختارة للمشاهدة</p>
   </div>
 
   <div class="panel">
-    <input id="directorsSearch" placeholder="ابحث عن مخرج...">
+    <input id="directorsSearch" placeholder="ابحث عن مخرج أو نوع عمل...">
   </div>
   <div id="directorsItems" class="grid"></div>
 </section>
@@ -1857,6 +1857,28 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
     </form>
     <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
+    <div class="panel" id="directorWorksPanel" style="display:none;margin-top:18px">
+      <h3 style="color:var(--gold)">نماذج أعمالي الإخراجية</h3>
+      <p class="muted" style="font-size:13px">اعرض نماذج من أعمالك: فيلم قصير، مشهد، فيديو كليب، حلقة برنامج، إعلان، وثائقي أو أي عمل مرئي. الحد الأقصى لكل فيديو 10 دقائق وحجم الملف 100 ميجابايت. لن يظهر العمل قبل اعتماد ملفك الشخصي وموافقة الإدارة على العمل.</p>
+      <form id="directorWorkForm">
+        <input id="directorWorkId" type="hidden">
+        <label>عنوان العمل</label><input id="directorWorkTitle" required maxlength="180" placeholder="اسم العمل">
+        <label>نوع العمل</label>
+        <select id="directorWorkType" required>
+          <option value="short_film">فيلم قصير</option><option value="scene">مشهد سينمائي أو درامي</option><option value="music_video">فيديو كليب</option><option value="program_episode">حلقة برنامج</option><option value="advertisement">إعلان</option><option value="documentary">فيلم وثائقي</option><option value="report">تقرير أو مادة تلفزيونية</option><option value="other">عمل مرئي آخر</option>
+        </select>
+        <label>نبذة عن العمل (اختياري)</label><textarea id="directorWorkDescription" maxlength="2500" rows="3" placeholder="دورك في العمل وأي معلومات ترغب في إضافتها"></textarea>
+        <label>سنة الإنتاج (اختياري)</label><input id="directorWorkYear" type="number" min="1900" max="2100" placeholder="مثال: 2025">
+        <label>مدة العمل بالدقائق</label><input id="directorWorkDuration" type="number" min="1" max="10" step="0.1" required placeholder="حتى 10 دقائق">
+        <label>رفع فيديو (MP4 أو WebM أو MOV، حتى 100 ميجابايت)</label><input id="directorWorkFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov">
+        <label>أو رابط مشاهدة (YouTube أو Vimeo أو رابط فيديو مباشر)</label><input id="directorWorkUrl" type="url" maxlength="1000" placeholder="https://...">
+        <label style="display:flex;align-items:flex-start;gap:8px"><input id="directorWorkRights" type="checkbox" required style="width:auto;margin-top:8px"><span>أقر أنني أملك حقوق عرض هذا العمل أو لدي تصريح بعرضه، وأوافق على مراجعته قبل نشره.</span></label>
+        <button class="btn primary" id="directorWorkSubmit" type="submit">إرسال العمل لمراجعة الإدارة</button>
+        <button class="btn" id="directorWorkCancel" type="button" style="display:none">إلغاء التعديل</button>
+      </form>
+      <p id="directorWorkMessage" role="status" aria-live="polite" class="muted"></p>
+      <div id="myDirectorWorks" class="grid"><p class="muted">سجّل الدخول لعرض أعمالك وحالات مراجعتها.</p></div>
+    </div>
     <div class="panel" id="writerIdeasPanel" style="margin-top:18px">
       <h3 style="color:var(--gold)">أفكاري السينمائية</h3>
       <p class="muted" style="font-size:13px">يحق لكل كاتب عرض فكرتين فقط. اكتب ملخصًا يحمي تفاصيل فكرتك، وحدد نوع العمل وحالته. لا تظهر الفكرة للجمهور إلا بعد اعتماد المدير.</p>
@@ -1913,6 +1935,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
+    <div class="panel"><div id="adminDirectorWorksList" class="grid">سجّل الدخول لتحميل نماذج الأعمال المعلقة.</div></div>
     <div class="section-heading"><h2>مراجعة المجتمع والتعليقات</h2><p>اعتماد أو رفض موضوعات الأعضاء وردودهم وتعليقاتهم قبل ظهورها للجمهور</p></div>
     <div class="panel">
       <h3 style="color:var(--gold)">موضوعات النقاش المعلقة</h3><div id="adminCommunityTopics" class="grid">سجّل الدخول لتحميل الطلبات.</div>
@@ -2185,6 +2209,7 @@ function accountShowUser(user,profile){
   const experienceField=document.getElementById("accountEditExperience");if(experienceField)experienceField.value=profile?.experience_years??"";
   const photoField=document.getElementById("accountEditPhoto");if(photoField)photoField.value="";
   const writerPanel=document.getElementById("writerIdeasPanel");if(writerPanel)writerPanel.style.display=accountType==="writer"?"block":"none";
+  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=accountType==="director"?"block":"none";
   const profileStatus=document.getElementById("accountProfileStatus");
   if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور ومعتمد. أي تعديل جديد سيعيده للمراجعة." : profile?.profile_status==="rejected" ? "الملف لم يُعتمد. عدّل بياناتك ثم أعد إرساله للمراجعة." : "ملفك قيد المراجعة أو لم يُرسل بعد، ولن يظهر للعامة قبل الموافقة.";
 }
@@ -2196,6 +2221,7 @@ async function accountLoadProfile(user){
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
     if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
+    if(typeof accountLoadDirectorWorks==="function") await accountLoadDirectorWorks();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
   }catch(error){
@@ -2637,6 +2663,7 @@ async function adminVerifyAdmin(session){
   await adminLoadCommunitySubmissions();
   await adminLoadMemberProfiles();
   await adminLoadMemberWorks();
+  if(typeof adminLoadDirectorWorks==="function") await adminLoadDirectorWorks();
   if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
@@ -4060,6 +4087,7 @@ async function adminReviewWriterIdea(id,status){
 }
 document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
 document.getElementById("accountEditType")?.addEventListener("change",()=>{
+  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=document.getElementById("accountEditType").value==="director"?"block":"none";
   const isWriter=document.getElementById("accountEditType").value==="writer",panel=document.getElementById("writerIdeasPanel");
   if(panel)panel.style.display=isWriter?"block":"none";
 });
@@ -4068,3 +4096,198 @@ if(accountUser){accountLoadWriterContact();accountLoadWriterIdeas();}
 
 </body>
 </html>
+
+
+/* ملف أعمال المخرجين — فيديوهات بحد أقصى 10 دقائق مع مراجعة إدارية */
+let directorWorkEditingId=null;
+const directorWorkLabels={short_film:"فيلم قصير",scene:"مشهد سينمائي أو درامي",music_video:"فيديو كليب",program_episode:"حلقة برنامج",advertisement:"إعلان",documentary:"فيلم وثائقي",report:"تقرير تلفزيوني",other:"عمل مرئي آخر"};
+function directorWorkEsc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function directorWorkSafeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch(_){return "";}}
+async function directorVideoDuration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),video=document.createElement("video");
+    video.preload="metadata";
+    video.onloadedmetadata=()=>{const duration=video.duration;URL.revokeObjectURL(url);resolve(duration);};
+    video.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("تعذر قراءة مدة الفيديو. استخدم MP4 أو WebM أو MOV."));};
+    video.src=url;
+  });
+}
+async function accountLoadDirectorWorks(){
+  const box=document.getElementById("myDirectorWorks");if(!box||!accountUser)return;
+  if(document.getElementById("accountEditType")?.value!=="director"){box.innerHTML="";return;}
+  const {data,error}=await accountClient().from("director_work_submissions")
+    .select("id,title,work_type,description,duration_seconds,production_year,status,review_notes,created_at")
+    .eq("user_id",accountUser.id).order("created_at",{ascending:false});
+  if(error){box.textContent="تعذر تحميل أعمالك: "+error.message;return;}
+  const labels={pending:"قيد مراجعة الإدارة",approved:"تم الاعتماد والنشر",rejected:"مطلوب تعديل"};
+  box.innerHTML=(data||[]).length?(data||[]).map(w=>'<article class="admin-item"><h4>'+directorWorkEsc(w.title)+'</h4><p>'+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+' • '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p><p class="admin-status">'+labels[w.status]+'</p>'+(w.review_notes?'<p>ملاحظات الإدارة: '+directorWorkEsc(w.review_notes)+'</p>':"")+(w.status==="rejected"?'<button class="btn primary" type="button" onclick="directorWorkEdit(\''+w.id+'\')">تعديل وإعادة الإرسال</button>':"")+'</article>').join(""):'<p class="muted">لم تضف نماذج أعمال بعد.</p>';
+}
+async function directorWorkEdit(id){
+  if(!accountUser)return;
+  const {data,error}=await accountClient().from("director_work_submissions").select("id,title,work_type,description,duration_seconds,production_year,status,review_notes,external_url,storage_path").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
+  if(error||!data||data.status!=="rejected"){alert("يمكن تعديل العمل بعد طلب الإدارة تعديله فقط.");return;}
+  directorWorkEditingId=data.id;
+  document.getElementById("directorWorkId").value=data.id;
+  document.getElementById("directorWorkTitle").value=data.title||"";
+  document.getElementById("directorWorkType").value=data.work_type||"other";
+  document.getElementById("directorWorkDescription").value=data.description||"";
+  document.getElementById("directorWorkYear").value=data.production_year||"";
+  document.getElementById("directorWorkDuration").value=(Number(data.duration_seconds)/60).toFixed(1);
+  document.getElementById("directorWorkUrl").value=data.external_url||"";
+  document.getElementById("directorWorkRights").checked=true;
+  document.getElementById("directorWorkSubmit").textContent="إعادة إرسال العمل بعد التعديل";
+  document.getElementById("directorWorkCancel").style.display="inline-block";
+  document.getElementById("directorWorkForm")?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+document.getElementById("directorWorkCancel")?.addEventListener("click",()=>{
+  directorWorkEditingId=null;document.getElementById("directorWorkForm")?.reset();
+  document.getElementById("directorWorkId").value="";
+  document.getElementById("directorWorkSubmit").textContent="إرسال العمل لمراجعة الإدارة";
+  document.getElementById("directorWorkCancel").style.display="none";
+});
+document.getElementById("directorWorkForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const message=document.getElementById("directorWorkMessage"),button=document.getElementById("directorWorkSubmit");
+  if(!accountUser){message.textContent="سجّل الدخول أولًا.";return;}
+  if(document.getElementById("accountEditType")?.value!=="director"){message.textContent="اختر نوع الحساب «مخرج» واحفظ ملفك أولًا.";return;}
+  if(!document.getElementById("directorWorkRights").checked){message.textContent="يجب تأكيد حقوق عرض العمل.";return;}
+  const title=document.getElementById("directorWorkTitle").value.trim();
+  const work_type=document.getElementById("directorWorkType").value;
+  const description=document.getElementById("directorWorkDescription").value.trim();
+  const yearRaw=document.getElementById("directorWorkYear").value.trim();
+  const production_year=yearRaw?Number(yearRaw):null;
+  const durationMinutes=Number(document.getElementById("directorWorkDuration").value);
+  const file=document.getElementById("directorWorkFile").files?.[0]||null;
+  const externalRaw=document.getElementById("directorWorkUrl").value.trim();
+  const external_url=externalRaw?directorWorkSafeUrl(externalRaw):"";
+  if(!title||!durationMinutes||durationMinutes<=0||durationMinutes>10){message.textContent="أدخل عنوان العمل ومدة صحيحة لا تتجاوز 10 دقائق.";return;}
+  if(production_year!==null&&(!Number.isInteger(production_year)||production_year<1900||production_year>2100)){message.textContent="سنة الإنتاج غير صحيحة.";return;}
+  if(file&&externalRaw){message.textContent="اختر رفع الفيديو أو الرابط الخارجي، وليس الاثنين معًا.";return;}
+  if(!file&&!externalRaw&&!directorWorkEditingId){message.textContent="ارفع فيديو أو أضف رابط مشاهدة.";return;}
+  if(externalRaw&&!external_url){message.textContent="الرابط غير صالح؛ استخدم http أو https.";return;}
+  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>100*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
+  button.disabled=true;message.textContent="جارٍ تجهيز الفيديو وإرساله للمراجعة...";
+  let uploadedPath=null,oldPath=null;
+  try{
+    let durationSeconds=Math.round(durationMinutes*60);
+    if(file){
+      const actualDuration=await directorVideoDuration(file);
+      if(!Number.isFinite(actualDuration)||actualDuration<=0||actualDuration>600){throw new Error("مدة الفيديو الفعلية يجب ألا تتجاوز 10 دقائق.");}
+      durationSeconds=Math.round(actualDuration);
+    }
+    const payload={user_id:accountUser.id,title,work_type,description,duration_seconds:durationSeconds,production_year,external_url:external_url||null,rights_confirmed:true,status:"pending",updated_at:new Date().toISOString()};
+    if(file){
+      const ext=file.type==="video/webm"?"webm":file.type==="video/quicktime"?"mov":"mp4";
+      uploadedPath=accountUser.id+"/director-works/"+crypto.randomUUID()+"."+ext;
+      const {error:uploadError}=await accountClient().storage.from("director-work-videos").upload(uploadedPath,file,{upsert:false,contentType:file.type});
+      if(uploadError)throw uploadError;
+      payload.storage_path=uploadedPath;payload.external_url=null;
+    }else if(directorWorkEditingId){
+      const {data:existing,error:readError}=await accountClient().from("director_work_submissions").select("storage_path").eq("id",directorWorkEditingId).eq("user_id",accountUser.id).maybeSingle();
+      if(readError)throw readError;
+      oldPath=existing?.storage_path||null;
+      payload.storage_path=oldPath;
+      payload.external_url=external_url||null;
+    }
+    let result;
+    if(directorWorkEditingId)result=await accountClient().from("director_work_submissions").update(payload).eq("id",directorWorkEditingId).eq("user_id",accountUser.id);
+    else result=await accountClient().from("director_work_submissions").insert(payload);
+    if(result.error)throw result.error;
+    if(uploadedPath&&oldPath)await accountClient().storage.from("director-work-videos").remove([oldPath]);
+    this.reset();directorWorkEditingId=null;
+    document.getElementById("directorWorkId").value="";
+    document.getElementById("directorWorkSubmit").textContent="إرسال العمل لمراجعة الإدارة";
+    document.getElementById("directorWorkCancel").style.display="none";
+    message.textContent="تم استلام نموذج العمل. سيظهر للجمهور بعد اعتماد ملفك الشخصي وموافقة الإدارة على الفيديو.";
+    await accountLoadDirectorWorks();
+  }catch(error){
+    if(uploadedPath)await accountClient().storage.from("director-work-videos").remove([uploadedPath]);
+    message.textContent="تعذر إرسال العمل: "+(error.message||"حاول مرة أخرى.");
+  }finally{button.disabled=false;}
+});
+async function loadApprovedDirectorWorks(){
+  if(!publicContentClient)return;
+  const {data,error}=await publicContentClient.from("director_work_submissions")
+    .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url")
+    .eq("status","approved").order("created_at",{ascending:false}).limit(300);
+  if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
+  const grouped=new Map();
+  for(const work of data||[]){
+    let mediaUrl=work.external_url||"";
+    if(work.storage_path){
+      const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrl(work.storage_path,3600);
+      if(signedError){console.warn("تعذر تجهيز فيديو منشور",signedError.message);continue;}
+      mediaUrl=signed?.signedUrl||"";
+    }
+    if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
+    grouped.get(work.user_id).push({...work,mediaUrl});
+  }
+  creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
+  renderDirectors();
+}
+function directorEmbedUrl(url){
+  try{
+    const u=new URL(url),host=u.hostname.toLowerCase();
+    if(host==="youtu.be")return "https://www.youtube-nocookie.com/embed/"+encodeURIComponent(u.pathname.slice(1).split("/")[0]);
+    if(host.endsWith("youtube.com")){
+      const id=u.searchParams.get("v")||u.pathname.match(/\/embed\/([^/]+)/)?.[1]||u.pathname.match(/\/shorts\/([^/]+)/)?.[1];
+      return id?"https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id):"";
+    }
+    if(host==="vimeo.com"||host==="www.vimeo.com"){
+      const id=u.pathname.match(/\/(\d+)/)?.[1];return id?"https://player.vimeo.com/video/"+id:"";
+    }
+    return "";
+  }catch(_){return "";}
+}
+function renderDirectors(){
+  const box=document.getElementById("directorsItems");if(!box)return;
+  const q=(document.getElementById("directorsSearch")?.value||"").trim().toLowerCase();
+  const list=creativeProfiles.directors.filter(x=>([x.name,x.bio,x.specialty,...(x.works||[]).map(w=>w.title+" "+(directorWorkLabels[w.work_type]||""))].join(" ")).toLowerCase().includes(q));
+  if(!list.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد ملفات مخرجين معتمدة تطابق البحث حاليًا.</div>';return;}
+  box.innerHTML=list.map(x=>{
+    const works=(x.works||[]).map(w=>{
+      const embed=directorEmbedUrl(w.mediaUrl||"");
+      const player=w.storage_path&&w.mediaUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="'+directorWorkEsc(w.mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px"></iframe>':'<a class="btn" href="'+directorWorkEsc(w.mediaUrl||"")+'" target="_blank" rel="noopener noreferrer">مشاهدة العمل</a>';
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px">'+player+'<h4 style="color:var(--gold);margin:10px 0 4px">'+directorWorkEsc(w.title)+'</h4><p class="admin-status">'+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+' • '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p><p>'+directorWorkEsc(w.description||"")+'</p></div>';
+    }).join("");
+    const image=x.image?'<img src="'+directorWorkEsc(x.image)+'" alt="" loading="lazy" style="width:100%;height:210px;object-fit:cover;border-radius:10px">':'<div style="height:150px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:48px;color:var(--gold)">🎬</div>';
+    return '<article class="feature" style="padding:14px"><div class="feature-content">'+image+'<h3 style="color:var(--gold)">'+directorWorkEsc(x.name||"مخرج")+'</h3><p class="admin-status">مخرج معتمد'+(x.specialty?' • '+directorWorkEsc(x.specialty):"")+'</p><p>'+directorWorkEsc(x.bio||"")+'</p>'+(x.education?'<p class="admin-status">الدراسة: '+directorWorkEsc(x.education)+'</p>':"")+(x.experienceYears!==null&&x.experienceYears!==undefined?'<p class="admin-status">الخبرة: '+Number(x.experienceYears)+' سنة</p>':"")+(x.city?'<p class="admin-status">المدينة: '+directorWorkEsc(x.city)+'</p>':"")+(works?'<h4 style="color:var(--gold)">نماذج أعمال للمشاهدة</h4>'+works:'<p class="admin-status">لم يضف المخرج نماذج أعمال منشورة بعد.</p>')+'</div></article>';
+  }).join("");
+}
+async function adminLoadDirectorWorks(){
+  if(!adminSupabase||!adminSession)return;
+  const box=document.getElementById("adminDirectorWorksList");if(!box)return;
+  const {data,error}=await adminSupabase.from("director_work_submissions")
+    .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url,created_at")
+    .eq("status","pending").order("created_at",{ascending:false}).limit(100);
+  if(error){box.textContent="تعذر تحميل نماذج المخرجين: "+error.message;return;}
+  if(!data?.length){box.innerHTML='<div class="panel">لا توجد نماذج أعمال معلقة للمراجعة.</div>';return;}
+  const ids=[...new Set(data.map(w=>w.user_id))];
+  const {data:profiles,error:profilesError}=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",ids);
+  if(profilesError){box.textContent="تعذر تحميل أسماء المخرجين: "+profilesError.message;return;}
+  const names=new Map((profiles||[]).map(p=>[p.user_id,p.display_name]));
+  const cards=[];
+  for(const w of data){
+    let mediaUrl=w.external_url||"";
+    if(w.storage_path){
+      const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrl(w.storage_path,1800);
+      if(!signedError)mediaUrl=signed?.signedUrl||"";
+    }
+    const embed=directorEmbedUrl(mediaUrl);
+    const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
+    cards.push('<article class="admin-item"><h3>'+directorWorkEsc(w.title)+'</h3><p>المخرج: '+directorWorkEsc(names.get(w.user_id)||"عضو")+' • '+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+'</p><p>المدة: '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p>'+player+'<p>'+directorWorkEsc(w.description||"")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>');
+  }
+  box.innerHTML=cards.join("");
+}
+async function adminReviewDirectorWork(id,status){
+  if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const note=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من المخرج:":"ملاحظة للمدير (اختياري):","");
+  if(note===null)return;
+  if(status==="rejected"&&!note.trim()){alert("اكتب سبب طلب التعديل.");return;}
+  const {error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending");
+  if(error){alert("تعذرت مراجعة العمل: "+error.message);return;}
+  alert(status==="approved"?"تم اعتماد نموذج العمل.":"تم إرسال ملاحظات التعديل إلى المخرج.");
+  await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
+}
+document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
+
