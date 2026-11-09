@@ -610,22 +610,21 @@ function renderLessonIndex(materials = []){
   const byTitle = new Map(materials.map(item=>[String(item.title||"").trim(),item]));
   lessonsContainer.innerHTML = academyLessons.map((lesson,index)=>{
     const material=byTitle.get(lesson);
-    const poster=material?.image || material?.image_url || "";
-    const safePoster=poster ? safeHttpUrl(poster) : "";
-    return `<article class="feature academy-lesson-card" style="overflow:hidden;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
-      ${safePoster
-        ? `<img src="${escapeHTML(safePoster)}" alt="أفيش محاضرة ${escapeHTML(lesson)}" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#111">`
-        : `<div aria-label="غلاف المحاضرة ${index+1}" style="aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:radial-gradient(circle at 50% 35%,#4b3820 0,#211b16 42%,#101010 100%);border-bottom:2px solid var(--gold)">
-            <div style="font-size:12px;letter-spacing:2px;color:var(--gold)">سيناريو وسيناريست</div>
-            <div style="font-size:42px;font-weight:800;color:var(--gold);margin:22px 0 12px">${String(index+1).padStart(2,"0")}</div>
-            <div style="font-size:18px;line-height:1.7;color:#fff;font-weight:700">${escapeHTML(lesson)}</div>
-            <div style="font-size:11px;color:#c7bda9;margin-top:18px">محاضرة تعليمية</div>
-          </div>`}
-      <div class="feature-content" style="padding:16px">
-        <div style="color:var(--gold);font-size:13px">المحاضرة ${index+1}</div>
-        <h3>${escapeHTML(lesson)}</h3>
-        <button class="btn" type="button" onclick="openLesson(${index})">اقرأ المحاضرة</button>
+    const rawDescription=String(material?.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+    const firstSentence=(rawDescription.split(/(?<=[.!؟])\s+/)[0]||rawDescription);
+    const shortDescription=firstSentence.length>118
+      ? firstSentence.slice(0,115).replace(/\s+\S*$/,"")+"…"
+      : (firstSentence || "شرح عملي وأمثلة وتدريب تطبيقي.");
+    return `<article class="feature academy-lesson-card" style="padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:30px;padding:0 8px;border-radius:7px;background:#302719;color:var(--gold);font-weight:800;font-size:14px">${String(index+1).padStart(2,"0")}</span>
+          <span style="color:var(--muted);font-size:12px">محاضرة</span>
+        </div>
+        <h3 style="margin:0 0 8px;color:var(--gold);font-size:17px;line-height:1.6">${escapeHTML(lesson)}</h3>
+        <p style="margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.7">${escapeHTML(shortDescription)}</p>
       </div>
+      <button class="btn" type="button" style="align-self:flex-start" onclick="openLesson(${index})">اقرأ المحاضرة</button>
     </article>`;
   }).join("");
 }
@@ -717,9 +716,11 @@ function openLesson(index){
   title.textContent=lesson;
   const extra=material?.extra_data && typeof material.extra_data==="object" ? material.extra_data : {};
   const poster=material?.image_url ? safeHttpUrl(material.image_url) : "";
-  const lessonText=typeof extra.body==="string" && extra.body.trim()
+  let lessonText=typeof extra.body==="string" && extra.body.trim()
     ? extra.body
     : (typeof extra.lesson_text==="string" && extra.lesson_text.trim() ? extra.lesson_text : "");
+  // العنوان ورقم المحاضرة ظاهران أعلى القارئ؛ نحذف سطر العنوان المكرر من المتن.
+  lessonText=lessonText.replace(/^\s*المحاضرة\s+[^:\n]+:\s*[^\n]*\n?/i,"").trim();
   const description=material?.description || "";
   const paragraphs=(lessonText || description)
     .split(/\n{2,}/)
