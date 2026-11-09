@@ -3102,7 +3102,7 @@ async function renderScenarioPdf(frame,url,titleText,downloadLabel){
     }else{for(const entry of pageNodes){await renderOne(entry);}}
   }catch(error){if(frame.dataset.readerToken!==token)return;status.textContent="تعذر عرض الملف داخل القارئ: "+(error.message||"خطأ غير معروف");}
 }
-function openLegacyScenario(index){
+async function openLegacyScenario(index){
   const item=scenarioLibrary[Number(index)];if(!item||!item.file)return;
   const frame=showScenarioReader(item.title,`الكاتب: ${item.author||"غير محدد"} • قراءة داخل المنصة`);if(!frame)return;
   try{await renderScenarioPdf(frame,item.file,item.title,"");}
