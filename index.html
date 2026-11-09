@@ -4613,14 +4613,14 @@ function adminExportBookListingsCsv(){
   const statusLabels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
   const safe=value=>{
     let v=String(value??"");
-    if(/^[\\s\\u0000-\\u001f]*[=+@-]/.test(v))v="'"+v;
+    if(/^[\s\u0000-\u001f]*[=+@-]/.test(v))v="'"+v;
     return '"'+v.replace(/"/g,'""')+'"';
   };
   const csv=[headers,...rows.map(item=>[
     item.id,item.title,item.author_name,item.book_type,item.book_format,item.price,item.currency,
     item.seller_name,item.contact_phone,statusLabels[item.status]||item.status,item.created_at,item.updated_at
   ])].map(row=>row.map(safe).join(",")).join("\r\n");
-  const blob=new Blob(["\\uFEFF",csv],{type:"text/csv;charset=utf-8"});
+  const blob=new Blob([String.fromCharCode(0xFEFF),csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const link=document.createElement("a");
   link.href=url;
