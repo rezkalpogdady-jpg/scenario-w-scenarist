@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.5.9: فصل مسؤولية المدير عن إقرار العضو وتحسين الوصول إلى نموذج مكتبة السيناريوهات؛ نسخة مستقلة لا تستبدل السابقة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.19: إظهار تاريخ النشر وآخر تحديث في لوحة سوق الكتب. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.5.9</title>
+<title>سيناريو وسيناريست – تحديث 6.8.19</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.5.12">
+<body data-platform-version="6.8.11">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -316,12 +316,12 @@ Main{padding:17px 11px}
 <button data-page="news">الأخبار الفنية</button>
 <button data-page="archive">أرشيف السينما زمان</button>
 <button data-page="community">مجتمع ونقاشات</button>
-<button data-page="tv">سيناريو TV</button>
+<button data-page="books">اعرض كتابك للبيع</button>
 <button data-page="radio">الراديو</button>
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
 <button data-page="production">الإنتاج</button>
-<button data-page="account">حسابي</button>
+<button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="about">عن المنصة</button>
 </nav>
@@ -403,11 +403,11 @@ Main{padding:17px 11px}
 </article>
 
 <article class="feature">
-<img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=800&q=80" alt="التلفزيون">
+<img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=800&q=80" alt="سوق الكتب">
 <div class="feature-content">
-<h3>سيناريو TV</h3>
-<p>دليل قنوات تلفزيونية سينمائية وثقافية ووثائقية ببث رسمي.</p>
-<button class="btn" onclick="showPage('tv')">دخول التلفزيون</button>
+<h3>اعرض كتابك للبيع</h3>
+<p>روايات وقصص وكتب في مختلف المجالات؛ أضف الغلاف والسعر وتواصل مع القراء.</p>
+<button class="btn" onclick="showPage('books')">ادخل سوق الكتب</button>
 </div>
 </article>
 
@@ -477,6 +477,7 @@ document.querySelectorAll('.page').forEach(page=>page.classList.remove('active')
 const target=document.getElementById(id);
 if(target) target.classList.add('active');
 if(id==='library' && typeof loadPublishedScenarioScripts==='function') loadPublishedScenarioScripts();
+if(id==='books' && typeof loadBookListings==='function') loadBookListings();
 document.querySelectorAll('#mainNav button').forEach(button=>{
 button.classList.toggle('active',button.dataset.page===id);
 });
@@ -820,14 +821,14 @@ renderLibrary();
 <section id="directors" class="page">
   <div class="intro">
     <h2>دليل المخرجين</h2>
-    <p>مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
+    <p>تصفّح دليل المخرجين ومشاهدة الأعمال متاح للجميع دون تسجيل أو بريد إلكتروني. مساحة للمخرجين لعرض خبراتهم ونماذج من أعمالهم المرئية: أفلام قصيرة، مشاهد، فيديو كليبات، حلقات برامج، إعلانات وأعمال وثائقية. مدة كل نموذج لا تتجاوز 10 دقائق، والنشر بعد موافقة الإدارة.</p>
   </div>
 
   <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
     <h3 style="color:var(--gold);margin-top:0">هل أنت مخرج؟ اعرض أعمالك على المنصة</h3>
-    <p>أنشئ ملفك المهني، أضف نبذة عن خبرتك ودراستك، وارفع نماذج من أعمالك أو أضف روابط المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
-    <button class="btn primary" type="button" onclick="startDirectorRegistration()">أنشئ ملفك كمخرج</button>
-    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">لديك حساب بالفعل؟ اضغط الزر وسجّل الدخول.</span>
+    <p>كل زائر يستطيع تصفّح الموقع ومشاهدة الأعمال دون إنشاء حساب. وإذا رغبت كمخرج في نشر ملفك وأعمالك، يمكنك إنشاء حساب اختياري لحماية ملفك وإدارة مشاركاتك؛ لا نطلب التسجيل لمجرد الدخول أو المشاهدة. يمكنك تقديم أفلام ومشاهد وفيديو كليبات وحلقات برامج وإعلانات وأعمال وثائقية، بحد أقصى 10 دقائق لكل فيديو. لن يظهر ملفك أو عملك للجمهور إلا بعد مراجعة الإدارة والموافقة.</p>
+    <button class="btn primary" type="button" onclick="startDirectorRegistration()">اختياري: قدّم ملفك وأعمالك كمخرج</button>
+    <span class="muted" style="display:inline-block;margin-inline-start:10px;font-size:13px">التصفح والمشاهدة لا يحتاجان إلى حساب. الحساب مطلوب فقط لحفظ ملفك وإدارة أعمالك المنشورة.</span>
   </div>
 
   <div class="section-heading">
@@ -844,51 +845,92 @@ renderLibrary();
 <section id="talents" class="page">
   <div class="intro">
     <h2>بوابة المواهب</h2>
-    <p>كل موهبة تستحق فرصة. مساحة للممثلين ومقدمي البرامج والمذيعين والمواهب الإذاعية لعرض أنفسهم ونماذج أعمالهم.</p>
+    <p>منصة مفتوحة لاكتشاف الممثلين ومقدمي البرامج والمواهب الإذاعية. تصفّح الملفات وشاهد نماذج الأعمال دون تسجيل أو بريد إلكتروني.</p>
+  </div>
+
+  <div class="panel" style="margin:18px 0;padding:20px;border:1px solid var(--gold)">
+    <h3 style="color:var(--gold);margin-top:0">موهبتك تستحق أن تُرى</h3>
+    <p>يمكنك تقديم بياناتك ونموذج عملك مباشرة دون إنشاء حساب. التسجيل ليس شرطًا للتصفح أو التقديم من هذا النموذج. تراجع الإدارة كل طلب قبل نشره، ووسيلة التواصل التي تكتبها تبقى خاصة بالإدارة ولا تظهر في ملفك العام.</p>
+    <button class="btn primary" type="button" onclick="showTalentForm()">اعرض موهبتك مجانًا – دون تسجيل</button>
   </div>
 
   <div class="section-heading">
-    <h2>اكتشف المواهب</h2>
-    <p>اختار المجال الذي تبحث عنه</p>
+    <h2>دليل المواهب</h2>
+    <p>اكتشف الوجوه والأصوات الجديدة وابحث حسب المجال أو الاسم أو المدينة</p>
   </div>
 
-  <div class="panel">
-    <select id="talentCategory">
-      <option value="">كل المواهب</option>
+  <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+    <select id="talentCategory" aria-label="تصفية المواهب حسب المجال">
+      <option value="">كل المجالات</option>
       <option value="تمثيل">التمثيل</option>
       <option value="تقديم برامج">تقديم البرامج</option>
       <option value="إذاعة">الإذاعة والتعليق الصوتي</option>
     </select>
-    <input id="talentsSearch" placeholder="ابحث بالاسم أو التخصص...">
+    <input id="talentsSearch" type="search" placeholder="ابحث بالاسم أو النبذة..." aria-label="ابحث في دليل المواهب">
+    <input id="talentCitySearch" type="search" placeholder="تصفية حسب المدينة..." aria-label="تصفية المواهب حسب المدينة">
+    <input id="talentSpecialtySearch" type="search" placeholder="تصفية حسب التخصص أو نوع الأداء..." aria-label="تصفية المواهب حسب التخصص">
   </div>
-  <div id="talentsItems" class="grid"></div>
+  <div id="talentsResultCount" class="muted" role="status" aria-live="polite" style="margin:8px 2px;font-size:13px"></div>
+  <div id="talentsItems" class="grid" aria-live="polite">
+    <div class="panel" style="grid-column:1/-1;text-align:center">جارٍ تحميل ملفات المواهب المعتمدة...</div>
+  </div>
 
-  <div class="spotlight">
-    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1000&q=85" alt="اختبار أداء">
-    <div class="spotlight-content">
-      <h2>اعرض موهبتك</h2>
-      <p>جهّز ملفك الشخصي ونماذج أعمالك، ليتمكن المهتمون من التعرف على موهبتك والتواصل معك وفق ضوابط المنصة.</p>
-      <button class="btn primary" onclick="showTalentForm()">تسجيل موهبة</button>
+  <div class="panel" id="talentForm" style="display:none;margin-top:22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h3 style="color:var(--gold);margin:0">استمارة تقديم موهبة</h3>
+      <button class="btn" type="button" onclick="document.getElementById('talentForm').style.display='none'">إغلاق</button>
     </div>
-  </div>
-
-  <div class="panel" id="talentForm" style="display:none">
-    <h3 style="color:var(--gold)">بيانات الموهبة</h3>
-    <form id="talentRegisterForm">
-      <input id="talentName" required placeholder="الاسم">
+    <p class="muted">املأ البيانات الأساسية فقط. لا نطلب بريدًا إلكترونيًا ولا إنشاء حساب. لا تنشر الإدارة أي بيانات تواصل خاصة.</p>
+    <form id="talentRegisterForm" style="display:grid;gap:12px;margin-top:14px">
+      <label for="talentName">الاسم أو الاسم الفني *</label>
+      <input id="talentName" required maxlength="160" autocomplete="name" placeholder="الاسم الذي تريد الظهور به">
+      <label for="talentType">مجال الموهبة *</label>
       <select id="talentType" required>
         <option value="">اختر المجال</option>
-        <option value="تمثيل">تمثيل</option>
-        <option value="تقديم برامج">تقديم برامج</option>
-        <option value="إذاعة">إذاعة وتعليق صوتي</option>
+        <option value="تمثيل">التمثيل – سينما وتلفزيون ومسرح</option>
+        <option value="تقديم برامج">تقديم البرامج – تلفزيون وإذاعة ومنصات</option>
+        <option value="إذاعة">الإذاعة والتعليق الصوتي والأداء الصوتي</option>
       </select>
-      <input id="talentCity" placeholder="المدينة">
-      <input id="talentContact" placeholder="وسيلة تواصل عامة">
-      <textarea id="talentBio" placeholder="نبذة عن الموهبة والخبرات"></textarea>
-      <input id="talentWork" placeholder="رابط نموذج أعمال (اختياري)">
-      <button class="btn primary" type="submit">إرسال البيانات للمراجعة</button>
+      <label for="talentCity">المدينة أو بلد الإقامة</label>
+      <input id="talentCity" maxlength="100" autocomplete="address-level2" placeholder="مثال: الإسكندرية">
+      <label for="talentAge">السن (اختياري)</label>
+      <input id="talentAge" type="number" min="16" max="100" inputmode="numeric" placeholder="السن بالسنوات">
+      <label for="talentEducation">الدراسة أو المؤهل (اختياري)</label>
+      <input id="talentEducation" maxlength="180" placeholder="مثال: معهد فنون مسرحية – إعلام – تدريب تمثيل">
+      <label for="talentExperience">سنوات الخبرة (اختياري)</label>
+      <input id="talentExperience" type="number" min="0" max="80" inputmode="numeric" placeholder="عدد سنوات الخبرة">
+      <label for="talentSpecialty">التخصص أو نوع الأداء</label>
+      <input id="talentSpecialty" maxlength="160" placeholder="مثال: كوميدي، دراما، تقديم حواري، تعليق وثائقي">
+      <label for="talentBio">نبذة عنك وخبراتك</label>
+      <textarea id="talentBio" rows="4" maxlength="1800" placeholder="عرّفنا بموهبتك وخبراتك وأهم ما قدمته"></textarea>
+      <label for="talentVideo">ارفع فيديو تعريفي أو نموذج أداء (حتى 10 دقائق)</label>
+      <input id="talentVideo" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" aria-describedby="talentVideoHelp">
+      <p id="talentVideoHelp" class="muted" style="font-size:12px;margin:0">الصيغ: MP4 أو WebM أو MOV. الحد الأقصى 10 دقائق و50 ميجابايت للملف. يفضّل MP4 مضغوط لتسهيل الرفع من الهاتف.</p>
+      <progress id="talentVideoProgress" max="100" value="0" style="display:none;width:100%;height:12px"></progress>
+      <p id="talentVideoStatus" class="muted" role="status" aria-live="polite" style="margin:0"></p>
+      <label for="talentWork">رابط نموذج العمل الأول (اختياري إذا لم ترفع فيديو)</label>
+      <input id="talentWork" type="url" inputmode="url" placeholder="رابط YouTube أو Vimeo أو نموذج صوتي">
+      <label for="talentWork2">رابط نموذج العمل الثاني (اختياري)</label>
+      <input id="talentWork2" type="url" inputmode="url" placeholder="رابط مشهد أو برنامج أو تسجيل صوتي">
+      <label for="talentWork3">رابط نموذج العمل الثالث (اختياري)</label>
+      <input id="talentWork3" type="url" inputmode="url" placeholder="رابط عمل إضافي">
+      <label for="talentContact">رقم الموبايل أو واتساب للتواصل معك *</label>
+      <input id="talentContact" type="tel" inputmode="tel" autocomplete="tel" maxlength="25" required placeholder="مثال: +20 10 0000 0000">
+      <p class="muted" style="font-size:12px;margin:0">يمكنك إضافة حتى 3 روابط لأعمالك بدل الفيديو. رقمك يظهر للإدارة فقط ولا يظهر في ملفك العام. لا نطلب حسابًا أو بريدًا إلكترونيًا.</p>
+      <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
+      <p id="talentFormMessage" role="status" aria-live="polite" style="margin:0;color:var(--gold2)"></p>
     </form>
-    <p style="color:var(--muted);font-size:12px">سيُرسل طلبك إلى إدارة المنصة للمراجعة، ولن يظهر للعامة إلا بعد الموافقة.</p>
+  </div>
+
+  <div id="talentProfileModal" role="presentation" onclick="if(event.target===this)closeTalentProfile()" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.88);overflow:auto;padding:20px">
+    <div role="dialog" aria-modal="true" aria-labelledby="talentProfileTitle" style="max-width:820px;margin:4vh auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <h2 id="talentProfileTitle" style="color:var(--gold);margin:0">الملف المهني للموهبة</h2>
+        <button class="btn" type="button" onclick="closeTalentProfile()">إغلاق الملف</button>
+      </div>
+      <div id="talentProfileContent" style="margin-top:16px"></div>
+      <p class="muted" style="font-size:12px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:0">بيانات الاتصال الخاصة لا تُعرض في الملفات العامة. جميع الملفات المنشورة خضعت لمراجعة الإدارة.</p>
+    </div>
   </div>
 </section>
 
@@ -911,6 +953,7 @@ renderLibrary();
   </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script>
 /* بيانات الأقسام */
 let creativeProfiles = {
@@ -923,7 +966,7 @@ let creativeProfiles = {
 /* إنشاء بطاقة تعريف */
 function profileCard(item, type){
   const image = item.image
-    ? `<img src="${safeHttpUrl(item.image)}" alt="">`
+    ? `<img src="${safeHttpUrl(item.image)}" alt="" loading="lazy">`
     : `<div style="height:145px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:45px"></div>`;
 
   let details = "";
@@ -932,22 +975,32 @@ function profileCard(item, type){
   }else if(type === "directors"){
     details = `<p>${escapeHTML(item.specialty || "مخرج")}</p>`;
   }else if(type === "talents"){
-    details = `<p>المجال: ${escapeHTML(item.category)}</p>`;
+    details = `<p>المجال: ${escapeHTML(item.category || "موهبة")}</p>`;
     if(item.specialty) details += `<p>${escapeHTML(item.specialty)}</p>`;
-    details += `<p>${escapeHTML(item.city || "")}</p>`;
+    if(item.city) details += `<p>المدينة: ${escapeHTML(item.city)}</p>`;
   }else{
     details = `<p>المخرج: ${escapeHTML(item.director || "غير محدد")}</p>`;
     details += `<p>المدة: ${escapeHTML(item.duration || "غير محددة")}</p>`;
   }
 
+  const cardBio = type === "talents"
+    ? String(item.bio || "").split(/\r?\n/).filter(line=>!["التخصص:","السن:","الدراسة:","سنوات الخبرة:","نموذج عمل 2:","نموذج عمل 3:"].some(prefix=>line.trim().startsWith(prefix))).join("\n").trim()
+    : (item.bio || item.description || "");
+  const talentIndex = type === "talents" ? creativeProfiles.talents.indexOf(item) : -1;
+  const talentAction = talentIndex >= 0
+    ? `<button class="btn" type="button" onclick="showTalentProfile(${talentIndex})">عرض الملف المهني</button>`
+    : "";
+
   return `
-    <article class="feature">
+    <article class="feature" ${type==="talents"&&item.isFeatured?'style="border:1px solid var(--gold);box-shadow:0 0 0 1px rgba(212,175,55,.18)"' : ""}>
       ${image}
       <div class="feature-content">
+        ${type==="talents"&&item.isFeatured?'<p class="admin-status" style="color:var(--gold)">★ موهبة مميزة</p>':""}
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
-        <p>${escapeHTML(item.bio || item.description || "")}</p>
-        ${item.work ? `<a class="btn" href="${safeHttpUrl(item.work)}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>` : ""}
+        <p>${escapeHTML(cardBio)}</p>
+        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
+        ${talentAction}
       </div>
     </article>`;
 }
@@ -1007,19 +1060,73 @@ function renderTalents(){
   const box = document.getElementById("talentsItems");
   if(!box) return;
 
-  const q = (document.getElementById("talentsSearch")?.value || "").toLowerCase();
+  const normalize=value=>String(value||"").trim().toLocaleLowerCase("ar");
+  const q = normalize(document.getElementById("talentsSearch")?.value);
+  const cityQuery = normalize(document.getElementById("talentCitySearch")?.value);
+  const specialtyQuery = normalize(document.getElementById("talentSpecialtySearch")?.value);
   const category = document.getElementById("talentCategory")?.value || "";
 
-  const list = creativeProfiles.talents.filter(x =>
-    (!category || x.category === category) &&
-    ((x.name || "").toLowerCase().includes(q) ||
-     (x.bio || "").toLowerCase().includes(q))
-  );
+  const list = creativeProfiles.talents.filter(x => {
+    const nameBio=normalize([x.name,x.bio].join(" "));
+    const city=normalize(x.city);
+    const specialty=normalize(x.specialty);
+    return (!category || x.category === category)
+      && (!q || nameBio.includes(q) || city.includes(q) || specialty.includes(q))
+      && (!cityQuery || city.includes(cityQuery))
+      && (!specialtyQuery || specialty.includes(specialtyQuery));
+  }).sort((a,b)=>Number(!!b.isFeatured)-Number(!!a.isFeatured));
 
+  const count=document.getElementById("talentsResultCount");
+  if(count)count.textContent="عدد الملفات المطابقة: "+list.length+" من "+creativeProfiles.talents.length;
   box.innerHTML = list.length
     ? list.map(x=>profileCard(x,"talents")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد مواهب منشورة في هذا التصنيف حاليًا.</div>`;
+    : `<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد مواهب منشورة تطابق كلمات البحث والتصفية الحالية.</div>`;
 }
+
+/* عرض صفحة الملف المهني للموهبة دون كشف بيانات الاتصال الخاصة */
+function showTalentProfile(index){
+  const item=creativeProfiles.talents[Number(index)];
+  const modal=document.getElementById("talentProfileModal");
+  const box=document.getElementById("talentProfileContent");
+  if(!item||!modal||!box)return;
+  const image=item.image
+    ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="" loading="lazy" style="width:100%;max-height:340px;object-fit:cover;border-radius:10px">'
+    : "";
+  const category=escapeHTML(item.category||"موهبة");
+  const bioText=String(item.bio||"");
+  const readBioField=(label)=>{const line=bioText.split(/\r?\n/).find(value=>value.trim().startsWith(label+":"));return line?line.trim().slice(label.length+1).trim():"";};
+  const specialty=item.specialty?'<p><strong>التخصص:</strong> '+escapeHTML(item.specialty)+'</p>':(readBioField("التخصص")?'<p><strong>التخصص:</strong> '+escapeHTML(readBioField("التخصص"))+'</p>':"");
+  const city=item.city?'<p><strong>المدينة:</strong> '+escapeHTML(item.city)+'</p>':"";
+  const age=readBioField("السن")?'<p><strong>السن:</strong> '+escapeHTML(readBioField("السن"))+' سنة</p>':"";
+  const education=item.education?'<p><strong>الدراسة:</strong> '+escapeHTML(item.education)+'</p>':(readBioField("الدراسة")?'<p><strong>الدراسة:</strong> '+escapeHTML(readBioField("الدراسة"))+'</p>':"");
+  const experience=item.experienceYears!==null&&item.experienceYears!==undefined?'<p><strong>سنوات الخبرة:</strong> '+Number(item.experienceYears)+'</p>':(readBioField("سنوات الخبرة")?'<p><strong>سنوات الخبرة:</strong> '+escapeHTML(readBioField("سنوات الخبرة"))+'</p>':"");
+  const metadataLabels=["التخصص:","السن:","الدراسة:","سنوات الخبرة:","نموذج عمل 2:","نموذج عمل 3:"];
+  const cleanBio=bioText.split(/\r?\n/).filter(line=>!metadataLabels.some(label=>line.trim().startsWith(label))).join("\n").trim();
+  const portfolioLinks=bioText.split(/\r?\n/).map(line=>line.trim()).filter(line=>/^نموذج عمل [23]:/.test(line)).map(line=>({label:line.split(":")[0],url:line.slice(line.indexOf(":")+1).trim()})).filter(item=>safeHttpUrl(item.url));
+  const biography=cleanBio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(cleanBio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
+  let work="";
+  if(item.work){
+    work=item.workIsVideo
+      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="metadata" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
+      : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
+  }
+  const extraWorks=portfolioLinks.length?'<div style="margin-top:18px"><h4 style="color:var(--gold)">نماذج أعمال إضافية</h4>'+portfolioLinks.map(link=>'<p><a class="btn" href="'+escapeHTML(safeHttpUrl(link.url))+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(link.label)+'</a></p>').join("")+'</div>':"";
+  box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
+    (image?'<div>'+image+'</div>':"")+
+    '<div><p class="admin-status">ملف موهبة معتمد • '+category+'</p><h3 style="color:var(--gold);font-size:24px;margin:8px 0">'+escapeHTML(item.name||"موهبة")+'</h3>'+
+    specialty+city+age+education+experience+'<h4 style="color:var(--gold);margin:18px 0 8px">نبذة وخبرات</h4>'+biography+extraWorks+'</div></div>'+work;
+  modal.style.display="block";
+  document.body.style.overflow="hidden";
+  modal.querySelector("button")?.focus();
+}
+function closeTalentProfile(){
+  const modal=document.getElementById("talentProfileModal");
+  if(modal)modal.style.display="none";
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(event){
+  if(event.key==="Escape")closeTalentProfile();
+});
 
 /* عرض الأفلام القصيرة */
 function renderShortFilms(){
@@ -1030,43 +1137,90 @@ function renderShortFilms(){
     : `<div class="panel" style="grid-column:1/-1;text-align:center">شاشة الأفلام القصيرة في انتظار الأعمال المشاركة.</div>`;
 }
 
+/* التحقق من مدة فيديو الموهبة محليًا قبل الرفع */
+function validateTalentVideoDuration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const video=document.createElement("video");
+    video.preload="metadata";
+    const finish=(error)=>{URL.revokeObjectURL(url);video.removeAttribute("src");video.load();error?reject(error):resolve();};
+    video.onloadedmetadata=()=>{const duration=Number(video.duration);if(!Number.isFinite(duration)||duration<=0){finish(new Error("تعذر قراءة مدة الفيديو. جرّب ملف MP4 واضحًا."));return;}if(duration>600){finish(new Error("مدة الفيديو أطول من 10 دقائق. اختر فيديو أقصر."));return;}finish();};
+    video.onerror=()=>finish(new Error("تعذر قراءة الفيديو. استخدم MP4 أو WebM أو MOV."));
+    video.src=url;
+  });
+}
+
 /* إظهار نموذج تسجيل موهبة */
 function showTalentForm(){
   const form = document.getElementById("talentForm");
   if(!form) return;
   form.style.display = "block";
   form.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("talentName")?.focus({preventScroll:true});
 }
 
-/* إرسال طلب الموهبة إلى قاعدة البيانات للمراجعة */
+/* إرسال طلب الموهبة مع فيديو اختياري إلى قاعدة البيانات للمراجعة */
 document.getElementById("talentRegisterForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const item={
-    submission_type:"talent",
-    name:document.getElementById("talentName").value.trim(),
-    category:document.getElementById("talentType").value,
-    city:document.getElementById("talentCity").value.trim(),
-    contact:document.getElementById("talentContact").value.trim(),
-    bio:document.getElementById("talentBio").value.trim(),
-    work_url:document.getElementById("talentWork").value.trim() || null
-  };
-  if(!item.name || !item.category){alert("من فضلك أدخل الاسم والمجال.");return;}
-  if(item.work_url && !safeHttpUrl(item.work_url)){alert("رابط نموذج العمل يجب أن يبدأ بـ https:// أو http://");return;}
+  const button=this.querySelector("button[type=submit]");
+  const message=document.getElementById("talentFormMessage");
+  const progress=document.getElementById("talentVideoProgress");
+  const videoStatus=document.getElementById("talentVideoStatus");
+  const videoFile=document.getElementById("talentVideo")?.files?.[0]||null;
+  const talentAge=document.getElementById("talentAge")?.value.trim()||"";
+  const talentEducation=document.getElementById("talentEducation")?.value.trim()||"";
+  const talentExperience=document.getElementById("talentExperience")?.value.trim()||"";
+  const talentWorkLinks=[document.getElementById("talentWork")?.value.trim(),document.getElementById("talentWork2")?.value.trim(),document.getElementById("talentWork3")?.value.trim()].filter(Boolean);
+  const item={submission_type:"talent",name:document.getElementById("talentName").value.trim(),category:document.getElementById("talentType").value,city:document.getElementById("talentCity").value.trim(),contact:document.getElementById("talentContact").value.trim(),bio:[document.getElementById("talentSpecialty").value.trim()?"التخصص: "+document.getElementById("talentSpecialty").value.trim():"",talentAge?"السن: "+talentAge:"",talentEducation?"الدراسة: "+talentEducation:"",talentExperience?"سنوات الخبرة: "+talentExperience:"",...talentWorkLinks.slice(1).map((url,index)=>"نموذج عمل "+(index+2)+": "+url),document.getElementById("talentBio").value.trim()].filter(Boolean).join("\n\n"),work_url:talentWorkLinks[0]||null};
+  const phoneDigits=(item.contact.match(/\d/g)||[]).length;
+  if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
+  if(talentAge&&(Number(talentAge)<16||Number(talentAge)>100)){if(message)message.textContent="السن المدخل غير صحيح؛ اترك الحقل فارغًا إذا لم ترغب في ذكره.";return;}
+  if(talentExperience&&(Number(talentExperience)<0||Number(talentExperience)>80)){if(message)message.textContent="عدد سنوات الخبرة غير صحيح.";return;}
+  if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
+  if(talentWorkLinks.some(url=>!safeHttpUrl(url))){if(message)message.textContent="أحد روابط نماذج الأعمال غير صالح؛ استخدم روابط تبدأ بـ http أو https.";return;}
+  if(talentWorkLinks.length>3){if(message)message.textContent="يمكن إضافة ثلاثة روابط أعمال كحد أقصى.";return;}
+  if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
+  if(videoFile&&talentWorkLinks.length){if(message)message.textContent="اختر إما رفع فيديو واحد أو إضافة روابط نماذج الأعمال، وليس الاثنين معًا.";return;}
+  let uploadedPath=null;
   try{
     button.disabled=true;button.textContent="جارٍ إرسال الطلب...";
+    if(videoFile){
+      const ext=(videoFile.name.split(".").pop()||"").toLowerCase();
+      const mimeByExt={mp4:"video/mp4",webm:"video/webm",mov:"video/quicktime"};
+      const allowedMime=["video/mp4","video/webm","video/quicktime"];
+      const mime=allowedMime.includes(videoFile.type)?videoFile.type:(mimeByExt[ext]||"");
+      if(!mime)throw new Error("صيغة الفيديو غير مدعومة. استخدم MP4 أو WebM أو MOV.");
+      if(videoFile.size>50*1024*1024)throw new Error("حجم الفيديو أكبر من 50 ميجابايت. قلّل حجم الملف ثم أعد المحاولة.");
+      if(!window.tus?.Upload)throw new Error("أداة رفع الفيديو لم تُحمّل. حدّث الصفحة وحاول مرة أخرى.");
+      if(videoStatus)videoStatus.textContent="جارٍ فحص مدة الفيديو...";
+      await validateTalentVideoDuration(videoFile);
+      const safeExt=ext==="webm"?"webm":ext==="mov"?"mov":"mp4";
+      uploadedPath="pending/"+crypto.randomUUID()+"."+safeExt;
+      const projectRef=new URL(ADMIN_SUPABASE_URL).hostname.split(".")[0];
+      const endpoint="https://"+projectRef+".storage.supabase.co/storage/v1/upload/resumable";
+      if(progress){progress.style.display="block";progress.value=0;}
+      if(videoStatus)videoStatus.textContent="جارٍ رفع الفيديو... يمكنك متابعة نسبة الرفع هنا.";
+      await new Promise((resolve,reject)=>{
+        const upload=new window.tus.Upload(videoFile,{endpoint,headers:{authorization:"Bearer "+ADMIN_SUPABASE_KEY,apikey:ADMIN_SUPABASE_KEY},retryDelays:[0,3000,5000,10000,20000],uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,chunkSize:6*1024*1024,metadata:{bucketName:"talent-submission-videos",objectName:uploadedPath,contentType:mime,cacheControl:"3600",metadata:JSON.stringify({purpose:"talent-audition"})},onProgress:(sent,total)=>{const pct=total?Math.round(sent/total*100):0;if(progress)progress.value=pct;if(videoStatus)videoStatus.textContent="تم رفع "+pct+"% من الفيديو";},onError:reject,onSuccess:resolve});
+        upload.start();
+      });
+      item.work_url="talent-video:"+uploadedPath;
+      if(videoStatus)videoStatus.textContent="اكتمل رفع الفيديو. جارٍ إرسال طلبك...";
+    }
     const {error}=await ideasGetClient().from("community_submissions").insert(item);
-    if(error) throw error;
-    this.reset();document.getElementById("talentForm").style.display="none";
-    alert("تم استلام طلبك. ستراجعه الإدارة قبل نشره.");
-  }catch(error){alert("تعذر إرسال الطلب. تأكد من تنفيذ ملف SQL ثم حاول مرة أخرى. "+(error.message||""));}
-  finally{button.disabled=false;button.textContent="إرسال البيانات للمراجعة";}
+    if(error)throw error;
+    this.reset();if(progress){progress.value=0;progress.style.display="none";}if(videoStatus)videoStatus.textContent="";
+    if(message)message.textContent="تم استلام طلبك بنجاح. ستراجع الإدارة بياناتك والفيديو قبل نشر ملفك.";
+  }catch(error){if(message)message.textContent="تعذر إرسال الطلب: "+(error.message||"تحقق من الاتصال وحاول مرة أخرى.");if(videoStatus)videoStatus.textContent="";}
+  finally{button.disabled=false;button.textContent="إرسال الموهبة للمراجعة";}
 });
 
 /* البحث والتصفية */
 document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
 document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
 document.getElementById("talentsSearch")?.addEventListener("input",renderTalents);
+document.getElementById("talentCitySearch")?.addEventListener("input",renderTalents);
+document.getElementById("talentSpecialtySearch")?.addEventListener("input",renderTalents);
 document.getElementById("talentCategory")?.addEventListener("change",renderTalents);
 
 renderWriters();
@@ -1327,46 +1481,79 @@ renderProjects();
      الجزء الخامس: التلفزيون والراديو
 =========================  -->
 
-<section id="tv" class="page">
+
+<section id="books" class="page">
   <div class="intro">
-    <h2>سيناريو TV</h2>
-    <p>شاشة تلفزيونية داخل المنصة، تضم دليل قنوات سينمائية وثقافية وتعليمية ووثائقية، مع استخدام روابط البث الرسمية أو المرخصة التي تسمح بالتضمين.</p>
+    <h2>سوق الكتب — اعرض كتابك للبيع</h2>
+    <p>عندك رواية أو قصة أو ديوان أو كتاب في أي مجال؟ اعرض كتابك بصورة الغلاف والسعر وبيانات التواصل، وبعد مراجعة الإدارة يظهر للقراء والمهتمين بالشراء.</p>
+    <button class="btn primary" type="button" onclick="document.getElementById('bookListingForm')?.scrollIntoView({behavior:'smooth',block:'start'})">أضف كتابك الآن</button>
   </div>
-
-  <div class="section-heading">
-    <h2>دليل القنوات</h2>
-    <p>اختر القناة لعرض البث المتاح</p>
+  <div class="section-heading"><h2>الكتب المعروضة للبيع</h2><p>تصفح العناوين وابحث حسب نوع الكتاب</p></div>
+  <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    <input id="bookSearch" type="search" placeholder="ابحث باسم الكتاب أو المؤلف...">
+    <select id="bookSort"><option value="newest">الأحدث إضافة</option><option value="price-asc">السعر: من الأقل للأعلى</option><option value="price-desc">السعر: من الأعلى للأقل</option><option value="title">ترتيب أبجدي</option></select>
+    <select id="bookFormatFilter"><option value="">كل الصيغ</option><option value="ورقي">ورقي</option><option value="إلكتروني">إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
+    <select id="bookTypeFilter"><option value="">كل الأنواع</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
+    <button class="btn" id="bookFiltersReset" type="button">إعادة ضبط البحث والفلاتر</button>
   </div>
-
-  <div class="panel">
-    <select id="tvCategory">
-      <option value="">كل القنوات</option>
-      <option value="مصرية">قنوات مصرية</option>
-      <option value="عربية">قنوات عربية</option>
-      <option value="سينما">سينما وأفلام</option>
-      <option value="وثائقي">وثائقيات</option>
-      <option value="ثقافة">ثقافة وتعليم</option>
-    </select>
-    <input id="tvSearch" placeholder="ابحث عن قناة...">
-  </div>
-
-  <div class="panel">
-    <h3 style="color:var(--gold)" id="tvNowTitle">شاشة سيناريو TV</h3>
-    <div style="position:relative;background:#000;border:1px solid var(--border);border-radius:10px;overflow:hidden;aspect-ratio:16/9">
-      <video id="tvPlayer" controls playsinline style="width:100%;height:100%;background:#000"></video>
-      <iframe id="tvYouTubePlayer" title="مشغل القناة المباشرة" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;background:#000"></iframe>
-      <div id="tvPlaceholder" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#ddd;background:linear-gradient(135deg,#171717,#080808)">
-        <div>
-          <div style="font-size:50px"></div>
-          <h3>مرحبًا بك في سيناريو TV</h3>
-          <p>اختر قناة من الدليل لبدء المشاهدة عند توفر رابط بث مناسب.</p>
-        </div>
+  <p id="bookResultsCount" style="color:var(--muted);font-size:13px;margin:10px 0" aria-live="polite">جارٍ تحميل الكتب...</p>
+  <div id="bookListingsGrid" class="grid"><div class="panel">جارٍ تحميل الكتب المعروضة...</div></div>
+  <div id="bookDetailsDialog" role="dialog" aria-modal="true" aria-labelledby="bookDetailsTitle" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.88);padding:16px;overflow:auto">
+    <div style="max-width:850px;margin:4vh auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:18px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:12px">
+        <h2 id="bookDetailsTitle" style="color:var(--gold);margin:0">تفاصيل الكتاب</h2>
+        <button class="btn" type="button" onclick="closeBookDetails()" aria-label="إغلاق تفاصيل الكتاب">إغلاق ✕</button>
       </div>
+      <div id="bookDetailsContent" style="display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:20px;align-items:start;padding-top:18px"></div>
     </div>
-    <p id="tvStatus" style="color:var(--muted);font-size:13px">لم يتم اختيار قناة بعد.</p>
   </div>
-
-  <div id="tvChannels" class="grid"></div>
+  <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>الإعلان مجاني حاليًا. املأ بيانات كتابك مرة واحدة، وبعد موافقة الإدارة سيظهر للقراء.</p></div>
+  <div class="panel" style="margin-bottom:12px"><strong style="color:var(--gold)">طريقة العرض ببساطة</strong><p style="margin:8px 0 0">ارفع أفيش الكتاب، واكتب بياناته وسعره. لو النسخة إلكترونية، وضّح في النبذة هل التسليم PDF أم القراءة أونلاين. البيع والتواصل مباشرة بينك وبين القارئ عبر واتساب، والمنصة لا تحصل على عمولة حاليًا.</p></div>
+  <div class="panel">
+    <form id="bookListingForm">
+      <label>اسم الكتاب *</label><input id="bookTitle" required maxlength="180" placeholder="عنوان الرواية أو الكتاب">
+      <label>اسم المؤلف *</label><input id="bookAuthor" required maxlength="160" placeholder="اسم الكاتب أو المؤلف">
+      <label>نوع الكتاب *</label>
+      <select id="bookType" required><option value="">اختر نوع الكتاب</option><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
+      <label>صيغة الكتاب * <span style="color:var(--muted);font-size:12px;font-weight:normal">— لو إلكتروني، وضّح PDF أو أونلاين في النبذة</span></label>
+      <select id="bookFormat" required><option value="ورقي">كتاب ورقي</option><option value="إلكتروني">كتاب إلكتروني</option><option value="ورقي وإلكتروني">ورقي وإلكتروني</option></select>
+      <label>السعر * <span style="color:var(--muted);font-size:12px;font-weight:normal">— اكتب 0 إذا كان الكتاب مجانيًا</span></label>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px"><input id="bookPrice" type="number" required min="0" max="10000000" step="0.01" placeholder="مثال: 150"><select id="bookCurrency"><option value="جنيه مصري">جنيه مصري</option><option value="ريال سعودي">ريال سعودي</option><option value="دولار أمريكي">دولار أمريكي</option><option value="درهم إماراتي">درهم إماراتي</option></select></div>
+      <label>صورة غلاف الكتاب (JPG أو PNG أو WEBP — حتى 5 ميجابايت) *</label><input id="bookCoverFile" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required style="width:100%;padding:10px">
+      <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><p style="margin:0 0 8px;color:var(--muted);font-size:13px">معاينة الغلاف قبل نشر الإعلان:</p><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold);display:block"><button class="btn" id="bookCoverRemove" type="button" style="margin-top:8px">إزالة الغلاف واختيار صورة أخرى</button></div>
+      <label>نبذة عن الكتاب *</label><textarea id="bookDescription" required maxlength="2500" rows="4" placeholder="اكتب نبذة تشجع القارئ على اقتناء الكتاب"></textarea>
+      <label>اسم صاحب الإعلان *</label><input id="bookSellerName" required maxlength="120" placeholder="الاسم الذي سيظهر في الإعلان">
+      <label>رقم الهاتف أو واتساب للتواصل مع البائع *</label><input id="bookContact" required type="tel" maxlength="30" placeholder="اكتب الرقم مع مفتاح الدولة" dir="ltr">
+      <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0"><input id="bookRightsConfirm" type="checkbox" required style="width:auto;margin-top:6px"><span>أقر أنني صاحب الكتاب أو لدي الحق في عرضه للبيع، وأن بيانات الإعلان والسعر صحيحة.</span></label>
+      <button class="btn primary" type="submit">إرسال الكتاب للمراجعة</button>
+    </form>
+    <p id="bookListingMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+  </div>
+  <div class="section-heading"><h2>إدارة إعلانك</h2><p>استخدم رقم الإعلان ورمز الإدارة اللذين استلمتهما عند الإضافة.</p></div>
+  <div class="panel">
+    <label>رقم الإعلان</label><input id="sellerManageId" placeholder="رقم الإعلان الذي احتفظت به" dir="ltr">
+    <label>رمز إدارة الإعلان</label><input id="sellerManageToken" type="password" autocomplete="off" placeholder="رمز الإدارة الخاص بك" dir="ltr">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+      <button class="btn primary" id="sellerLoadListing" type="button">استرجاع الإعلان</button>
+      <button class="btn" id="sellerDeleteListing" type="button">حذف الإعلان نهائيًا</button>
+    </div>
+    <p id="sellerManageMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+    <div id="sellerEditPanel" style="display:none;border-top:1px solid var(--border);margin-top:18px;padding-top:18px">
+      <h3 style="color:var(--gold)">تعديل بيانات الإعلان</h3>
+      <label>اسم الكتاب</label><input id="sellerEditTitle" maxlength="180">
+      <label>اسم المؤلف</label><input id="sellerEditAuthor" maxlength="160">
+      <label>نوع الكتاب</label><select id="sellerEditType"><option>رواية</option><option>قصة</option><option>مجموعة قصصية</option><option>شعر</option><option>تنمية بشرية</option><option>تاريخ</option><option>ديني</option><option>علمي وتعليمي</option><option>أطفال</option><option>سيناريو ومسرح</option><option>أخرى</option></select>
+      <label>صيغة الكتاب</label><select id="sellerEditFormat"><option>ورقي</option><option>إلكتروني</option><option>ورقي وإلكتروني</option></select>
+      <label>السعر</label><input id="sellerEditPrice" type="number" min="0" max="10000000" step="0.01">
+      <label>العملة</label><select id="sellerEditCurrency"><option>جنيه مصري</option><option>ريال سعودي</option><option>دولار أمريكي</option><option>درهم إماراتي</option></select>
+      <label>نبذة عن الكتاب</label><textarea id="sellerEditDescription" maxlength="2500" rows="4"></textarea>
+      <label>اسم صاحب الإعلان</label><input id="sellerEditSeller" maxlength="120">
+      <label>رقم التواصل</label><input id="sellerEditPhone" maxlength="30" dir="ltr">
+      <p style="color:var(--muted);font-size:13px">بعد حفظ التعديلات، يعود الإعلان للمراجعة ولن يظهر للبيع حتى موافقة الإدارة. صورة الغلاف الحالية ستظل كما هي.</p>
+      <button class="btn primary" id="sellerSaveChanges" type="button">حفظ التعديلات وإرسالها للمراجعة</button>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--muted)">تنبيه: المنصة تعرض بيانات البائع للتواصل المباشر، ولا تستلم ثمن الكتاب أو تضمن عملية البيع في هذه المرحلة. اتفق مع البائع على طريقة الدفع والتسليم قبل الشراء.</p>
 </section>
 
 <section id="radio" class="page">
@@ -1400,68 +1587,12 @@ renderProjects();
   لا نضع روابط بث عشوائية أو غير مرخصة.
 */
 
-let tvChannels = [{
-  id:"saudi-quran-tv-live",
-  name:"قناة القرآن الكريم السعودية",
-  category:"عربية",
-  description:"البث الرسمي لقناة القرآن الكريم من المسجد الحرام عبر يوتيوب.",
-  youtubeVideoId:"XcjKDB1bj1w",
-  officialUrl:"https://www.youtube.com/watch?v=XcjKDB1bj1w"
-},{
-  id:"rotana-classic-official",
-  name:"روتانا كلاسيك",
-  category:"سينما",
-  description:"قناة الأفلام العربية الكلاسيكية؛ المشاهدة من صفحة البث الرسمية لروتانا.",
-  officialUrl:"https://rotana.net/ar?tv=live-classic"
-}];
 let radioStations = [{
   id:"quran-recitation-live",
   name:"إذاعة القرآن الكريم – تلاوات الحصري",
   description:"بث صوتي مباشر لتلاوات الشيخ محمود خليل الحصري عبر رابط MP3 مباشر.",
   stream:"https://qurango.net/radio/mahmoud_khalil_alhussary_warsh"
 }];
-
-/* إنشاء بطاقة قناة */
-function tvCard(channel){
-  return `
-    <article class="feature">
-      ${channel.image
-        ? `<img src="${safeHttpUrl(channel.image)}" alt="">`
-        : `<div style="height:145px;background:linear-gradient(135deg,#332719,#111);display:grid;place-items:center;font-size:45px"></div>`}
-      <div class="feature-content">
-        <h3>${escapeHTML(channel.name)}</h3>
-        <p>التصنيف: ${escapeHTML(channel.category || "عام")}</p>
-        ${channel.youtubeVideoId
-          ? `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">شاهد داخل المنصة</button>`
-          : channel.officialUrl
-            ? `<a class="btn" href="${safeHttpUrl(channel.officialUrl)}" target="_blank" rel="noopener noreferrer">شاهد البث الرسمي</a>`
-            : `<button class="btn" onclick="playTVChannel('${escapeHTML(channel.id)}')">مشاهدة القناة</button>`}
-      </div>
-    </article>`;
-}
-
-/* عرض القنوات */
-function renderTVChannels(){
-  const box = document.getElementById("tvChannels");
-  if(!box) return;
-
-  const q = (document.getElementById("tvSearch")?.value || "").toLowerCase();
-  const category = document.getElementById("tvCategory")?.value || "";
-
-  const list = tvChannels.filter(channel =>
-    (!category || channel.category === category) &&
-    (channel.name || "").toLowerCase().includes(q)
-  );
-
-  box.innerHTML = list.length
-    ? list.map(tvCard).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">
-        <h3 style="color:var(--gold)">دليل القنوات قيد التجهيز</h3>
-        <p>ستظهر هنا القنوات التي تضيفها الإدارة من مصادر بث رسمية أو مرخصة.</p>
-      </div>`;
-}
-
-/* تشغيل القنوات موحّد في جزء دعم HLS أسفل الصفحة. */
 
 /* بطاقات الراديو */
 function radioCard(station){
@@ -1528,11 +1659,8 @@ function playRadioStation(id){
 }
 
 /* البحث والتصفية */
-document.getElementById("tvSearch")?.addEventListener("input",renderTVChannels);
-document.getElementById("tvCategory")?.addEventListener("change",renderTVChannels);
 document.getElementById("radioSearch")?.addEventListener("input",renderRadioStations);
 
-renderTVChannels();
 renderRadioStations();
 </script>
 
@@ -1809,10 +1937,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="account" class="page">
   <div class="intro">
     <h2>حساب المبدع</h2>
-    <p>أنشئ حسابًا لحفظ بياناتك والتعريف بمجالك الإبداعي. التصفح العام متاح دون تسجيل.</p>
+    <p><strong>الدخول والتصفح والقراءة والاستماع ومشاهدة المحتوى متاحة للجميع دون تسجيل أو بريد إلكتروني.</strong> إنشاء الحساب اختياري، ويُستخدم فقط إذا أردت إنشاء ملف مهني أو إرسال أعمالك أو إدارة مشاركاتك.</p>
   </div>
   <div class="panel" id="accountAuthPanel">
-    <h3 style="color:var(--gold)">إنشاء حساب جديد</h3>
+    <h3 style="color:var(--gold)">حساب اختياري للمبدعين المشاركين</h3>
+    <p class="muted">لا تحتاج إلى حساب لمجرد زيارة المنصة أو الاستفادة من محتواها.</p>
     <form id="accountSignupForm">
       <input id="accountName" required maxlength="120" placeholder="الاسم الذي سيظهر في ملفك">
       <select id="accountType" required>
@@ -1823,7 +1952,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountSignupEmail" type="email" required autocomplete="email" placeholder="البريد الإلكتروني">
       <input id="accountSignupPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور (8 أحرف على الأقل)">
-      <button class="btn primary" type="submit">إنشاء الحساب</button>
+      <button class="btn primary" type="submit">إنشاء حساب للمشاركة (اختياري)</button>
     </form>
     <hr style="border-color:var(--border);margin:22px 0">
     <h3 style="color:var(--gold)">لديك حساب بالفعل؟</h3>
@@ -1867,12 +1996,12 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </select>
       <input id="accountEditCity" maxlength="120" placeholder="المدينة (اختياري)">
       <input id="accountEditSpecialty" maxlength="160" placeholder="التخصص أو المجال الفني">
-      <input id="accountEditImage" type="url" placeholder="رابط صورة شخصية عامة (https://...)" autocomplete="url">
       <input id="accountEditWork" type="url" placeholder="رابط نموذج عمل عام (https://...)" autocomplete="url">
       <textarea id="accountEditBio" maxlength="2000" placeholder="نبذة مهنية عنك وخبراتك وأعمالك"></textarea>
       <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
       <label>سنوات الخبرة في الكتابة (اختياري)</label><input id="accountEditExperience" type="number" min="0" max="60" placeholder="عدد السنوات">
       <label>رفع صورة شخصية من جهازك (JPG أو PNG أو WEBP، حتى 5 ميجابايت)</label><input id="accountEditPhoto" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+      <div id="accountPhotoPreviewWrap" style="display:none;margin:8px 0"><img id="accountPhotoPreview" alt="معاينة الصورة الشخصية قبل الإرسال" style="width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)"><p class="admin-status">معاينة الصورة قبل إرسالها لمراجعة الإدارة</p></div>
       <label>أو رابط صورة شخصية (اختياري)</label><input id="accountEditImage" type="url" placeholder="https://..." autocomplete="url">
       <label>رقم هاتف أو واتساب (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
       <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
@@ -2031,13 +2160,36 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>سيناريو TV</h3><p>إضافة القنوات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('tv')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
         <article class="admin-section-card"><h3>الراديو</h3><p>إضافة المحطات وروابط البث والصور التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('radio')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الإنتاج والتعاون</h3><p>عرض المشروعات والفرص والصور والملفات التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('production')">إدارة القسم ورفع محتوى</button></article>
       </div>
     </div>
 
-    <div class="section-heading" id="adminContentEditorHeading">
+    <div class="section-heading"><h2>سوق الكتب — مراجعة إعلانات البيع</h2><p>راجع الغلاف والبيانات والسعر ووسيلة التواصل قبل اعتماد الإعلان</p></div>
+    <div class="panel" id="adminBookListingsPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="color:var(--gold)">إعلانات الكتب</h3><button class="btn" type="button" onclick="adminLoadBookListings()">تحديث القائمة</button></div>
+      <p id="adminBookListingsStats" class="admin-status">إحصاءات الإعلانات تظهر بعد تحميل القائمة.</p>
+      <div class="admin-book-stats" id="adminBookStatsGrid">
+        <div class="admin-book-stat"><strong id="adminBookTotal">—</strong><span>إجمالي المعروض في القائمة</span></div>
+        <div class="admin-book-stat"><strong id="adminBookPending">—</strong><span>بانتظار المراجعة</span></div>
+        <div class="admin-book-stat"><strong id="adminBookApproved">—</strong><span>معروض للبيع</span></div>
+        <div class="admin-book-stat"><strong id="adminBookRejected">—</strong><span>مرفوض / مخفي</span></div>
+      </div>
+      <div class="admin-book-filters">
+        <input id="adminBookSearch" placeholder="ابحث باسم الكتاب أو المؤلف أو البائع...">
+        <select id="adminBookStatusFilter">
+          <option value="">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معروض للبيع</option><option value="rejected">مرفوض / مخفي</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+        <button class="btn primary" type="button" onclick="adminExportBookListingsCsv()">تصدير نتائج البحث CSV</button>
+        <span style="color:var(--muted);font-size:12px;align-self:center">يتم تصدير الإعلانات المحمّلة بعد تطبيق البحث والحالة المختارة.</span>
+      </div>
+      <div id="adminBookListingsList" class="grid">افتح مراجعة عروض الكتب لتحميل الإعلانات.</div>
+    </div>
+
+<div class="section-heading" id="adminContentEditorHeading">
       <h2 id="adminEditorSectionTitle">إضافة أو تعديل محتوى</h2>
       <p id="adminEditorSectionHint">اختر قسمًا من البطاقات بالأعلى لبدء رفع المحتوى.</p>
     </div>
@@ -2058,8 +2210,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <option value="stories">الجرائم والحكايات</option>
           <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-          <option value="tv">قنوات التلفزيون</option>
-          <option value="radio">محطات الراديو</option>
+                    <option value="radio">محطات الراديو</option>
           <option value="production">مشروعات الإنتاج</option>
         </select>
 
@@ -2131,7 +2282,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <option value="stories">الجرائم والحكايات</option>
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-        <option value="tv">التلفزيون</option>
         <option value="radio">الراديو</option>
         <option value="production">الإنتاج</option>
       </select>
@@ -2167,6 +2317,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 .admin-section-card p{color:var(--muted);font-size:13px;margin:0 0 8px;flex:1}
 .admin-section-card .btn{width:100%;font-size:13px;padding:8px 10px}
 #adminContentEditorHeading{scroll-margin-top:85px}
+.admin-book-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.admin-book-stat{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:5px}
+.admin-book-stat strong{font-size:23px;color:var(--gold)}
+.admin-book-stat span{font-size:12px;color:var(--muted)}
+.admin-book-filters{display:grid;grid-template-columns:2fr 1fr;gap:9px;margin:12px 0}
+@media(max-width:650px){.admin-book-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-book-filters{grid-template-columns:1fr}}
+
 </style>
 
 <!-- مكتبة Supabase الرسمية -->
@@ -2284,6 +2441,16 @@ document.getElementById("accountResetForm")?.addEventListener("submit",async fun
   }catch(error){accountMessage("تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));}
   finally{button.disabled=false;}
 });
+document.getElementById("accountEditPhoto")?.addEventListener("change",function(){
+  const file=this.files?.[0]||null,wrap=document.getElementById("accountPhotoPreviewWrap"),img=document.getElementById("accountPhotoPreview");
+  if(!wrap||!img)return;
+  if(!file){wrap.style.display="none";img.removeAttribute("src");return;}
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){wrap.style.display="none";img.removeAttribute("src");return;}
+  const reader=new FileReader();
+  reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";};
+  reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");};
+  reader.readAsDataURL(file);
+});
 document.getElementById("accountProfileForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); if(!accountUser) return; const button=this.querySelector('button[type="submit"]');
   const display_name=document.getElementById("accountEditName").value.trim();
@@ -2303,6 +2470,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   if(experience_years!==null&&(!Number.isInteger(experience_years)||experience_years<0||experience_years>60)){accountMessage("أدخل عدد سنوات خبرة صحيحًا بين صفر و60.");return;}
   if(contactPublic&&!phone){accountMessage("أدخل رقم التواصل قبل اختيار عرضه للجمهور.");return;}
   if(photoFile&&(!/^image\/(jpeg|png|webp)$/i.test(photoFile.type)||photoFile.size>5*1024*1024)){accountMessage("الصورة يجب أن تكون JPG أو PNG أو WEBP وبحجم لا يتجاوز 5 ميجابايت.");return;}
+  if(photoFile&&image_url){accountMessage("اختر رفع الصورة من جهازك أو إدخال رابط صورة، وليس الاثنين معًا.");return;}
   if(image_url&&!safeHttpUrl(image_url)){accountMessage("رابط الصورة غير صالح؛ استخدم رابط http أو https.");return;}
   if(work_url&&!safeHttpUrl(work_url)){accountMessage("رابط نموذج العمل غير صالح؛ استخدم رابط http أو https.");return;}
   try{
@@ -2314,7 +2482,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
       if(uploadError)throw uploadError;
       finalImageUrl=client.storage.from("platform-images").getPublicUrl(uploaded.path).data.publicUrl;
     }
-    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,profile_status:"pending",updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(error)throw error;
     const {error:contactError}=await client.from("writer_contact").upsert({user_id:accountUser.id,phone,is_public:contactPublic,updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(contactError)throw contactError;
@@ -2535,11 +2703,19 @@ async function adminLoadCommunitySubmissions(){
   const {data,error}=await adminSupabase.from("community_submissions").select("*").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد طلبات جديدة للمراجعة.</div>';return;}
-  box.innerHTML=data.map(item=>{
+  const reviewRows=await Promise.all(data.map(async item=>{
+    if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
+    const path=item.work_url.slice("talent-video:".length);
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
+    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
+  }));
+  box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
-    const details=isTalent?`المجال: ${item.category||""} • المدينة: ${item.city||"غير محددة"}`:`النوع: ${item.category||""} • صاحب المشروع: ${item.owner_name||""}`;
-    return `<article class="admin-item"><h3>${adminEscape(heading)}</h3><p>${adminEscape(details)}</p><p>${adminEscape(item.bio||item.description||"")}</p><p>وسيلة التواصل (خاصة بالإدارة): ${adminEscape(item.contact||"غير مضافة")}</p>${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener">فتح نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity('${item.id}','approved')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity('${item.id}','rejected')">رفض</button></div></article>`;
+    const details=isTalent?"المجال: "+(item.category||"")+" • المدينة: "+(item.city||"غير محددة"):"النوع: "+(item.category||"")+" • صاحب المشروع: "+(item.owner_name||"");
+    const isStoredVideo=String(item.work_url||"").startsWith("talent-video:");
+    const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
+    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
   }).join("");
 }
 async function adminReviewCommunity(id,status){
@@ -2556,17 +2732,23 @@ async function adminReviewCommunity(id,status){
 async function adminLoadMemberProfiles(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminMemberProfilesList");if(!box)return;
-  const {data,error}=await adminSupabase.from("member_profiles").select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,updated_at").in("profile_status",["pending","rejected"]).order("updated_at",{ascending:false}).limit(100);
+  const {data,error}=await adminSupabase.from("member_profiles").select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,updated_at").in("profile_status",["pending","rejected","approved"]).order("updated_at",{ascending:false}).limit(200);
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
-  if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية جديدة للمراجعة.</div>';return;}
+  if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية مسجلة حتى الآن.</div>';return;}
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
-  box.innerHTML=data.map(item=>`<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<p><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer">عرض الصورة</a></p>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions"><button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button></div></article>`).join("");
+  const statusLabels={pending:"بانتظار المراجعة",rejected:"مرفوض / غير معتمد",approved:"معتمد ومنشور"};
+  box.innerHTML=data.map(item=>{
+    const actions=item.profile_status==="approved"
+      ? '<button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">إلغاء الاعتماد</button>'
+      : '<button class="btn primary" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'approved\')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">رفض الملف</button>';
+    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<div style="margin:10px 0"><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer"><img src="${adminEscape(item.image_url)}" alt="صورة ${adminEscape(item.display_name)}" loading="lazy" style="width:112px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--gold)"></a><p class="admin-status">الصورة الشخصية المرسلة للمراجعة</p></div>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}</div></article>`;
+  }).join("");
 }
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
   const {error}=await adminSupabase.rpc("admin_review_member_profile",{p_user_id:userId,p_status:status});
   if(error){alert("تعذرت مراجعة الملف الشخصي: "+error.message);return;}
-  alert(status==="approved"?"تم اعتماد الملف وسيظهر في دليل المبدعين.":"تم رفض الملف الشخصي.");
+  alert(status==="approved"?"تم اعتماد الملف وسيظهر في دليل المبدعين.":"تم إلغاء اعتماد الملف ولن يظهر في الدليل العام.");
   await adminLoadMemberProfiles();await loadPublicContent();
 }
 
@@ -2730,7 +2912,6 @@ const ADMIN_SECTION_META={
   stories:{name:"الجرائم والحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
   news:{name:"الأخبار الفنية",hint:"اكتب الخبر وأرفق صورته؛ يمكن إضافة رابط المصدر في حقل الرابط.",accept:"image/*,.pdf"},
   archive:{name:"أرشيف السينما",hint:"ارفع صورة أو أفيشًا أو مستندًا أرشيفيًا مع توثيق المصدر في الوصف.",accept:"image/*,.pdf,.doc,.docx"},
-  tv:{name:"سيناريو TV",hint:"أضف اسم القناة وتصنيفها ورابط بث رسمي وصورة القناة.",accept:"image/*"},
   radio:{name:"الراديو",hint:"أضف اسم المحطة ورابط البث وصورتها.",accept:"image/*,audio/*"},
   production:{name:"الإنتاج والتعاون",hint:"أضف بيانات المشروع وصورته ورابط ملفه أو عرضه.",accept:"image/*,video/*,.pdf,.doc,.docx"}
 };
@@ -2827,10 +3008,35 @@ function adminRenderRecords(){
       </p>
       <div class="admin-actions">
         <button class="btn" onclick="adminEditRecord('${item.id}')">تعديل</button>
+        ${item.content_type==="talents" ? '<button class="btn" onclick="adminToggleTalentFeatured(\''+item.id+'\')">'+(item.extra_data?.featured?"إلغاء التمييز":"تمييز الموهبة")+'</button><button class="btn" onclick="adminToggleTalentPublished(\''+item.id+'\')">'+(item.published?"إخفاء الملف مؤقتًا":"إعادة إظهار الملف")+'</button>' : ""}
         <button class="btn" onclick="adminDeleteRecord('${item.id}')">حذف</button>
       </div>
     </article>
   `).join("");
+}
+
+/* أدوات إدارة ملفات المواهب المنشورة: تمييز أو إخفاء مؤقت دون حذف */
+async function adminUpdateTalentRecord(id,changes){
+  if(!adminSupabase||!adminSession)return;
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item){alert("ملف الموهبة غير موجود في سجلات الإدارة.");return;}
+  const {error}=await adminSupabase.from("site_content").update(changes).eq("id",id);
+  if(error){alert("تعذر تحديث ملف الموهبة: "+error.message);return;}
+  await adminLoadRecords();
+  await loadPublicContent();
+}
+async function adminToggleTalentFeatured(id){
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item)return;
+  const extra={...(item.extra_data||{}),featured:!item.extra_data?.featured};
+  await adminUpdateTalentRecord(id,{extra_data:extra});
+}
+async function adminToggleTalentPublished(id){
+  const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==="talents");
+  if(!item)return;
+  const next=!item.published;
+  if(!confirm(next?"إعادة إظهار ملف الموهبة للزوار؟":"إخفاء ملف الموهبة مؤقتًا من الدليل العام؟"))return;
+  await adminUpdateTalentRecord(id,{published:next});
 }
 
 /* رفع ملف إلى Supabase Storage باسم آمن */
@@ -3529,7 +3735,8 @@ function distributePublicContent(records){
       (grouped.talents || []).map(item=>({
         ...item,
         city:item.city,
-        category:item.type
+        category:item.type,
+        isFeatured:!!item.extra?.featured
       }))
     );
 
@@ -3551,21 +3758,6 @@ function distributePublicContent(records){
     renderProjects();
   }
 
-  if(typeof tvChannels!=="undefined"){
-    const publicTVChannels=(grouped.tv || []).map(item=>({
-      id:item.id,
-      name:item.title,
-      category:item.category,
-      image:item.image,
-      stream:item.stream
-    }));
-    if(publicTVChannels.length){
-      const mergedTV=[...tvChannels,...publicTVChannels];
-      replaceArray(tvChannels,mergedTV.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
-    }
-    renderTVChannels();
-  }
-
   if(typeof radioStations!=="undefined"){
     const publicRadioStations=(grouped.radio || []).map(item=>({
       id:item.id,
@@ -3584,6 +3776,18 @@ function distributePublicContent(records){
   renderFilms();
 }
 
+/* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
+async function loadApprovedTalentVideos(){
+  if(!publicContentClient)return;
+  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:"));
+  for(const item of items){
+    const path=item.work.slice("talent-video:".length);
+    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrl(path,3600);
+    if(error){console.warn("تعذر تجهيز فيديو موهبة منشور",error.message);item.work="";continue;}
+    item.work=data?.signedUrl||"";item.workIsVideo=!!item.work;
+  }
+  renderTalents();
+}
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
 async function loadApprovedMemberProfiles(){
   if(!publicContentClient)return;
@@ -3651,6 +3855,7 @@ async function loadPublicContent(){
 
     distributePublicContent(data || []);
     await loadApprovedMemberProfiles();
+    await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
     publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
@@ -3663,99 +3868,6 @@ document.getElementById("filmsSearch")
 
 document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
-
-/* =========================
-   دعم بث HLS للتلفزيون
-========================= */
-
-let activeHlsPlayer=null;
-
-function playTVChannel(id){
-  const channel=tvChannels.find(item=>String(item.id)===String(id));
-  const youtubeFrame=document.getElementById("tvYouTubePlayer");
-  const player=document.getElementById("tvPlayer");
-  const placeholder=document.getElementById("tvPlaceholder");
-  const status=document.getElementById("tvStatus");
-  if(!channel){alert("القناة غير موجودة.");return;}
-  if(channel.youtubeVideoId){
-    if(activeHlsPlayer){activeHlsPlayer.destroy();activeHlsPlayer=null;}
-    if(player){player.pause();player.removeAttribute("src");player.load();player.style.display="none";}
-    if(youtubeFrame){
-      youtubeFrame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(channel.youtubeVideoId)+"?autoplay=1&playsinline=1";
-      youtubeFrame.style.display="block";
-    }
-    if(placeholder)placeholder.style.display="none";
-    document.getElementById("tvNowTitle").textContent=channel.name;
-    if(status)status.textContent="يتم تحميل البث الرسمي من يوتيوب. إذا لم يبدأ، تحقق من إتاحة التضمين لدى القناة.";
-    return;
-  }
-  if(!channel.stream){
-    alert("هذا المصدر متاح حاليًا عبر الصفحة الرسمية الخارجية فقط.");
-    return;
-  }
-  if(youtubeFrame){youtubeFrame.src="";youtubeFrame.style.display="none";}
-  if(player)player.style.display="block";
-  if(!player || !placeholder || !status){
-    console.warn("مشغل التلفزيون غير موجود في الصفحة.");
-    return;
-  }
-
-  if(activeHlsPlayer){
-    activeHlsPlayer.destroy();
-    activeHlsPlayer=null;
-  }
-
-  player.pause();
-  player.removeAttribute("src");
-  player.load();
-
-  document.getElementById("tvNowTitle").textContent=channel.name;
-  placeholder.style.display="none";
-  status.textContent="جارٍ تحميل القناة...";
-
-  const isHls=/\.m3u8($|\?)/i.test(channel.stream);
-
-  if(isHls && window.Hls && Hls.isSupported()){
-    activeHlsPlayer=new Hls();
-
-    activeHlsPlayer.loadSource(channel.stream);
-    activeHlsPlayer.attachMedia(player);
-
-    activeHlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{
-      player.play().then(()=>{
-        status.textContent="يتم تشغيل: "+channel.name;
-      }).catch(()=>{
-        status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-      });
-    });
-
-    activeHlsPlayer.on(Hls.Events.ERROR,(event,data)=>{
-      if(data.fatal){
-        status.textContent="تعذر تشغيل البث. قد يكون المصدر غير متاح أو يمنع التضمين.";
-        activeHlsPlayer.destroy();
-        activeHlsPlayer=null;
-      }
-    });
-
-  }else if(isHls && player.canPlayType("application/vnd.apple.mpegurl")){
-    player.src=channel.stream;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="اضغط زر التشغيل لبدء المشاهدة.";
-    });
-
-  }else{
-    player.src=channel.stream;
-
-    player.play().then(()=>{
-      status.textContent="يتم تشغيل: "+channel.name;
-    }).catch(()=>{
-      status.textContent="تعذر التشغيل التلقائي. اضغط زر التشغيل أو تحقق من رابط البث.";
-    });
-  }
-}
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
@@ -3860,7 +3972,8 @@ loadApprovedIdeas();
     const q=($('archiveSearch')?.value||'').trim().toLowerCase();
     const cat=$('archiveCategory')?.value||'';
     const rows=archiveRows.filter(x=>(!cat||x.category===cat)&&(`${x.title||''} ${x.description||''} ${x.extra_data?.year||''} ${x.extra_data?.artist||''} ${x.extra_data?.film||''}`).toLowerCase().includes(q));
-    if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
+    const count=document.getElementById("bookResultsCount");if(count)count.textContent="عدد الكتب المطابقة: "+rows.length;
+  if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
       const img=safeUrl(x.image_url),file=safeUrl(x.content_url);
       return `<article class="feature"><div class="feature-content">${img?`<img src="${esc(img)}" alt="${esc(x.title)}" loading="lazy" style="width:100%;max-height:300px;object-fit:contain;border-radius:10px">`:''}<small>${esc(x.category||'من الأرشيف')} ${x.extra_data?.year?' • '+esc(x.extra_data.year):''}</small><h3>${esc(x.title)}</h3><p>${esc(x.description||'')}</p>${x.extra_data?.source?`<p class="muted">المصدر: ${esc(x.extra_data.source)}</p>`:''}${file?`<a class="btn" href="${esc(file)}" target="_blank" rel="noopener">عرض المادة</a>`:''}<div class="archive-feedback" data-content-id="${esc(x.id)}"><div class="rating-line"><label>تقييمك:</label><select class="archive-rating" aria-label="تقييم المادة"><option value="">اختر</option><option value="1">1 نجمة</option><option value="2">2 نجمتان</option><option value="3">3 نجوم</option><option value="4">4 نجوم</option><option value="5">5 نجوم</option></select><button class="btn archive-rate" type="button">إرسال التقييم</button><span class="rating-summary" aria-live="polite">جارٍ تحميل التقييم</span></div><form class="archive-comment-form"><textarea maxlength="2000" required placeholder="اكتب تعليقك أو ذكرياتك عن هذه المادة..."></textarea><button class="btn" type="submit">إرسال التعليق</button></form><div class="archive-comments"></div></div></div></article>`;
@@ -4182,7 +4295,7 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
   if(file&&externalRaw){message.textContent="اختر رفع الفيديو أو الرابط الخارجي، وليس الاثنين معًا.";return;}
   if(!file&&!externalRaw&&!directorWorkEditingId){message.textContent="ارفع فيديو أو أضف رابط مشاهدة.";return;}
   if(externalRaw&&!external_url){message.textContent="الرابط غير صالح؛ استخدم http أو https.";return;}
-  if(file&&(!["video/mp4","video/webm","video/quicktime"].includes(file.type)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 100 ميجابايت.";return;}
+  if(file&&((file.type&&!["video/mp4","video/webm","video/quicktime"].includes(file.type))||!/\.(mp4|webm|mov)$/i.test(file.name)||file.size>50*1024*1024)){message.textContent="الفيديو يجب أن يكون MP4 أو WebM أو MOV وألا يتجاوز 50 ميجابايت.";return;}
   button.disabled=true;message.textContent="جارٍ تجهيز الفيديو وإرساله للمراجعة...";
   let uploadedPath=null,oldPath=null;
   try{
@@ -4301,12 +4414,365 @@ async function adminReviewDirectorWork(id,status){
   const note=prompt(status==="rejected"?"اكتب ملاحظات التعديل المطلوبة من المخرج:":"ملاحظة للمدير (اختياري):","");
   if(note===null)return;
   if(status==="rejected"&&!note.trim()){alert("اكتب سبب طلب التعديل.");return;}
-  const {error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending");
+  const {data:reviewed,error}=await adminSupabase.from("director_work_submissions").update({status,review_notes:note.trim()||null,updated_at:new Date().toISOString()}).eq("id",id).eq("status","pending").select("id,status").maybeSingle();
   if(error){alert("تعذرت مراجعة العمل: "+error.message);return;}
+  if(!reviewed){alert("هذا العمل لم يعد قيد المراجعة؛ حدّث القائمة للتأكد من حالته الحالية.");await adminLoadDirectorWorks();return;}
   alert(status==="approved"?"تم اعتماد نموذج العمل.":"تم إرسال ملاحظات التعديل إلى المخرج.");
   await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
 }
 document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
+</script>
+
+
+<script>
+/* سوق الكتب: الإعلانات لا تظهر للجمهور إلا بعد اعتماد الإدارة */
+let bookMarketplaceClient=null;
+let bookMarketplaceRows=[];
+function bookMarketplaceGetClient(){
+  if(bookMarketplaceClient)return bookMarketplaceClient;
+  if(!window.supabase||!adminConfigReady())throw new Error("خدمة قاعدة البيانات غير متاحة الآن.");
+  bookMarketplaceClient=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+  return bookMarketplaceClient;
+}
+function bookMarketplaceMessage(message){
+  const node=document.getElementById("bookListingMessage");if(node)node.textContent=message;
+}
+function renderBookListings(){
+  const box=document.getElementById("bookListingsGrid");if(!box)return;
+  const q=(document.getElementById("bookSearch")?.value||"").trim().toLowerCase();
+  const type=document.getElementById("bookTypeFilter")?.value||"";
+  const format=document.getElementById("bookFormatFilter")?.value||"";
+  const rows=bookMarketplaceRows.filter(item=>(!type||item.book_type===type)&&(!format||item.book_format===format)&&
+    (String(item.title||"")+" "+String(item.author_name||"")+" "+String(item.description||"")).toLowerCase().includes(q));
+  const count=document.getElementById("bookResultsCount");
+  if(count)count.textContent="عدد الكتب المطابقة: "+rows.length+" من أصل "+bookMarketplaceRows.length;
+  const sort=document.getElementById("bookSort")?.value||"newest";
+  rows.sort((a,b)=>{
+    if(sort==="price-asc")return Number(a.price)-Number(b.price);
+    if(sort==="price-desc")return Number(b.price)-Number(a.price);
+    if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"ar");
+    return new Date(b.created_at||0)-new Date(a.created_at||0);
+  });
+  if(!rows.length){
+    const emptyTitle=bookMarketplaceRows.length?"لا توجد نتائج مطابقة":"لا توجد كتب معروضة حاليًا";
+    const emptyText=bookMarketplaceRows.length
+      ?"جرّب تغيير كلمات البحث أو الفلاتر، أو اضغط «إعادة ضبط البحث والفلاتر»."
+      :"كن أول من يضيف كتابه إلى سوق الكتب.";
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">'+emptyTitle+'</h3><p>'+emptyText+'</p></div>';
+    return;
+  }
+  box.innerHTML=rows.map(item=>{
+    const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
+    const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع واتساب</a>':'';
+    const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
+    const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
+      ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
+      :"";
+    const cover=item.cover_url
+      ?'<button type="button" aria-label="عرض تفاصيل '+escapeHTML(item.title)+'" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="display:block;width:100%;padding:0;border:0;background:#151515;cursor:pointer"><img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="width:100%;height:260px;object-fit:contain;background:#151515"></button>'
+      :'<button type="button" aria-label="عرض تفاصيل '+escapeHTML(item.title)+'" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="width:100%;height:220px;display:grid;place-items:center;border:0;background:#151515;color:var(--muted);cursor:pointer">عرض تفاصيل الكتاب</button>';
+    return '<article class="feature">'+cover+
+      '<div class="feature-content"><h3 style="margin:0 0 7px"><button type="button" onclick="openBookDetails(\''+escapeHTML(item.id)+'\')" style="padding:0;border:0;background:transparent;color:var(--gold);font:inherit;font-weight:800;text-align:right;cursor:pointer">'+escapeHTML(item.title)+'</button></h3><p>المؤلف: '+escapeHTML(item.author_name)+'</p><p>'+escapeHTML(item.book_type)+' • '+escapeHTML(item.book_format)+'</p><p style="color:var(--gold);font-weight:bold;font-size:18px">السعر: '+price+'</p>'+(publishedDate?'<p style="color:var(--muted);font-size:12px;margin-top:10px">تاريخ العرض: '+escapeHTML(publishedDate)+'</p>':"")+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'+contact+'</div></div></article>';
+  }).join("");
+}
+function openBookDetails(id){
+  const item=bookMarketplaceRows.find(row=>String(row.id)===String(id)&&row.status!=="rejected");
+  if(!item)return;
+  const dialog=document.getElementById("bookDetailsDialog"),title=document.getElementById("bookDetailsTitle"),box=document.getElementById("bookDetailsContent");
+  if(!dialog||!box)return;
+  const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
+  const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع عبر واتساب</a>':'<p class="admin-status">بيانات التواصل غير متاحة.</p>';
+  const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
+  const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
+    ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
+    :"غير محدد";
+  title.textContent=item.title||"تفاصيل الكتاب";
+  box.innerHTML=(item.cover_url
+    ?'<img src="'+escapeHTML(item.cover_url)+'" alt="غلاف '+escapeHTML(item.title)+'" loading="lazy" style="width:100%;max-height:440px;object-fit:contain;background:#101010;border-radius:10px;border:1px solid var(--border)">'
+    :'<div style="min-height:240px;display:grid;place-items:center;background:#101010;border-radius:10px">غلاف الكتاب غير متاح</div>')+
+    '<div style="min-width:0"><p style="color:var(--gold);font-size:20px;font-weight:800;margin-top:0">السعر: '+price+'</p>'+
+    '<p><strong>المؤلف:</strong> '+escapeHTML(item.author_name||"غير محدد")+'</p>'+
+    '<p><strong>التصنيف:</strong> '+escapeHTML(item.book_type||"غير محدد")+'</p>'+
+    '<p><strong>الصيغة:</strong> '+escapeHTML(item.book_format||"غير محددة")+'</p>'+
+    '<p><strong>صاحب الإعلان:</strong> '+escapeHTML(item.seller_name||"غير محدد")+'</p>'+
+    '<p><strong>تاريخ العرض:</strong> '+escapeHTML(publishedDate)+'</p>'+
+    '<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px"><h3 style="color:var(--gold)">نبذة عن الكتاب</h3><p style="white-space:pre-wrap;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد نبذة مضافة.")+'</p></div>'+
+    '<div style="margin-top:16px">'+contact+'</div></div>';
+  dialog.style.display="block";
+  document.body.style.overflow="hidden";
+  const close=dialog.querySelector('button[aria-label="إغلاق تفاصيل الكتاب"]');close?.focus();
+}
+function closeBookDetails(){
+  const dialog=document.getElementById("bookDetailsDialog");
+  if(dialog)dialog.style.display="none";
+  document.body.style.overflow="";
+}
+document.getElementById("bookDetailsDialog")?.addEventListener("click",event=>{
+  if(event.target.id==="bookDetailsDialog")closeBookDetails();
+});
+document.addEventListener("keydown",event=>{
+  const dialog=document.getElementById("bookDetailsDialog");
+  if(event.key==="Escape"&&dialog&&dialog.style.display!=="none")closeBookDetails();
+});
+async function loadBookListings(){
+  const box=document.getElementById("bookListingsGrid");if(!box)return;
+  try{
+    const {data,error}=await bookMarketplaceGetClient().from("book_marketplace_listings").select("id,title,author_name,book_type,book_format,description,price,currency,seller_name,contact_phone,cover_url,created_at").eq("status","approved").order("created_at",{ascending:false});
+    if(error)throw error;
+    bookMarketplaceRows=data||[];renderBookListings();
+  }catch(error){
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">سوق الكتب قيد الإعداد؛ سيتم فتح عرض الكتب بعد تنفيذ ملف إعداد قاعدة البيانات.</div>';
+    console.warn("book marketplace",error.message||error);
+  }
+}
+document.getElementById("bookSearch")?.addEventListener("input",renderBookListings);
+document.getElementById("bookTypeFilter")?.addEventListener("change",renderBookListings);
+document.getElementById("bookSort")?.addEventListener("change",renderBookListings);
+document.getElementById("bookFormatFilter")?.addEventListener("change",renderBookListings);
+document.getElementById("bookFiltersReset")?.addEventListener("click",()=>{
+  const search=document.getElementById("bookSearch");
+  const sort=document.getElementById("bookSort");
+  const format=document.getElementById("bookFormatFilter");
+  const type=document.getElementById("bookTypeFilter");
+  if(search)search.value="";
+  if(sort)sort.value="newest";
+  if(format)format.value="";
+  if(type)type.value="";
+  renderBookListings();
+});
+
+document.getElementById("bookCoverFile")?.addEventListener("change",function(){
+  const file=this.files?.[0]||null,wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
+  if(!wrap||!img)return;
+  if(!file){wrap.style.display="none";img.removeAttribute("src");return;}
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){
+    wrap.style.display="none";img.removeAttribute("src");
+    bookMarketplaceMessage("الصورة غير مناسبة. اختر JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت.");
+    this.value="";return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{img.src=String(reader.result||"");wrap.style.display=img.src?"block":"none";if(img.src)bookMarketplaceMessage("تم اختيار الغلاف. يمكنك معاينته أو تغييره قبل إرسال الإعلان.");};
+  reader.onerror=()=>{wrap.style.display="none";img.removeAttribute("src");bookMarketplaceMessage("تعذرت قراءة الصورة. جرّب اختيار صورة أخرى.");};
+  reader.readAsDataURL(file);
+});
+document.getElementById("bookCoverRemove")?.addEventListener("click",()=>{
+  const input=document.getElementById("bookCoverFile"),wrap=document.getElementById("bookCoverPreviewWrap"),img=document.getElementById("bookCoverPreview");
+  if(input)input.value="";
+  if(wrap)wrap.style.display="none";
+  if(img)img.removeAttribute("src");
+  bookMarketplaceMessage("تمت إزالة الغلاف. اختر صورة جديدة لإكمال الإعلان.");
+});
+document.getElementById("bookListingForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const file=document.getElementById("bookCoverFile").files?.[0];
+  const price=Number(document.getElementById("bookPrice").value);
+  const phone=document.getElementById("bookContact").value.trim();
+  if(!file||!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>5*1024*1024){bookMarketplaceMessage("اختر صورة غلاف JPG أو PNG أو WEBP لا تتجاوز 5 ميجابايت.");return;}
+  if(!Number.isFinite(price)||price<0||price>10000000){bookMarketplaceMessage("اكتب سعرًا صحيحًا للكتاب.");return;}
+  if(phone.replace(/\D/g,"").length<8){bookMarketplaceMessage("اكتب رقم تواصل صحيحًا مع مفتاح الدولة.");return;}
+  if(!document.getElementById("bookRightsConfirm").checked){bookMarketplaceMessage("يجب تأكيد حقك في عرض الكتاب للبيع.");return;}
+  try{
+    button.disabled=true;bookMarketplaceMessage("جارٍ رفع صورة الغلاف وإرسال الإعلان...");
+    const client=bookMarketplaceGetClient();
+    const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
+    const path="pending/"+crypto.randomUUID()+"."+ext;
+    const {data:uploaded,error:uploadError}=await client.storage.from("book-marketplace-covers").upload(path,file,{upsert:false,contentType:file.type});
+    if(uploadError)throw uploadError;
+    const coverUrl=client.storage.from("book-marketplace-covers").getPublicUrl(uploaded.path).data.publicUrl;
+    const sellerToken=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(v=>v.toString(16).padStart(2,"0")).join("");
+    const tokenDigest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(sellerToken));
+    const sellerTokenHash=Array.from(new Uint8Array(tokenDigest)).map(v=>v.toString(16).padStart(2,"0")).join("");
+    const listing={
+      seller_token_hash:sellerTokenHash,
+      title:document.getElementById("bookTitle").value.trim(),
+      author_name:document.getElementById("bookAuthor").value.trim(),
+      book_type:document.getElementById("bookType").value,
+      book_format:document.getElementById("bookFormat").value,
+      price,currency:document.getElementById("bookCurrency").value,
+      cover_url:coverUrl,cover_path:uploaded.path,
+      description:document.getElementById("bookDescription").value.trim(),
+      seller_name:document.getElementById("bookSellerName").value.trim(),
+      contact_phone:phone,status:"pending"
+    };
+    const {data:created,error}=await client.from("book_marketplace_listings").insert(listing).select("id").single();
+    if(error){await client.storage.from("book-marketplace-covers").remove([uploaded.path]);throw error;}
+    this.reset();document.getElementById("bookCoverPreviewWrap").style.display="none";document.getElementById("bookCoverPreview").removeAttribute("src");
+    document.getElementById("sellerManageId").value="";
+    document.getElementById("sellerManageToken").value="";
+    bookMarketplaceMessage("تم استلام الإعلان بنجاح، وهو الآن بانتظار مراجعة الإدارة. احفظ هذه البيانات في مكان آمن لتعديل إعلانك لاحقًا: رقم الإعلان: "+created.id+" — رمز الإدارة: "+sellerToken);
+  }catch(error){bookMarketplaceMessage("تعذر إرسال الإعلان: "+(error.message||"حاول مرة أخرى بعد إعداد قاعدة البيانات."));}
+  finally{button.disabled=false;}
+});
+function sellerManageMessage(message){const node=document.getElementById("sellerManageMessage");if(node)node.textContent=message;}
+async function sellerBookRpc(name,args){
+  const {data,error}=await bookMarketplaceGetClient().rpc(name,args);
+  if(error)throw error;return data;
+}
+document.getElementById("sellerLoadListing")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة.");return;}
+  try{
+    const data=await sellerBookRpc("seller_get_book_listing",{p_id:id,p_token:token});
+    if(!data){sellerManageMessage("لم نعثر على إعلان بهذه البيانات. راجع الرقم والرمز.");return;}
+    document.getElementById("sellerEditTitle").value=data.title||"";
+    document.getElementById("sellerEditAuthor").value=data.author_name||"";
+    document.getElementById("sellerEditType").value=data.book_type||"رواية";
+    document.getElementById("sellerEditFormat").value=data.book_format||"ورقي";
+    document.getElementById("sellerEditPrice").value=data.price??0;
+    document.getElementById("sellerEditCurrency").value=data.currency||"جنيه مصري";
+    document.getElementById("sellerEditDescription").value=data.description||"";
+    document.getElementById("sellerEditSeller").value=data.seller_name||"";
+    document.getElementById("sellerEditPhone").value=data.contact_phone||"";
+    document.getElementById("sellerEditPanel").style.display="block";
+    sellerManageMessage("تم التحقق من ملكية الإعلان: "+data.title+" — الحالة: "+({pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض"}[data.status]||data.status)+". يمكنك تعديل البيانات أدناه.");
+  }catch(error){sellerManageMessage("تعذر استرجاع الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+});
+document.getElementById("sellerSaveChanges")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  const price=Number(document.getElementById("sellerEditPrice").value);
+  const phone=document.getElementById("sellerEditPhone").value.trim();
+  const title=document.getElementById("sellerEditTitle").value.trim();
+  const author=document.getElementById("sellerEditAuthor").value.trim();
+  const description=document.getElementById("sellerEditDescription").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة أولًا.");return;}
+  if(title.length<2||author.length<2||description.length<10||!Number.isFinite(price)||price<0||price>10000000||phone.replace(/\D/g,"").length<8){sellerManageMessage("راجع العنوان والمؤلف والنبذة والسعر ورقم التواصل.");return;}
+  const button=document.getElementById("sellerSaveChanges");button.disabled=true;
+  try{
+    const saved=await sellerBookRpc("seller_update_book_listing",{
+      p_id:id,p_token:token,p_title:title,p_author_name:author,
+      p_book_type:document.getElementById("sellerEditType").value,
+      p_book_format:document.getElementById("sellerEditFormat").value,
+      p_description:description,p_price:price,
+      p_currency:document.getElementById("sellerEditCurrency").value,
+      p_seller_name:document.getElementById("sellerEditSeller").value.trim(),
+      p_contact_phone:phone
+    });
+    sellerManageMessage(saved?"تم حفظ التعديلات وإرسال الإعلان لمراجعة الإدارة.":"لم يتم الحفظ؛ تحقق من بيانات الملكية.");
+    if(saved){document.getElementById("sellerEditPanel").style.display="none";await loadBookListings();}
+  }catch(error){sellerManageMessage("تعذر حفظ التعديلات: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+  finally{button.disabled=false;}
+});
+document.getElementById("sellerDeleteListing")?.addEventListener("click",async()=>{
+  const id=document.getElementById("sellerManageId").value.trim();
+  const token=document.getElementById("sellerManageToken").value.trim();
+  if(!id||!token){sellerManageMessage("اكتب رقم الإعلان ورمز الإدارة.");return;}
+  if(!confirm("هل أنت متأكد من حذف الإعلان نهائيًا؟ لا يمكن التراجع عن الحذف."))return;
+  try{
+    const deleted=await sellerBookRpc("seller_delete_book_listing",{p_id:id,p_token:token});
+    sellerManageMessage(deleted?"تم حذف الإعلان.":"لم يتم الحذف؛ راجع رقم الإعلان ورمز الإدارة.");
+    if(deleted){document.getElementById("sellerManageId").value="";document.getElementById("sellerManageToken").value="";await loadBookListings();}
+  }catch(error){sellerManageMessage("تعذر حذف الإعلان: "+(error.message||"تحقق من إعداد قاعدة البيانات."));}
+});
+let adminBookListingsCache=[];
+function adminFormatBookDate(value){
+  if(!value)return "";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "";
+  return date.toLocaleString("ar-EG",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function adminRenderBookListings(){
+  const box=document.getElementById("adminBookListingsList");if(!box)return;
+  const rows=adminBookListingsCache;
+  const counts={pending:0,approved:0,rejected:0};
+  rows.forEach(item=>{if(Object.prototype.hasOwnProperty.call(counts,item.status))counts[item.status]++;});
+  const total=document.getElementById("adminBookTotal");if(total)total.textContent=String(rows.length);
+  const pending=document.getElementById("adminBookPending");if(pending)pending.textContent=String(counts.pending);
+  const approved=document.getElementById("adminBookApproved");if(approved)approved.textContent=String(counts.approved);
+  const rejected=document.getElementById("adminBookRejected");if(rejected)rejected.textContent=String(counts.rejected);
+  const stats=document.getElementById("adminBookListingsStats");
+  if(stats)stats.textContent="الإحصاءات محسوبة من أحدث "+rows.length+" إعلان تم تحميله، وليست إجماليًا تاريخيًا إذا تجاوزت الإعلانات 200.";
+  const q=(document.getElementById("adminBookSearch")?.value||"").trim().toLowerCase();
+  const status=(document.getElementById("adminBookStatusFilter")?.value||"");
+  const filtered=rows.filter(item=>(!status||item.status===status)&&
+    [item.title,item.author_name,item.seller_name,item.contact_phone].some(v=>String(v||"").toLowerCase().includes(q)));
+  if(!filtered.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد إعلانات تطابق البحث أو الحالة المختارة.</div>';return;}
+  const labels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
+  box.innerHTML=filtered.map(item=>{
+    const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+adminEscape(item.currency);
+    const publishedAt=adminFormatBookDate(item.created_at),updatedAt=adminFormatBookDate(item.updated_at);
+    const dateDetails=(publishedAt?'<p class="admin-book-date">تاريخ الإضافة: '+adminEscape(publishedAt)+'</p>':"")
+      +(updatedAt?'<p class="admin-book-date">آخر تحديث: '+adminEscape(updatedAt)+'</p>':"");
+    const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
+    const contact=phone?'<a class="btn" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">فتح واتساب البائع</a>':'<span>لا يوجد رقم تواصل صالح</span>';
+    const cover=item.cover_url
+      ?'<a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف '+adminEscape(item.title)+' — افتح الصورة بالحجم الكامل" loading="lazy" style="width:130px;height:180px;object-fit:contain;background:#111;border:1px solid var(--border);border-radius:8px"></a><p class="admin-book-date">اضغط على الغلاف لفتحه بالحجم الكامل</p>'
+      :'<p class="admin-book-date">لا توجد صورة غلاف</p>';
+    const actions=(item.status==="approved"
+      ? '<button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">إخفاء الإعلان</button>'
+      : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">رفض الإعلان</button>')
+      + '<button class="btn" type="button" onclick="adminDeleteBookListing(\''+item.id+'\')">حذف نهائي</button>';
+    return '<article class="admin-item"><div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start"><div><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">الحالة: '+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p style="white-space:pre-wrap">'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+'</p><p>رقم التواصل: '+adminEscape(item.contact_phone)+'</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+contact+'</div></div><div>'+cover+'</div></div>'+dateDetails+'<div class="admin-actions">'+actions+'</div></article>';
+  }).join("");
+}
+function adminExportBookListingsCsv(){
+  const q=(document.getElementById("adminBookSearch")?.value||"").trim().toLowerCase();
+  const status=(document.getElementById("adminBookStatusFilter")?.value||"");
+  const rows=adminBookListingsCache.filter(item=>(!status||item.status===status)&&
+    [item.title,item.author_name,item.seller_name,item.contact_phone].some(v=>String(v||"").toLowerCase().includes(q)));
+  if(!rows.length){alert("لا توجد نتائج لتصديرها. غيّر البحث أو الحالة.");return;}
+  const headers=["رقم الإعلان","عنوان الكتاب","المؤلف","التصنيف","الصيغة","السعر","العملة","اسم البائع","رقم التواصل","الحالة","تاريخ النشر","آخر تحديث"];
+  const statusLabels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
+  const safe=value=>{
+    let v=String(value??"");
+    if(/^[\s\u0000-\u001f]*[=+@-]/.test(v))v="'"+v;
+    return '"'+v.replace(/"/g,'""')+'"';
+  };
+  const csv=[headers,...rows.map(item=>[
+    item.id,item.title,item.author_name,item.book_type,item.book_format,item.price,item.currency,
+    item.seller_name,item.contact_phone,statusLabels[item.status]||item.status,item.created_at,item.updated_at
+  ])].map(row=>row.map(safe).join(",")).join("\r\n");
+  const blob=new Blob([String.fromCharCode(0xFEFF),csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="سيناريو-وسيناريست-إعلانات-الكتب-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+}
+async function adminLoadBookListings(){
+  const box=document.getElementById("adminBookListingsList");
+  if(!box||!adminSupabase||!adminSession){if(box)box.textContent="سجّل دخول المدير أولًا.";return;}
+  box.textContent="جارٍ تحميل إعلانات الكتب...";
+  const {data,error}=await adminSupabase.from("book_marketplace_listings")
+    .select("id,title,author_name,book_type,book_format,description,price,currency,seller_name,contact_phone,cover_url,status,created_at,updated_at")
+    .order("created_at",{ascending:false}).limit(200);
+  if(error){box.textContent="تعذر تحميل إعلانات الكتب: "+error.message;return;}
+  adminBookListingsCache=data||[];
+  adminRenderBookListings();
+}
+document.getElementById("adminBookSearch")?.addEventListener("input",adminRenderBookListings);
+document.getElementById("adminBookStatusFilter")?.addEventListener("change",adminRenderBookListings);
+async function adminDeleteBookListing(id){
+  if(!adminSupabase||!adminSession)return;
+  const item=adminBookListingsCache.find(row=>row.id===id);
+  if(!item){alert("الإعلان غير موجود في القائمة الحالية. حدّث القائمة.");return;}
+  if(!confirm("حذف إعلان «"+item.title+"» نهائيًا؟ سيتم حذف سجل الإعلان وصورة الغلاف."))return;
+  const {data,error}=await adminSupabase.from("book_marketplace_listings").delete().eq("id",id).select("id").maybeSingle();
+  if(error){alert("تعذر حذف الإعلان: "+error.message);return;}
+  if(!data){alert("لم يُحذف الإعلان. راجع صلاحية المدير في قاعدة البيانات.");return;}
+  let note="";
+  if(item.cover_path){
+    const {error:storageError}=await adminSupabase.storage.from("book-marketplace-covers").remove([item.cover_path]);
+    if(storageError)note=" تم حذف الإعلان، لكن تعذر حذف صورة الغلاف: "+storageError.message;
+  }
+  alert("تم حذف الإعلان نهائيًا."+note);
+  await adminLoadBookListings();
+  await loadBookListings();
+}
+async function adminReviewBookListing(id,status){
+  if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const item=adminBookListingsCache.find(row=>row.id===id);
+  if(!item){alert("الإعلان غير موجود في القائمة الحالية. حدّث القائمة.");return;}
+  const action=status==="approved"?"اعتماد ونشر":"رفض وإخفاء";
+  if(!confirm("هل تريد "+action+" إعلان «"+item.title+"»؟"))return;
+  const {data,error}=await adminSupabase.from("book_marketplace_listings").update({status,updated_at:new Date().toISOString()}).eq("id",id).select("id,status").maybeSingle();
+  if(error){alert("تعذرت مراجعة الإعلان: "+error.message);return;}
+  if(!data){alert("لم يتغير الإعلان؛ حدّث القائمة وتأكد من صلاحيات الإدارة.");return;}
+  alert(status==="approved"?"تم اعتماد الإعلان ونشره.":"تم رفض الإعلان وإخفاؤه عن الجمهور. لا يوجد حقل لسبب الرفض في إعداد قاعدة البيانات الحالي.");
+  await adminLoadBookListings();await loadBookListings();
+}
 </script>
 
 </body></html>
