@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.6: معرض نماذج أعمال متعددة للمواهب مع الحفاظ على نموذج التقديم المفتوح وخصوصية التواصل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.7: بحث متقدم في دليل المواهب حسب المجال والمدينة والتخصص. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.6</title>
+<title>سيناريو وسيناريست – تحديث 6.8.7</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -278,7 +278,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.6">
+<body data-platform-version="6.8.7">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -865,8 +865,11 @@ renderLibrary();
       <option value="تقديم برامج">تقديم البرامج</option>
       <option value="إذاعة">الإذاعة والتعليق الصوتي</option>
     </select>
-    <input id="talentsSearch" type="search" placeholder="ابحث بالاسم أو التخصص أو المدينة..." aria-label="ابحث في دليل المواهب">
+    <input id="talentsSearch" type="search" placeholder="ابحث بالاسم أو النبذة..." aria-label="ابحث في دليل المواهب">
+    <input id="talentCitySearch" type="search" placeholder="تصفية حسب المدينة..." aria-label="تصفية المواهب حسب المدينة">
+    <input id="talentSpecialtySearch" type="search" placeholder="تصفية حسب التخصص أو نوع الأداء..." aria-label="تصفية المواهب حسب التخصص">
   </div>
+  <div id="talentsResultCount" class="muted" role="status" aria-live="polite" style="margin:8px 2px;font-size:13px"></div>
   <div id="talentsItems" class="grid" aria-live="polite">
     <div class="panel" style="grid-column:1/-1;text-align:center">جارٍ تحميل ملفات المواهب المعتمدة...</div>
   </div>
@@ -1055,17 +1058,27 @@ function renderTalents(){
   const box = document.getElementById("talentsItems");
   if(!box) return;
 
-  const q = (document.getElementById("talentsSearch")?.value || "").toLowerCase();
+  const normalize=value=>String(value||"").trim().toLocaleLowerCase("ar");
+  const q = normalize(document.getElementById("talentsSearch")?.value);
+  const cityQuery = normalize(document.getElementById("talentCitySearch")?.value);
+  const specialtyQuery = normalize(document.getElementById("talentSpecialtySearch")?.value);
   const category = document.getElementById("talentCategory")?.value || "";
 
   const list = creativeProfiles.talents.filter(x => {
-    const searchable=[x.name,x.bio,x.specialty,x.city].join(" ").toLowerCase();
-    return (!category || x.category === category) && (!q || searchable.includes(q));
+    const nameBio=normalize([x.name,x.bio].join(" "));
+    const city=normalize(x.city);
+    const specialty=normalize(x.specialty);
+    return (!category || x.category === category)
+      && (!q || nameBio.includes(q) || city.includes(q) || specialty.includes(q))
+      && (!cityQuery || city.includes(cityQuery))
+      && (!specialtyQuery || specialty.includes(specialtyQuery));
   });
 
+  const count=document.getElementById("talentsResultCount");
+  if(count)count.textContent="عدد الملفات المطابقة: "+list.length+" من "+creativeProfiles.talents.length;
   box.innerHTML = list.length
     ? list.map(x=>profileCard(x,"talents")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد مواهب منشورة في هذا التصنيف حاليًا.</div>`;
+    : `<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد مواهب منشورة تطابق كلمات البحث والتصفية الحالية.</div>`;
 }
 
 /* عرض صفحة الملف المهني للموهبة دون كشف بيانات الاتصال الخاصة */
@@ -1204,6 +1217,8 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
 document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
 document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
 document.getElementById("talentsSearch")?.addEventListener("input",renderTalents);
+document.getElementById("talentCitySearch")?.addEventListener("input",renderTalents);
+document.getElementById("talentSpecialtySearch")?.addEventListener("input",renderTalents);
 document.getElementById("talentCategory")?.addEventListener("change",renderTalents);
 
 renderWriters();
