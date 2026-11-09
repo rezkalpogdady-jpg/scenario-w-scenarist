@@ -4093,12 +4093,6 @@ document.getElementById("accountEditType")?.addEventListener("change",()=>{
   if(panel)panel.style.display=isWriter?"block":"none";
 });
 if(accountUser){accountLoadWriterContact();accountLoadWriterIdeas();}
-</script>
-
-</body>
-</html>
-
-
 /* ملف أعمال المخرجين — فيديوهات بحد أقصى 10 دقائق مع مراجعة إدارية */
 let directorWorkEditingId=null;
 const directorWorkLabels={short_film:"فيلم قصير",scene:"مشهد سينمائي أو درامي",music_video:"فيديو كليب",program_episode:"حلقة برنامج",advertisement:"إعلان",documentary:"فيلم وثائقي",report:"تقرير تلفزيوني",other:"عمل مرئي آخر"};
@@ -4291,4 +4285,7 @@ async function adminReviewDirectorWork(id,status){
   await adminLoadDirectorWorks();await loadApprovedDirectorWorks();
 }
 document.getElementById("directorsSearch")?.addEventListener("input",renderDirectors);
+</script>
 
+</body>
+</body></html>
