@@ -4678,8 +4678,7 @@ function adminRenderBookListings(){
   const rows=adminBookListingsCache;
   const counts={pending:0,approved:0,rejected:0};
   rows.forEach(item=>{if(Object.prototype.hasOwnProperty.call(counts,item.status))counts[item.status]++;});
-  const total=document.getElementById("adminBookTotal");
-  if(total)total.textContent=String(rows.length);
+  const total=document.getElementById("adminBookTotal");if(total)total.textContent=String(rows.length);
   const pending=document.getElementById("adminBookPending");if(pending)pending.textContent=String(counts.pending);
   const approved=document.getElementById("adminBookApproved");if(approved)approved.textContent=String(counts.approved);
   const rejected=document.getElementById("adminBookRejected");if(rejected)rejected.textContent=String(counts.rejected);
@@ -4693,15 +4692,19 @@ function adminRenderBookListings(){
   const labels={pending:"بانتظار المراجعة",approved:"معروض للبيع",rejected:"مرفوض / مخفي"};
   box.innerHTML=filtered.map(item=>{
     const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+adminEscape(item.currency);
-    const publishedAt=adminFormatBookDate(item.created_at);
-    const updatedAt=adminFormatBookDate(item.updated_at);
-    const dateDetails=(publishedAt?'<p class="admin-book-date">تاريخ النشر: '+adminEscape(publishedAt)+'</p>':"")
+    const publishedAt=adminFormatBookDate(item.created_at),updatedAt=adminFormatBookDate(item.updated_at);
+    const dateDetails=(publishedAt?'<p class="admin-book-date">تاريخ الإضافة: '+adminEscape(publishedAt)+'</p>':"")
       +(updatedAt?'<p class="admin-book-date">آخر تحديث: '+adminEscape(updatedAt)+'</p>':"");
+    const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
+    const contact=phone?'<a class="btn" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">فتح واتساب البائع</a>':'<span>لا يوجد رقم تواصل صالح</span>';
+    const cover=item.cover_url
+      ?'<a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف '+adminEscape(item.title)+' — افتح الصورة بالحجم الكامل" loading="lazy" style="width:130px;height:180px;object-fit:contain;background:#111;border:1px solid var(--border);border-radius:8px"></a><p class="admin-book-date">اضغط على الغلاف لفتحه بالحجم الكامل</p>'
+      :'<p class="admin-book-date">لا توجد صورة غلاف</p>';
     const actions=(item.status==="approved"
       ? '<button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">إخفاء الإعلان</button>'
       : '<button class="btn primary" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewBookListing(\''+item.id+'\',\'rejected\')">رفض الإعلان</button>')
       + '<button class="btn" type="button" onclick="adminDeleteBookListing(\''+item.id+'\')">حذف نهائي</button>';
-    return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">'+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p>'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+' • التواصل: '+adminEscape(item.contact_phone)+'</p>'+dateDetails+(item.cover_url?'<p><a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف الكتاب" style="width:100px;height:140px;object-fit:cover;border-radius:6px"></a></p>':"")+'<div class="admin-actions">'+actions+'</div></article>';
+    return '<article class="admin-item"><div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start"><div><h3>'+adminEscape(item.title)+'</h3><p class="admin-status">الحالة: '+(labels[item.status]||adminEscape(item.status))+'</p><p>المؤلف: '+adminEscape(item.author_name)+' • '+adminEscape(item.book_type)+' • '+adminEscape(item.book_format)+'</p><p>السعر: '+price+'</p><p style="white-space:pre-wrap">'+adminEscape(item.description||"")+'</p><p>صاحب الإعلان: '+adminEscape(item.seller_name)+'</p><p>رقم التواصل: '+adminEscape(item.contact_phone)+'</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+contact+'</div></div><div>'+cover+'</div></div>'+dateDetails+'<div class="admin-actions">'+actions+'</div></article>';
   }).join("");
 }
 function adminExportBookListingsCsv(){
@@ -4760,9 +4763,14 @@ async function adminDeleteBookListing(id){
 }
 async function adminReviewBookListing(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
+  const item=adminBookListingsCache.find(row=>row.id===id);
+  if(!item){alert("الإعلان غير موجود في القائمة الحالية. حدّث القائمة.");return;}
+  const action=status==="approved"?"اعتماد ونشر":"رفض وإخفاء";
+  if(!confirm("هل تريد "+action+" إعلان «"+item.title+"»؟"))return;
   const {data,error}=await adminSupabase.from("book_marketplace_listings").update({status,updated_at:new Date().toISOString()}).eq("id",id).select("id,status").maybeSingle();
   if(error){alert("تعذرت مراجعة الإعلان: "+error.message);return;}
   if(!data){alert("لم يتغير الإعلان؛ حدّث القائمة وتأكد من صلاحيات الإدارة.");return;}
+  alert(status==="approved"?"تم اعتماد الإعلان ونشره.":"تم رفض الإعلان وإخفاؤه عن الجمهور. لا يوجد حقل لسبب الرفض في إعداد قاعدة البيانات الحالي.");
   await adminLoadBookListings();await loadBookListings();
 }
 </script>
