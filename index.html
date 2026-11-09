@@ -2594,7 +2594,7 @@ async function adminLoadCommunitySubmissions(){
     if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
     const path=item.work_url.slice("talent-video:".length);
     const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    return {...item,reviewVideoUrl:error||signedError?"":(signed?.signedUrl||"")};
+    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
   }));
   box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
