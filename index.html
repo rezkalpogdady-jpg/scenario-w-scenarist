@@ -275,10 +275,29 @@ Main{padding:17px 11px}
  #scenarioReader>div:first-child{align-items:flex-start!important}
  #scenarioReader>div:first-child>div{min-width:0;flex:1}
 }
+/* معرض أفيشات مكتبة السيناريوهات */
+#libraryItems{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:20px;align-items:start}
+.scenario-poster-card{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:15px;background:var(--panel);box-shadow:0 8px 24px #0002;transition:transform .22s ease,box-shadow .22s ease}
+.scenario-poster-card:hover{transform:translateY(-5px);box-shadow:0 14px 30px #0004}
+.scenario-poster-open{display:block;position:relative;width:100%;aspect-ratio:2/3;padding:0;border:0;background:linear-gradient(145deg,#171717,#34302a);overflow:hidden;cursor:pointer;text-align:center}
+.scenario-poster-image{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.scenario-poster-card:hover .scenario-poster-image{transform:scale(1.035)}
+.scenario-poster-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px;box-sizing:border-box;color:#f6e8c7;background:radial-gradient(circle at 50% 25%,#65502e,#171717 72%)}
+.scenario-poster-placeholder span{font-size:11px;letter-spacing:2px;color:#d7b979}
+.scenario-poster-placeholder strong{font-size:clamp(19px,2.3vw,27px);line-height:1.5}
+.scenario-poster-placeholder small{color:#d5c5a5}
+.scenario-poster-shade{position:absolute;inset:35% 0 0;background:linear-gradient(transparent,#000d);pointer-events:none}
+.scenario-poster-title{position:absolute;right:12px;left:12px;bottom:14px;color:#fff;font-size:18px;font-weight:800;line-height:1.45;text-shadow:0 2px 6px #000;pointer-events:none}
+.scenario-poster-caption{padding:12px;text-align:center}
+.scenario-poster-caption h3{font-size:16px;line-height:1.5;margin:0 0 5px;color:var(--gold)}
+.scenario-poster-caption p{font-size:12px;color:var(--muted);margin:0 0 12px}
+.scenario-poster-caption p span{padding:0 3px;color:var(--gold)}
+.scenario-poster-caption .btn{width:100%}
+@media(max-width:640px){#libraryItems{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}.scenario-poster-card{border-radius:11px}.scenario-poster-caption{padding:9px}.scenario-poster-caption h3{font-size:14px}.scenario-poster-title{font-size:15px;right:8px;left:8px;bottom:9px}.scenario-poster-placeholder{padding:12px;gap:12px}}
 </style>
 </head>
 
-<body data-platform-version="6.8.32">
+<body data-platform-version="6.8.33">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -3544,7 +3563,15 @@ async function loadPublishedScenarioScripts(force=false){
   box.dataset.scriptsLoaded="1";
   try{
     const {data,error}=await scenarioLibraryClient().from("scenario_scripts").select("id,title,author,category,summary,poster_path,published,created_at,rights_holder,rights_status,rights_confirmed").eq("published",true).eq("rights_confirmed",true).order("created_at",{ascending:false}).limit(100);
-    if(error)throw error;scenarioScriptRecords=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());renderScenarioScriptCards();
+    if(error)throw error;
+const records=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());
+const client=scenarioLibraryClient();
+scenarioScriptRecords=await Promise.all(records.map(async item=>{
+let posterUrl="";
+if(item.poster_path){try{const {data:poster,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(item.poster_path,3600);if(!posterError)posterUrl=poster?.signedUrl||"";}catch(posterError){console.warn("تعذر تجهيز أفيش السيناريو:",posterError);}}
+return {...item,poster_url:posterUrl};
+}));
+renderScenarioScriptCards();
   }catch(error){box.dataset.scriptsLoaded="0";box.innerHTML=`<div class="panel" style="grid-column:1/-1"><p>تعذر تحميل مكتبة السيناريوهات الكاملة: ${escapeHTML(error.message||"تحقق من إعداد قاعدة البيانات.")}</p></div>`;}
 }
 function renderScenarioScriptCards(){
@@ -3553,7 +3580,12 @@ function renderScenarioScriptCards(){
   const category=document.getElementById("libraryCategory")?.value||"";
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
-  const scriptCards=items.map(item=>`<article class="feature scenario-library-card"><div class="feature-content"><div style="font-size:12px;color:var(--gold)">سيناريو متاح للأعضاء</div><h3>${escapeHTML(item.title)}</h3><div class="scenario-card-meta"><span>المؤلف: ${escapeHTML(item.author||"غير محدد")}</span><span>${escapeHTML(item.category||"غير مصنف")}</span><span>بيانات الإتاحة موثقة</span></div><p>${escapeHTML(item.summary||"لا يوجد ملخص متاح.")}</p><button class="btn primary" type="button" aria-label="قراءة سيناريو ${escapeHTML(item.title)}" onclick="openScenarioScript('${item.id}')">اقرأ السيناريو</button></div></article>`);
+  const scriptCards=items.map(item=>`<article class="scenario-poster-card">
+<button class="scenario-poster-open" type="button" aria-label="عرض سيناريو ${escapeHTML(item.title)}" onclick="openScenarioScript(&quot;${item.id}&quot;)">
+${item.poster_url?`<img class="scenario-poster-image" src="${escapeHTML(item.poster_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy">`:`<div class="scenario-poster-placeholder"><span>سيناريو وسيناريست</span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category||"سيناريو")}</small></div>`}
+<span class="scenario-poster-shade"></span><span class="scenario-poster-title">${escapeHTML(item.title)}</span></button>
+<div class="scenario-poster-caption"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.author||"غير محدد")} <span>•</span> ${escapeHTML(item.category||"غير مصنف")}</p>
+<button class="btn primary" type="button" onclick="openScenarioScript(&quot;${item.id}&quot;)">اقرأ السيناريو</button></div></article>`);
   const legacyCards=legacy.map(item=>{const legacyIndex=scenarioLibrary.indexOf(item);return `<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="" loading="lazy">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<button class="btn primary" type="button" onclick="openLegacyScenario(${legacyIndex})">اقرأ السيناريو داخل المنصة</button>`:""}</div></article>`;});
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
