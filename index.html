@@ -4159,11 +4159,13 @@ async function openScenarioScript(id){
     if(rowError)throw rowError;
     if(!row?.rights_confirmed||row.rights_status==="unverified"||!String(row.rights_holder||"").trim())throw new Error("هذا العمل غير متاح للقراءة لحين استكمال التحقق من حقوق نشره.");
     if(!row.storage_path)throw new Error("ملف السيناريو غير مرتبط بسجل المكتبة. أبلغ الإدارة.");
-    if(row.poster_path){try{const {data:posterData,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(row.poster_path,1800);if(posterError)throw posterError;const posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(posterImage&&posterBox){posterImage.src=posterData.signedUrl;posterImage.alt="أفيش فيلم "+(item.title||"");posterBox.style.display="block";}}catch(posterError){console.warn("تعذر تحميل أفيش الفيلم:",posterError);}}
-    const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,1800);if(signedError)throw signedError;
+    // لا نمنح الزائر صلاحية Storage مباشرة؛ Edge Function تتحقق من النشر والحقوق ثم تصدر رابطًا مؤقتًا قصير العمر للقارئ.
+    const {data:readerData,error:readerError}=await client.functions.invoke("public-scenario-reader",{body:{scenario_id:id}});
+    if(readerError)throw readerError;
+    if(!readerData?.signedUrl)throw new Error("تعذر تجهيز نسخة القراءة.");
     recordPublicContentView("scenario",id);
-    await renderScenarioPdf(frame,signed.signedUrl,item.title,"");
-    const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • أساس الإتاحة: ${row.rights_holder} • رابط القراءة مؤقت لمدة 30 دقيقة.`;
+    await renderScenarioPdf(frame,readerData.signedUrl,item.title,"");
+    const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • القراءة داخل المنصة فقط.`;
   }catch(error){frame.innerHTML=`<div style="padding:24px;color:white;text-align:center"><p>تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p><button class="btn" type="button" onclick="closeScenarioReader()">إغلاق</button></div>`;}
 }
 function closeScenarioReader(){const modal=document.getElementById("scenarioReader"),frame=document.getElementById("scenarioReaderFrame"),posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(frame)frame.innerHTML="";if(posterBox)posterBox.style.display="none";if(posterImage)posterImage.removeAttribute("src");if(modal)modal.style.display="none";}
