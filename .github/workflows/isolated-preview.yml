@@ -1,0 +1,48 @@
+name: Build isolated preview artifact
+
+on:
+  push:
+    branches:
+      - preview/6.8.62-isolated-ui
+    paths:
+      - index.html
+      - .github/workflows/isolated-preview.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isolated-preview-artifact
+  cancel-in-progress: true
+
+jobs:
+  package-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated preview branch
+        uses: actions/checkout@v4
+
+      - name: Verify database connection is disabled
+        shell: bash
+        run: |
+          if grep -Eq 'ADMIN_SUPABASE_URL[[:space:]]*=[[:space:]]*["'\'''][^"'\'']+'\''']' index.html; then
+            echo "A non-empty Supabase URL was found. Refusing to package preview."
+            exit 1
+          fi
+          if ! grep -Fq 'الاتصال بقاعدة البيانات معطل في نسخة المعاينة' index.html; then
+            echo "The isolated Supabase stub was not found. Refusing to package preview."
+            exit 1
+          fi
+          if grep -Fq 'cdn.jsdelivr.net/npm/@supabase/supabase-js' index.html; then
+            echo "The Supabase client library is still included. Refusing to package preview."
+            exit 1
+          fi
+
+      - name: Package static preview only
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-w-scenarist-isolated-preview
+          path: index.html
+          if-no-files-found: error
+          retention-days: 3
