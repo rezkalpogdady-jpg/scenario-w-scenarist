@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -1593,7 +1593,8 @@ function renderStories(){
     const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
     const summary=(item.extra?.summary||item.description||"").trim();
     const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
-    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+(item.authorName?' · بقلم '+escapeHTML(item.authorName):'')+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+(adminSession&&!String(item.id).startsWith("crime-db-")?'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>':"")+'</div></article>';
+    const adminEdit=adminSession?(String(item.id).startsWith("crime-db-")?'<button class="btn" type="button" data-crime-db-edit="'+escapeHTML(String(item.id).slice(9))+'" style="margin-top:8px">تعديل الأفيش</button>':'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>'):"";
+    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+(item.authorName?' · بقلم '+escapeHTML(item.authorName):'')+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+adminEdit+'</div></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
 }
 function openCrimeStory(id){
@@ -1608,7 +1609,12 @@ function openCrimeStory(id){
   modal.style.display="block";document.body.style.overflow="hidden";
 }
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
-document.getElementById("storiesItems")?.addEventListener("click",event=>{const trigger=event.target.closest("[data-crime-story-id]");if(trigger)openCrimeStory(trigger.dataset.crimeStoryId);});
+document.getElementById("storiesItems")?.addEventListener("click",event=>{
+  const edit=event.target.closest("[data-crime-db-edit]");
+  if(edit){event.preventDefault();event.stopPropagation();crimeDbStoryEdit(edit.dataset.crimeDbEdit);return;}
+  const trigger=event.target.closest("[data-crime-story-id]");
+  if(trigger)openCrimeStory(trigger.dataset.crimeStoryId);
+});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeCrimeStory();});
 
 /* عرض الأخبار */
@@ -6250,6 +6256,61 @@ function crimeStoryShowEditor(row){
  box.style.display='block';box.scrollIntoView({behavior:'smooth',block:'center'});var form=document.getElementById('crimeStoryInlineForm');if(row){form.elements.category.value=row.category||'قضايا غامضة';form.elements.format.value=extra.story_format||'story';}form.addEventListener('submit',crimeStorySave);
 }
 function crimeStoryCloseEditor(){var box=document.getElementById('storiesInlineEditor');if(box){box.style.display='none';box.innerHTML='';}}
+
+/* تعديل أفيش القصص القادمة من crime_stories — متاح للمدير فقط */
+async function crimeDbStoryEdit(id){
+ if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
+ const numericId=Number(id);
+ if(!Number.isSafeInteger(numericId)||numericId<=0)return;
+ const box=document.getElementById('storiesInlineEditor');
+ if(!box)return;
+ box.style.display='block';box.innerHTML='<p>جارٍ تحميل بيانات القصة...</p>';
+ box.scrollIntoView({behavior:'smooth',block:'center'});
+ const {data,error}=await adminSupabase.from('crime_stories').select('id,title,image_url').eq('id',numericId).maybeSingle();
+ if(error||!data){box.innerHTML='<p role="alert">تعذر تحميل القصة: '+escapeHTML(error?.message||'لم يتم العثور عليها.')+'</p>';return;}
+ const current=data.image_url&&/^https?:\\/\\//i.test(data.image_url)?safeHttpUrl(data.image_url):'';
+ box.innerHTML='<h3 style="color:var(--gold)">تعديل أفيش: '+escapeHTML(data.title||'القصة')+'</h3>'+
+  (current?'<img src="'+escapeHTML(current)+'" alt="الأفيش الحالي" style="display:block;width:min(100%,220px);max-height:320px;object-fit:contain;margin:12px 0;border-radius:10px">':'<p style="color:var(--muted)">لا يوجد أفيش مرفوع حاليًا.</p>')+
+  '<form id="crimeDbPosterForm" style="display:grid;gap:10px">'+
+  '<input type="hidden" name="id" value="'+numericId+'">'+
+  '<label>اختر الأفيش من الهاتف (JPG أو PNG أو WEBP — حتى 10 ميجابايت)</label>'+
+  '<input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
+  '<label style="display:flex;align-items:center;gap:8px"><input name="remove" type="checkbox" style="width:auto"> حذف الأفيش الحالي</label>'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ الأفيش</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div>'+
+  '<p id="crimeDbPosterStatus" role="status"></p></form>';
+ document.getElementById('crimeDbPosterForm').addEventListener('submit',crimeDbPosterSave);
+}
+async function crimeDbPosterSave(event){
+ event.preventDefault();
+ if(!adminSession||!adminSupabase)return;
+ const form=event.currentTarget,fd=new FormData(form),status=document.getElementById('crimeDbPosterStatus'),button=form.querySelector('[type="submit"]');
+ const id=Number(fd.get('id')),file=fd.get('image'),remove=fd.get('remove')==='on';
+ let uploaded=null;
+ try{
+  button.disabled=true;status.textContent='جارٍ حفظ الأفيش...';
+  const {data:previous,error:readError}=await adminSupabase.from('crime_stories').select('id,image_url').eq('id',id).maybeSingle();
+  if(readError||!previous)throw readError||new Error('لم يتم العثور على القصة.');
+  if(file&&file.size){
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('اختر صورة JPG أو PNG أو WEBP فقط.');
+   if(file.size>10*1024*1024)throw new Error('حجم الأفيش يجب ألا يتجاوز 10 ميجابايت.');
+   uploaded=await adminInlineUpload(file,'site-media','crime-stories',10*1024*1024);
+  }else if(!remove){throw new Error('اختر أفيشًا جديدًا أو فعّل خيار حذف الأفيش الحالي.');}
+  const imageUrl=uploaded?uploaded.url:null;
+  const {data,error}=await adminSupabase.from('crime_stories').update({image_url:imageUrl}).eq('id',id).select('id').maybeSingle();
+  if(error||!data)throw error||new Error('لم يتم حفظ التعديل. تحقق من صلاحيات المدير.');
+  const oldPath=adminStoragePathFromPublicUrl(previous.image_url);
+  if(oldPath&&(!uploaded||oldPath!==uploaded.path)){
+   const {error:cleanupError}=await adminSupabase.storage.from('site-media').remove([oldPath]);
+   if(cleanupError)console.warn('تم حفظ الأفيش لكن تعذر حذف النسخة القديمة:',cleanupError.message);
+  }
+  crimeStoryCloseEditor();
+  await loadPublicContent();
+  alert('تم حفظ الأفيش بنجاح.');
+ }catch(error){
+  if(uploaded?.path)await adminSupabase.storage.from('site-media').remove([uploaded.path]);
+  status.textContent='تعذر حفظ الأفيش: '+(error.message||'حاول مرة أخرى.');
+ }finally{button.disabled=false;}
+}
 function crimeStoryRenderAdminRecords(){
  var box=document.getElementById('storiesAdminRecords');if(!box)return;
  if(!adminSession||!adminSupabase){box.style.display='none';return;}
