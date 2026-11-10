@@ -21,6 +21,49 @@ create table if not exists public.writer_scripts (
   )
 );
 
+-- لا تسمح للكاتب بتزوير قرار الإدارة أو مسار النسخة المنشورة.
+create or replace function private.guard_writer_script_owner_changes()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $function$
+begin
+  if not private.is_platform_admin() then
+    if tg_op = 'INSERT' then
+      new.status := 'pending';
+      new.published_storage_path := null;
+      new.review_notes := null;
+      new.reviewed_by := null;
+      new.reviewed_at := null;
+      new.revision_count := 0;
+    else
+      if new.user_id is distinct from old.user_id
+        or new.published_storage_path is distinct from old.published_storage_path
+        or new.reviewed_by is distinct from old.reviewed_by
+        or new.reviewed_at is distinct from old.reviewed_at then
+        raise exception 'Writer review fields are managed by the platform team';
+      end if;
+      new.status := 'pending';
+      new.review_notes := null;
+      new.reviewed_by := null;
+      new.reviewed_at := null;
+      if old.status = 'needs_revision' then
+        new.revision_count := old.revision_count + 1;
+      else
+        new.revision_count := old.revision_count;
+      end if;
+    end if;
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists guard_writer_script_owner_changes on public.writer_scripts;
+create trigger guard_writer_script_owner_changes
+  before insert or update on public.writer_scripts
+  for each row execute function private.guard_writer_script_owner_changes();
+
 create index if not exists writer_scripts_user_created_idx
   on public.writer_scripts(user_id, created_at desc);
 create index if not exists writer_scripts_status_created_idx
