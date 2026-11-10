@@ -334,7 +334,7 @@ Main{padding:17px 11px}
 <button data-page="radio">الإذاعة والتليفزيون</button>
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
-<button data-page="production">الإنتاج</button>
+<button data-page="production">الإنتاج والتعاون</button>
 <button data-page="sponsors">شركات الإنتاج والرعاة</button>
 <button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
@@ -1394,13 +1394,22 @@ renderShortFilms();
         <option value="">نوع المشروع</option>
         <option>فيلم</option>
         <option>مسلسل</option>
-        <option>فيلم قصير</option>
         <option>برنامج</option>
-        <option>وثائقي</option>
       </select>
       <input id="projectOwner" required placeholder="اسم صاحب المشروع">
-      <input id="projectContact" placeholder="وسيلة تواصل عامة">
-      <textarea id="projectDescription" placeholder="نبذة عن المشروع ونوع التعاون المطلوب"></textarea>
+      <fieldset style="border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px;margin:10px 0">
+        <legend style="color:var(--gold);padding:0 6px">محتاج إيه في المشروع؟</legend>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+          <label><input type="checkbox" name="projectNeeds" value="تمويل"> تمويل</label>
+          <label><input type="checkbox" name="projectNeeds" value="معدات"> معدات</label>
+          <label><input type="checkbox" name="projectNeeds" value="رعاية"> رعاية</label>
+          <label><input type="checkbox" name="projectNeeds" value="ممثلين"> ممثلين</label>
+          <label><input type="checkbox" name="projectNeeds" value="فريق عمل وتعاون"> فريق عمل وتعاون</label>
+          <label><input type="checkbox" name="projectNeeds" value="أخرى"> أخرى</label>
+        </div>
+      </fieldset>
+      <textarea id="projectDescription" required placeholder="اكتب نبذة بسيطة عن المشروع"></textarea>
+      <input id="projectContact" required placeholder="وسيلة التواصل (واتساب أو بريد إلكتروني)">
       <button class="btn primary" type="submit">إرسال المشروع للمراجعة</button>
     </form>
     <p style="color:var(--muted);font-size:12px">يُرسل المشروع إلى قاعدة البيانات لمراجعته من الإدارة، ولن يظهر للزوار إلا بعد الموافقة عليه.</p>
@@ -1541,15 +1550,19 @@ function renderProjects(){
 document.getElementById("projectForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
   const button=this.querySelector('button[type="submit"]');
+  const needs=[...this.querySelectorAll('input[name="projectNeeds"]:checked')].map(input=>input.value);
+  const contact=document.getElementById("projectContact").value.trim();
+  const projectDescription=document.getElementById("projectDescription").value.trim();
   const project={
     submission_type:"project",
     title:document.getElementById("projectTitle").value.trim(),
     category:document.getElementById("projectType").value,
     owner_name:document.getElementById("projectOwner").value.trim(),
-    contact:document.getElementById("projectContact").value.trim(),
-    description:document.getElementById("projectDescription").value.trim()
+    contact,
+    description:"الاحتياج المطلوب: "+needs.join("، ")+"\n\nنبذة المشروع: "+projectDescription+"\n\nللتواصل: "+contact
   };
-  if(!project.title || !project.owner_name || !project.category){alert("يرجى إدخال اسم المشروع ونوعه واسم صاحبه.");return;}
+  if(!project.title || !project.owner_name || !project.category || !projectDescription || !contact){alert("يرجى استكمال اسم المشروع ونوعه واسم صاحبه والنبذة ووسيلة التواصل.");return;}
+  if(!needs.length){alert("حدد احتياج المشروع أولًا.");return;}
   try{
     button.disabled=true;button.textContent="جارٍ إرسال المشروع...";
     const {error}=await ideasGetClient().from("community_submissions").insert(project);
