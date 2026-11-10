@@ -4573,6 +4573,7 @@ let seriesInPagePlayer=null;
 let seriesInPagePlayerReady=false;
 let seriesInPagePlaylistId="";
 let seriesPendingEpisodeIndex=0;
+let seriesEpisodeChosenBeforeReady=false;
 let seriesPlayerOpenToken=0;
 
 function loadSeriesYoutubeApi(){
@@ -4616,6 +4617,7 @@ function selectSeriesEpisode(index){
   const item=FEATURED_FILM_PLAYLISTS.find(entry=>entry.id==="al-bashayer");
   if(!item || !Number.isInteger(index) || index<0 || index>=Number(item.episodeCount))return;
   seriesPendingEpisodeIndex=index;
+  seriesEpisodeChosenBeforeReady=true;
   setSeriesEpisodeActive(index);
   if(seriesInPagePlayerReady && seriesInPagePlayer){
     seriesInPagePlayer.loadPlaylist({
@@ -4637,6 +4639,7 @@ function openSeriesPlaylist(seriesId){
   seriesInPagePlayerReady=false;
   seriesInPagePlaylistId=item.playlistId;
   seriesPendingEpisodeIndex=0;
+  seriesEpisodeChosenBeforeReady=false;
   const openToken=++seriesPlayerOpenToken;
   panel.hidden=false;
   const episodeButtons=Array.from({length:Number(item.episodeCount)||0},(_,index)=>`
@@ -4667,7 +4670,7 @@ function openSeriesPlaylist(seriesId){
     seriesInPagePlayer=new YT.Player("seriesInPagePlayerHost",{
       width:640,
       height:360,
-      playerVars:{playsinline:1,rel:0},
+      playerVars:{playsinline:1,rel:0,origin:window.location.origin},
       events:{
         onReady:function(event){
           const playerFrame=event.target.getIframe();
@@ -4676,11 +4679,16 @@ function openSeriesPlaylist(seriesId){
           playerFrame.style.position="absolute";
           playerFrame.style.inset="0";
           seriesInPagePlayerReady=true;
-          event.target.cuePlaylist({
+          const selectedList={
             listType:"playlist",
             list:seriesInPagePlaylistId,
             index:seriesPendingEpisodeIndex
-          });
+          };
+          if(seriesEpisodeChosenBeforeReady){
+            event.target.loadPlaylist(selectedList);
+          }else{
+            event.target.cuePlaylist(selectedList);
+          }
         },
         onStateChange:function(event){
           if(event.data===1 || event.data===2 || event.data===0){
@@ -4706,6 +4714,7 @@ function closeSeriesPlaylist(){
   seriesInPagePlayerReady=false;
   seriesInPagePlaylistId="";
   seriesPendingEpisodeIndex=0;
+  seriesEpisodeChosenBeforeReady=false;
   if(!panel)return;
   panel.innerHTML="";
   panel.hidden=true;
