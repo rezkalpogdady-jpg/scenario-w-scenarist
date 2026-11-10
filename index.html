@@ -2565,11 +2565,13 @@ async function accountLoadWriterScripts(){
 }
 async function writerScriptOpen(id){
   if(!accountUser)return;
+  const tab=window.open("about:blank","_blank");
+  if(!tab){accountMessage("اسمح بفتح النوافذ المنبثقة لفتح ملف PDF.");return;}
   const {data,error}=await accountClient().from("writer_scripts").select("published_storage_path,status").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
-  if(error||!data||data.status!=="approved"||!data.published_storage_path){accountMessage("الملف غير متاح حاليًا.");return;}
+  if(error||!data||data.status!=="approved"||!data.published_storage_path){tab.close();accountMessage("الملف غير متاح حاليًا.");return;}
   const {data:signed,error:signedError}=await accountClient().storage.from("scenario-scripts").createSignedUrl(data.published_storage_path,900);
-  if(signedError||!signed?.signedUrl){accountMessage("تعذر فتح نسخة PDF المعتمدة.");return;}
-  window.open(signed.signedUrl,"_blank","noopener,noreferrer");
+  if(signedError||!signed?.signedUrl){tab.close();accountMessage("تعذر فتح نسخة PDF المعتمدة.");return;}
+  tab.location.href=signed.signedUrl;
 }
 async function writerScriptEdit(id){
   if(!accountUser)return;
