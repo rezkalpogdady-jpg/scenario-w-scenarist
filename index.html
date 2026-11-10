@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.62: إدارة السيناريوهات والجرائم من صفحاتها مباشرة مع تأمين محرر الحكايات عند الخروج. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.63: لوحة إدارة لاتخاذ القرارات ومتابعة الرسائل والتقييمات والإحصائيات دون تحميلها تلقائيًا. | 6.8.63: إدارة المحتوى من صفحاته. | 6.8.55: إدارة المجتمع. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.62</title>
+<title>سيناريو وسيناريست – تحديث 6.8.63</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -341,7 +341,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.62">
+<body data-platform-version="6.8.63">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2411,7 +2411,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="admin" class="page">
   <div class="intro">
     <h2>لوحة إدارة سيناريو وسيناريست</h2>
-    <p>إدارة محتوى المنصة والأقسام والمواد التعليمية والمواهب والأخبار والمشروعات.</p>
+    <p>اتخاذ القرارات ومتابعة الأعضاء والرسائل والتقييمات وإحصائيات نمو المنصة. إدارة المحتوى والكتابة تتم من داخل كل صفحة على حدة.</p>
   </div>
 
   <!-- تسجيل الدخول -->
@@ -2441,6 +2441,17 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="panel" style="margin-top:14px">
+      <h3 style="color:var(--gold);margin-top:0">اختصارات الإدارة</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" type="button" onclick="document.getElementById('adminApprovalNotifications')?.scrollIntoView({behavior:'smooth',block:'start'})">القرارات والطلبات</button>
+        <button class="btn" type="button" onclick="document.getElementById('adminContactMessagesHeading')?.scrollIntoView({behavior:'smooth',block:'start'})">رسائل الأعضاء</button>
+        <button class="btn" type="button" onclick="document.getElementById('adminRatingsHeading')?.scrollIntoView({behavior:'smooth',block:'start'})">التقييمات</button>
+        <button class="btn" type="button" onclick="document.getElementById('adminGrowthStatsHeading')?.scrollIntoView({behavior:'smooth',block:'start'})">الإحصائيات والنمو</button>
+        <button class="btn" type="button" onclick="document.getElementById('adminSectionCardsHeading')?.scrollIntoView({behavior:'smooth',block:'start'})">روابط صفحات الإدارة</button>
+      </div>
+    </div>
+
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><span id="adminApprovalBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:27px;padding:0 8px;border-radius:20px;background:var(--gold);color:#17130c;font-weight:800">0</span><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
@@ -2450,8 +2461,28 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <div id="adminApprovalItems" class="grid" style="margin-top:14px"></div>
     </div>
 
-    <div class="section-heading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
-    <div class="panel"><div id="adminContactMessages" class="grid"><p>سجّل الدخول لعرض رسائل الزوار.</p></div></div>
+    <div class="section-heading" id="adminContactMessagesHeading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>حمّل الرسائل عند الحاجة، والرسائل الجديدة تظهر أولًا ويمكن وضع علامة مقروء أو أرشفتها</p></div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p id="adminContactMessagesSummary" class="admin-status" style="margin:0">لم يتم تحميل الرسائل بعد.</p>
+        <button class="btn" id="adminContactMessagesRefresh" type="button" onclick="adminLoadContactMessages()">تحميل / تحديث الرسائل</button>
+      </div>
+      <div id="adminContactMessages" class="grid"><p>اضغط على تحميل الرسائل لعرضها.</p></div>
+    </div>
+
+    <div class="section-heading" id="adminRatingsHeading"><h2>تقييمات الأعضاء للمحتوى</h2><p>ملخص تقييمات مواد أرشيف السينما. لا يتم تحميلها إلا عند طلبك.</p></div>
+    <div class="panel" id="adminRatingsPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p id="adminRatingsStatus" class="admin-status" role="status" style="margin:0">لم يتم تحميل التقييمات بعد.</p>
+        <button class="btn" id="adminRatingsRefresh" type="button" onclick="adminLoadRatingsSummary()">تحميل / تحديث التقييمات</button>
+      </div>
+      <div id="adminRatingsSummary" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px">
+        <div class="admin-item">إجمالي التقييمات<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">متوسط العينة<strong id="adminRatingsAverage" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">عدد التقييمات في العينة<strong id="adminRatingsSample" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+      </div>
+      <div id="adminRatingsDistribution" class="admin-item" style="margin-top:12px">اضغط على تحميل التقييمات لعرض الملخص.</div>
+    </div>
 
     <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
     <div class="panel"><div id="adminDirectorWorksList" class="grid">سجّل الدخول لتحميل نماذج الأعمال المعلقة.</div></div>
@@ -2463,8 +2494,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     </div>
 
     
-    <div class="section-heading">
-      <h2>إدارة ورفع المحتوى حسب القسم</h2>
+    <div class="section-heading" id="adminSectionCardsHeading">
+      <h2>روابط إدارة الصفحات</h2>
       <p>افتح القسم المطلوب لتظهر لك أدوات رفع محتواه وسجلاته فقط</p>
     </div>
     <div class="panel">
@@ -2630,7 +2661,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading" id="adminGrowthStatsHeading">
       <h2>إحصائيات الأعضاء ونمو المنصة</h2>
-      <p>ملخص الأعضاء والتفاعل والزيارات — يُحدّث عند فتح اللوحة أو بالضغط على تحديث</p>
+      <p>ملخص الأعضاء والتفاعل والزيارات — لا يتم تحميل الإحصائيات إلا عند الضغط على تحديث</p>
     </div>
     <div class="panel" id="adminGrowthStatsPanel">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -3393,19 +3424,30 @@ function adminEscapeContact(value){
 }
 async function adminLoadContactMessages(){
   const box=document.getElementById("adminContactMessages");
+  const summary=document.getElementById("adminContactMessagesSummary");
+  const button=document.getElementById("adminContactMessagesRefresh");
   if(!box || !adminSupabase || !adminSession) return;
+  if(button)button.disabled=true;
+  if(summary)summary.textContent="جارٍ تحميل آخر 100 رسالة...";
   box.innerHTML="<div class='panel'>جارٍ تحميل الرسائل...</div>";
   const {data,error}=await adminSupabase.from("platform_contact_messages")
     .select("id,name,email,subject,message,status,created_at")
     .order("created_at",{ascending:false}).limit(100);
   if(error){
     box.innerHTML="<div class='panel'>تعذر تحميل الرسائل: "+adminEscapeContact(error.message)+"</div>";
+    if(summary)summary.textContent="تعذر تحميل الرسائل.";
+    if(button)button.disabled=false;
     return;
   }
   if(!data?.length){
     box.innerHTML="<div class='panel'>لا توجد رسائل حتى الآن.</div>";
+    if(summary)summary.textContent="لا توجد رسائل مسجلة.";
+    if(button)button.disabled=false;
     return;
   }
+  const newCount=data.filter(item=>item.status==="new").length;
+  if(summary)summary.textContent="المعروض: "+data.length+" رسالة — الجديدة: "+newCount+" — بقية الحالات: "+(data.length-newCount)+".";
+
   box.innerHTML=data.map(item=>{
     const id=adminEscapeContact(item.id);
     const status=item.status==="new"?"جديدة":item.status==="read"?"مقروءة":"مؤرشفة";
@@ -3420,7 +3462,46 @@ async function adminLoadContactMessages(){
       (item.status!=="archived"?"<button class='btn' type='button' onclick=\"adminSetContactStatus('"+id+"','archived')\">أرشفة</button>":"")+
       "</div></div></article>";
   }).join("");
+  if(button)button.disabled=false;
 }
+async function adminLoadRatingsSummary(){
+  const status=document.getElementById("adminRatingsStatus");
+  const button=document.getElementById("adminRatingsRefresh");
+  const totalNode=document.getElementById("adminRatingsTotal");
+  const averageNode=document.getElementById("adminRatingsAverage");
+  const sampleNode=document.getElementById("adminRatingsSample");
+  const distribution=document.getElementById("adminRatingsDistribution");
+  if(!adminSupabase||!adminSession||!distribution)return;
+  if(button)button.disabled=true;
+  if(status)status.textContent="جارٍ تحميل ملخص التقييمات...";
+  try{
+    const [{count,error:countError},{data,error}] = await Promise.all([
+      adminSupabase.from("content_ratings").select("content_id",{count:"exact",head:true}),
+      adminSupabase.from("content_ratings").select("content_id,rating").limit(100)
+    ]);
+    if(countError)throw countError;
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    const valid=rows.map(row=>Number(row.rating)).filter(value=>Number.isFinite(value)&&value>=1&&value<=5);
+    const average=valid.length?(valid.reduce((sum,value)=>sum+value,0)/valid.length).toFixed(2):"—";
+    if(totalNode)totalNode.textContent=growthFormatNumber(count||0);
+    if(averageNode)averageNode.textContent=average==="—"?"—":average+" / 5";
+    if(sampleNode)sampleNode.textContent=growthFormatNumber(valid.length);
+    const distributionRows=[5,4,3,2,1].map(star=>{
+      const amount=valid.filter(value=>value===star).length;
+      const percent=valid.length?Math.round(amount/valid.length*100):0;
+      return "<div style='display:grid;grid-template-columns:70px 1fr 42px;gap:8px;align-items:center;margin:8px 0'><span>"+star+" نجوم</span><div style='height:9px;background:var(--panel2);border-radius:20px;overflow:hidden'><div style='height:100%;width:"+percent+"%;background:var(--gold)'></div></div><strong>"+growthFormatNumber(amount)+"</strong></div>";
+    }).join("");
+    distribution.innerHTML=valid.length?("<strong>توزيع عينة محدودة من التقييمات</strong>"+distributionRows):"لا توجد تقييمات صالحة في العينة الحالية.";
+    if(status)status.textContent="إجمالي السجلات: "+growthFormatNumber(count||0)+" — المتوسط والتوزيع محسوبان من عينة محدودة لا تتجاوز 100 تقييم.";
+  }catch(error){
+    if(status)status.textContent="تعذر تحميل التقييمات: "+(error.message||"تحقق من إعداد قاعدة البيانات.");
+    if(distribution)distribution.textContent="تعذر عرض ملخص التقييمات.";
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
+
 async function adminSetContactStatus(id,status){
   if(!adminSupabase || !adminSession || !["read","archived"].includes(status)) return;
   const {error}=await adminSupabase.from("platform_contact_messages").update({status,updated_at:new Date().toISOString()}).eq("id",id);
@@ -3562,16 +3643,9 @@ async function adminVerifyAdmin(session){
   await adminLoadWriterScripts();
   if(typeof adminLoadDirectorWorks==="function") await adminLoadDirectorWorks();
   if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
-  await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
-  await adminLoadContactMessages();
+  /* الإحصائيات والرسائل والتقييمات تُحمّل عند طلب المدير فقط لتقليل استعلامات الدخول. */
   await adminLoadApprovalNotifications();
-  if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
-  window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
-  if(!window.adminApprovalFocusListener){
-    window.adminApprovalFocusListener=()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();};
-    document.addEventListener("visibilitychange",window.adminApprovalFocusListener);
-  }
 }
 
 /* تسجيل الدخول */
