@@ -4665,11 +4665,16 @@ function openSeriesPlaylist(seriesId){
   loadSeriesYoutubeApi().then(YT=>{
     if(openToken!==seriesPlayerOpenToken || !document.getElementById("seriesInPagePlayerHost"))return;
     seriesInPagePlayer=new YT.Player("seriesInPagePlayerHost",{
-      width:"100%",
-      height:"100%",
+      width:640,
+      height:360,
       playerVars:{playsinline:1,rel:0},
       events:{
         onReady:function(event){
+          const playerFrame=event.target.getIframe();
+          playerFrame.style.width="100%";
+          playerFrame.style.height="100%";
+          playerFrame.style.position="absolute";
+          playerFrame.style.inset="0";
           seriesInPagePlayerReady=true;
           event.target.cuePlaylist({
             listType:"playlist",
