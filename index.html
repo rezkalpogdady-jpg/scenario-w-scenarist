@@ -2603,7 +2603,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
     button.disabled=true;message.textContent="جارٍ رفع الملف وحفظ بياناته...";
     const client=accountClient();let existing=null;
     if(id){
-      const {data,error}=await client.from("writer_scripts").select("id,status,storage_path").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
+      const {data,error}=await client.from("writer_scripts").select("id,status,storage_path,revision_count").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
       if(error||!data||data.status!=="needs_revision")throw error||new Error("هذا الملف لم يعد متاحًا للتعديل.");existing=data;
     }
     if(file){
@@ -2612,7 +2612,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
       if(error)throw error;
     }
     if(id){
-      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,updated_at:new Date().toISOString()};
+      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,revision_count:(Number(existing.revision_count)||0)+1,updated_at:new Date().toISOString()};
       const {error}=await client.from("writer_scripts").update(payload).eq("id",id).eq("user_id",accountUser.id);if(error)throw error;
       if(uploadedPath&&existing.storage_path)await client.storage.from("member-submissions").remove([existing.storage_path]);
       message.textContent="تم تحديث السيناريو وإرساله مجددًا لمراجعة الإدارة.";
@@ -3072,7 +3072,7 @@ async function adminReviewMemberWork(id,status){
 async function adminLoadWriterScripts(){
   if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("adminWriterScriptsList");if(!box)return;
-  const {data,error}=await adminSupabase.from("writer_scripts").select("id,user_id,title,category,summary,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").in("status",["pending","needs_revision"]).order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await adminSupabase.from("writer_scripts").select("id,user_id,title,category,summary,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل اسكريبتات الكُتّاب: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد سيناريوهات بانتظار المراجعة.</div>';return;}
   const cards=await Promise.all(data.map(async item=>{
