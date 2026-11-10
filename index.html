@@ -2834,13 +2834,23 @@ async function adminLoadCommunitySubmissions(){
     const details=isTalent?"المجال: "+(item.category||"")+" • المدينة: "+(item.city||"غير محددة"):"النوع: "+(item.category||"")+" • صاحب المشروع: "+(item.owner_name||"");
     const isStoredVideo=String(item.work_url||"").startsWith("talent-video:");
     const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
-    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
+    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+(isTalent?'<label style="display:flex;align-items:center;gap:8px;margin:12px 0;color:var(--gold2)"><input id="communityWriter-'+item.id+'" type="checkbox" style="width:auto;margin:0">إضافة هذا الملف أيضًا إلى صفحة مؤلفي السيناريو (بعد التأكد من التخصص)</label>':"")+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\',document.getElementById(\'communityWriter-'+item.id+'\')?.checked)">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
   }).join("");
 }
-async function adminReviewCommunity(id,status){
+async function adminReviewCommunity(id,status,alsoWriter=false){
   if(!adminSupabase||!adminSession)return;
   if(!["approved","rejected"].includes(status))return;
   let rejectedVideoPath=null;
+  let writerSubmission=null;
+  if(status==="approved"&&alsoWriter){
+    const {data:submission,error:submissionError}=await adminSupabase.from("community_submissions")
+      .select("submission_type,name,category,city,bio,work_url").eq("id",id).maybeSingle();
+    if(submissionError||!submission||submission.submission_type!=="talent"){
+      alert("تعذر التحقق من طلب الموهبة لإضافته إلى صفحة المؤلفين.");return;
+    }
+    writerSubmission=submission;
+    if(!confirm("تأكيد اعتماد الملف في قسم المواهب وإضافته أيضًا إلى صفحة مؤلفي السيناريو؟ تأكدتَ من أن صاحب الطلب يمارس كتابة السيناريو."))return;
+  }
   if(status==="rejected"){
     const {data:submission,error:lookupError}=await adminSupabase
       .from("community_submissions")
@@ -2856,6 +2866,14 @@ async function adminReviewCommunity(id,status){
   const {data,error}=await adminSupabase.rpc("admin_review_community_submission",{p_submission_id:id,p_status:status});
   if(error){alert("تعذرت مراجعة الطلب: "+error.message);return;}
   let cleanupWarning="";
+  if(status==="approved"&&writerSubmission){
+    const {error:writerError}=await adminSupabase.from("site_content").insert({
+      content_type:"writers",title:writerSubmission.name,category:"كاتب سيناريو",
+      description:writerSubmission.bio||"",content_url:writerSubmission.work_url||null,
+      extra_data:{name:writerSubmission.name,specialty:"كاتب سيناريو",city:writerSubmission.city||"",submission_id:id,source:"admin_explicit_writer_selection"},published:true
+    });
+    if(writerError)cleanupWarning="\\nتم اعتماد الموهبة، لكن تعذرت إضافتها إلى صفحة المؤلفين: "+writerError.message+". يمكنك إعادة المحاولة من لوحة الإدارة بعد التحقق.";
+  }
   if(status==="rejected"&&rejectedVideoPath){
     const {error:removeError}=await adminSupabase.storage
       .from("talent-submission-videos")
