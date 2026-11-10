@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.52: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.53: شريط أخبار فني متجدد وترحيب الأعضاء وإعلانات الإضافات. | 6.8.52: إدارة المجتمع. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.52</title>
+<title>سيناريو وسيناريست – تحديث 6.8.53</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -207,13 +207,23 @@ Overflow:hidden;
 .spotlight h2{color:var(--gold)}
 
 .news-strip{
-Background:#1b1812;
-Color:var(--gold);
-Padding:10px 15px;
-Overflow:hidden;
-Border-block:1px solid var(--border);
-White-space:nowrap;
+Background:#1b1812;color:var(--gold);padding:9px 15px;border-block:1px solid var(--border);
+display:flex;align-items:center;gap:14px;overflow:hidden;white-space:nowrap;min-height:46px;
 }
+.news-strip-label{flex:0 0 auto;color:#111;background:var(--gold);font-size:12px;font-weight:900;padding:3px 10px;border-radius:4px}
+.news-ticker-viewport{min-width:0;overflow:hidden;flex:1;direction:ltr}
+.news-ticker-track{display:flex;align-items:center;width:max-content;gap:42px;animation:newsTickerMove 28s linear infinite;direction:ltr}
+.news-ticker-track:hover{animation-play-state:paused}
+.news-ticker-item{display:inline-flex;align-items:center;gap:8px;direction:rtl;color:var(--gold2);font-size:13px;text-decoration:none}
+.news-ticker-item::before{content:"◆";font-size:8px;color:var(--gold)}
+.news-ticker-item.external{color:#f5e7c9}
+@keyframes newsTickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.news-external-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;min-width:0}
+.news-external-card h3{color:var(--gold);font-size:16px;line-height:1.6;margin:0 0 9px}
+.news-external-card p{color:var(--muted);font-size:13px;margin:6px 0}
+.news-external-card a{display:inline-block;color:var(--gold2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:8px;font-size:13px}
+.news-external-note{color:var(--muted);font-size:12px;margin-top:12px}
+@media(prefers-reduced-motion:reduce){.news-ticker-track{animation:none;flex-wrap:wrap;width:auto;white-space:normal}}
 
 .panel{
 Background:var(--panel);
@@ -297,7 +307,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.51">
+<body data-platform-version="6.8.53">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -317,8 +327,12 @@ Main{padding:17px 11px}
 </div>
 </header>
 
-<div class="news-strip">
-أهلاً بكم في منصة سيناريو وسيناريست • أكاديمية السيناريو • اكتشاف المواهب • صناعة الأفلام • الإبداع العربي
+<div class="news-strip" role="region" aria-label="شريط الترحيب والإضافات والأخبار الفنية">
+  <span class="news-strip-label">آخر الأخبار</span>
+  <div class="news-ticker-viewport"><div class="news-ticker-track" id="newsTickerTrack" aria-live="polite">
+    <span class="news-ticker-item">أهلاً بكل صناع السينما والدراما في سيناريو وسيناريست</span>
+    <span class="news-ticker-item">أكاديمية السيناريو • اكتشاف المواهب • صناعة الأفلام • الإبداع العربي</span>
+  </div></div>
 </div>
 
 <div class="nav-wrap">
@@ -1359,6 +1373,13 @@ renderShortFilms();
   </div>
 
   <div id="newsItems" class="grid"></div>
+
+  <div class="section-heading" style="margin-top:32px">
+    <h2>أخبار فنية من مصادر خارجية</h2>
+    <p>عناوين وروابط مباشرة للمصادر الأصلية — تتجدد تلقائيًا</p>
+  </div>
+  <div id="newsExternalItems" class="grid"></div>
+  <p id="newsExternalUpdated" class="news-external-note">جارٍ تحميل آخر الأخبار الفنية...</p>
 </section>
 
 <section id="production" class="page">
@@ -2533,6 +2554,7 @@ function accountMessage(message){
 }
 function accountShowUser(user,profile){
   accountUser=user||null;
+  if(typeof newsTickerSetWelcome==="function") newsTickerSetWelcome(user,profile);
   const authPanel=document.getElementById("accountAuthPanel");
   const profilePanel=document.getElementById("accountProfilePanel");
   if(!authPanel||!profilePanel) return;
@@ -5512,5 +5534,86 @@ document.getElementById('libraryAdminForm')?.addEventListener('submit',async fun
  }catch(err){const paths=[pdf?.path,poster?.path].filter(Boolean);if(paths.length)await adminSupabase.storage.from('scenario-scripts').remove(paths);msg.textContent='تعذر النشر: '+err.message;}
  finally{btn.disabled=false;}
 });
+</script>
+<script>
+/* 6.8.53 — شريط حي للترحيب والإضافات والأخبار الفنية الخارجية */
+(function(){
+  const FEED_URL=ADMIN_SUPABASE_URL+"/functions/v1/arts-news-feed";
+  let tickerWelcome="أهلاً بكل صناع السينما والدراما في سيناريو وسيناريست";
+  let tickerAnnouncements=[];
+  let tickerExternal=[];
+  let tickerRefreshTimer=null;
+
+  function tickerEscape(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+  function tickerSection(type){
+    const labels={academy:"الأكاديمية",library:"مكتبة السيناريو",films:"الأفلام والمسلسلات",shorts:"الأفلام القصيرة",stories:"الجرائم والحكايات",news:"الأخبار الفنية",archive:"أرشيف السينما",writers:"المواهب والكتّاب",directors:"المخرجون",talents:"المواهب",production:"الإنتاج والتعاون",sponsors:"الشركات والرعاة",radio:"الإذاعة والتليفزيون",television:"التليفزيون"};
+    return labels[type]||"المنصة";
+  }
+  window.newsTickerSetWelcome=function(user,profile){
+    if(user){
+      const name=profile?.display_name||user.user_metadata?.display_name||"صديقنا المبدع";
+      tickerWelcome="أهلاً بيك يا "+name+" في سيناريو وسيناريست — نتمنى لك رحلة إبداعية ممتعة";
+    }else{
+      tickerWelcome="أهلاً بكل صناع السينما والدراما في سيناريو وسيناريست";
+    }
+    renderTicker();
+  };
+  function renderTicker(){
+    const track=document.getElementById("newsTickerTrack");if(!track)return;
+    const entries=[{text:tickerWelcome},{text:"تابع أحدث إضافات المنصة وأخبار السينما والدراما"}];
+    tickerAnnouncements.forEach(item=>entries.push({text:"إضافة جديدة في "+tickerSection(item.content_type)+": "+item.title}));
+    tickerExternal.forEach(item=>entries.push({text:"خبر فني: "+item.title,url:item.url,source:item.source}));
+    if(entries.length<2)entries.push({text:"من الفكرة إلى الشاشة — سيناريو وسيناريست"});
+    const html=entries.map(item=>item.url
+      ?'<a class="news-ticker-item external" href="'+tickerEscape(item.url)+'" target="_blank" rel="noopener noreferrer" title="المصدر: '+tickerEscape(item.source||"مصدر الخبر")+'">'+tickerEscape(item.text)+'</a>'
+      :'<span class="news-ticker-item">'+tickerEscape(item.text)+'</span>').join("");
+    track.innerHTML=html+html;
+  }
+  async function loadAnnouncements(){
+    if(!window.supabase||!adminConfigReady())return;
+    try{
+      const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+      const [contentResult,profilesResult]=await Promise.all([
+        client.from("site_content").select("content_type,title,created_at").eq("published",true).order("created_at",{ascending:false}).limit(8),
+        client.from("member_profiles").select("display_name,account_type,updated_at").eq("profile_status","approved").order("updated_at",{ascending:false}).limit(3)
+      ]);
+      const content=(contentResult.data||[]).filter(row=>row.title).map(row=>({...row,kind:"content"}));
+      const profiles=(profilesResult.data||[]).filter(row=>row.display_name).map(row=>({content_type:"talents",title:"اعتماد ملف المبدع "+row.display_name,created_at:row.updated_at,kind:"profile"}));
+      tickerAnnouncements=[...profiles,...content].sort((a,b)=>(Date.parse(b.created_at||"")||0)-(Date.parse(a.created_at||"")||0)).slice(0,8);
+      renderTicker();
+    }catch(error){console.warn("تعذر تحميل إضافات الشريط",error);}
+  }
+  function renderExternalNews(){
+    const box=document.getElementById("newsExternalItems");if(!box)return;
+    if(!tickerExternal.length){
+      box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">تعذر جلب الأخبار الخارجية حاليًا. سيحاول الشريط التحديث تلقائيًا.</div>';
+      return;
+    }
+    box.innerHTML=tickerExternal.slice(0,8).map(item=>{
+      const date=item.published_at?new Date(item.published_at):null;
+      const dateText=date&&!Number.isNaN(date.getTime())?date.toLocaleDateString("ar-EG"):"";
+      return '<article class="news-external-card"><h3>'+tickerEscape(item.title)+'</h3><p>'+tickerEscape(item.description||"")+'</p><p>المصدر: '+tickerEscape(item.source||"مصدر الخبر")+(dateText?" • "+tickerEscape(dateText):"")+'</p><a href="'+tickerEscape(item.url)+'" target="_blank" rel="noopener noreferrer">اقرأ الخبر في المصدر الأصلي</a></article>';
+    }).join("");
+  }
+  async function loadExternalNews(){
+    const status=document.getElementById("newsExternalUpdated");
+    try{
+      const response=await fetch(FEED_URL,{headers:{Accept:"application/json"},cache:"no-store"});
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const payload=await response.json();
+      tickerExternal=Array.isArray(payload.items)?payload.items:[];
+      renderTicker();renderExternalNews();
+      if(status)status.textContent="آخر تحديث: "+new Date(payload.updated_at||Date.now()).toLocaleString("ar-EG")+" — تُعرض العناوين وروابط الناشرين، ولا يُعاد نشر نصوص المقالات.";
+    }catch(error){
+      if(status)status.textContent="الأخبار الخارجية غير متاحة مؤقتًا؛ سيُعاد الاتصال تلقائيًا.";
+      console.warn("تعذر تحميل موجز الأخبار الفنية",error);
+    }
+  }
+  document.getElementById("newsSearch")?.addEventListener("input",()=>{});
+  renderTicker();
+  loadAnnouncements();
+  loadExternalNews();
+  tickerRefreshTimer=window.setInterval(()=>{loadAnnouncements();loadExternalNews();},15*60*1000);
+})();
 </script>
 </body></html>
