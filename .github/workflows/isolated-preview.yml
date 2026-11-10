@@ -26,16 +26,11 @@ jobs:
       - name: Verify database connection is disabled
         shell: bash
         run: |
-          if grep -Eq 'ADMIN_SUPABASE_URL[[:space:]]*=[[:space:]]*["'\'''][^"'\'']+'\''']' index.html; then
-            echo "A non-empty Supabase URL was found. Refusing to package preview."
-            exit 1
-          fi
-          if ! grep -Fq 'الاتصال بقاعدة البيانات معطل في نسخة المعاينة' index.html; then
-            echo "The isolated Supabase stub was not found. Refusing to package preview."
-            exit 1
-          fi
+          grep -Fq 'const ADMIN_SUPABASE_URL = "";' index.html
+          grep -Fq 'const ADMIN_SUPABASE_KEY = "";' index.html
+          grep -Fq 'الاتصال بقاعدة البيانات معطل في نسخة المعاينة' index.html
           if grep -Fq 'cdn.jsdelivr.net/npm/@supabase/supabase-js' index.html; then
-            echo "The Supabase client library is still included. Refusing to package preview."
+            echo "Supabase client library is still included; refusing to package."
             exit 1
           fi
 
