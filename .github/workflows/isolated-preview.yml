@@ -1,3 +1,4 @@
+# Rebuild trigger: refresh the isolated academy-content preview artifact.
 name: Build isolated preview artifact
 
 on:
