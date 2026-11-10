@@ -2231,6 +2231,15 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
+        <button class="btn primary" id="adminApprovalToggle" type="button" aria-expanded="true" onclick="adminToggleApprovalNotifications()">إخفاء الطلبات</button>
+        <button class="btn" type="button" onclick="adminLoadApprovalNotifications()">تحديث الإشعارات</button>
+      </div>
+      <div id="adminApprovalItems" class="grid" style="margin-top:14px"></div>
+    </div>
+
     <div class="section-heading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
     <div class="panel"><div id="adminContactMessages" class="grid"><p>سجّل الدخول لعرض رسائل الزوار.</p></div></div>
 
@@ -2446,6 +2455,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminCommunityList" class="grid"><div class="panel">تظهر الطلبات بعد تسجيل دخول المدير وإعداد قاعدة البيانات.</div></div>
     <div class="section-heading"><h2>مراجعة الملفات الشخصية للأعضاء</h2><p>ملفات الكُتّاب والمخرجين والممثلين والمواهب لا تظهر للعامة إلا بعد اعتماد الإدارة</p></div>
     <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
+    <div class="section-heading"><h2>مراجعة أعمال الأعضاء وملفاتهم</h2><p>الملفات المرفوعة من أصحاب الحسابات لا تظهر للجمهور قبل اعتماد الإدارة</p></div>
+    <div id="adminMemberWorksList" class="grid"><div class="panel">تظهر أعمال الأعضاء الجديدة هنا بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة سيناريوهات الكُتّاب</h2><p>قسم مستقل عن مكتبة السيناريوهات؛ لا يُتاح ملف الكاتب إلا بعد الاعتماد</p></div>
     <div id="adminWriterScriptsList" class="grid"><div class="panel">تظهر ملفات PDF المرسلة من الكُتّاب هنا بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
@@ -3226,6 +3237,57 @@ document.getElementById("platformContactForm")?.addEventListener("submit",async 
 });
 
 /* التحقق من أن الحساب مدير فعلاً */
+
+/* إشعارات الموافقات داخل لوحة الإدارة */
+let adminApprovalNotificationsOpen=true;
+window.adminToggleApprovalNotifications=function(){
+  adminApprovalNotificationsOpen=!adminApprovalNotificationsOpen;
+  const list=document.getElementById("adminApprovalItems");
+  const button=document.getElementById("adminApprovalToggle");
+  if(list)list.style.display=adminApprovalNotificationsOpen?"grid":"none";
+  if(button){button.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";button.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
+};
+window.adminGoToApproval=async function(target,loader){
+  document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"});
+  if(loader&&typeof window[loader]==="function")await window[loader]();
+};
+async function adminLoadApprovalNotifications(){
+  if(!adminSupabase||!adminSession)return;
+  const summary=document.getElementById("adminApprovalSummary"),box=document.getElementById("adminApprovalItems");
+  if(!summary||!box)return;
+  const queues=[
+    {table:"member_profiles",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
+    {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
+    {table:"writer_scripts",column:"status",label:"سيناريوهات PDF من الكُتّاب",target:"adminWriterScriptsList",loader:"adminLoadWriterScripts"},
+    {table:"writer_ideas",column:"status",label:"أفكار الكُتّاب",target:"adminWriterIdeasList",loader:"adminLoadWriterIdeas"},
+    {table:"director_work_submissions",column:"status",label:"نماذج أعمال المخرجين",target:"adminDirectorWorksList",loader:"adminLoadDirectorWorks"},
+    {table:"community_submissions",column:"status",label:"طلبات المواهب والمشروعات",target:"adminCommunityList",loader:"adminLoadCommunitySubmissions"},
+    {table:"community_topics",column:"status",label:"منشورات المجتمع",target:"adminCommunityTopics",loader:"adminLoadCommunityModeration"},
+    {table:"topic_replies",column:"status",label:"ردود النقاش",target:"adminTopicReplies",loader:"adminLoadCommunityModeration"},
+    {table:"content_comments",column:"status",label:"تعليقات المحتوى",target:"adminContentComments",loader:"adminLoadCommunityModeration"},
+    {table:"book_marketplace_listings",column:"status",label:"إعلانات سوق الكتب",target:"adminBookListingsPanel",loader:"adminLoadBookListings"},
+    {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"}
+  ];
+  const results=await Promise.all(queues.map(async item=>{
+    try{
+      const {count,error}=await adminSupabase.from(item.table).select("id",{count:"exact",head:true}).eq(item.column,"pending");
+      if(error)throw error;
+      return {...item,count:Number(count)||0};
+    }catch(error){return {...item,count:0,failed:true};}
+  }));
+  const total=results.reduce((sum,item)=>sum+item.count,0);
+  const failed=results.some(item=>item.failed);
+  summary.textContent=total
+    ? "عندك "+total+" طلبًا منتظرًا للمراجعة. افتح أي بند للانتقال مباشرة إلى مراجعته."
+    : "لا توجد طلبات موافقة معلقة حاليًا.";
+  if(failed)summary.textContent+=" تعذر فحص بعض الأقسام مؤقتًا.";
+  const active=results.filter(item=>item.count>0);
+  box.innerHTML=active.length?active.map(item=>'<button type="button" class="admin-item" style="text-align:right;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%" onclick="adminGoToApproval(\''+item.target+'\',\''+item.loader+'\')"><span><strong>'+adminEscape(item.label)+'</strong><small style="display:block;color:var(--muted);margin-top:5px">اضغط لفتح قائمة المراجعة</small></span><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 9px;border-radius:30px;background:var(--gold);color:#17130c;font-weight:800">'+item.count+'</span></button>').join(""):'<div class="panel" style="text-align:center">كل الموافقات محدثة — لا توجد طلبات جديدة الآن.</div>';
+  box.style.display=adminApprovalNotificationsOpen?"grid":"none";
+  const toggle=document.getElementById("adminApprovalToggle");
+  if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
+}
+
 async function adminVerifyAdmin(session){
   adminSession=session;
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
@@ -3269,6 +3331,13 @@ async function adminVerifyAdmin(session){
   await adminLoadVisitStats();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
   await adminLoadContactMessages();
+  await adminLoadApprovalNotifications();
+  if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
+  window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
+  if(!window.adminApprovalFocusListener){
+    window.adminApprovalFocusListener=()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();};
+    document.addEventListener("visibilitychange",window.adminApprovalFocusListener);
+  }
 }
 
 /* تسجيل الدخول */
