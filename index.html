@@ -2688,7 +2688,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 </style>
 
 <!-- مكتبة Supabase الرسمية -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>/* نسخة معاينة معزولة: لا يتم تحميل Supabase ولا إنشاء أي اتصال بقاعدة البيانات. */ window.supabase={createClient(){throw new Error("الاتصال بقاعدة البيانات معطل في نسخة المعاينة.");}};</script>
 
 <script>
 /*
@@ -2696,8 +2696,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   ضع رابط مشروع supabase ومفتاح publishable الخاص بالمشروع.
   لا تضع service_role key أو أي مفتاح سري في الموقع.
 */
-const ADMIN_SUPABASE_URL = "https://asmxyfkmojqzrbnrovmz.supabase.co";
-const ADMIN_SUPABASE_KEY = "sb_publishable_gHjeBgsJd8_8Yc149FLTWg_OiZbNrv1";
+const ADMIN_SUPABASE_URL = "";
+const ADMIN_SUPABASE_KEY = "";
 
 let adminSupabase = null;
 let adminSession = null;
