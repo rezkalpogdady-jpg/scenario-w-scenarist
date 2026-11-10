@@ -2869,10 +2869,10 @@ async function adminReviewCommunity(id,status,alsoWriter=false){
   if(status==="approved"&&writerSubmission){
     const {error:writerError}=await adminSupabase.from("site_content").insert({
       content_type:"writers",title:writerSubmission.name,category:"كاتب سيناريو",
-      description:writerSubmission.bio||"",content_url:writerSubmission.work_url||null,
+      description:writerSubmission.bio||"",content_url:(String(writerSubmission.work_url||"").startsWith("talent-video:")?null:(writerSubmission.work_url||null)),
       extra_data:{name:writerSubmission.name,specialty:"كاتب سيناريو",city:writerSubmission.city||"",submission_id:id,source:"admin_explicit_writer_selection"},published:true
     });
-    if(writerError)cleanupWarning="\\nتم اعتماد الموهبة، لكن تعذرت إضافتها إلى صفحة المؤلفين: "+writerError.message+". يمكنك إعادة المحاولة من لوحة الإدارة بعد التحقق.";
+    if(writerError)cleanupWarning="\nتم اعتماد الموهبة، لكن تعذرت إضافتها إلى صفحة المؤلفين: "+writerError.message+". يمكنك إعادة المحاولة من لوحة الإدارة بعد التحقق.";
   }
   if(status==="rejected"&&rejectedVideoPath){
     const {error:removeError}=await adminSupabase.storage
