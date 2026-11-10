@@ -4870,7 +4870,7 @@ loadApprovedIdeas();
         const likeCount=likeStatsAvailable?count.toLocaleString('ar-EG')+' إعجاب':'';
         return `<article class="community-post"><div class="community-post-head"><span class="community-avatar" aria-hidden="true">${esc((t.display_name||'ع').trim().charAt(0))}</span><div class="community-post-meta"><strong>${esc(t.display_name||'عضو')}</strong><small>${new Date(t.created_at).toLocaleDateString('ar-EG')} • ${esc(t.category||'حوار عام')}</small></div></div><div class="community-post-body">${esc(t.body)}</div><div class="community-like-row"><button class="btn community-like-btn" type="button" data-topic-like="${esc(t.id)}" data-liked="${liked}" aria-pressed="${liked}" ${user&&!likeStatsAvailable?'disabled':''}>${likeLabel}</button><span class="community-like-count">${likeCount}</span></div><div class="community-replies-label">الردود</div><div class="topic-replies" id="replies-${esc(t.id)}"><p class="muted">جارٍ تحميل الردود...</p></div><form class="topic-reply-form" data-topic-id="${esc(t.id)}"><textarea rows="2" maxlength="2000" required placeholder="اكتب ردك..."></textarea><button class="btn" type="submit">إرسال الرد</button></form></article>`;
       }).join('');
-      data.forEach(loadReplies);
+      await loadRepliesBatch(data);
     }catch(e){box.innerHTML=`<div class="panel">تعذر تحميل المناقشات: ${esc(e.message)}</div>`;}
   }
   document.addEventListener('click',async e=>{
@@ -4901,7 +4901,30 @@ loadApprovedIdeas();
       alert('تعذر تحديث الإعجاب: '+(err.message||'حاول مرة أخرى.'));
     }finally{button.disabled=false;}
   });
-  async function loadReplies(topic){const box=$('replies-'+topic.id);if(!box)return;try{const {data,error}=await client().from('topic_replies').select('display_name,body,created_at').eq('topic_id',topic.id).eq('status','approved').order('created_at',{ascending:true}).limit(100);if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="community-reply"><strong>${esc(r.display_name||'عضو')}</strong><p>${esc(r.body)}</p><small>${new Date(r.created_at).toLocaleDateString('ar-EG')}</small></div>`).join('')||'<p class="muted">لا توجد ردود بعد. كن أول من يرد.</p>';}catch(e){box.textContent='تعذر تحميل الردود.';}}
+  async function loadRepliesBatch(topics){
+    const topicIds=(topics||[]).map(topic=>topic.id).filter(Boolean);
+    if(!topicIds.length)return;
+    const grouped=new Map(topicIds.map(id=>[id,[]]));
+    try{
+      const pageSize=1000;let offset=0;
+      while(true){
+        const {data,error}=await client().from('topic_replies').select('topic_id,display_name,body,created_at').in('topic_id',topicIds).eq('status','approved').order('created_at',{ascending:true}).range(offset,offset+pageSize-1);
+        if(error)throw error;
+        const rows=data||[];
+        rows.forEach(reply=>{const list=grouped.get(reply.topic_id);if(list&&list.length<100)list.push(reply);});
+        if(rows.length<pageSize)break;
+        offset+=pageSize;
+        if(offset>=10000)break;
+      }
+      topicIds.forEach(id=>{
+        const box=$('replies-'+id);if(!box)return;
+        const replies=grouped.get(id)||[];
+        box.innerHTML=replies.map(r=>`<div class="community-reply"><strong>${esc(r.display_name||'عضو')}</strong><p>${esc(r.body)}</p><small>${new Date(r.created_at).toLocaleDateString('ar-EG')}</small></div>`).join('')||'<p class="muted">لا توجد ردود بعد. كن أول من يرد.</p>';
+      });
+    }catch(e){
+      topicIds.forEach(id=>{const box=$('replies-'+id);if(box)box.textContent='تعذر تحميل الردود.';});
+    }
+  }
   $('communityTopicForm')?.addEventListener('submit',async e=>{e.preventDefault();const body=$('communityTopicBody').value.trim();if(!body){notice('communityTopicMessage','اكتب موضوعك أولًا.');return;}notice('communityTopicMessage','جارٍ إرسال الموضوع...');try{const user=await currentUser();if(!user){notice('communityTopicMessage','سجل الدخول من صفحة حسابي أولًا.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);let title=(body.split(/\r?\n/).find(line=>line.trim())||body).trim().slice(0,180);if(title.length<3)title=('نقاش: '+title).slice(0,180);const {error}=await client().from('community_topics').insert({user_id:user.id,display_name:display,title,category:'حوار عام',body,status:'pending'});if(error)throw error;e.target.reset();notice('communityTopicMessage','وصل موضوعك للمراجعة، وسيظهر بعد الموافقة.');}catch(err){notice('communityTopicMessage','تعذر إرسال الموضوع: '+err.message);}});
   document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'pending'});if(error)throw error;form.reset();alert('تم إرسال الرد للمراجعة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
