@@ -95,6 +95,19 @@ create policy "Admins manage writer scripts"
   with check (private.is_platform_admin());
 
 -- يسمح للزوار بقراءة ملفات السيناريو المعتمدة فقط، دون فتح ملفات المراجعة الخاصة.
+drop policy if exists "Writers read own approved writer script PDFs" on storage.objects;
+create policy "Writers read own approved writer script PDFs"
+  on storage.objects for select to authenticated
+  using (
+    bucket_id = 'scenario-scripts'
+    and exists (
+      select 1 from public.writer_scripts ws
+      where ws.published_storage_path = objects.name
+        and ws.status = 'approved'
+        and ws.user_id = (select auth.uid())
+    )
+  );
+
 drop policy if exists "Public read approved writer script PDFs" on storage.objects;
 create policy "Public read approved writer script PDFs"
   on storage.objects for select to anon, authenticated
