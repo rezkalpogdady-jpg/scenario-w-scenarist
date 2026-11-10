@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. | 6.8.50: عرض الرعاة أسفل روابط الصفحات المهمة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.52: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.51</title>
+<title>سيناريو وسيناريست – تحديث 6.8.52</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2245,11 +2245,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
     <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
     <div class="panel"><div id="adminDirectorWorksList" class="grid">سجّل الدخول لتحميل نماذج الأعمال المعلقة.</div></div>
-    <div class="section-heading"><h2>مراجعة المجتمع والتعليقات</h2><p>اعتماد أو رفض موضوعات الأعضاء وردودهم وتعليقاتهم قبل ظهورها للجمهور</p></div>
+    <div class="section-heading"><h2>إدارة المجتمع والتعليقات</h2><p>مراجعة المشاركات الجديدة أو حذف أي منشور أو رد أو تعليق مسيء</p></div>
     <div class="panel">
-      <h3 style="color:var(--gold)">موضوعات النقاش المعلقة</h3><div id="adminCommunityTopics" class="grid">سجّل الدخول لتحميل الطلبات.</div>
-      <h3 style="color:var(--gold);margin-top:20px">ردود النقاش المعلقة</h3><div id="adminTopicReplies" class="grid"></div>
-      <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى المعلقة</h3><div id="adminContentComments" class="grid"></div>
+      <h3 style="color:var(--gold)">موضوعات النقاش</h3><div id="adminCommunityTopics" class="grid">سجّل الدخول لتحميل الطلبات.</div>
+      <h3 style="color:var(--gold);margin-top:20px">ردود النقاش</h3><div id="adminTopicReplies" class="grid"></div>
+      <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى</h3><div id="adminContentComments" class="grid"></div>
     </div>
 
     <div class="section-heading" id="adminScenarioLibrarySection">
@@ -3025,15 +3025,30 @@ async function adminLoadMemberProfiles(){
   const {data,error}=await adminSupabase.from("member_profiles").select("user_id,display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,updated_at").in("profile_status",["pending","rejected","approved"]).order("updated_at",{ascending:false}).limit(200);
   if(error){box.textContent="تعذر تحميل الملفات الشخصية: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد ملفات شخصية مسجلة حتى الآن.</div>';return;}
+  const {data:blockedRows,error:blockError}=await adminSupabase.from("member_posting_blocks").select("user_id");
+  if(blockError){box.textContent="تعذر تحميل حالة صلاحيات النشر: "+blockError.message;return;}
+  const blockedUsers=new Set((blockedRows||[]).map(row=>row.user_id));
   const labels={writer:"كاتب",director:"مخرج",actor:"ممثل",presenter:"مقدم برامج",voice:"إذاعة وتعليق صوتي",producer:"منتج / صاحب مشروع"};
   const statusLabels={pending:"بانتظار المراجعة",rejected:"مرفوض / غير معتمد",approved:"معتمد ومنشور"};
   box.innerHTML=data.map(item=>{
+    const isBlocked=blockedUsers.has(item.user_id);
     const actions=item.profile_status==="approved"
-      ? '<button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">إلغاء الاعتماد</button>'
-      : '<button class="btn primary" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'approved\')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(\''+item.user_id+'\',\'rejected\')">رفض الملف</button>';
-    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<div style="margin:10px 0"><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer"><img src="${adminEscape(item.image_url)}" alt="صورة ${adminEscape(item.display_name)}" loading="lazy" style="width:112px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--gold)"></a><p class="admin-status">الصورة الشخصية المرسلة للمراجعة</p></div>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}</div></article>`;
+      ? `<button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">إلغاء الاعتماد</button>`
+      : `<button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button>`;
+    const postingButton=`<button class="btn ${isBlocked?'primary':''}" onclick="adminToggleMemberPostingBlock('${item.user_id}',${isBlocked?'false':'true'})">${isBlocked?'إعادة السماح بالنشر':'منع العضو من النشر'}</button>`;
+    return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)} • النشر: ${isBlocked?"موقوف":"متاح"}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<div style="margin:10px 0"><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer"><img src="${adminEscape(item.image_url)}" alt="صورة ${adminEscape(item.display_name)}" loading="lazy" style="width:112px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--gold)"></a><p class="admin-status">الصورة الشخصية المرسلة للمراجعة</p></div>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}${postingButton}</div></article>`;
   }).join("");
 }
+window.adminToggleMemberPostingBlock=async function(userId,blocked){
+  if(!adminSupabase||!adminSession||!userId)return;
+  const result=blocked
+    ? await adminSupabase.from("member_posting_blocks").insert({user_id:userId})
+    : await adminSupabase.from("member_posting_blocks").delete().eq("user_id",userId);
+  if(result.error){alert("تعذر تحديث صلاحية النشر: "+result.error.message);return;}
+  await adminLoadMemberProfiles();
+  alert(blocked?"تم منع العضو من النشر والتعليق.":"تمت إعادة السماح للعضو بالنشر والتعليق.");
+};
+
 async function adminReviewMemberProfile(userId,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
   const {error}=await adminSupabase.rpc("admin_review_member_profile",{p_user_id:userId,p_status:status});
@@ -4655,9 +4670,15 @@ loadApprovedIdeas();
       const box=$(boxId);if(!box)continue;
       box.innerHTML='<div class="panel">جارٍ التحميل...</div>';
       try{
-        const {data,error}=await adminSupabase.from(table).select(selectFields).eq('status','pending').order('created_at',{ascending:false}).limit(100);
+        const {data,error}=await adminSupabase.from(table).select(selectFields).order('created_at',{ascending:false}).limit(100);
         if(error)throw error;
-        box.innerHTML=data?.length?data.map(row=>`<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions"><button class="btn primary" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','approved')">موافقة ونشر</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','rejected')">رفض</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`).join(''):`<div class="panel">لا توجد ${label}ات معلقة.</div>`;
+        const statusLabels={pending:'بانتظار المراجعة',approved:'منشور',rejected:'مرفوض'};
+        box.innerHTML=data?.length?data.map(row=>{
+          const reviewActions=row.status==='pending'
+            ? `<button class="btn primary" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','approved')">موافقة ونشر</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','rejected')">رفض</button>`
+            : '';
+          return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
+        }).join(''):`<div class="panel">لا توجد ${label}ات حتى الآن.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
     }
   }
