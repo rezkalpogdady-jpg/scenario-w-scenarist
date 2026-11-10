@@ -3621,6 +3621,7 @@ function adminConfigureStoryForm(){
   const isStories=document.getElementById("adminContentType")?.value==="stories";
   const wrap=document.getElementById("adminStoryFormatWrap");
   if(wrap)wrap.style.display=isStories?"block":"none";
+  if(isStories){const kind=document.getElementById("adminMediaKind");if(kind)kind.value="image";const file=document.getElementById("adminFile");if(file)file.accept="image/*";const hint=document.getElementById("adminMediaKindHint");if(hint)hint.textContent="ارفع صورة الأفيش من جهازك؛ تُحمّل للزائر عند ظهورها فقط.";} 
   const description=document.getElementById("adminDescription");
   if(description&&isStories){description.rows=12;description.maxLength=30000;description.placeholder="اكتب الحكاية كاملة هنا، أو نبذة مختصرة إذا اخترت أفيش جريمة.";}else if(description){description.rows=3;description.maxLength=4000;description.placeholder="اكتب التفاصيل هنا";}
 }
@@ -3847,6 +3848,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
+  if(record.content_type==="stories"&&!record.image_url&&previousRecord?.image_url)record.image_url=previousRecord.image_url;
   if(record.content_type==="stories"&&!document.getElementById("adminFile")?.files?.[0]&&!record.image_url&&!previousRecord?.image_url){adminSetMessage("adminSaveMessage","ارفع أفيش الجريمة أو أضف رابط صورة قبل النشر.");return;}
   let uploadedAsset=null;
   try{
