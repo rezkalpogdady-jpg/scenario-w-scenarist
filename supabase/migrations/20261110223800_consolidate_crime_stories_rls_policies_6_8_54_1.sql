@@ -1,25 +1,23 @@
 drop policy if exists "Admin manage crime stories" on public.crime_stories;
 drop policy if exists "Public read crime stories" on public.crime_stories;
 drop policy if exists "Public submit crime stories for review" on public.crime_stories;
+drop policy if exists "Read published crime stories or admin" on public.crime_stories;
+drop policy if exists "Submit crime stories or admin publish" on public.crime_stories;
+drop policy if exists "Admins update crime stories" on public.crime_stories;
+drop policy if exists "Admins delete crime stories" on public.crime_stories;
 
 create policy "Read published crime stories or admin"
-  on public.crime_stories
-  for select
-  to anon, authenticated
-  using (is_published = true or (select private.is_platform_admin()));
+  on public.crime_stories for select to anon, authenticated
+  using (is_published = true or coalesce((select auth.jwt())->'app_metadata'->>'role' = 'admin', false));
 
 create policy "Submit crime stories or admin publish"
-  on public.crime_stories
-  for insert
-  to anon, authenticated
+  on public.crime_stories for insert to anon, authenticated
   with check (
-    (select private.is_platform_admin())
+    coalesce((select auth.jwt())->'app_metadata'->>'role' = 'admin', false)
     or (
-      is_published = false
-      and status = 'pending'
+      is_published = false and status = 'pending'
       and char_length(btrim(title)) between 3 and 180
-      and content is not null
-      and char_length(btrim(content)) between 40 and 30000
+      and content is not null and char_length(btrim(content)) between 40 and 30000
       and (author_name is null or char_length(btrim(author_name)) <= 120)
       and (contact is null or char_length(btrim(contact)) <= 180)
       and (category is null or char_length(btrim(category)) <= 80)
@@ -27,14 +25,10 @@ create policy "Submit crime stories or admin publish"
   );
 
 create policy "Admins update crime stories"
-  on public.crime_stories
-  for update
-  to authenticated
-  using ((select private.is_platform_admin()))
-  with check ((select private.is_platform_admin()));
+  on public.crime_stories for update to authenticated
+  using (coalesce((select auth.jwt())->'app_metadata'->>'role' = 'admin', false))
+  with check (coalesce((select auth.jwt())->'app_metadata'->>'role' = 'admin', false));
 
 create policy "Admins delete crime stories"
-  on public.crime_stories
-  for delete
-  to authenticated
-  using ((select private.is_platform_admin()));
+  on public.crime_stories for delete to authenticated
+  using (coalesce((select auth.jwt())->'app_metadata'->>'role' = 'admin', false));
