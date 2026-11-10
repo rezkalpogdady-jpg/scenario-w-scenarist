@@ -659,7 +659,7 @@ function renderLessonIndex(materials = []){
         <h3 style="margin:0 0 8px;color:var(--gold);font-size:17px;line-height:1.6">${escapeHTML(lesson)}</h3>
         <p style="margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.7">${escapeHTML(shortDescription)}</p>
       </div>
-      <button class="btn" type="button" style="align-self:flex-start" onclick="openLesson(${index})">اقرأ المحاضرة</button>
+      <button class="btn" type="button" style="align-self:flex-start" data-open-lesson="${index}">اقرأ المحاضرة</button>
     </article>`;
   }).join("");
 }
@@ -787,6 +787,26 @@ function closeLesson(){
   listHeading?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+lessonsContainer?.addEventListener("click",event=>{
+  const button=event.target.closest("[data-open-lesson]");
+  if(!button || !lessonsContainer.contains(button)) return;
+  const index=Number(button.dataset.openLesson);
+  if(!Number.isInteger(index) || index<0 || index>=academyLessons.length) return;
+  try{ openLesson(index); }
+  catch(error){
+    console.error("تعذر فتح المحاضرة",error);
+    const dialog=document.getElementById("lessonDialog");
+    const body=document.getElementById("lessonDialogBody");
+    const listPanel=document.getElementById("academyLessonsPanel");
+    const listHeading=document.getElementById("academyLessonsHeading");
+    if(body) body.textContent="تعذر فتح المحاضرة حاليًا. حاول تحديث الصفحة ثم أعد المحاولة.";
+    if(listPanel) listPanel.style.display="none";
+    if(listHeading) listHeading.style.display="none";
+    if(dialog) dialog.style.display="block";
+  }
+});
+
+/* تجهيز قائمة المحاضرات */
 renderLessonIndex();
 
 /* بيانات تجريبية للمكتبة */
