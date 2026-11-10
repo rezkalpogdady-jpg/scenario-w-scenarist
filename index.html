@@ -4569,6 +4569,26 @@ document.getElementById("filmsSearch")
 document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
 
+/* عدّ زائر واحد فقط لكل محتوى منشور؛ لا نطلب تسجيل الدخول ولا نجمع بيانات شخصية */
+async function recordPublicContentView(contentType,contentId){
+  try{
+    if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
+    let viewerId=localStorage.getItem("scenarioContentViewerId");
+    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return;localStorage.setItem("scenarioContentViewerId",viewerId);}
+    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
+    if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
+  }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
+}
+document.addEventListener("play",event=>{
+  const media=event.target;
+  if(media instanceof HTMLVideoElement&&media.dataset.contentViewType&&media.dataset.contentViewId)recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
+},true);
+document.addEventListener("load",event=>{
+  const frame=event.target;
+  if(frame instanceof HTMLIFrameElement&&frame.dataset.contentViewType&&frame.dataset.contentViewId)recordPublicContentView(frame.dataset.contentViewType,frame.dataset.contentViewId);
+},true);
+
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
   try{
