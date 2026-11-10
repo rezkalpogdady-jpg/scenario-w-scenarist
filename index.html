@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.64</title>
+<title>سيناريو وسيناريست – تحديث 6.8.65</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -4167,11 +4167,41 @@ async function adminLoadScenarioScripts(){
   adminScenarioScriptRecords=data||[];
   const box=document.getElementById("libraryScenarioAdminList");
   if(!box)return;
-  box.style.display=adminSession?"grid":"none";
-  box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">إدارة السيناريوهات من صفحة المكتبة</h3><p>المسودات والمنشورات تظهر هنا للمدير فقط، دون الرجوع إلى لوحة الإدارة.</p></div>'+
-  (adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>
-    '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور ومتاح للقراءة":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></article>'
-  ).join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
+  box.style.display="grid";
+  const cards=await Promise.all(adminScenarioScriptRecords.map(async item=>{
+    let posterUrl="";
+    if(item.poster_path){
+      try{const {data:poster,error:posterError}=await adminSupabase.storage.from("scenario-scripts").createSignedUrl(item.poster_path,900);if(!posterError)posterUrl=poster?.signedUrl||"";}
+      catch(posterError){console.warn("تعذر تجهيز أفيش المعاينة الإدارية:",posterError);}
+    }
+    return '<article class="admin-item" style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
+      (posterUrl?'<img src="'+adminEscape(posterUrl)+'" alt="أفيش '+adminEscape(item.title)+'" loading="lazy" style="width:96px;height:136px;object-fit:cover;border-radius:8px">':'<div aria-label="لا يوجد أفيش" style="width:96px;height:136px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;text-align:center">لا يوجد أفيش</div>')+
+      '<div style="flex:1;min-width:180px"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions">'+
+      (item.storage_path?'<button class="btn primary" type="button" onclick="adminPreviewScenarioScript(\''+item.id+'\')">قراءة السيناريو</button>':'')+
+      '<button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></div></article>';
+  }));
+  box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">مكتبة السيناريوهات — عرض وقراءة وإدارة</h3><p>تظهر الأفيشات هنا للمدير، ويمكن قراءة المنشور والمسودة دون تغيير حالة النشر.</p></div>'+
+    (cards.length?cards.join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
+}
+async function adminPreviewScenarioScript(id){
+  if(!adminSupabase||!adminSession){scenarioScriptMessage("سجّل الدخول بحساب مدير المنصة أولًا.");return;}
+  const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));
+  if(!item||!item.storage_path){scenarioScriptMessage("ملف السيناريو غير مرتبط بهذا السجل.");return;}
+  try{
+    scenarioScriptMessage("جارٍ تجهيز قراءة السيناريو...");
+    const {data,error}=await adminSupabase.storage.from("scenario-scripts").createSignedUrl(item.storage_path,300);
+    if(error)throw error;
+    if(!data?.signedUrl)throw new Error("تعذر إنشاء رابط قراءة آمن.");
+    const frame=showScenarioReader(item.title,"معاينة إدارية — "+(item.author||"المؤلف غير محدد")+" • لا يتغير وضع النشر عند القراءة");
+    if(!frame)throw new Error("قارئ السيناريو غير متاح في هذه الصفحة.");
+    const posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");
+    if(item.poster_path&&posterBox&&posterImage){
+      const posterResult=await adminSupabase.storage.from("scenario-scripts").createSignedUrl(item.poster_path,900);
+      if(!posterResult.error&&posterResult.data?.signedUrl){posterImage.src=posterResult.data.signedUrl;posterBox.style.display="block";}
+    }
+    await renderScenarioPdf(frame,data.signedUrl,item.title,"");
+    scenarioScriptMessage("يمكنك الآن قراءة السيناريو داخل المكتبة.");
+  }catch(error){scenarioScriptMessage("تعذرت معاينة السيناريو: "+(error.message||"خطأ غير معروف"));}
 }
 function adminEditScenarioScript(id){
   const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
