@@ -4002,6 +4002,7 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
 
   adminSession=null;
   adminRecords=[];
+  if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
 
   document.getElementById("adminDashboard").style.display="none";
   document.getElementById("adminLoginPanel").style.display="block";
