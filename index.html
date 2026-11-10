@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.62</title>
+<title>سيناريو وسيناريست – تحديث 6.8.63</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -341,7 +341,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.62">
+<body data-platform-version="6.8.63">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2441,6 +2441,17 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="panel" id="adminDecisionCenter" style="margin-top:14px">
+      <h3 style="color:var(--gold);margin-top:0">مركز اتخاذ القرار</h3>
+      <p class="admin-status">متابعة سريعة للموافقات والرسائل والتقييمات ونمو المنصة. إدارة المحتوى وتعديله تظل من داخل كل صفحة.</p>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminApprovalNotifications')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>القرارات والموافقات</strong><span id="adminDecisionPendingCount" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">تابع الطلبات المعلقة</span></button>
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminContactMessagesHeading')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>رسائل الأعضاء والزوار</strong><span id="adminNewMessagesBadge" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">جارٍ تحميل عدد الرسائل الجديدة</span></button>
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminRatingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>تقييمات المحتوى</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب</span></button>
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminGrowthStatsHeading')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>إحصائيات ونمو المنصة</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">الأعضاء والتفاعل والزيارات</span></button>
+      </div>
+    </div>
+
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><span id="adminApprovalBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:27px;padding:0 8px;border-radius:20px;background:var(--gold);color:#17130c;font-weight:800">0</span><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
@@ -2450,7 +2461,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <div id="adminApprovalItems" class="grid" style="margin-top:14px"></div>
     </div>
 
-    <div class="section-heading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
+    <div class="section-heading" id="adminContactMessagesHeading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
     <div class="panel"><div id="adminContactMessages" class="grid"><p>سجّل الدخول لعرض رسائل الزوار.</p></div></div>
 
     <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
@@ -2660,6 +2671,31 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     </div>
 
     <div id="adminContentList" class="grid"></div>
+
+    <div class="section-heading" id="adminRatingsHeading">
+      <h2>تقييمات المحتوى وآراء الأعضاء</h2>
+      <p>ملخص التقييمات المسجلة على المحتوى، مع تحميل التفاصيل عند الطلب فقط.</p>
+    </div>
+    <div class="panel" id="adminRatingsPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p id="adminRatingsStatus" class="admin-status" role="status" style="margin:0">لم يتم تحميل التقييمات بعد.</p>
+        <button class="btn" id="adminRatingsRefresh" type="button" onclick="adminLoadContentRatings()">تحميل / تحديث التقييمات</button>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px">
+        <div class="admin-item">إجمالي التقييمات<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">متوسط التقييم<strong id="adminRatingsAverage" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">التقييمات المعروضة<strong id="adminRatingsSample" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+      </div>
+      <div style="overflow-x:auto;margin-top:14px">
+        <table style="width:100%;border-collapse:collapse;min-width:420px">
+          <thead><tr><th style="text-align:right;padding:8px">المحتوى</th><th style="text-align:right;padding:8px">عدد التقييمات</th><th style="text-align:right;padding:8px">المتوسط من 5</th></tr></thead>
+          <tbody id="adminRatingsRows"><tr><td colspan="3">اضغط تحميل التقييمات لعرض الملخص.</td></tr></tbody>
+        </table>
+      </div>
+      <p id="adminRatingsFootnote" class="admin-status">لا يتم تحميل بيانات التقييمات تلقائيًا؛ لتقليل الطلبات على قاعدة البيانات.</p>
+    </div>
+
+
   </div>
 </section>
 
@@ -3355,6 +3391,51 @@ async function adminLoadPlatformGrowthStats(){
   }catch(error){if(status)status.textContent="تعذر تحميل الإحصائيات: "+(error.message||"تحقق من إعداد قاعدة البيانات.");}
   finally{if(button)button.disabled=false;}
 }
+async function adminLoadContentRatings(){
+  if(!adminSupabase||!adminSession)return;
+  const status=document.getElementById("adminRatingsStatus"),button=document.getElementById("adminRatingsRefresh");
+  const totalNode=document.getElementById("adminRatingsTotal"),averageNode=document.getElementById("adminRatingsAverage"),sampleNode=document.getElementById("adminRatingsSample"),rowsNode=document.getElementById("adminRatingsRows"),note=document.getElementById("adminRatingsFootnote");
+  if(status)status.textContent="جارٍ تحميل ملخص التقييمات...";
+  if(button)button.disabled=true;
+  try{
+    const {data,error,count}=await adminSupabase.from("content_ratings").select("content_id,rating",{count:"exact"}).limit(500);
+    if(error)throw error;
+    const ratings=Array.isArray(data)?data:[];
+    const total=Number(count??ratings.length);
+    if(totalNode)totalNode.textContent=growthFormatNumber(total);
+    if(sampleNode)sampleNode.textContent=growthFormatNumber(ratings.length);
+    const numeric=ratings.map(item=>Number(item.rating)).filter(value=>Number.isFinite(value)&&value>=1&&value<=5);
+    const average=numeric.length?(numeric.reduce((sum,value)=>sum+value,0)/numeric.length).toFixed(2):"—";
+    if(averageNode)averageNode.textContent=average;
+    if(!ratings.length){
+      if(rowsNode)rowsNode.innerHTML='<tr><td colspan="3">لا توجد تقييمات مسجلة حتى الآن.</td></tr>';
+      if(status)status.textContent="اكتمل الفحص — لا توجد تقييمات.";
+      if(note)note.textContent="تم الفحص دون تعديل أي بيانات.";
+      return;
+    }
+    const ids=[...new Set(ratings.map(item=>item.content_id).filter(Boolean))];
+    const {data:contentRows,error:contentError}=ids.length?await adminSupabase.from("site_content").select("id,title,content_type").in("id",ids):{data:[],error:null};
+    if(contentError)throw contentError;
+    const titles=new Map((contentRows||[]).map(item=>[String(item.id),item]));
+    const grouped=new Map();
+    ratings.forEach(item=>{
+      const key=String(item.content_id||"غير مرتبط");
+      if(!grouped.has(key))grouped.set(key,[]);
+      const value=Number(item.rating);if(Number.isFinite(value)&&value>=1&&value<=5)grouped.get(key).push(value);
+    });
+    const labels={academy:"الأكاديمية",writers:"الكُتّاب",directors:"المخرجون",talents:"المواهب",films:"الأفلام",shorts:"الأفلام القصيرة",news:"الأخبار",archive:"الأرشيف",stories:"الجرائم والحكايات"};
+    const summary=[...grouped.entries()].map(([id,values])=>{
+      const item=titles.get(id);
+      return {title:item?.title||"محتوى غير متاح أو محذوف",count:values.length,average:values.length?values.reduce((sum,value)=>sum+value,0)/values.length:0,type:labels[item?.content_type]||item?.content_type||""};
+    }).sort((a,b)=>b.count-a.count||b.average-a.average);
+    if(rowsNode)rowsNode.innerHTML=summary.map(item=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(item.title)+(item.type?' <small style="color:var(--muted)">• '+adminEscape(item.type)+'</small>':'')+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+growthFormatNumber(item.count)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+item.average.toFixed(2)+'</td></tr>').join("");
+    if(status)status.textContent="اكتمل تحميل التقييمات.";
+    if(note)note.textContent=total>ratings.length?"المتوسط والتوزيع حسب المحتوى محسوبان من عينة "+ratings.length+" تقييمًا من إجمالي "+total+"؛ اضغط التحديث لاحقًا لمراجعة أحدث البيانات المتاحة.":"تم حساب المتوسطات من جميع التقييمات التي أعادتها قاعدة البيانات. لم يتم تعديل أو حذف أي تقييم.";
+  }catch(error){
+    if(status)status.textContent="تعذر تحميل التقييمات: "+(error.message||"تحقق من صلاحية القراءة لمدير المنصة.");
+    if(rowsNode)rowsNode.innerHTML='<tr><td colspan="3">تعذر عرض التقييمات حاليًا.</td></tr>';
+  }finally{if(button)button.disabled=false;}
+}
 async function adminLoadVisitStats(){return adminLoadPlatformGrowthStats();}
 
 /* بدء الاتصال */
@@ -3402,6 +3483,9 @@ async function adminLoadContactMessages(){
     box.innerHTML="<div class='panel'>تعذر تحميل الرسائل: "+adminEscapeContact(error.message)+"</div>";
     return;
   }
+  const newMessages=(data||[]).filter(item=>item.status==="new").length;
+  const badge=document.getElementById("adminNewMessagesBadge");
+  if(badge)badge.textContent=newMessages+" رسالة جديدة";
   if(!data?.length){
     box.innerHTML="<div class='panel'>لا توجد رسائل حتى الآن.</div>";
     return;
@@ -3510,6 +3594,7 @@ async function adminLoadApprovalNotifications(){
   }));
   const total=results.reduce((sum,item)=>sum+item.count,0);
   const badge=document.getElementById("adminApprovalBadge");if(badge)badge.textContent=String(total);
+  const decisionCount=document.getElementById("adminDecisionPendingCount");if(decisionCount)decisionCount.textContent=total+" طلبات بانتظار القرار";
   const failed=results.some(item=>item.failed&&!item.optional);
   summary.textContent=total
     ? "عندك "+total+" طلبًا منتظرًا للمراجعة. افتح أي بند للانتقال مباشرة إلى مراجعته."
