@@ -671,19 +671,22 @@ function updateLessonAudioControls(){
   const pause=document.getElementById("lessonPauseButton");
   const stop=document.getElementById("lessonStopButton");
   const status=document.getElementById("lessonAudioStatus");
-  const active=!!(window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.paused));
+  const synthesis=window.speechSynthesis;
+  const active=!!(synthesis && (synthesis.speaking || synthesis.paused));
   if(pause) {
     pause.disabled=!active;
-    pause.textContent=speechSynthesis && speechSynthesis.paused ? "متابعة الاستماع" : "إيقاف مؤقت";
+    pause.textContent=synthesis && synthesis.paused ? "متابعة الاستماع" : "إيقاف مؤقت";
   }
   if(stop) stop.disabled=!active;
-  if(status && !("speechSynthesis" in window)) status.textContent="ميزة الاستماع الصوتي غير مدعومة في هذا المتصفح.";
+  if(status && !synthesis) status.textContent="ميزة الاستماع الصوتي غير مدعومة في هذا المتصفح، ويمكنك قراءة المحاضرة بشكل طبيعي.";
 }
 
 function speakCurrentLesson(){
-  if(!("speechSynthesis" in window)){
+  const synthesis=window.speechSynthesis;
+  const Utterance=window.SpeechSynthesisUtterance;
+  if(!synthesis || typeof Utterance!=="function"){
     const status=document.getElementById("lessonAudioStatus");
-    if(status) status.textContent="المتصفح لا يدعم الاستماع الصوتي. جرّب Chrome على الهاتف.";
+    if(status) status.textContent="ميزة الاستماع الصوتي غير مدعومة في هذا المتصفح. يمكنك متابعة قراءة المحاضرة.";
     return;
   }
   if(!currentLessonText.trim()){
@@ -691,12 +694,12 @@ function speakCurrentLesson(){
     if(status) status.textContent="لا يوجد نص منشور لهذه المحاضرة حتى الآن.";
     return;
   }
-  speechSynthesis.cancel();
-  currentLessonUtterance=new SpeechSynthesisUtterance(currentLessonText);
+  synthesis.cancel();
+  currentLessonUtterance=new Utterance(currentLessonText);
   currentLessonUtterance.lang="ar-SA";
   currentLessonUtterance.rate=0.95;
   currentLessonUtterance.pitch=1;
-  const voices=speechSynthesis.getVoices();
+  const voices=synthesis.getVoices();
   const arabicVoice=voices.find(voice=>/^ar([_-]|$)/i.test(voice.lang)) || voices.find(voice=>/arabic|عربي/i.test(voice.name));
   if(arabicVoice) currentLessonUtterance.voice=arabicVoice;
   currentLessonUtterance.onstart=()=>{
@@ -716,19 +719,21 @@ function speakCurrentLesson(){
     currentLessonUtterance=null;
     updateLessonAudioControls();
   };
-  speechSynthesis.speak(currentLessonUtterance);
+  synthesis.speak(currentLessonUtterance);
   updateLessonAudioControls();
 }
 
 function pauseCurrentLesson(){
-  if(!("speechSynthesis" in window)) return;
-  if(speechSynthesis.paused) speechSynthesis.resume();
-  else if(speechSynthesis.speaking) speechSynthesis.pause();
+  const synthesis=window.speechSynthesis;
+  if(!synthesis) return;
+  if(synthesis.paused) synthesis.resume();
+  else if(synthesis.speaking) synthesis.pause();
   updateLessonAudioControls();
 }
 
 function stopCurrentLesson(){
-  if("speechSynthesis" in window) speechSynthesis.cancel();
+  const synthesis=window.speechSynthesis;
+  if(synthesis) synthesis.cancel();
   currentLessonUtterance=null;
   const status=document.getElementById("lessonAudioStatus");
   if(status) status.textContent="تم إيقاف الاستماع.";
