@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.46: إدارة شركات الإنتاج والرعاة من لوحة المدير لشركات الإنتاج والجهات الراعية دون روابط تواصل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.48: أفيش دعائي رأسي لشركات الإنتاج والرعاة مع الاسم فقط. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.46</title>
+<title>سيناريو وسيناريست – تحديث 6.8.48</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.46">
+<body data-platform-version="6.8.48">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1489,12 +1489,12 @@ function renderSponsors(items){
   if(!box)return;
   const sponsors=(items||[]).filter(item=>item && item.title);
   if(!sponsors.length){
-    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">شركات الإنتاج والجهات الراعية</h3><p>ستظهر هنا أسماء الشركات وصورها أو شعاراتها بعد اعتمادها من إدارة المنصة.</p></div>';
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">شركات الإنتاج والجهات الراعية</h3><p>ستظهر هنا أسماء الشركات وأفيشاتها الدعائية بعد اعتمادها من إدارة المنصة.</p></div>';
     return;
   }
   box.innerHTML=sponsors.map(item=>{
-    const poster=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش أو شعار '+escapeHTML(item.title)+'" style="width:100%;height:210px;object-fit:contain;background:#fff;border-radius:10px;padding:12px">' : '<div style="height:210px;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800">'+escapeHTML(item.title)+'</div>';
-    return '<article class="feature"><div style="padding:14px 14px 0">'+poster+'</div><div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3></div></article>';
+    const poster=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="الأفيش الدعائي لشركة '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;height:auto;object-fit:cover;object-position:center;border-radius:10px;background:#171719">' : '<div style="width:100%;aspect-ratio:2/3;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800;text-align:center;padding:18px">'+escapeHTML(item.title)+'</div>';
+    return '<article class="feature"><div style="padding:12px 12px 0">'+poster+'</div><div class="feature-content" style="text-align:center"><h3>'+escapeHTML(item.title)+'</h3></div></article>';
   }).join("");
 }
 
@@ -2153,11 +2153,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="sponsors" class="page">
   <div class="intro">
     <h2>شركات الإنتاج والجهات الراعية</h2>
-    <p>مساحة تعريفية لعرض شركات الإنتاج والجهات الراعية للمنصة من خلال أسمائها وأفيشاتها أو شعاراتها ونبذة عنها.</p>
+    <p>عرض اسم الشركة مع أفيشها الدعائي فقط.</p>
   </div>
   <div class="section-heading">
     <h2>الشركات والجهات المشاركة</h2>
-    <p>تعرف على الشركات من خلال بطاقاتها التعريفية داخل المنصة</p>
+    <p>اسم الشركة وأفيشها الدعائي</p>
   </div>
   <div id="sponsorsGrid" class="grid">
     <div class="panel" style="grid-column:1/-1;text-align:center">سيتم عرض الشركات والجهات المعتمدة هنا قريبًا.</div>
@@ -2834,13 +2834,23 @@ async function adminLoadCommunitySubmissions(){
     const details=isTalent?"المجال: "+(item.category||"")+" • المدينة: "+(item.city||"غير محددة"):"النوع: "+(item.category||"")+" • صاحب المشروع: "+(item.owner_name||"");
     const isStoredVideo=String(item.work_url||"").startsWith("talent-video:");
     const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
-    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\')">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
+    return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+(isTalent?'<label style="display:flex;align-items:center;gap:8px;margin:12px 0;color:var(--gold2)"><input id="communityWriter-'+item.id+'" type="checkbox" style="width:auto;margin:0">إضافة هذا الملف أيضًا إلى صفحة مؤلفي السيناريو (بعد التأكد من التخصص)</label>':"")+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\',document.getElementById(\'communityWriter-'+item.id+'\')?.checked)">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
   }).join("");
 }
-async function adminReviewCommunity(id,status){
+async function adminReviewCommunity(id,status,alsoWriter=false){
   if(!adminSupabase||!adminSession)return;
   if(!["approved","rejected"].includes(status))return;
   let rejectedVideoPath=null;
+  let writerSubmission=null;
+  if(status==="approved"&&alsoWriter){
+    const {data:submission,error:submissionError}=await adminSupabase.from("community_submissions")
+      .select("submission_type,name,category,city,bio,work_url").eq("id",id).maybeSingle();
+    if(submissionError||!submission||submission.submission_type!=="talent"){
+      alert("تعذر التحقق من طلب الموهبة لإضافته إلى صفحة المؤلفين.");return;
+    }
+    writerSubmission=submission;
+    if(!confirm("تأكيد اعتماد الملف في قسم المواهب وإضافته أيضًا إلى صفحة مؤلفي السيناريو؟ تأكدتَ من أن صاحب الطلب يمارس كتابة السيناريو."))return;
+  }
   if(status==="rejected"){
     const {data:submission,error:lookupError}=await adminSupabase
       .from("community_submissions")
@@ -2856,6 +2866,14 @@ async function adminReviewCommunity(id,status){
   const {data,error}=await adminSupabase.rpc("admin_review_community_submission",{p_submission_id:id,p_status:status});
   if(error){alert("تعذرت مراجعة الطلب: "+error.message);return;}
   let cleanupWarning="";
+  if(status==="approved"&&writerSubmission){
+    const {error:writerError}=await adminSupabase.from("site_content").insert({
+      content_type:"writers",title:writerSubmission.name,category:"كاتب سيناريو",
+      description:writerSubmission.bio||"",content_url:writerSubmission.work_url||null,
+      extra_data:{name:writerSubmission.name,specialty:"كاتب سيناريو",city:writerSubmission.city||"",submission_id:id,source:"admin_explicit_writer_selection"},published:true
+    });
+    if(writerError)cleanupWarning="\\nتم اعتماد الموهبة، لكن تعذرت إضافتها إلى صفحة المؤلفين: "+writerError.message+". يمكنك إعادة المحاولة من لوحة الإدارة بعد التحقق.";
+  }
   if(status==="rejected"&&rejectedVideoPath){
     const {error:removeError}=await adminSupabase.storage
       .from("talent-submission-videos")
@@ -3155,8 +3173,8 @@ function adminConfigureSponsorForm(){
   if(titleLabel)titleLabel.textContent=isSponsors?"اسم الشركة":"عنوان المحتوى";
   if(title)title.placeholder=isSponsors?"اكتب اسم الشركة":"اكتب العنوان";
   const file=document.getElementById("adminFile"),fileLabel=file?.previousElementSibling;
-  if(fileLabel)fileLabel.textContent=isSponsors?"صورة الشركة أو الشعار":"رفع أفيش المحاضرة أو ملف المحتوى من جهازك";
-  if(file)file.accept=isSponsors?"image/*":(ADMIN_SECTION_META[document.getElementById("adminContentType")?.value]?.accept||"*/*");
+  if(fileLabel)fileLabel.textContent=isSponsors?"الأفيش الدعائي للشركة":"رفع أفيش المحاضرة أو ملف المحتوى من جهازك";
+  if(file){file.accept=isSponsors?"image/*":(ADMIN_SECTION_META[document.getElementById("adminContentType")?.value]?.accept||"*/*");if(isSponsors)file.setAttribute("aria-label","رفع الأفيش الدعائي للشركة");}
   const type=document.getElementById("adminContentType");
   if(type){type.style.display=isSponsors?"none":"";if(type.previousElementSibling)type.previousElementSibling.style.display=isSponsors?"none":"";}
   const mediaHint=document.getElementById("adminMediaKindHint");if(mediaHint)mediaHint.style.display=isSponsors?"none":"";
@@ -3348,7 +3366,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     return;
   }
 
-  if(record.content_type==="sponsors" && !document.getElementById("adminFile")?.files?.[0] && !record.image_url && !id){adminSetMessage("adminSaveMessage","ارفع صورة الشركة أو شعارها.");return;}
+  if(record.content_type==="sponsors" && !document.getElementById("adminFile")?.files?.[0] && !record.image_url && !id){adminSetMessage("adminSaveMessage","ارفع الأفيش الدعائي للشركة.");return;}
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
