@@ -327,7 +327,7 @@ Main{padding:17px 11px}
 <button data-page="library">مكتبة السيناريو</button>
 <button data-page="films">الأفلام والمسلسلات</button>
 <button data-page="shorts">الأفلام القصيرة</button>
-<button data-page="stories">الجرائم والحكايات</button>
+<button data-page="stories">جرائم وحكايات</button>
 <button data-page="news">الأخبار الفنية</button>
 <button data-page="archive">أرشيف السينما زمان</button>
 <button data-page="community">مجتمع ونقاشات</button>
@@ -410,9 +410,9 @@ Main{padding:17px 11px}
 </article>
 
 <article class="feature">
-<img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="الجرائم والحكايات">
+<img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="جرائم وحكايات">
 <div class="feature-content">
-<h3>الجرائم والحكايات</h3>
+<h3>جرائم وحكايات</h3>
 <p>حكايات وأحداث غامضة وملفات درامية ملهمة للكتابة.</p>
 <button class="btn" onclick="showPage('stories')">اكتشف الحكايات</button>
 </div>
@@ -1301,7 +1301,7 @@ renderShortFilms();
 <!-- نهاية الجزء الثالث -->
 
 <!-- =========================
-     الجزء الرابع: الجرائم والحكايات والأخبار والإنتاج
+     الجزء الرابع: جرائم وحكايات والأخبار والإنتاج
 =========================  -->
 
 <section id="stories" class="page">
@@ -2424,7 +2424,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأفلام والمسلسلات</h3><p>ملصقات وصور وفيديوهات دعائية وروابط المشاهدة.</p><button class="btn primary" type="button" onclick="adminOpenSection('films')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأفلام القصيرة</h3><p>رفع الفيلم أو رابطه وإضافة الملصق وبيانات صُنّاعه.</p><button class="btn primary" type="button" onclick="adminOpenSection('shorts')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>جرائم وحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
@@ -2475,7 +2475,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <option value="talents">المواهب</option>
           <option value="films">الأفلام والمسلسلات</option>
           <option value="shorts">الأفلام القصيرة</option>
-          <option value="stories">الجرائم والحكايات</option>
+          <option value="stories">جرائم وحكايات</option>
           <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
                     <option value="radio">محطات الراديو</option>
@@ -2549,7 +2549,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <option value="talents">المواهب</option>
         <option value="films">الأفلام والمسلسلات</option>
         <option value="shorts">الأفلام القصيرة</option>
-        <option value="stories">الجرائم والحكايات</option>
+        <option value="stories">جرائم وحكايات</option>
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
         <option value="radio">الراديو</option>
@@ -3578,7 +3578,7 @@ const ADMIN_SECTION_META={
   talents:{name:"المواهب",hint:"أضف صورة الموهبة أو فيديو/رابط نموذج الأداء.",accept:"image/*,video/*,audio/*"},
   films:{name:"الأفلام والمسلسلات",hint:"أضف ملصق العمل ورابط التريلر أو المشاهدة المصرح بها.",accept:"image/*,video/*,.pdf"},
   shorts:{name:"الأفلام القصيرة",hint:"أضف صورة الفيلم ورابطه أو ارفع ملف الفيديو.",accept:"image/*,video/*,.pdf"},
-  stories:{name:"الجرائم والحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
+  stories:{name:"جرائم وحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
   news:{name:"الأخبار الفنية",hint:"اكتب الخبر وأرفق صورته؛ يمكن إضافة رابط المصدر في حقل الرابط.",accept:"image/*,.pdf"},
   archive:{name:"أرشيف السينما",hint:"ارفع صورة أو أفيشًا أو مستندًا أرشيفيًا مع توثيق المصدر في الوصف.",accept:"image/*,.pdf,.doc,.docx"},
   radio:{name:"الإذاعة",hint:"أضف اسم المحطة ورابط البث الصوتي المباشر وصورتها.",accept:"image/*,audio/*"},
