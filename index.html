@@ -4220,6 +4220,30 @@ const FEATURED_FILM_PLAYLISTS = [
   }
 ];
 
+/* مشغّل خاص بقسم الأفلام: يضمّن المواقع الخارجية داخل الصفحة مع بديل واضح إذا منع المصدر التضمين. */
+function filmPlaybackMarkup(value,label="مشاهدة العمل",viewType="film",viewId=""){
+  const url=safeHttpUrl(value);
+  if(!url)return "";
+  let host="";
+  try{host=new URL(url).hostname.toLowerCase();}catch(_){return "";}
+  const isKnownPlayer=
+    /\.(mp4|webm|ogg|m4v|m3u8)(\?|#|$)/i.test(url) ||
+    ["youtu.be","youtube.com","www.youtube.com","m.youtube.com","vimeo.com","www.vimeo.com"].includes(host);
+  if(isKnownPlayer)return directVideoMarkup(url,label,viewType,viewId);
+  return `
+    <div style="position:relative;width:100%;aspect-ratio:16/9;min-height:180px;background:#000;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <iframe src="${escapeHTML(url)}" title="${escapeHTML(label)}" loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
+        data-content-view-type="${escapeHTML(viewType)}" data-content-view-id="${escapeHTML(viewId)}"
+        style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+    </div>
+    <p style="margin-top:9px;font-size:12px;color:var(--muted)">لو المصدر لا يسمح بالتشغيل داخل الصفحة، استخدم الرابط البديل.</p>
+    <a class="btn" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)} من المصدر</a>
+  `;
+}
+
 function renderFilms(){
   const box=document.getElementById("filmsItems");
   if(!box) return;
@@ -4259,7 +4283,7 @@ function renderFilms(){
         <h3>${escapeHTML(item.title)}</h3>
         <p>${escapeHTML(item.category || "عمل فني")}</p>
         <p>${escapeHTML(item.description || "")}</p>
-        ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
+        ${item.content_url ? filmPlaybackMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
       </div>
     </article>
   `).join("");
