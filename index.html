@@ -2555,10 +2555,10 @@ async function accountLoadWriterScripts(){
   const {data,error}=await accountClient().from("writer_scripts").select("id,title,category,summary,status,review_notes,revision_count,created_at").eq("user_id",accountUser.id).order("created_at",{ascending:false}).limit(50);
   if(error){box.textContent="تعذر تحميل اسكريبتاتك: "+error.message;return;}
   if(!data?.length){box.innerHTML='<p class="muted">لم ترفع سيناريوهات بعد.</p>';return;}
-  const labels={pending:"قيد المراجعة",approved:"معتمد ومتاح للزوار",needs_revision:"مطلوب تعديل"};
+  const labels={pending:"قيد المراجعة",approved:"معتمد — يظهر عند اعتماد ملف الكاتب",needs_revision:"مطلوب تعديل"};
   box.innerHTML=data.map(item=>{
     const note=item.review_notes?'<p><strong>ملاحظات الإدارة:</strong> '+escapeHTML(item.review_notes)+'</p>':"";
-    const edit=item.status==="needs_revision"?'<button class="btn primary" type="button" onclick="writerScriptEdit(\''+item.id+'\')">تعديل وإعادة الإرسال</button>':"";
+    const edit='<button class="btn primary" type="button" onclick="writerScriptEdit(\''+item.id+'\')">'+(item.status==="approved"?"تعديل وإعادة الإرسال للمراجعة":item.status==="pending"?"تعديل البيانات":"استكمال التعديل وإعادة الإرسال")+'</button>';
     const open=item.status==="approved"?'<button class="btn" type="button" onclick="writerScriptOpen(\''+item.id+'\')">فتح نسخة PDF المعتمدة</button>':"";
     return '<article class="admin-item"><h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.category)+' • '+(labels[item.status]||"قيد المراجعة")+'</p>'+note+'<p class="admin-status">عدد مرات إعادة الإرسال: '+(Number(item.revision_count)||0)+'</p>'+edit+open+'</article>';
   }).join("");
@@ -2574,7 +2574,7 @@ async function writerScriptOpen(id){
 async function writerScriptEdit(id){
   if(!accountUser)return;
   const {data,error}=await accountClient().from("writer_scripts").select("id,title,category,summary,status,rights_confirmed").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
-  if(error||!data||data.status!=="needs_revision"){accountMessage("يمكن تعديل الملفات التي طلبت الإدارة تعديلها فقط.");return;}
+  if(error||!data||!["pending","approved","needs_revision"].includes(data.status)){accountMessage("تعذر فتح السيناريو للتعديل.");return;}
   document.getElementById("writerScriptId").value=data.id;
   document.getElementById("writerScriptTitle").value=data.title||"";
   document.getElementById("writerScriptCategory").value=data.category||"";
@@ -2606,7 +2606,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
     const client=accountClient();let existing=null;
     if(id){
       const {data,error}=await client.from("writer_scripts").select("id,status,storage_path,revision_count").eq("id",id).eq("user_id",accountUser.id).maybeSingle();
-      if(error||!data||data.status!=="needs_revision")throw error||new Error("هذا الملف لم يعد متاحًا للتعديل.");existing=data;
+      if(error||!data||!["pending","approved","needs_revision"].includes(data.status))throw error||new Error("هذا الملف لم يعد متاحًا للتعديل.");existing=data;
     }
     if(file){
       uploadedPath=accountUser.id+"/writer-scripts/"+crypto.randomUUID()+".pdf";
@@ -2614,7 +2614,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
       if(error)throw error;
     }
     if(id){
-      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,revision_count:(Number(existing.revision_count)||0)+1,updated_at:new Date().toISOString()};
+      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,revision_count:(Number(existing.revision_count)||0)+(existing.status==="needs_revision"?1:0),updated_at:new Date().toISOString()};
       const {error}=await client.from("writer_scripts").update(payload).eq("id",id).eq("user_id",accountUser.id);if(error)throw error;
       if(uploadedPath&&existing.storage_path)await client.storage.from("member-submissions").remove([existing.storage_path]);
       message.textContent="تم تحديث السيناريو وإرساله مجددًا لمراجعة الإدارة.";
@@ -3088,7 +3088,7 @@ async function adminReviewWriterScript(id,status){
   if(!adminSupabase||!adminSession||!["approved","needs_revision"].includes(status))return;
   const notes=prompt(status==="needs_revision"?"اكتب ملاحظات التعديل المطلوبة من الكاتب:":"ملاحظة للكاتب (اختياري):","");
   if(notes===null)return;if(status==="needs_revision"&&!notes.trim()){alert("اكتب ملاحظات واضحة قبل طلب التعديل.");return;}
-  const {data:item,error:loadError}=await adminSupabase.from("writer_scripts").select("id,user_id,title,storage_path,rights_confirmed").eq("id",id).maybeSingle();
+  const {data:item,error:loadError}=await adminSupabase.from("writer_scripts").select("id,user_id,title,storage_path,published_storage_path,rights_confirmed").eq("id",id).maybeSingle();
   if(loadError||!item){alert("تعذر قراءة السيناريو.");return;}
   if(status==="approved"&&(!item.rights_confirmed||!item.storage_path)){alert("لا يمكن اعتماد ملف دون إقرار حقوق وملف PDF.");return;}
   let publishedPath=null;
@@ -3099,9 +3099,11 @@ async function adminReviewWriterScript(id,status){
     const {error:uploadError}=await adminSupabase.storage.from("scenario-scripts").upload(publishedPath,file,{upsert:false,contentType:"application/pdf",cacheControl:"300"});
     if(uploadError){alert("تعذر تجهيز النسخة المعتمدة: "+uploadError.message);return;}
   }
+  const oldPublishedPath=item.published_storage_path||null;
   const payload={status,review_notes:notes.trim()||null,reviewed_at:new Date().toISOString(),reviewed_by:adminSession.user.id,updated_at:new Date().toISOString(),published_storage_path:publishedPath};
   const {error:updateError}=await adminSupabase.from("writer_scripts").update(payload).eq("id",id);
   if(updateError){if(publishedPath)await adminSupabase.storage.from("scenario-scripts").remove([publishedPath]);alert("تعذر حفظ قرار المراجعة: "+updateError.message);return;}
+  if(oldPublishedPath)await adminSupabase.storage.from("scenario-scripts").remove([oldPublishedPath]);
   alert(status==="approved"?"تم اعتماد السيناريو وإتاحته بصورة مستقلة عن المكتبة.":"تم إرسال ملاحظات التعديل إلى الكاتب.");
   await adminLoadWriterScripts();
   if(status==="approved")await loadPublicContent();
