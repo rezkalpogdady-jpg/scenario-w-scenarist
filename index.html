@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.53: إحصائيات نمو المنصة ولوحة أداء مجمعة وخفيفة. | 6.8.52: إدارة بسيطة للمجتمع. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.54: إحصائيات نمو المنصة ولوحة أداء مجمعة وخفيفة. | 6.8.52: إدارة بسيطة للمجتمع. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.53</title>
+<title>سيناريو وسيناريست – تحديث 6.8.54</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.53">
+<body data-platform-version="6.8.54">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1322,7 +1322,7 @@ renderShortFilms();
       <option value="قضايا غامضة">قضايا غامضة</option>
       <option value="جرائم قتل">جرائم قتل</option>
       <option value="احتيال">احتيال</option>
-      <option value="اختفاء">اختفاء وغموض</option>
+      <option value="اختفاء">اختفاء</option>
       <option value="تحقيقات">تحقيقات</option>
       <option value="قضايا تاريخية">قضايا تاريخية</option>
     </select>
@@ -1491,7 +1491,7 @@ function renderStories(){
   const list=crimeStoriesData.filter(x=>(!category||x.category===category)&&
     [x.title,x.description,x.content,x.author_name].some(v=>String(v||"").toLowerCase().includes(q)));
   box.innerHTML=list.length?list.map(item=>{
-    const image=item.image_url&&/^https?:\\/\\//i.test(item.image_url)
+    const image=item.image_url&&/^https?:\/\//i.test(item.image_url)
       ? '<img src="'+safeHttpUrl(item.image_url)+'" alt="" loading="lazy">'
       : '<div style="height:170px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:42px;color:var(--gold)">◈</div>';
     return '<article class="feature">'+image+'<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3>'+
@@ -1518,7 +1518,7 @@ async function adminLoadCrimeStoryQueue(){
     .eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<p>لا توجد طلبات جديدة للمراجعة.</p>';return;}
-  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+'</p><p>التواصل: '+escapeHTML(item.contact||"لم يترك وسيلة تواصل")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\\/\\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+'</p><p>التواصل: '+escapeHTML(item.contact||"لم يترك وسيلة تواصل")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
 }
 async function adminReviewCrimeStory(id,approve){
   if(!adminSupabase||!adminSession||!id)return;
@@ -1539,7 +1539,7 @@ document.getElementById("storiesSubmitForm")?.addEventListener("submit",async fu
     const content=document.getElementById("storySubmitContent").value.trim();
     const image=document.getElementById("storySubmitImage").value.trim();
     if(title.length<3||content.length<40)throw new Error("اكتب عنوانًا واضحًا ونصًا لا يقل عن 40 حرفًا.");
-    if(image&&!/^https?:\\/\\//i.test(image))throw new Error("رابط الصورة يجب أن يبدأ بـ https:// أو http://");
+    if(image&&!/^https?:\/\//i.test(image))throw new Error("رابط الصورة يجب أن يبدأ بـ https:// أو http://");
     button.disabled=true;msg.textContent="جارٍ إرسال طلبك للمراجعة...";
     const {error}=await publicContentClient.from("crime_stories").insert({
       title,content,description:document.getElementById("storySubmitDescription").value.trim()||null,
@@ -1562,7 +1562,7 @@ document.getElementById("storiesAdminPublishForm")?.addEventListener("submit",as
     const content=document.getElementById("storyAdminContent").value.trim();
     const image=document.getElementById("storyAdminImage").value.trim();
     if(title.length<3||content.length<40)throw new Error("اكتب عنوانًا واضحًا ونصًا لا يقل عن 40 حرفًا.");
-    if(image&&!/^https?:\\/\\//i.test(image))throw new Error("رابط الصورة غير صالح.");
+    if(image&&!/^https?:\/\//i.test(image))throw new Error("رابط الصورة غير صالح.");
     button.disabled=true;msg.textContent="جارٍ حفظ الحكاية...";
     const {error}=await adminSupabase.from("crime_stories").insert({
       title,content,description:document.getElementById("storyAdminDescription").value.trim()||null,
