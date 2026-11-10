@@ -1065,7 +1065,7 @@ function renderWriters(){
   const box=document.getElementById("writersItems");if(!box)return;
   const q=(document.getElementById("writersSearch")?.value||"").trim().toLowerCase();
   const list=creativeProfiles.writers.filter(x=>{
-    const searchable=[x.name,x.bio,x.specialty,...(x.ideas||[]).flatMap(i=>[i.title,i.genre,i.summary])].join(" ").toLowerCase();
+    const searchable=[x.name,x.bio,x.specialty,...(x.ideas||[]).flatMap(i=>[i.title,i.genre,i.summary]),...(x.scripts||[]).map(i=>i.title)].join(" ").toLowerCase();
     return !q||searchable.includes(q);
   });
   if(!list.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">لا توجد ملفات مؤلفين معتمدة تطابق البحث حاليًا.</div>';return;}
@@ -1076,9 +1076,11 @@ function renderWriters(){
       const stage={idea:"فكرة أولية",treatment:"معالجة مكتوبة",script:"سيناريو مكتمل"}[idea.development_stage]||"فكرة";
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong style="color:var(--gold)">'+escapeHTML(idea.title)+'</strong><span class="admin-status">'+format+'</span><span class="admin-status">'+escapeHTML(idea.genre||"")+'</span></div><p>'+escapeHTML(idea.summary)+'</p><p class="admin-status">'+stage+(idea.duration_minutes?' • '+Number(idea.duration_minutes)+' دقيقة':'')+(idea.collaboration_open?' • متاحة للتعاون':'')+'</p></div>';
     }).join("");
+    const scripts=(x.scripts||[]).map(script=>"<p><strong>"+escapeHTML(script.title)+"</strong> • "+escapeHTML(script.category)+" "+(script.signedUrl?"<a href='"+safeHttpUrl(script.signedUrl)+"' target='_blank' rel='noopener noreferrer'>قراءة PDF</a>":"<span>الملف غير متاح مؤقتًا</span>")+"</p>").join("");
+    const scriptsSection=scripts?"<h4>سيناريوهات PDF معتمدة</h4>"+scripts:"";
     const phone=String(x.contactPhone||"").replace(/[^0-9+]/g,"");
     const contact=phone?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><a class="btn" href="tel:'+escapeHTML(phone)+'">اتصال بالكاتب</a><a class="btn" href="https://wa.me/'+escapeHTML(phone.replace(/\D/g,""))+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>':"";
-    return '<article class="feature" style="padding:16px"><div class="feature-content">'+image+'<h3 style="color:var(--gold);margin:12px 0 4px">'+escapeHTML(x.name||"كاتب سيناريو")+'</h3><p class="admin-status">كاتب معتمد'+(x.specialty?' • '+escapeHTML(x.specialty):"")+'</p><p>'+escapeHTML(x.bio||"")+'</p>'+(x.education?'<p class="admin-status">الدراسة: '+escapeHTML(x.education)+'</p>':"")+(x.experienceYears!==null&&x.experienceYears!==undefined?'<p class="admin-status">الخبرة: '+Number(x.experienceYears)+' سنة</p>':"")+(x.city?'<p class="admin-status">المدينة: '+escapeHTML(x.city)+'</p>':"")+(ideas?'<h4 style="color:var(--gold);margin:18px 0 6px">أفكار وأعمال مختارة</h4>'+ideas:'<p class="admin-status">لم يضف الكاتب أفكارًا منشورة بعد.</p>')+contact+(x.work?'<p><a class="btn" href="'+safeHttpUrl(x.work)+'" target="_blank" rel="noopener noreferrer">نموذج عمل إضافي</a></p>':"")+'</div></article>';
+    return '<article class="feature" style="padding:16px"><div class="feature-content">'+image+'<h3 style="color:var(--gold);margin:12px 0 4px">'+escapeHTML(x.name||"كاتب سيناريو")+'</h3><p class="admin-status">كاتب معتمد'+(x.specialty?' • '+escapeHTML(x.specialty):"")+'</p><p>'+escapeHTML(x.bio||"")+'</p>'+(x.education?'<p class="admin-status">الدراسة: '+escapeHTML(x.education)+'</p>':"")+(x.experienceYears!==null&&x.experienceYears!==undefined?'<p class="admin-status">الخبرة: '+Number(x.experienceYears)+' سنة</p>':"")+(x.city?'<p class="admin-status">المدينة: '+escapeHTML(x.city)+'</p>':"")+(ideas?'<h4 style="color:var(--gold);margin:18px 0 6px">أفكار وأعمال مختارة</h4>'+ideas:'<p class="admin-status">لم يضف الكاتب أفكارًا منشورة بعد.</p>')+scriptsSection+contact+(x.work?'<p><a class="btn" href="'+safeHttpUrl(x.work)+'" target="_blank" rel="noopener noreferrer">نموذج عمل إضافي</a></p>':"")+'</div></article>';
   }).join("");
 }
 
@@ -4290,16 +4292,24 @@ async function loadApprovedMemberProfiles(){
       creativeProfiles.talents.push(item);
     }
   });
-  const [ideasResult,contactsResult]=await Promise.all([
+  const [ideasResult,contactsResult,scriptsResult]=await Promise.all([
     publicContentClient.from("writer_ideas_public").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open").order("created_at",{ascending:false}),
-    publicContentClient.from("writer_contact").select("user_id,phone").eq("is_public",true)
+    publicContentClient.from("writer_contact").select("user_id,phone").eq("is_public",true),
+    publicContentClient.from("writer_scripts").select("id,user_id,title,category,published_storage_path").eq("status","approved").order("created_at",{ascending:false})
   ]);
   if(ideasResult.error)console.warn("تعذر تحميل أفكار المؤلفين",ideasResult.error.message);
   if(contactsResult.error)console.warn("تعذر تحميل بيانات التواصل العامة",contactsResult.error.message);
   const ideasByUser=new Map();
   (ideasResult.data||[]).forEach(idea=>{if(!ideasByUser.has(idea.user_id))ideasByUser.set(idea.user_id,[]);ideasByUser.get(idea.user_id).push(idea);});
   const contactsByUser=new Map((contactsResult.data||[]).map(contact=>[contact.user_id,contact.phone]));
-  creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";}});
+  const scriptsByUser=new Map();
+  for(const script of (scriptsResult.data||[])){
+    const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrl(script.published_storage_path,1800);
+    if(!scriptsByUser.has(script.user_id))scriptsByUser.set(script.user_id,[]);
+    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl:signedError?null:signed?.signedUrl||null});
+  }
+  if(scriptsResult.error)console.warn("تعذر تحميل سيناريوهات الكُتّاب المعتمدة",scriptsResult.error.message);
+  creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";writer.scripts=scriptsByUser.get(writer.userId)||[];}});
 
   renderWriters();renderDirectors();renderTalents();
   if(typeof loadApprovedDirectorWorks==="function") await loadApprovedDirectorWorks();
