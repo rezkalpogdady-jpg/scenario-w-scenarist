@@ -1336,6 +1336,7 @@ renderShortFilms();
     <form id="storiesSubmitForm">
       <input id="storySubmitTitle" maxlength="180" required placeholder="عنوان الحكاية">
       <input id="storySubmitAuthor" maxlength="120" required placeholder="اسمك أو الاسم الذي تريد ظهوره">
+      <input id="storySubmitContact" maxlength="180" placeholder="وسيلة تواصل اختيارية (بريد أو هاتف)">
       <select id="storySubmitCategory" required>
         <option value="">اختر التصنيف</option>
         <option>قضايا غامضة</option><option>جرائم قتل</option><option>احتيال</option><option>اختفاء</option><option>تحقيقات</option><option>قضايا تاريخية</option><option>حكاية من خيال المؤلف</option>
@@ -1517,7 +1518,7 @@ async function adminLoadCrimeStoryQueue(){
     .eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<p>لا توجد طلبات جديدة للمراجعة.</p>';return;}
-  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+"</p><p>وسيلة التواصل: "+escapeHTML(item.contact||"لم يترك وسيلة تواصل")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
 }
 async function adminReviewCrimeStory(id,approve){
   if(!adminSupabase||!adminSession||!id)return;
@@ -1544,6 +1545,7 @@ document.getElementById("storiesSubmitForm")?.addEventListener("submit",async fu
       title,content,description:document.getElementById("storySubmitDescription").value.trim()||null,
       image_url:image||null,category:document.getElementById("storySubmitCategory").value,
       author_name:document.getElementById("storySubmitAuthor").value.trim(),
+      contact:document.getElementById("storySubmitContact").value.trim()||null,
       status:"pending",is_published:false
     });
     if(error)throw error;
