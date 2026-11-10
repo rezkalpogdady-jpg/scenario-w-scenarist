@@ -268,6 +268,19 @@ Main{padding:17px 11px}
 .scenario-card-meta span{font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:20px;color:var(--muted)}
 .scenario-reader-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 @media(max-width:640px){
+ .community-feed{gap:12px;padding-inline:0}
+ .community-post{padding:13px;border-radius:13px}
+ .community-post-head{gap:9px}
+ .community-post-body{font-size:14px;line-height:1.85;padding:12px 0}
+ .community-like-row{gap:8px;flex-wrap:wrap}
+ .community-like-btn{min-height:40px;padding:8px 12px}
+ .community-like-count{font-size:12px}
+ .topic-reply-form{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+ .topic-reply-form textarea{min-height:76px;font-size:16px}
+ .topic-reply-form>.btn{width:100%;min-height:42px}
+ .community-compose textarea{font-size:16px}
+}
+@media(max-width:640px){
  #library .panel:has(#librarySearch){grid-template-columns:1fr}
  #libraryItems{grid-template-columns:minmax(0,1fr)!important}
  #scenarioReader{padding:12px}
