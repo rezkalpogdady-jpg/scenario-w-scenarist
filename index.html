@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.59: نشر أفيشات الجرائم والحكايات. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.62: إدارة السيناريوهات والجرائم من صفحاتها مباشرة مع تأمين محرر الحكايات عند الخروج. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.59</title>
+<title>سيناريو وسيناريست – تحديث 6.8.62</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -633,7 +633,55 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('library')">＋ إضافة سيناريو جديد</button></div><div id="libraryAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة سيناريو إلى المكتبة</h3><form id="libraryAdminForm"><label>اسم السيناريو / الفيلم</label><input name="title" required maxlength="200"><label>اسم المؤلف</label><input name="author" required maxlength="160"><label>التصنيف</label><select name="category" required><option value="">اختر</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option></select><label>ملخص العمل</label><textarea name="summary" required maxlength="4000"></textarea><label>الأفيش (اختياري)</label><input name="poster" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف السيناريو PDF (حتى 50 ميجابايت)</label><input name="pdf" type="file" accept="application/pdf,.pdf" required><label>صاحب الحقوق / أساس الإتاحة</label><input name="rights" required maxlength="200" placeholder="اسم صاحب الحقوق أو أساس الإتاحة"><label>ملاحظات الحقوق (اختياري)</label><textarea name="rightsNote" maxlength="2000"></textarea><label style="display:flex;gap:8px;align-items:flex-start"><input name="confirm" type="checkbox" required style="width:auto;margin-top:6px"><span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد وجود حق نشره أو تحملي مسؤولية القرار.</span></label><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> إتاحة القراءة للأعضاء</label><button class="btn primary" type="submit">حفظ السيناريو ونشره</button><button class="btn" type="button" onclick="adminToggleInlinePublish('library')">إغلاق</button><p id="libraryAdminMessage" aria-live="polite"></p></form></div><div id="libraryItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('libraryScripts')">＋ إضافة أو تعديل سيناريو</button></div><div id="libraryScriptsAdminPublish" style="display:none;margin:16px 0"><div class="section-heading" id="libraryScenarioEditorHeading">
+      <h2>إضافة أو تعديل سيناريو</h2>
+      <p>أضف السيناريو أو عدّل بياناته من نفس صفحة المكتبة. أدوات الإدارة لا تظهر إلا لحساب مدير المنصة.</p>
+    </div>
+    <div class="panel">
+      <form id="adminScenarioScriptForm">
+        <input id="adminScenarioScriptId" type="hidden">
+        <label>اسم السيناريو / الفيلم</label>
+        <input id="adminScenarioScriptTitle" required maxlength="200" placeholder="عنوان السيناريو">
+        <label>اسم المؤلف</label>
+        <input id="adminScenarioScriptAuthor" required maxlength="160" placeholder="اسم الكاتب">
+        <label>التصنيف</label>
+        <select id="adminScenarioScriptCategory" required>
+          <option value="">اختر التصنيف</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option><option>其他</option>
+        </select>
+        <label>ملخص العمل</label>
+        <textarea id="adminScenarioScriptSummary" required maxlength="4000" placeholder="نبذة مختصرة عن السيناريو"></textarea>
+        <label>أفيش الفيلم (اختياري — JPG أو PNG أو WEBP، حتى 10 ميجابايت)</label>
+        <input id="adminScenarioScriptPoster" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">يمكنك رفع الأفيش عند إضافة السيناريو أو لاحقًا من تعديل البيانات. إذا لم تختر صورة جديدة فسيظل الأفيش الحالي كما هو.</p>
+        <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
+        <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h4 style="color:var(--gold)">بيانات الحقوق ومسؤولية الإتاحة</h4>
+        <label>صاحب العمل أو أساس قرار الإتاحة</label>
+        <input id="adminScenarioScriptRightsHolder" maxlength="200" placeholder="اسم صاحب العمل أو اكتب: إقرار مدير المنصة">
+        <label>أساس الإتاحة</label>
+        <select id="adminScenarioScriptRightsStatus" required>
+          <option value="unverified">لم يتم التحقق بعد</option>
+          <option value="original_author">عمل أصلي لصاحب الحقوق</option>
+          <option value="permission_granted">تصريح نشر موثق</option>
+          <option value="licensed">ترخيص نشر</option>
+          <option value="public_domain">عمل في الملكية العامة</option>
+          <option value="admin_responsibility">قرار إتاحة بإقرار مدير المنصة</option>
+        </select>
+        <label>ملاحظات قرار الإتاحة (اختياري)</label>
+        <textarea id="adminScenarioScriptRightsNote" maxlength="2000" placeholder="اكتب أي توضيح تراه مناسبًا بشأن قرار النشر"></textarea>
+        <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:var(--white)">
+          <input id="adminScenarioScriptRightsConfirmed" type="checkbox" style="width:auto;margin-top:7px">
+          <span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد أنني أملك حق نشره أو أتحمل مسؤولية قرار نشره.</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء بقرار مني كمدير للمنصة</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
+      </form>
+      <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
+      <div id="libraryScenarioAdminDrafts" style="display:none"></div>
+    </div>
+</div><div id="libraryScenarioAdminList" class="grid" data-admin-inline="1" style="display:none;margin:14px 0"></div><div id="libraryItems" class="grid"></div>
 
   <div id="scenarioReader" class="panel" role="dialog" aria-modal="true" aria-labelledby="scenarioReaderTitle" style="display:none;margin-top:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1379,6 +1427,8 @@ renderShortFilms();
     <p>عالم من القضايا الغامضة والجرائم التي هزت المجتمع، وحكايات واقعية تصلح للدراسة والبحث والإلهام الدرامي.</p>
   </div>
 
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="crimeStoryNew()">＋ إضافة جريمة أو حكاية</button></div>
+  <div id="storiesInlineEditor" class="panel" style="display:none;margin:14px 0"></div><div id="storiesAdminRecords" class="grid" style="display:none;margin:14px 0"></div>
   <div class="section-heading">
     <h2>حكايات وملفات</h2>
     <p>بحث وتصنيف ومتابعة</p>
@@ -1541,7 +1591,7 @@ function renderStories(){
     const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
     const summary=(item.description||"").trim();
     const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
-    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button></div></article>';
+    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+(adminSession?'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>':"")+'</div></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
 }
 function openCrimeStory(id){
@@ -2412,55 +2462,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى</h3><div id="adminContentComments" class="grid"></div>
     </div>
 
-    <div class="section-heading" id="adminScenarioLibrarySection">
-      <h2>إدارة مكتبة السيناريوهات الكاملة</h2>
-      <p>ارفع العمل واختر بنفسك حفظه كمسودة أو إتاحته للأعضاء. قرار النشر من صلاحية مدير المنصة.</p>
-    </div>
-    <div class="panel">
-      <form id="adminScenarioScriptForm">
-        <input id="adminScenarioScriptId" type="hidden">
-        <label>اسم السيناريو / الفيلم</label>
-        <input id="adminScenarioScriptTitle" required maxlength="200" placeholder="عنوان السيناريو">
-        <label>اسم المؤلف</label>
-        <input id="adminScenarioScriptAuthor" required maxlength="160" placeholder="اسم الكاتب">
-        <label>التصنيف</label>
-        <select id="adminScenarioScriptCategory" required>
-          <option value="">اختر التصنيف</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option><option>其他</option>
-        </select>
-        <label>ملخص العمل</label>
-        <textarea id="adminScenarioScriptSummary" required maxlength="4000" placeholder="نبذة مختصرة عن السيناريو"></textarea>
-        <label>أفيش الفيلم (اختياري — JPG أو PNG أو WEBP، حتى 10 ميجابايت)</label>
-        <input id="adminScenarioScriptPoster" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
-        <p style="font-size:12px;color:var(--muted)">يمكنك رفع الأفيش عند إضافة السيناريو أو لاحقًا من تعديل البيانات. إذا لم تختر صورة جديدة فسيظل الأفيش الحالي كما هو.</p>
-        <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
-        <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
-        <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
-        <hr style="border-color:var(--border);margin:18px 0">
-        <h4 style="color:var(--gold)">بيانات الحقوق ومسؤولية الإتاحة</h4>
-        <label>صاحب العمل أو أساس قرار الإتاحة</label>
-        <input id="adminScenarioScriptRightsHolder" maxlength="200" placeholder="اسم صاحب العمل أو اكتب: إقرار مدير المنصة">
-        <label>أساس الإتاحة</label>
-        <select id="adminScenarioScriptRightsStatus" required>
-          <option value="unverified">لم يتم التحقق بعد</option>
-          <option value="original_author">عمل أصلي لصاحب الحقوق</option>
-          <option value="permission_granted">تصريح نشر موثق</option>
-          <option value="licensed">ترخيص نشر</option>
-          <option value="public_domain">عمل في الملكية العامة</option>
-          <option value="admin_responsibility">قرار إتاحة بإقرار مدير المنصة</option>
-        </select>
-        <label>ملاحظات قرار الإتاحة (اختياري)</label>
-        <textarea id="adminScenarioScriptRightsNote" maxlength="2000" placeholder="اكتب أي توضيح تراه مناسبًا بشأن قرار النشر"></textarea>
-        <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:var(--white)">
-          <input id="adminScenarioScriptRightsConfirmed" type="checkbox" style="width:auto;margin-top:7px">
-          <span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد أنني أملك حق نشره أو أتحمل مسؤولية قرار نشره.</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء بقرار مني كمدير للمنصة</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
-      </form>
-      <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
-      <div id="adminScenarioScriptList" class="grid"></div>
-    </div>
-
+    
     <div class="section-heading">
       <h2>إدارة ورفع المحتوى حسب القسم</h2>
       <p>افتح القسم المطلوب لتظهر لك أدوات رفع محتواه وسجلاته فقط</p>
@@ -2468,7 +2470,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div class="panel">
       <div id="adminSectionCards" class="grid">
         <article class="admin-section-card"><h3>الأكاديمية والمحاضرات</h3><p>فيديوهات تعليمية ومواد المحاضرات والملفات المساندة.</p><button class="btn primary" type="button" onclick="adminOpenSection('academy')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>مكتبة السيناريوهات</h3><p>ملفات PDF كاملة مع بيانات المؤلف والتصنيف وحقوق النشر.</p><button class="btn primary" type="button" onclick="adminOpenSection('library')">فتح إدارة السيناريوهات</button></article>
+        
         <article class="admin-section-card"><h3>الكُتّاب</h3><p>إضافة نبذات وصور وأعمال تعريفية للكُتّاب.</p><button class="btn primary" type="button" onclick="adminOpenSection('writers')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>المخرجون</h3><p>إضافة نبذات وصور وروابط نماذج أعمال المخرجين.</p><button class="btn primary" type="button" onclick="adminOpenSection('directors')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
@@ -2519,13 +2521,12 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>القسم</label>
         <select id="adminContentType" required>
           <option value="academy">الأكاديمية والمحاضرات</option>
-          <option value="library">مكتبة السيناريوهات</option>
           <option value="writers">الكُتّاب</option>
           <option value="directors">المخرجون</option>
           <option value="talents">المواهب</option>
           <option value="films">الأفلام والمسلسلات</option>
           <option value="shorts">الأفلام القصيرة</option>
-          <option value="stories">الجرائم والحكايات</option>
+          
           <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
                     <option value="radio">محطات الراديو</option>
@@ -2590,8 +2591,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     </div>
 
     <div class="section-heading">
-      <h2>المحتوى المنشور والمسودات</h2>
-      <p>تعديل أو حذف أو مراجعة المحتوى</p>
+      <h2>إدارة محتوى المنصة</h2>
+      <p>الأقسام الإدارية العامة فقط. السيناريوهات والجرائم والحكايات تُدار من صفحاتها مباشرة.</p>
     </div>
 
     <div class="panel">
@@ -2599,13 +2600,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <select id="adminFilter">
         <option value="">كل الأقسام</option>
         <option value="academy">الأكاديمية</option>
-        <option value="library">المكتبة</option>
+
         <option value="writers">الكُتّاب</option>
         <option value="directors">المخرجون</option>
         <option value="talents">المواهب</option>
         <option value="films">الأفلام والمسلسلات</option>
         <option value="shorts">الأفلام القصيرة</option>
-        <option value="stories">الجرائم والحكايات</option>
+
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
         <option value="radio">الراديو</option>
@@ -3658,9 +3659,8 @@ function adminConfigureSponsorForm(){
 function adminOpenSection(section){
   const meta=ADMIN_SECTION_META[section];
   if(!meta)return;
-  if(section==="library"){
-    document.getElementById("adminScenarioScriptForm")?.scrollIntoView({behavior:"smooth",block:"start"});
-    scenarioScriptMessage("أنت الآن في إدارة مكتبة السيناريوهات: ارفع PDF، ثم اختر المسودة أو الإتاحة بقرارك كمدير.");
+  if(section==="library"||section==="stories"){
+    alert(section==="library"?"إدارة السيناريوهات أصبحت من صفحة مكتبة السيناريوهات مباشرة.":"إدارة الجرائم والحكايات أصبحت من صفحة جرائم وحكايات مباشرة.");
     return;
   }
   const form=document.getElementById("adminContentForm");
@@ -3712,6 +3712,7 @@ async function adminLoadRecords(){
 
   adminRecords=data || [];
   adminRenderRecords();
+  if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
 }
 
 /* عرض السجلات */
@@ -3724,6 +3725,7 @@ function adminRenderRecords(){
   const filter=document.getElementById("adminFilter")?.value || "";
 
   const records=adminRecords.filter(item=>
+    !["stories","library"].includes(item.content_type) &&
     (!filter || item.content_type===filter) &&
     ((item.title+" "+(item.description||"")+" "+(item.category||""))
       .toLowerCase().includes(q))
@@ -4000,6 +4002,7 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
 
   adminSession=null;
   adminRecords=[];
+  if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
 
   document.getElementById("adminDashboard").style.display="none";
   document.getElementById("adminLoginPanel").style.display="block";
@@ -4060,12 +4063,16 @@ function resetAdminScenarioScriptForm(){
 }
 async function adminLoadScenarioScripts(){
   if(!adminSupabase||!adminSession)return;
-  const box=document.getElementById("adminScenarioScriptList");if(box)box.innerHTML="<p>جارٍ تحميل السيناريوهات...</p>";
   const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,poster_path,published,created_at,rights_holder,rights_status,rights_note,rights_confirmed").order("created_at",{ascending:false}).limit(200);
-  if(error){if(box)box.textContent="تعذر تحميل المكتبة: "+error.message;return;}
+  if(error){scenarioScriptMessage("تعذر تحميل السيناريوهات: "+error.message);return;}
   adminScenarioScriptRecords=data||[];
+  const box=document.getElementById("libraryScenarioAdminList");
   if(!box)return;
-  box.innerHTML=adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>`<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.author)} • ${adminEscape(item.category)}</p><p>${item.published?"متاح للأعضاء":"مسودة غير منشورة"} • حالة الإتاحة: ${item.rights_confirmed?(item.rights_status==="admin_responsibility"?"بإقرار المدير":"تم استكمال بيانات الحقوق"):"غير مكتملة"}</p><p>بيانات الإتاحة: ${adminEscape(item.rights_holder||"غير محدد")} • الأساس: ${scenarioRightsStatusLabel(item.rights_status||"unverified")}</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript('${item.id}')">تعديل البيانات والحقوق</button>${!item.published&&!item.rights_confirmed?`<button class="btn primary" type="button" onclick="adminDeclareAndPublishScenarioScript('${item.id}')">إقرار المدير والنشر</button>`:""}<button class="btn" type="button" onclick="adminToggleScenarioScript('${item.id}',${!item.published})">${item.published?"إيقاف النشر":"نشر للأعضاء / إقرار المدير عند الحاجة"}</button><button class="btn" type="button" onclick="adminDeleteScenarioScript('${item.id}')">حذف</button></div></article>`).join(""):'<p style="color:var(--muted)">لم تتم إضافة سيناريوهات كاملة بعد.</p>';
+  box.style.display=adminSession?"grid":"none";
+  box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">إدارة السيناريوهات من صفحة المكتبة</h3><p>المسودات والمنشورات تظهر هنا للمدير فقط، دون الرجوع إلى لوحة الإدارة.</p></div>'+
+  (adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>
+    '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور ومتاح للقراءة":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></article>'
+  ).join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
 }
 function adminEditScenarioScript(id){
   const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
@@ -4080,6 +4087,7 @@ function adminEditScenarioScript(id){
   document.getElementById("adminScenarioScriptRightsConfirmed").checked=!!item.rights_confirmed;
   document.getElementById("adminScenarioScriptPublished").checked=!!item.published;
   scenarioScriptMessage(item.poster_path?"الأفيش الحالي محفوظ. اختر صورة جديدة فقط إذا أردت استبداله؛ ويمكنك تعديل البيانات دون تغيير الملفات.":"لا يوجد أفيش مرفوع لهذا العمل حتى الآن. يمكنك رفعه من الحقل الاختياري.");
+  const panel=document.getElementById("libraryScriptsAdminPublish");if(panel)panel.style.display="block";
   document.getElementById("adminScenarioScriptForm").scrollIntoView({behavior:"smooth",block:"center"});
 }
 async function adminDeclareAndPublishScenarioScript(id){
@@ -4194,7 +4202,7 @@ function renderScenarioScriptCards(){
 ${item.poster_url?`<img class="scenario-poster-image" src="${escapeHTML(item.poster_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy">`:`<div class="scenario-poster-placeholder"><span>سيناريو وسيناريست</span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category||"سيناريو")}</small></div>`}
 <span class="scenario-poster-shade"></span><span class="scenario-poster-title">${escapeHTML(item.title)}</span></button>
 <div class="scenario-poster-caption"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.author||"غير محدد")} <span>•</span> ${escapeHTML(item.category||"غير مصنف")}</p>
-<button class="btn primary" type="button" onclick="openScenarioScript(&quot;${item.id}&quot;)">اقرأ السيناريو</button></div></article>`);
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" onclick="openScenarioScript(&quot;${item.id}&quot;)">اقرأ السيناريو</button>${adminSession?`<button class="btn" type="button" onclick="adminEditScenarioScript(&quot;${item.id}&quot;)">تعديل</button>`:""}</div></div></article>`);
   const legacyCards=legacy.map(item=>{const legacyIndex=scenarioLibrary.indexOf(item);return `<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="" loading="lazy">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<button class="btn primary" type="button" onclick="openLegacyScenario(${legacyIndex})">اقرأ السيناريو داخل المنصة</button>`:""}</div></article>`;});
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
@@ -5728,7 +5736,10 @@ async function adminReviewBookListing(id,status){
 if(typeof adminSession!=='undefined'&&adminSession) adminSetInlinePublishingVisible(true);
 function adminSetInlinePublishingVisible(visible){
  document.querySelectorAll('[data-admin-inline="1"]').forEach(el=>el.style.display=visible?'block':'none');
- if(!visible) ['library','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
+ if(!visible) ['library','libraryScripts','stories','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
+ const storyEditor=document.getElementById('storiesInlineEditor');if(!visible&&storyEditor){storyEditor.style.display='none';storyEditor.innerHTML='';}
+ if(typeof crimeStoryRenderAdminRecords==='function')crimeStoryRenderAdminRecords();
+ if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
@@ -5825,5 +5836,59 @@ document.getElementById('libraryAdminForm')?.addEventListener('submit',async fun
  }catch(err){const paths=[pdf?.path,poster?.path].filter(Boolean);if(paths.length)await adminSupabase.storage.from('scenario-scripts').remove(paths);msg.textContent='تعذر النشر: '+err.message;}
  finally{btn.disabled=false;}
 });
+
+function crimeStoryNew(){if(!adminSession||!adminSupabase){alert('سجّل دخول المدير أولاً.');return;}crimeStoryShowEditor(null);}
+function crimeStoryEdit(id){if(!adminSession||!adminSupabase){alert('سجّل دخول المدير أولاً.');return;}var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';})||(publicContentRecords||[]).find(function(x){return String(x.id)===String(id);});if(!row){alert('تعذر العثور على الحكاية. حدّث قائمة الحكايات.');return;}crimeStoryShowEditor(row);}
+function crimeStoryShowEditor(row){
+ var box=document.getElementById('storiesInlineEditor');if(!box)return;var extra=row&&row.extra_data||{},esc=escapeHTML;
+ box.innerHTML='<h3 style="color:var(--gold)">'+(row?'تعديل الحكاية':'إضافة جريمة أو حكاية')+'</h3><form id="crimeStoryInlineForm" style="display:grid;gap:10px">'+
+ '<input type="hidden" name="id" value="'+esc(row?row.id:'')+'">'+
+ '<label>عنوان القضية</label><input name="title" required maxlength="200" value="'+esc(row?row.title:'')+'">'+
+ '<label>التصنيف</label><select name="category"><option>قضايا غامضة</option><option>جرائم قتل</option><option>احتيال</option><option>اختفاء</option><option>تحقيقات</option><option>قضايا تاريخية</option></select>'+
+ '<label>نوع المحتوى</label><select name="format"><option value="story">حكاية كاملة</option><option value="poster">أفيش جريمة</option></select>'+
+ '<label>نص الحكاية</label><textarea name="description" required maxlength="30000" rows="10">'+esc(row?row.description:'')+'</textarea>'+
+ '<label>الأفيش (مطلوب عند الإضافة)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
+ '<label>رابط المصدر</label><input name="source" type="url" value="'+esc(extra.source_url||'')+'"><label>ملاحظة تحريرية</label><textarea name="note" rows="2">'+esc(extra.editor_note||'')+'</textarea>'+
+ '<label><input name="published" type="checkbox" '+(!row||row.published?'checked':'')+'> نشر على الصفحة</label>'+
+ '<div style="display:flex;gap:8px"><button class="btn primary" type="submit">حفظ</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div><p id="crimeStoryInlineStatus" role="status"></p></form>';
+ box.style.display='block';box.scrollIntoView({behavior:'smooth',block:'center'});var form=document.getElementById('crimeStoryInlineForm');if(row){form.elements.category.value=row.category||'قضايا غامضة';form.elements.format.value=extra.story_format||'story';}form.addEventListener('submit',crimeStorySave);
+}
+function crimeStoryCloseEditor(){var box=document.getElementById('storiesInlineEditor');if(box){box.style.display='none';box.innerHTML='';}}
+function crimeStoryRenderAdminRecords(){
+ var box=document.getElementById('storiesAdminRecords');if(!box)return;
+ if(!adminSession||!adminSupabase){box.style.display='none';return;}
+ box.style.display='grid';
+ var rows=(adminRecords||[]).filter(function(x){return x.content_type==='stories';});
+ box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">إدارة المنشورات والمسودات</h3><p>تظهر هذه القائمة للمدير فقط داخل صفحة جرائم وحكايات.</p></div>'+
+ (rows.length?rows.map(function(row){return '<article class="admin-item"><h3>'+escapeHTML(row.title||'بدون عنوان')+'</h3><p>'+escapeHTML(row.category||'')+' • '+(row.published?'منشور':'مسودة')+'</p><div class="admin-actions"><button class="btn" type="button" onclick="crimeStoryEdit(\''+escapeHTML(String(row.id))+'\')">تعديل</button><button class="btn" type="button" onclick="crimeStoryTogglePublish(\''+escapeHTML(String(row.id))+'\','+(!row.published)+')">'+(row.published?'إخفاء مؤقت':'نشر')+'</button><button class="btn" type="button" onclick="crimeStoryDelete(\''+escapeHTML(String(row.id))+'\')">حذف</button></div></article>';}).join(''):'<p class="panel">لا توجد حكايات محفوظة حتى الآن.</p>');
+}
+async function crimeStoryTogglePublish(id,next){
+ if(!adminSession||!adminSupabase)return;
+ var result=await adminSupabase.from('site_content').update({published:!!next}).eq('id',id).eq('content_type','stories').select('id').maybeSingle();
+ if(result.error||!result.data){alert('تعذر تغيير حالة النشر: '+(result.error?.message||'راجع صلاحيات الإدارة.'));return;}
+ await adminLoadRecords();await loadPublicContent();
+}
+async function crimeStoryDelete(id){
+ if(!adminSession||!adminSupabase)return;
+ var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';});
+ if(!row||!confirm('حذف الحكاية «'+row.title+'» نهائيًا؟'))return;
+ var result=await adminSupabase.from('site_content').delete().eq('id',id).eq('content_type','stories').select('id').maybeSingle();
+ if(result.error||!result.data){alert('تعذر حذف الحكاية: '+(result.error?.message||'راجع صلاحيات الإدارة.'));return;}
+ var path=adminStoragePathFromPublicUrl(row.image_url);
+ if(path){var cleanup=await adminSupabase.storage.from('site-media').remove([path]);if(cleanup.error)alert('تم حذف سجل الحكاية، لكن تعذر حذف الأفيش من التخزين: '+cleanup.error.message);}
+ crimeStoryCloseEditor();await adminLoadRecords();await loadPublicContent();
+}
+
+async function crimeStorySave(event){
+ event.preventDefault();if(!adminSession||!adminSupabase)return;var form=event.currentTarget,fd=new FormData(form),status=document.getElementById('crimeStoryInlineStatus'),btn=form.querySelector('[type="submit"]'),id=String(fd.get('id')||''),previous=(adminRecords||[]).find(function(x){return String(x.id)===id&&x.content_type==='stories';})||(publicContentRecords||[]).find(function(x){return String(x.id)===id;}),uploaded=null;
+ try{btn.disabled=true;status.textContent='جارٍ الحفظ...';var file=fd.get('image');if(file&&file.size){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('صيغة الصورة JPG أو PNG أو WEBP فقط.');uploaded=await adminInlineUpload(file,'site-media','stories',20*1024*1024);}if(!id&&(!file||!file.size))throw new Error('ارفع أفيشًا قبل إضافة الحكاية.');
+ var extra={media_kind:'image',section_label:'الجرائم والحكايات',story_format:String(fd.get('format')||'story')},source=String(fd.get('source')||'').trim(),note=String(fd.get('note')||'').trim();if(source)extra.source_url=source;if(note)extra.editor_note=note;
+ var record={content_type:'stories',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||'').trim(),image_url:uploaded?uploaded.url:(previous?previous.image_url:null),content_url:null,extra_data:extra,published:fd.get('published')==='on'};
+ var result=id?await adminSupabase.from('site_content').update(record).eq('id',id).select('id').maybeSingle():await adminSupabase.from('site_content').insert(record).select('id').single();if(result.error)throw result.error;if(!result.data)throw new Error('لم يتم الحفظ؛ تحقق من صلاحيات الإدارة.');
+ crimeStoryCloseEditor();if(typeof adminLoadRecords==='function')await adminLoadRecords();await loadPublicContent();
+ }catch(error){if(uploaded&&uploaded.path)await adminSupabase.storage.from('site-media').remove([uploaded.path]);status.textContent='تعذر الحفظ: '+(error.message||'حاول مرة أخرى.');}finally{btn.disabled=false;}
+}
+if(typeof adminSession!=='undefined'&&adminSession)adminSetInlinePublishingVisible(true);
+
 </script>
 </body></html>
