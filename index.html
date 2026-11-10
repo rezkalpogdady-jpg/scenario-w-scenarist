@@ -2447,8 +2447,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
         <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminApprovalNotifications')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>القرارات والموافقات</strong><span id="adminDecisionPendingCount" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">تابع الطلبات المعلقة</span></button>
         <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminContactMessagesHeading')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>رسائل الأعضاء والزوار</strong><span id="adminNewMessagesBadge" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">جارٍ تحميل عدد الرسائل الجديدة</span></button>
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminRatingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>تقييمات المحتوى</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب</span></button>
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenGrowthStats()"><strong>إحصائيات ونمو المنصة</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب: الأعضاء والتفاعل والزيارات</span>
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenRatings()"><strong>تقييمات المحتوى</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل الملخص عند الطلب</span></button>
+        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenGrowthStats()"><strong>إحصائيات ونمو المنصة</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب: الأعضاء والتفاعل والزيارات</span></button>
       </div>
     </div>
 
@@ -3435,6 +3435,10 @@ async function adminLoadContentRatings(){
     if(status)status.textContent="تعذر تحميل التقييمات: "+(error.message||"تحقق من صلاحية القراءة لمدير المنصة.");
     if(rowsNode)rowsNode.innerHTML='<tr><td colspan="3">تعذر عرض التقييمات حاليًا.</td></tr>';
   }finally{if(button)button.disabled=false;}
+}
+async function adminOpenRatings(){
+  document.getElementById("adminRatingsPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+  await adminLoadContentRatings();
 }
 async function adminOpenGrowthStats(){
   document.getElementById("adminGrowthStatsHeading")?.scrollIntoView({behavior:"smooth",block:"start"});
