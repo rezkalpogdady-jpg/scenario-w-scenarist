@@ -3033,16 +3033,16 @@ async function adminLoadMemberProfiles(){
   box.innerHTML=data.map(item=>{
     const isBlocked=blockedUsers.has(item.user_id);
     const actions=item.profile_status==="approved"
-      ? '<button class="btn" onclick="adminReviewMemberProfile(\\''+item.user_id+'\\',\\'rejected\\')">إلغاء الاعتماد</button>'
-      : '<button class="btn primary" onclick="adminReviewMemberProfile(\\''+item.user_id+'\\',\\'approved\\')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile(\\''+item.user_id+'\\',\\'rejected\\')">رفض الملف</button>';
-    const postingButton='<button class="btn '+(isBlocked?'primary':'')+'" onclick="adminToggleMemberPostingBlock(\\''+item.user_id+'\\','+(isBlocked?'false':'true')+')">'+(isBlocked?'إعادة السماح بالنشر':'منع العضو من النشر')+'</button>';
+      ? `<button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">إلغاء الاعتماد</button>`
+      : `<button class="btn primary" onclick="adminReviewMemberProfile('${item.user_id}','approved')">اعتماد ونشر الملف</button><button class="btn" onclick="adminReviewMemberProfile('${item.user_id}','rejected')">رفض الملف</button>`;
+    const postingButton=`<button class="btn ${isBlocked?'primary':''}" onclick="adminToggleMemberPostingBlock('${item.user_id}',${isBlocked?'false':'true'})">${isBlocked?'إعادة السماح بالنشر':'منع العضو من النشر'}</button>`;
     return `<article class="admin-item"><h3>${adminEscape(item.display_name)}</h3><p class="admin-status">${adminEscape(statusLabels[item.profile_status]||item.profile_status)} • النشر: ${isBlocked?"موقوف":"متاح"}</p><p>${adminEscape(labels[item.account_type]||item.account_type)} • ${adminEscape(item.city||"المدينة غير محددة")}</p><p>${adminEscape(item.specialty||"")}</p><p>${adminEscape(item.education||"")} ${item.experience_years!==null&&item.experience_years!==undefined?"• الخبرة: "+adminEscape(item.experience_years)+" سنة":""}</p><p>${adminEscape(item.bio||"")}</p>${item.image_url?`<div style="margin:10px 0"><a href="${adminEscape(item.image_url)}" target="_blank" rel="noopener noreferrer"><img src="${adminEscape(item.image_url)}" alt="صورة ${adminEscape(item.display_name)}" loading="lazy" style="width:112px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--gold)"></a><p class="admin-status">الصورة الشخصية المرسلة للمراجعة</p></div>`:""}${item.work_url?`<p><a href="${adminEscape(item.work_url)}" target="_blank" rel="noopener noreferrer">عرض نموذج العمل</a></p>`:""}<div class="admin-actions">${actions}${postingButton}</div></article>`;
   }).join("");
 }
 window.adminToggleMemberPostingBlock=async function(userId,blocked){
   if(!adminSupabase||!adminSession||!userId)return;
   const result=blocked
-    ? await adminSupabase.from("member_posting_blocks").upsert({user_id:userId},{onConflict:"user_id"})
+    ? await adminSupabase.from("member_posting_blocks").insert({user_id:userId})
     : await adminSupabase.from("member_posting_blocks").delete().eq("user_id",userId);
   if(result.error){alert("تعذر تحديث صلاحية النشر: "+result.error.message);return;}
   await adminLoadMemberProfiles();
