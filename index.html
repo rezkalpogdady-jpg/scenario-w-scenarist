@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.48: أفيش دعائي رأسي لشركات الإنتاج والرعاة مع الاسم فقط. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.49: تحسين رسائل التسجيل ومعالجة حد المحاولات. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.48</title>
+<title>سيناريو وسيناريست – تحديث 6.8.49</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2587,7 +2587,7 @@ document.getElementById("accountLoginForm")?.addEventListener("submit",async fun
   try{button.disabled=true;accountMessage("جارٍ تسجيل الدخول...");
     const {data,error}=await accountClient().auth.signInWithPassword({email:document.getElementById("accountLoginEmail").value.trim(),password:document.getElementById("accountLoginPassword").value});
     if(error) throw error; await accountLoadProfile(data.user); accountMessage("تم تسجيل الدخول بنجاح.");
-  }catch(error){accountMessage("تعذر تسجيل الدخول: "+(error.message||"تحقق من البريد وكلمة المرور."));}
+  }catch(error){accountMessage(accountFriendlyAuthError(error,"login").message);}
   finally{button.disabled=false;}
 });
 document.getElementById("accountResetForm")?.addEventListener("submit",async function(event){
