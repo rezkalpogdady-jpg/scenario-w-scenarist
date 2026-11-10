@@ -2528,8 +2528,43 @@ async function accountLoadProfile(user){
     console.warn("member profile",error.message||error);
   }
 }
+let accountSignupCooldownTimer=null;
+function accountFriendlyAuthError(error,action){
+  const message=String(error?.message||"").toLowerCase();
+  const code=String(error?.code||"").toLowerCase();
+  const status=Number(error?.status||0);
+  if(status===429||/rate.?limit|too many requests|over_email_send_rate_limit|over_request_rate_limit|email rate limit/.test(message+" "+code)){
+    const match=message.match(/(\\d+)\\s*seconds?/i);
+    const seconds=match?Math.min(120,Math.max(5,Number(match[1])+2)):30;
+    return {message:"وصلنا للحد المؤقت لمحاولات التسجيل. انتظر "+seconds+" ثانية ثم جرّب مرة واحدة فقط.",cooldown:seconds};
+  }
+  if(/already registered|user already exists|email_exists|already been registered/.test(message+" "+code))
+    return {message:"هذا البريد مسجل بالفعل. جرّب تسجيل الدخول، أو استخدم استعادة كلمة المرور إذا نسيتها."};
+  if(/invalid email|email_address_invalid/.test(message+" "+code))
+    return {message:"صيغة البريد الإلكتروني غير صحيحة. راجع البريد واكتبه من جديد."};
+  if(/weak password|password should|password is too short/.test(message+" "+code))
+    return {message:"كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل مع مزيج من الحروف والأرقام."};
+  if(/email not confirmed/.test(message+" "+code))
+    return {message:"الحساب موجود، لكن البريد لم يتم تأكيده بعد. افتح رسالة التأكيد أولًا."};
+  if(/fetch failed|network|failed to fetch|load failed/.test(message))
+    return {message:"تعذر الاتصال بخدمة الحسابات. افحص الإنترنت وحاول بعد قليل."};
+  return {message:action==="login"?"تعذر تسجيل الدخول. راجع البريد وكلمة المرور، أو استخدم استعادة كلمة المرور.":"تعذر إنشاء الحساب حاليًا. راجع البيانات وحاول بعد قليل."};
+}
+function accountStartSignupCooldown(button,seconds){
+  if(accountSignupCooldownTimer) clearInterval(accountSignupCooldownTimer);
+  let remaining=seconds;
+  button.disabled=true;
+  button.textContent="انتظر "+remaining+" ثانية";
+  accountSignupCooldownTimer=setInterval(()=>{
+    remaining--;
+    if(remaining>0){button.textContent="انتظر "+remaining+" ثانية";return;}
+    clearInterval(accountSignupCooldownTimer);accountSignupCooldownTimer=null;
+    button.disabled=false;button.textContent="إنشاء حساب للمشاركة (اختياري)";
+  },1000);
+}
 document.getElementById("accountSignupForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); const button=this.querySelector('button[type="submit"]');
+  if(button.disabled)return;
   const display_name=document.getElementById("accountName").value.trim();
   const account_type=document.getElementById("accountType").value;
   const email=document.getElementById("accountSignupEmail").value.trim();
@@ -2540,9 +2575,12 @@ document.getElementById("accountSignupForm")?.addEventListener("submit",async fu
     if(error) throw error;
     this.reset();
     if(data.session) await accountLoadProfile(data.user);
-    accountMessage("تم إرسال طلب إنشاء الحساب. راجع بريدك الإلكتروني لتأكيد الحساب إذا كان تأكيد البريد مفعّلًا في Supabase.");
-  }catch(error){accountMessage("تعذر إنشاء الحساب: "+(error.message||"راجع البيانات وحاول مرة أخرى."));}
-  finally{button.disabled=false;}
+    accountMessage("تم إرسال طلب إنشاء الحساب. راجع بريدك الإلكتروني واضغط رابط التأكيد قبل تسجيل الدخول.");
+  }catch(error){
+    const friendly=accountFriendlyAuthError(error,"signup");
+    accountMessage(friendly.message);
+    if(friendly.cooldown){accountStartSignupCooldown(button,friendly.cooldown);return;}
+  }finally{if(!accountSignupCooldownTimer)button.disabled=false;}
 });
 document.getElementById("accountLoginForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); const button=this.querySelector('button[type="submit"]');
