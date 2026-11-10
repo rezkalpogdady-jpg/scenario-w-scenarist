@@ -4151,12 +4151,10 @@ async function openLegacyScenario(index){
 }
 async function openScenarioScript(id){
   const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item||!item.published||!item.rights_confirmed)return;
-  const frame=showScenarioReader(item.title,`المؤلف: ${item.author||"غير محدد"} • قراءة للأعضاء المسجلين`);if(!frame)return;
+  const frame=showScenarioReader(item.title,`المؤلف: ${item.author||"غير محدد"} • قراءة عامة متاحة للجميع`);if(!frame)return;
   try{
     const client=scenarioLibraryClient();
-    // قراءة الجلسة محليًا لتجنب طلب تحقق إضافي قبل استعلام قاعدة البيانات؛ سيظل RLS هو الحارس الفعلي.
-    const {data:sessionData}=await client.auth.getSession();
-    if(!sessionData?.session?.user){frame.innerHTML='<div style="padding:24px;color:white;text-align:center"><p>قراءة السيناريوهات الكاملة متاحة للأعضاء المسجلين.</p><button class="btn primary" type="button" onclick="showPage(&quot;account&quot;)">تسجيل الدخول أو إنشاء حساب</button></div>';return;}
+    // القراءة العامة متاحة للزوار؛ صلاحية الملف يفرضها Storage RLS على الأعمال المنشورة والمؤكد حقها فقط.
     const {data:row,error:rowError}=await client.from("scenario_scripts").select("storage_path,poster_path,rights_holder,rights_status,rights_confirmed").eq("id",id).eq("published",true).eq("rights_confirmed",true).single();
     if(rowError)throw rowError;
     if(!row?.rights_confirmed||row.rights_status==="unverified"||!String(row.rights_holder||"").trim())throw new Error("هذا العمل غير متاح للقراءة لحين استكمال التحقق من حقوق نشره.");
