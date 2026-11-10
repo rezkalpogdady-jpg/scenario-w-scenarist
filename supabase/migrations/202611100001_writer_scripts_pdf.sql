@@ -166,3 +166,14 @@ create policy "Public read approved writer script PDFs"
         and mp.profile_status = 'approved'
     )
   );
+
+-- يسمح للكاتب برفع ملف المراجعة إلى مجلده الخاص فقط داخل مساحة الملفات الخاصة.
+drop policy if exists "Writers upload own private script PDFs" on storage.objects;
+create policy "Writers upload own private script PDFs"
+  on storage.objects for insert to authenticated
+  with check (
+    bucket_id = 'member-submissions'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and (storage.foldername(name))[2] = 'writer-scripts'
+    and lower(storage.extension(name)) = 'pdf'
+  );
