@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.43: دعم رفع فيديوهات الأفلام والمسلسلات مع الأفيش. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.44: دعم رفع فيديوهات الأفلام والمسلسلات مع الأفيش. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -335,7 +335,7 @@ Main{padding:17px 11px}
 <button data-page="chess">الشطرنج</button>
 <button data-page="ideas">ورشة الأفكار</button>
 <button data-page="production">الإنتاج</button>
-<button data-page="sponsors">الرعاة</button>
+<button data-page="sponsors">شركات الإنتاج والرعاة</button>
 <button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="contact">تواصل مع الإدارة</button>
@@ -1483,19 +1483,18 @@ function renderNews(){
       </div>`;
 }
 
-/* عرض المشروعات */
+/* عرض شركات الإنتاج والجهات الراعية — عرض تعريفي فقط دون روابط أو وسائل تواصل */
 function renderSponsors(items){
   const box=document.getElementById("sponsorsGrid");
   if(!box)return;
   const sponsors=(items||[]).filter(item=>item && item.title);
   if(!sponsors.length){
-    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">كن أحد شركاء النجاح</h3><p>ستظهر هنا أسماء وشعارات الجهات الراعية بعد اعتمادها من إدارة المنصة.</p><button class="btn" type="button" onclick="showPage(\'contact\')">تواصل مع الإدارة</button></div>';
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">شركات الإنتاج والجهات الراعية</h3><p>ستظهر هنا أسماء الشركات وأفيشاتها أو شعاراتها ونبذة تعريفية عنها بعد اعتمادها من إدارة المنصة.</p></div>';
     return;
   }
   box.innerHTML=sponsors.map(item=>{
-    const logo=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="شعار '+escapeHTML(item.title)+'" style="width:100%;height:150px;object-fit:contain;background:#fff;border-radius:10px;padding:12px">' : '<div style="height:150px;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800">'+escapeHTML(item.title)+'</div>';
-    const url=safeHttpUrl(item.stream||item.work||"");
-    return '<article class="feature"><div style="padding:14px 14px 0">'+logo+'</div><div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.description||"")+'</p>'+(url?'<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">زيارة موقع الراعي</a>':'')+'</div></article>';
+    const poster=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش أو شعار '+escapeHTML(item.title)+'" style="width:100%;height:210px;object-fit:contain;background:#fff;border-radius:10px;padding:12px">' : '<div style="height:210px;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800">'+escapeHTML(item.title)+'</div>';
+    return '<article class="feature"><div style="padding:14px 14px 0">'+poster+'</div><div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.description||"")+'</p></div></article>';
   }).join("");
 }
 
@@ -2153,16 +2152,15 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
 <section id="sponsors" class="page">
   <div class="intro">
-    <h2>رعاة سيناريو وسيناريست</h2>
-    <p>نرحب بالمؤسسات والشركات والجهات الداعمة للإبداع وصناعة السينما والدراما. شكرًا لكل من يساهم في دعم المواهب وصناع الحكايات.</p>
-    <button class="btn primary" type="button" onclick="showPage(&quot;contact&quot;)">استفسر عن الرعاية</button>
+    <h2>شركات الإنتاج والجهات الراعية</h2>
+    <p>مساحة تعريفية لعرض شركات الإنتاج والجهات الراعية للمنصة من خلال أسمائها وأفيشاتها أو شعاراتها ونبذة عنها.</p>
   </div>
   <div class="section-heading">
-    <h2>شركاء النجاح</h2>
-    <p>الجهات الراعية والداعمة للمنصة</p>
+    <h2>الشركات والجهات المشاركة</h2>
+    <p>تعرف على الشركات من خلال بطاقاتها التعريفية داخل المنصة</p>
   </div>
   <div id="sponsorsGrid" class="grid">
-    <div class="panel" style="grid-column:1/-1;text-align:center">سيتم عرض الرعاة المعتمدين هنا قريبًا.</div>
+    <div class="panel" style="grid-column:1/-1;text-align:center">سيتم عرض الشركات والجهات المعتمدة هنا قريبًا.</div>
   </div>
 </section>
 
@@ -2329,7 +2327,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
                     <option value="radio">محطات الراديو</option>
            <option value="television">القنوات التلفزيونية</option>
           <option value="production">مشروعات الإنتاج</option>
-          <option value="sponsors">الرعاة</option>
+          <option value="sponsors">شركات الإنتاج والرعاة</option>
         </select>
 
         <label>نوع المحتوى الذي ستضيفه</label>
@@ -3133,7 +3131,7 @@ const ADMIN_SECTION_META={
   radio:{name:"الإذاعة",hint:"أضف اسم المحطة ورابط البث الصوتي المباشر وصورتها.",accept:"image/*,audio/*"},
    television:{name:"القنوات التلفزيونية",hint:"أضف اسم القناة ورابط البث التلفزيوني الرسمي وصورتها.",accept:"image/*,video/*"},
   production:{name:"الإنتاج والتعاون",hint:"أضف بيانات المشروع وصورته ورابط ملفه أو عرضه.",accept:"image/*,video/*,.pdf,.doc,.docx"},
-  sponsors:{name:"الرعاة",hint:"أضف اسم الراعي وشعاره ونبذة عنه، وضع رابط موقعه أو صفحته في حقل الرابط.",accept:"image/*"}
+  sponsors:{name:"شركات الإنتاج والرعاة",hint:"أضف اسم شركة الإنتاج أو الجهة الراعية، وارفع الأفيش أو الشعار، واكتب نبذة تعريفية. لن تظهر روابط أو وسائل تواصل مع الجهة في صفحة العرض.",accept:"image/*"}
 };
 function adminConfigureMediaKind(){
   const kind=document.getElementById("adminMediaKind")?.value||"article";
