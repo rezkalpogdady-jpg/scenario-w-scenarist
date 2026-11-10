@@ -5735,6 +5735,8 @@ if(typeof adminSession!=='undefined'&&adminSession) adminSetInlinePublishingVisi
 function adminSetInlinePublishingVisible(visible){
  document.querySelectorAll('[data-admin-inline="1"]').forEach(el=>el.style.display=visible?'block':'none');
  if(!visible) ['library','libraryScripts','stories','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
+ if(typeof crimeStoryRenderAdminRecords==='function')crimeStoryRenderAdminRecords();
+ if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
