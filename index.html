@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.48: أفيش دعائي رأسي لشركات الإنتاج والرعاة مع الاسم فقط. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.50: نقل عرض الرعاة إلى تذييل الموقع أسفل روابط الصفحات المهمة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.48</title>
+<title>سيناريو وسيناريست – تحديث 6.8.50</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.48">
+<body data-platform-version="6.8.50">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1495,6 +1495,23 @@ function renderSponsors(items){
   box.innerHTML=sponsors.map(item=>{
     const poster=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="الأفيش الدعائي لشركة '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;height:auto;object-fit:cover;object-position:center;border-radius:10px;background:#171719">' : '<div style="width:100%;aspect-ratio:2/3;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800;text-align:center;padding:18px">'+escapeHTML(item.title)+'</div>';
     return '<article class="feature"><div style="padding:12px 12px 0">'+poster+'</div><div class="feature-content" style="text-align:center"><h3>'+escapeHTML(item.title)+'</h3></div></article>';
+  }).join("");
+}
+
+/* عرض الجهات الراعية أسفل روابط الصفحات المهمة في تذييل الموقع — شبكة ثابتة وليست شريطًا متحركًا */
+function renderFooterSponsors(items){
+  const box=document.getElementById("footerSponsorsGrid");
+  if(!box)return;
+  const sponsors=(items||[]).filter(item=>item && item.title);
+  if(!sponsors.length){
+    box.innerHTML='<p class="muted" style="grid-column:1/-1">سيتم عرض الجهات الراعية المعتمدة هنا.</p>';
+    return;
+  }
+  box.innerHTML=sponsors.map(item=>{
+    const logo=item.image
+      ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="'+escapeHTML(item.title)+'" loading="lazy" style="width:100%;height:76px;object-fit:contain;display:block;border-radius:8px;background:#fff;padding:5px">'
+      : '<div style="height:76px;display:grid;place-items:center;color:var(--gold);font-weight:700">'+escapeHTML(item.title)+'</div>';
+    return '<article style="min-width:0;padding:9px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.035)">'+logo+'<p style="margin:8px 0 0;font-size:13px;text-align:center">'+escapeHTML(item.title)+'</p></article>';
   }).join("");
 }
 
@@ -4078,7 +4095,7 @@ function distributePublicContent(records){
     renderProjects();
   }
 
-  renderSponsors(grouped.sponsors || []);
+  renderSponsors(grouped.sponsors || []);\n  renderFooterSponsors(grouped.sponsors || []);
 
   if(typeof radioStations!=="undefined"){
     const publicRadioStations=(grouped.radio || []).map(item=>({
@@ -4300,6 +4317,24 @@ loadApprovedIdeas();
 
 <footer>
   <h2>سيناريو وسيناريست</h2>
+  <div class="section-heading" style="margin:18px auto 10px">
+    <h3 style="color:var(--gold);margin-bottom:8px">الصفحات المهمة</h3>
+  </div>
+  <nav aria-label="روابط الصفحات المهمة" style="display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:0 auto 24px">
+    <button class="btn" type="button" onclick="showPage('home')">الرئيسية</button>
+    <button class="btn" type="button" onclick="showPage('academy')">أكاديمية السيناريو</button>
+    <button class="btn" type="button" onclick="showPage('writers')">دليل المؤلفين</button>
+    <button class="btn" type="button" onclick="showPage('films')">الأفلام</button>
+    <button class="btn" type="button" onclick="showPage('production')">الإنتاج</button>
+    <button class="btn" type="button" onclick="showPage('sponsors')">شركات الإنتاج والرعاة</button>
+    <button class="btn" type="button" onclick="showPage('contact')">تواصل معنا</button>
+  </nav>
+  <section aria-labelledby="footerSponsorsHeading" style="max-width:1100px;margin:0 auto 22px;padding:16px 12px;border-top:1px solid rgba(255,255,255,.12)">
+    <h3 id="footerSponsorsHeading" style="color:var(--gold);margin:0 0 14px">شركاء النجاح والرعاة</h3>
+    <div id="footerSponsorsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px;align-items:stretch">
+      <p class="muted" style="grid-column:1/-1">سيتم عرض الجهات الراعية المعتمدة هنا.</p>
+    </div>
+  </section>
   <p><button class="btn" type="button" onclick="showPage('contact')">تواصل مع إدارة المنصة</button></p>
   <p>منصة عربية لصناعة السينما والدراما واكتشاف المواهب</p>
   <p>© 2026 سيناريو وسيناريست – جميع الحقوق محفوظة.</p>
