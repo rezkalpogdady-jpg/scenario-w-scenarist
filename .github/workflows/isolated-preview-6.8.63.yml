@@ -1,0 +1,47 @@
+name: Build isolated 6.8.63 preview artifact
+
+on:
+  push:
+    branches:
+      - preview/6.8.63-admin-isolated
+    paths:
+      - index.html
+      - .github/workflows/isolated-preview-6.8.63.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isolated-preview-6-8-63
+  cancel-in-progress: true
+
+jobs:
+  package-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated preview branch
+        uses: actions/checkout@v4
+
+      - name: Verify database connection is disabled
+        shell: bash
+        run: |
+          grep -Fq 'const ADMIN_SUPABASE_URL = "";' index.html
+          grep -Fq 'const ADMIN_SUPABASE_KEY = "";' index.html
+          grep -Fq 'الاتصال بقاعدة البيانات معطل في نسخة المعاينة' index.html
+          if grep -Fq 'cdn.jsdelivr.net/npm/@supabase/supabase-js' index.html; then
+            echo "Supabase client library is still included; refusing to package."
+            exit 1
+          fi
+          if grep -Fq 'asmxyfkmojqzrbnrovmz.supabase.co' index.html; then
+            echo "Live project URL found; refusing to package."
+            exit 1
+          fi
+
+      - name: Package static preview only
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-w-scenarist-6.8.63-isolated-preview
+          path: index.html
+          if-no-files-found: error
+          retention-days: 3
