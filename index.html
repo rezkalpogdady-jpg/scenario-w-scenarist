@@ -5738,7 +5738,11 @@ function adminSetInlinePublishingVisible(visible){
  document.querySelectorAll('[data-admin-inline="1"]').forEach(el=>el.style.display=visible?'block':'none');
  if(!visible) ['library','libraryScripts','stories','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
  const storyEditor=document.getElementById('storiesInlineEditor');if(!visible&&storyEditor){storyEditor.style.display='none';storyEditor.innerHTML='';}
- if(typeof crimeStoryRenderAdminRecords==='function')crimeStoryRenderAdminRecords();
+ if(typeof crimeStoryRenderAdminRecords==='function'){
+  const records=document.getElementById('storiesAdminRecords');
+  if(visible)crimeStoryRenderAdminRecords();
+  else if(records)records.style.display='none';
+ }
  if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
