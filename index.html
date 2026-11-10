@@ -1399,6 +1399,13 @@ renderShortFilms();
 
   <div id="storiesItems" class="grid"></div>
 
+  <div id="crimeStoryModal" role="dialog" aria-modal="true" aria-labelledby="crimeStoryModalTitle" style="display:none;position:fixed;inset:0;z-index:10050;background:#000d;padding:18px;overflow-y:auto" onclick="if(event.target===this)closeCrimeStory()">
+    <article style="max-width:850px;margin:24px auto;background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 18px 55px #000b">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)"><h3 id="crimeStoryModalTitle" style="margin:0;color:var(--gold)">تفاصيل القضية</h3><button class="btn" type="button" onclick="closeCrimeStory()" aria-label="إغلاق الحكاية">إغلاق ✕</button></div>
+      <div id="crimeStoryModalBody" style="padding:18px"></div>
+    </article>
+  </div>
+
   <div class="panel">
     <h3 style="color:var(--gold)">سياسة نشر الحكايات</h3>
     <p>يجب التمييز بين الوقائع الموثقة والتفاصيل المتخيلة، واحترام خصوصية الضحايا، وعدم عرض اتهامات غير مثبتة باعتبارها حقائق.</p>
@@ -1524,24 +1531,33 @@ function editorialCard(item,kind){
 
 /* عرض الجرائم والحكايات */
 function renderStories(){
-  const box = document.getElementById("storiesItems");
-  if(!box) return;
-
-  const q = (document.getElementById("storiesSearch")?.value || "").toLowerCase();
-  const category = document.getElementById("storiesCategory")?.value || "";
-
-  const list = editorialData.stories.filter(x =>
-    (!category || x.category===category) &&
-    ((x.title+" "+(x.description||"")).toLowerCase().includes(q))
-  );
-
-  box.innerHTML = list.length
-    ? list.map(x=>editorialCard(x,"stories")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">
-        <h3 style="color:var(--gold)">ملفات الحكايات</h3>
-        <p>سيتم عرض القضايا والحكايات بعد إضافتها ومراجعتها من الإدارة.</p>
-      </div>`;
+  const box=document.getElementById("storiesItems");
+  if(!box)return;
+  const q=(document.getElementById("storiesSearch")?.value||"").trim().toLowerCase();
+  const category=document.getElementById("storiesCategory")?.value||"";
+  const list=editorialData.stories.filter(item=>(!category||item.category===category)&&((item.title+" "+(item.description||"")).toLowerCase().includes(q)));
+  box.innerHTML=list.length?list.map(item=>{
+    const format=item.extra?.story_format==="poster"?"poster":"story";
+    const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
+    const summary=(item.description||"").trim();
+    const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
+    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button></div></article>';
+  }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
 }
+function openCrimeStory(id){
+  const item=editorialData.stories.find(row=>String(row.id)===String(id));
+  const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
+  if(!item||!modal||!body||!title)return;
+  title.textContent=item.title||"تفاصيل القضية";
+  const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
+  const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
+  const note=item.extra?.editor_note?'<p style="padding:12px;border-right:3px solid var(--gold);background:var(--panel);white-space:pre-line">'+escapeHTML(item.extra.editor_note)+'</p>':"";
+  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد تفاصيل إضافية لهذه القضية.")+'</div>'+note+source;
+  modal.style.display="block";document.body.style.overflow="hidden";
+}
+function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
+document.getElementById("storiesItems")?.addEventListener("click",event=>{const trigger=event.target.closest("[data-crime-story-id]");if(trigger)openCrimeStory(trigger.dataset.crimeStoryId);});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeCrimeStory();});
 
 /* عرض الأخبار */
 function renderNews(){
@@ -2533,12 +2549,18 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <input id="adminTitle" required placeholder="اكتب العنوان">
 
         <label>التصنيف</label>
-        <input id="adminCategory" placeholder="مثال: دراما، سينما، تعليم">
+        <input id="adminCategory" placeholder="مثال: قضايا غامضة، جرائم قتل، اختفاء">
 
-        <label>الوصف أو التفاصيل</label>
+        <div id="adminStoryFormatWrap" style="display:none">
+          <label for="adminStoryFormat">طريقة النشر في صفحة الجرائم والحكايات</label>
+          <select id="adminStoryFormat"><option value="story">جريمة وحكاية كاملة</option><option value="poster">أفيش جريمة / ملف مصوّر</option></select>
+          <p style="font-size:12px;color:var(--muted)">اختر «حكاية كاملة» لعرض النص عند فتح الأفيش، أو «أفيش جريمة» لعرض الصورة مع نبذة مختصرة.</p>
+        </div>
+
+        <label>الوصف أو تفاصيل الحكاية</label>
         <textarea id="adminDescription" placeholder="اكتب التفاصيل هنا"></textarea>
 
-        <label>رابط أفيش المحاضرة أو صورة المحتوى</label>
+        <label>رابط الأفيش أو صورة المحتوى</label>
         <input id="adminImage" type="url" placeholder="ضع رابط الأفيش إن كان مرفوعًا بالفعل">
 
         <label>رابط الملف أو الفيديو أو البث (اختياري)</label>
@@ -2548,7 +2570,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
         <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص في بطاقات الأقسام.</p>
 
-        <label>رفع أفيش المحاضرة أو ملف المحتوى من جهازك</label>
+        <label>رفع الأفيش أو صورة الحكاية من جهازك</label>
         <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
         <p style="font-size:12px;color:var(--muted)">لأفيش المحاضرة: اختر نوع المحتوى «صورة أو أفيش»، ثم ارفع صورة رأسية بجودة جيدة. يفضل مقاس 1000 × 1500 بكسل.</p>
         <p style="font-size:12px;color:var(--muted)">سيتم رفع الملف إلى مساحة site-media في Supabase بعد تنفيذ إعدادات قاعدة البيانات والتخزين.</p>
@@ -3595,6 +3617,13 @@ const ADMIN_SECTION_META={
   production:{name:"الإنتاج والتعاون",hint:"أضف بيانات المشروع وصورته ورابط ملفه أو عرضه.",accept:"image/*,video/*,.pdf,.doc,.docx"},
   sponsors:{name:"شركات الإنتاج والرعاة",hint:"أضف اسم شركة الإنتاج أو الجهة الراعية، وارفع الأفيش أو الشعار، واكتب نبذة تعريفية. لن تظهر روابط أو وسائل تواصل مع الجهة في صفحة العرض.",accept:"image/*"}
 };
+function adminConfigureStoryForm(){
+  const isStories=document.getElementById("adminContentType")?.value==="stories";
+  const wrap=document.getElementById("adminStoryFormatWrap");
+  if(wrap)wrap.style.display=isStories?"block":"none";
+  const description=document.getElementById("adminDescription");
+  if(description&&isStories){description.rows=12;description.maxLength=30000;description.placeholder="اكتب الحكاية كاملة هنا، أو نبذة مختصرة إذا اخترت أفيش جريمة.";}else if(description){description.rows=3;description.maxLength=4000;description.placeholder="اكتب التفاصيل هنا";}
+}
 function adminConfigureMediaKind(){
   const kind=document.getElementById("adminMediaKind")?.value||"article";
   const input=document.getElementById("adminFile");
@@ -3647,6 +3676,7 @@ function adminOpenSection(section){
   document.getElementById("adminSaveButton").textContent="حفظ محتوى "+meta.name;
   adminConfigureMediaKind();
   adminConfigureSponsorForm();
+  adminConfigureStoryForm();
   document.getElementById("adminContentEditorHeading")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 document.getElementById("adminMediaKind")?.addEventListener("change",adminConfigureMediaKind);
@@ -3656,6 +3686,7 @@ document.getElementById("adminContentType")?.addEventListener("change",()=>{
   if(meta){document.getElementById("adminEditorSectionTitle").textContent="إدارة محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;const file=document.getElementById("adminFile");if(file)file.accept=meta.accept;}
   adminConfigureMediaKind();
   adminConfigureSponsorForm();
+  adminConfigureStoryForm();
 });
 
 /* جلب المحتوى */
@@ -3803,6 +3834,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
 
   record.extra_data.media_kind=record.content_type==="sponsors" ? "image" : (document.getElementById("adminMediaKind")?.value||"article");
   record.extra_data.section_label=ADMIN_SECTION_META[record.content_type]?.name||record.content_type;
+  if(record.content_type==="stories")record.extra_data.story_format=document.getElementById("adminStoryFormat")?.value||"story";
 
   if(!record.title){
     adminSetMessage("adminSaveMessage",record.content_type==="sponsors"?"اكتب اسم الشركة.":"اكتب عنوان المحتوى.");
@@ -3883,8 +3915,10 @@ function adminEditRecord(id){
   document.getElementById("adminContentUrl").value=item.content_url || "";
   document.getElementById("adminExtraData").value=JSON.stringify(item.extra_data || {},null,2);
   document.getElementById("adminMediaKind").value=item.extra_data?.media_kind||"article";
+  const storyFormat=document.getElementById("adminStoryFormat");if(storyFormat)storyFormat.value=item.extra_data?.story_format||"story";
   adminConfigureMediaKind();
   adminConfigureSponsorForm();
+  adminConfigureStoryForm();
   const meta=ADMIN_SECTION_META[item.content_type];
   if(meta){document.getElementById("adminEditorSectionTitle").textContent="تعديل محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;}
   document.getElementById("adminPublished").checked=!!item.published;
@@ -3945,6 +3979,8 @@ function adminResetForm(){
   document.getElementById("adminSaveButton").textContent=meta?"حفظ محتوى "+meta.name:"حفظ المحتوى";
   adminConfigureMediaKind();
   adminConfigureSponsorForm();
+  const storyFormat=document.getElementById("adminStoryFormat");if(storyFormat)storyFormat.value="story";
+  adminConfigureStoryForm();
 }
 
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
