@@ -3256,7 +3256,7 @@ async function adminLoadApprovalNotifications(){
   const summary=document.getElementById("adminApprovalSummary"),box=document.getElementById("adminApprovalItems");
   if(!summary||!box)return;
   const queues=[
-    {table:"member_profiles",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
+    {table:"member_profiles",key:"user_id",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
     {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
     {table:"writer_scripts",column:"status",label:"سيناريوهات PDF من الكُتّاب",target:"adminWriterScriptsList",loader:"adminLoadWriterScripts",optional:true},
     {table:"writer_ideas",column:"status",label:"أفكار الكُتّاب",target:"adminWriterIdeasList",loader:"adminLoadWriterIdeas"},
@@ -3270,7 +3270,7 @@ async function adminLoadApprovalNotifications(){
   ];
   const results=await Promise.all(queues.map(async item=>{
     try{
-      const {count,error}=await adminSupabase.from(item.table).select("id",{count:"exact",head:true}).eq(item.column,"pending");
+      const {count,error}=await adminSupabase.from(item.table).select(item.key||"id",{count:"exact",head:true}).eq(item.column,"pending");
       if(error)throw error;
       return {...item,count:Number(count)||0};
     }catch(error){return {...item,count:0,failed:true};}
