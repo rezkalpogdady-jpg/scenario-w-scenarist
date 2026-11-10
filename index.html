@@ -1593,7 +1593,7 @@ function renderStories(){
     const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
     const summary=(item.extra?.summary||item.description||"").trim();
     const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
-    const adminEdit=adminSession?(String(item.id).startsWith("crime-db-")?'<button class="btn" type="button" data-crime-db-edit="'+escapeHTML(String(item.id).slice(9))+'" style="margin-top:8px">تعديل الأفيش</button>':'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>'):"";
+    const adminEdit=adminSession?(String(item.id).startsWith("crime-db-")?'<button class="btn" type="button" data-crime-db-edit="'+escapeHTML(String(item.id).slice(9))+'" style="margin-top:8px">تعديل القصة</button>':'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>'):"";
     return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+(item.authorName?' · بقلم '+escapeHTML(item.authorName):'')+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+adminEdit+'</div></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
 }
@@ -6258,6 +6258,7 @@ function crimeStoryShowEditor(row){
 function crimeStoryCloseEditor(){var box=document.getElementById('storiesInlineEditor');if(box){box.style.display='none';box.innerHTML='';}}
 
 /* تعديل أفيش القصص القادمة من crime_stories — متاح للمدير فقط */
+/* محرر شامل لقصص crime_stories — متاح للمدير فقط */
 async function crimeDbStoryEdit(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
  const numericId=Number(id);
@@ -6266,19 +6267,28 @@ async function crimeDbStoryEdit(id){
  if(!box)return;
  box.style.display='block';box.innerHTML='<p>جارٍ تحميل بيانات القصة...</p>';
  box.scrollIntoView({behavior:'smooth',block:'center'});
- const {data,error}=await adminSupabase.from('crime_stories').select('id,title,image_url').eq('id',numericId).maybeSingle();
+ const {data,error}=await adminSupabase.from('crime_stories')
+  .select('id,title,description,content,image_url,category,author_name,is_published,status')
+  .eq('id',numericId).maybeSingle();
  if(error||!data){box.innerHTML='<p role="alert">تعذر تحميل القصة: '+escapeHTML(error?.message||'لم يتم العثور عليها.')+'</p>';return;}
  const current=data.image_url&&/^https?:\/\//i.test(data.image_url)?safeHttpUrl(data.image_url):'';
- box.innerHTML='<h3 style="color:var(--gold)">تعديل أفيش: '+escapeHTML(data.title||'القصة')+'</h3>'+
-  (current?'<img src="'+escapeHTML(current)+'" alt="الأفيش الحالي" style="display:block;width:min(100%,220px);max-height:320px;object-fit:contain;margin:12px 0;border-radius:10px">':'<p style="color:var(--muted)">لا يوجد أفيش مرفوع حاليًا.</p>')+
+ const esc=value=>escapeHTML(value==null?'':String(value));
+ box.innerHTML='<h3 style="color:var(--gold)">تعديل القصة بالكامل</h3>'+
+  '<p style="color:var(--muted)">يمكنك تعديل العنوان والملخص والنص والتصنيف واسم الكاتب والأفيش وحالة النشر. لن يتغير شيء قبل الضغط على حفظ التعديلات.</p>'+
+  (current?'<img src="'+esc(current)+'" alt="الأفيش الحالي" style="display:block;width:min(100%,220px);max-height:320px;object-fit:contain;margin:12px 0;border-radius:10px">':'<p style="color:var(--muted)">لا يوجد أفيش مرفوع حاليًا.</p>')+
   '<form id="crimeDbPosterForm" style="display:grid;gap:10px">'+
   '<input type="hidden" name="id" value="'+numericId+'">'+
-  '<label>اختر الأفيش من الهاتف (JPG أو PNG أو WEBP — حتى 10 ميجابايت)</label>'+
-  '<input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
+  '<label for="crimeDbTitle">عنوان القصة</label><input id="crimeDbTitle" name="title" required maxlength="180" value="'+esc(data.title)+'">'+
+  '<label for="crimeDbDescription">وصف مختصر / ملخص</label><textarea id="crimeDbDescription" name="description" rows="3" style="width:100%;padding:12px;border-radius:8px">'+esc(data.description)+'</textarea>'+
+  '<label for="crimeDbContent">نص القصة بالكامل</label><textarea id="crimeDbContent" name="content" required rows="18" style="width:100%;min-height:360px;padding:14px;border-radius:8px;line-height:1.9;white-space:pre-wrap">'+esc(data.content||'')+'</textarea>'+
+  '<label for="crimeDbCategory">التصنيف</label><input id="crimeDbCategory" name="category" required maxlength="100" value="'+esc(data.category||'جرائم وحكايات')+'">'+
+  '<label for="crimeDbAuthor">اسم الكاتب / الجهة</label><input id="crimeDbAuthor" name="author_name" maxlength="120" value="'+esc(data.author_name||'')+'">'+
+  '<label>الأفيش (JPG أو PNG أو WEBP — حتى 10 ميجابايت)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
   '<img id="crimeDbPosterPreview" alt="معاينة الأفيش الجديد" style="display:none;width:min(100%,220px);max-height:320px;object-fit:contain;margin:8px 0;border-radius:10px">'+
   '<label style="display:flex;align-items:center;gap:8px"><input name="remove" type="checkbox" style="width:auto"> حذف الأفيش الحالي</label>'+
-  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ الأفيش</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div>'+
-  '<p id="crimeDbPosterStatus" role="status"></p></form>';
+  '<label style="display:flex;align-items:center;gap:8px"><input name="published" type="checkbox" style="width:auto" '+(data.is_published?'checked':'')+'> إتاحة القصة للزوار (حالة المراجعة: '+esc(data.status||'غير محددة')+')</label>'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ كل التعديلات</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div>'+
+  '<p id="crimeDbPosterStatus" role="status" aria-live="polite"></p></form>';
  document.getElementById('crimeDbPosterForm').addEventListener('submit',crimeDbPosterSave);
  const imageInput=document.querySelector('#crimeDbPosterForm input[name="image"]');
  imageInput.addEventListener('change',()=>{
@@ -6296,30 +6306,37 @@ async function crimeDbPosterSave(event){
  if(!adminSession||!adminSupabase)return;
  const form=event.currentTarget,fd=new FormData(form),status=document.getElementById('crimeDbPosterStatus'),button=form.querySelector('[type="submit"]');
  const id=Number(fd.get('id')),file=fd.get('image'),remove=fd.get('remove')==='on';
+ const title=String(fd.get('title')||'').trim(),description=String(fd.get('description')||'').trim();
+ const content=String(fd.get('content')||''),category=String(fd.get('category')||'').trim();
+ const authorName=String(fd.get('author_name')||'').trim();
  let uploaded=null;
  try{
-  button.disabled=true;status.textContent='جارٍ حفظ الأفيش...';
+  if(!title)throw new Error('اكتب عنوان القصة.');
+  if(!content.trim())throw new Error('نص القصة لا يمكن أن يكون فارغًا.');
+  if(!category)throw new Error('اكتب تصنيف القصة.');
+  button.disabled=true;status.textContent='جارٍ حفظ جميع التعديلات...';
   const {data:previous,error:readError}=await adminSupabase.from('crime_stories').select('id,image_url').eq('id',id).maybeSingle();
   if(readError||!previous)throw readError||new Error('لم يتم العثور على القصة.');
   if(file&&file.size){
    if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('اختر صورة JPG أو PNG أو WEBP فقط.');
    if(file.size>10*1024*1024)throw new Error('حجم الأفيش يجب ألا يتجاوز 10 ميجابايت.');
    uploaded=await adminInlineUpload(file,'site-media','crime-stories',10*1024*1024);
-  }else if(!remove){throw new Error('اختر أفيشًا جديدًا أو فعّل خيار حذف الأفيش الحالي.');}
-  const imageUrl=uploaded?uploaded.url:null;
-  const {data,error}=await adminSupabase.from('crime_stories').update({image_url:imageUrl}).eq('id',id).select('id').maybeSingle();
-  if(error||!data)throw error||new Error('لم يتم حفظ التعديل. تحقق من صلاحيات المدير.');
+  }
+  const imageUrl=uploaded?uploaded.url:(remove?null:previous.image_url);
+  const changes={title,description,content,category,author_name:authorName||null,image_url:imageUrl,is_published:fd.get('published')==='on'};
+  const {data,error}=await adminSupabase.from('crime_stories').update(changes).eq('id',id).select('id').maybeSingle();
+  if(error||!data)throw error||new Error('لم يتم حفظ التعديلات. تحقق من صلاحيات المدير.');
   const oldPath=adminStoragePathFromPublicUrl(previous.image_url);
-  if(oldPath&&(!uploaded||oldPath!==uploaded.path)){
+  if(oldPath&&(remove||uploaded)&&(!uploaded||oldPath!==uploaded.path)){
    const {error:cleanupError}=await adminSupabase.storage.from('site-media').remove([oldPath]);
-   if(cleanupError)console.warn('تم حفظ الأفيش لكن تعذر حذف النسخة القديمة:',cleanupError.message);
+   if(cleanupError)console.warn('تم حفظ القصة لكن تعذر حذف الأفيش القديم:',cleanupError.message);
   }
   crimeStoryCloseEditor();
   await loadPublicContent();
-  alert('تم حفظ الأفيش بنجاح.');
+  alert('تم حفظ تعديلات القصة بنجاح.');
  }catch(error){
   if(uploaded?.path)await adminSupabase.storage.from('site-media').remove([uploaded.path]);
-  status.textContent='تعذر حفظ الأفيش: '+(error.message||'حاول مرة أخرى.');
+  status.textContent='تعذر حفظ التعديلات: '+(error.message||'حاول مرة أخرى.');
  }finally{button.disabled=false;}
 }
 function crimeStoryRenderAdminRecords(){
