@@ -294,6 +294,32 @@ Main{padding:17px 11px}
 .scenario-poster-caption p span{padding:0 3px;color:var(--gold)}
 .scenario-poster-caption .btn{width:100%}
 @media(max-width:640px){#libraryItems{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}.scenario-poster-card{border-radius:11px}.scenario-poster-caption{padding:9px}.scenario-poster-caption h3{font-size:14px}.scenario-poster-title{font-size:15px;right:8px;left:8px;bottom:9px}.scenario-poster-placeholder{padding:12px;gap:12px}}
+
+/* تجربة مجتمع مبسطة بأسلوب المنشورات، دون تغيير قاعدة البيانات */
+.community-page .community-compose{max-width:900px;margin:0 auto 24px;padding:18px}
+.community-compose-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.community-compose-heading h3{margin:0 0 3px;color:var(--gold)}
+.community-compose-heading p{margin:0;font-size:13px}
+.community-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--gold),#8f713c);color:#17130c;font-weight:800;font-size:18px}
+.community-compose form{display:grid;gap:10px}
+.community-compose textarea,.topic-reply-form textarea{width:100%;box-sizing:border-box;resize:vertical;border-radius:12px}
+.community-compose form>.btn{justify-self:start;min-width:130px}
+.community-note{font-size:12px;margin:10px 0 0}
+.community-feed{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:900px;margin:0 auto}
+.community-post{min-width:0;padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:0 5px 18px #0002}
+.community-post-head{display:flex;align-items:center;gap:11px;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.community-post-meta{display:grid;gap:4px;min-width:0}
+.community-post-meta strong{color:var(--gold)}
+.community-post-meta small,.community-reply small{color:var(--muted);font-size:12px}
+.community-post-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;padding:15px 0;font-size:15px}
+.community-replies-label{font-weight:700;font-size:13px;color:var(--gold);padding:9px 0 5px;border-top:1px solid var(--border)}
+.topic-replies{display:grid;gap:8px;margin:4px 0 12px}
+.community-reply{padding:10px 12px;border-radius:12px;background:var(--bg,var(--panel));border:1px solid var(--border)}
+.community-reply strong{font-size:13px;color:var(--gold)}
+.community-reply p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.topic-reply-form{display:grid;gap:8px}
+.topic-reply-form .btn{justify-self:start}
+@media(max-width:640px){.community-page .community-compose,.community-post{padding:13px;border-radius:13px}.community-post-body{font-size:14px}.community-compose form>.btn,.topic-reply-form .btn{width:100%}}
 </style>
 </head>
 
@@ -4662,30 +4688,22 @@ loadApprovedIdeas();
   <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة أفيش إلى الأرشيف</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>اختار صورة من معرض الهاتف أو ملفاته، واكتب العنوان والوصف. تأكد من حق استخدام الصورة.</p><form id="archiveAdminForm"><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option>أفيشات زمان</option><option>وجوه من الزمن الجميل</option><option>أخبار وحكايات زمان</option><option>مصر زمان</option><option>كواليس لا تنسى</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>اختيار الصورة من معرض الهاتف</label><input name="image" type="file" accept="image/*" required><p class="muted" style="font-size:12px">اختار الصورة مباشرة من معرض الهاتف أو ملفاته، ثم اكتب الوصف والتفاصيل.</p><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button class="btn primary" type="submit">حفظ ونشر</button><button class="btn" type="button" onclick="document.getElementById('archiveAdminPublish').style.display='none'">إغلاق</button><p id="archiveAdminMessage" aria-live="polite"></p></form></div><div id="archiveItems" class="grid"><div class="panel">جارٍ تحميل الأرشيف...</div></div>
 </section>
 
-<section id="community" class="page">
+<section id="community" class="page community-page">
   <div class="intro">
     <h2>مجتمع سيناريو وسيناريست</h2>
-    <p>مساحة للحوار وتبادل الخبرات ومناقشة السينما والكتابة وصناعة الأفلام. التصفح متاح للجميع، والنشر للأعضاء المسجلين.</p>
+    <p>مساحة بسيطة لأفكارك وأسئلتك وحواراتك عن السينما والكتابة وصناعة الأفلام.</p>
   </div>
-  <div class="panel">
-    <h3 style="color:var(--gold)">افتح موضوعًا للنقاش</h3>
+  <div class="panel community-compose">
+    <div class="community-compose-heading"><span class="community-avatar" aria-hidden="true">س</span><div><h3>ابدأ نقاشًا جديدًا</h3><p class="muted">شارك فكرة أو سؤالًا مع أعضاء المنصة</p></div></div>
     <form id="communityTopicForm">
-      <input id="communityTopicTitle" maxlength="180" required placeholder="عنوان الموضوع">
-      <select id="communityTopicCategory" required>
-        <option value="نقاشات سينمائية">نقاشات سينمائية</option>
-        <option value="ورشة كتابة السيناريو">ورشة كتابة السيناريو</option>
-        <option value="حوار عام">حوار عام</option>
-        <option value="اسأل أهل الخبرة">اسأل أهل الخبرة</option>
-        <option value="مسابقات وتحديات">مسابقات وتحديات</option>
-      </select>
-      <textarea id="communityTopicBody" rows="4" maxlength="6000" required placeholder="اكتب موضوعك أو سؤالك..."></textarea>
-      <button class="btn primary" type="submit">إرسال للمراجعة</button>
+      <textarea id="communityTopicBody" rows="4" maxlength="6000" required placeholder="اكتب موضوعك هنا..."></textarea>
+      <button class="btn primary" type="submit">نشر الموضوع</button>
       <p id="communityTopicMessage" aria-live="polite"></p>
     </form>
-    <p class="muted" style="font-size:12px">الموضوعات الجديدة تظهر بعد مراجعة الإدارة. يلزم تسجيل الدخول للمشاركة.</p>
+    <p class="muted community-note">النشر والردود للأعضاء المسجلين، وتظهر المشاركات بعد مراجعة الإدارة حفاظًا على جودة المجتمع.</p>
   </div>
-  <div class="section-heading"><h2>موضوعات الأعضاء</h2><p>شارك برأيك في الموضوعات المنشورة</p></div>
-  <div id="communityTopics" class="grid"><div class="panel">جارٍ تحميل المناقشات...</div></div>
+  <div class="section-heading"><h2>آخر المناقشات</h2><p>اقرأ وشارك برأيك</p></div>
+  <div id="communityTopics" class="community-feed"><div class="panel">جارٍ تحميل المناقشات...</div></div>
 </section>
 
 <section id="contact" class="page">
@@ -4819,13 +4837,13 @@ loadApprovedIdeas();
   async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
     try{const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(100);if(error)throw error;
-      if(!data?.length){box.innerHTML='<div class="panel">لا توجد موضوعات منشورة حتى الآن. كن أول من يبدأ نقاشًا.</div>';return;}
-      box.innerHTML=data.map(t=>`<article class="feature"><div class="feature-content"><small>${esc(t.category)} • ${esc(t.display_name||'عضو')} • ${new Date(t.created_at).toLocaleDateString('ar-EG')}</small><h3>${esc(t.title)}</h3><p>${esc(t.body)}</p><div class="topic-replies" id="replies-${esc(t.id)}"><p class="muted">جارٍ تحميل الردود...</p></div><form class="topic-reply-form" data-topic-id="${esc(t.id)}"><textarea rows="2" maxlength="2000" required placeholder="اكتب ردك في النقاش..."></textarea><button class="btn" type="submit">إرسال رد للمراجعة</button></form></div></article>`).join('');
+      if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return;}
+      box.innerHTML=data.map(t=>`<article class="community-post"><div class="community-post-head"><span class="community-avatar" aria-hidden="true">${esc((t.display_name||'ع').trim().charAt(0))}</span><div class="community-post-meta"><strong>${esc(t.display_name||'عضو')}</strong><small>${new Date(t.created_at).toLocaleDateString('ar-EG')} • ${esc(t.category||'حوار عام')}</small></div></div><div class="community-post-body">${esc(t.body)}</div><div class="community-replies-label">الردود</div><div class="topic-replies" id="replies-${esc(t.id)}"><p class="muted">جارٍ تحميل الردود...</p></div><form class="topic-reply-form" data-topic-id="${esc(t.id)}"><textarea rows="2" maxlength="2000" required placeholder="اكتب ردك..."></textarea><button class="btn" type="submit">إرسال الرد</button></form></article>`).join('');
       data.forEach(loadReplies);
     }catch(e){box.innerHTML=`<div class="panel">تعذر تحميل المناقشات: ${esc(e.message)}</div>`;}
   }
-  async function loadReplies(topic){const box=$('replies-'+topic.id);if(!box)return;try{const {data,error}=await client().from('topic_replies').select('display_name,body,created_at').eq('topic_id',topic.id).eq('status','approved').order('created_at',{ascending:true}).limit(100);if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="panel" style="margin:8px 0"><strong>${esc(r.display_name||'عضو')}</strong><p>${esc(r.body)}</p></div>`).join('')||'<p class="muted">لا توجد ردود بعد.</p>';}catch(e){box.textContent='تعذر تحميل الردود.';}}
-  $('communityTopicForm')?.addEventListener('submit',async e=>{e.preventDefault();notice('communityTopicMessage','جارٍ الإرسال...');try{const user=await currentUser();if(!user){notice('communityTopicMessage','سجل الدخول من صفحة حسابي أولًا.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('community_topics').insert({user_id:user.id,display_name:display,title:$('communityTopicTitle').value.trim(),category:$('communityTopicCategory').value,body:$('communityTopicBody').value.trim(),status:'pending'});if(error)throw error;e.target.reset();notice('communityTopicMessage','تم إرسال الموضوع للمراجعة، وسيظهر بعد الموافقة.');}catch(err){notice('communityTopicMessage','تعذر إرسال الموضوع: '+err.message);}});
+  async function loadReplies(topic){const box=$('replies-'+topic.id);if(!box)return;try{const {data,error}=await client().from('topic_replies').select('display_name,body,created_at').eq('topic_id',topic.id).eq('status','approved').order('created_at',{ascending:true}).limit(100);if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="community-reply"><strong>${esc(r.display_name||'عضو')}</strong><p>${esc(r.body)}</p><small>${new Date(r.created_at).toLocaleDateString('ar-EG')}</small></div>`).join('')||'<p class="muted">لا توجد ردود بعد. كن أول من يرد.</p>';}catch(e){box.textContent='تعذر تحميل الردود.';}}
+  $('communityTopicForm')?.addEventListener('submit',async e=>{e.preventDefault();const body=$('communityTopicBody').value.trim();if(!body){notice('communityTopicMessage','اكتب موضوعك أولًا.');return;}notice('communityTopicMessage','جارٍ إرسال الموضوع...');try{const user=await currentUser();if(!user){notice('communityTopicMessage','سجل الدخول من صفحة حسابي أولًا.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);let title=(body.split(/\r?\n/).find(line=>line.trim())||body).trim().slice(0,180);if(title.length<3)title=('نقاش: '+title).slice(0,180);const {error}=await client().from('community_topics').insert({user_id:user.id,display_name:display,title,category:'حوار عام',body,status:'pending'});if(error)throw error;e.target.reset();notice('communityTopicMessage','وصل موضوعك للمراجعة، وسيظهر بعد الموافقة.');}catch(err){notice('communityTopicMessage','تعذر إرسال الموضوع: '+err.message);}});
   document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'pending'});if(error)throw error;form.reset();alert('تم إرسال الرد للمراجعة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
   const priorShowPage=window.showPage;
