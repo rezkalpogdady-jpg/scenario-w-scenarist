@@ -2616,7 +2616,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
       if(error)throw error;
     }
     if(id){
-      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,revision_count:(Number(existing.revision_count)||0)+(existing.status==="needs_revision"?1:0),updated_at:new Date().toISOString()};
+      const payload={title,category,summary,storage_path:uploadedPath||existing.storage_path,status:"pending",rights_confirmed:true,review_notes:null,updated_at:new Date().toISOString()};
       const {error}=await client.from("writer_scripts").update(payload).eq("id",id).eq("user_id",accountUser.id);if(error)throw error;
       if(uploadedPath&&existing.storage_path)await client.storage.from("member-submissions").remove([existing.storage_path]);
       message.textContent="تم تحديث السيناريو وإرساله مجددًا لمراجعة الإدارة.";
