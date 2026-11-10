@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.44: عرض تعريفي لشركات الإنتاج والجهات الراعية دون روابط تواصل. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.45: إدارة شركات الإنتاج والرعاة من لوحة المدير لشركات الإنتاج والجهات الراعية دون روابط تواصل. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.44</title>
+<title>سيناريو وسيناريست – تحديث 6.8.45</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.44">
+<body data-platform-version="6.8.45">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2277,6 +2277,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
         <article class="admin-section-card"><h3>الراديو والتلفزيون</h3><p>إضافة محطات الإذاعة والقنوات التلفزيونية وروابط البث الرسمية.</p><button class="btn primary" type="button" onclick="adminOpenSection('radio')">إدارة الراديو والتلفزيون</button></article>
         <article class="admin-section-card"><h3>الإنتاج والتعاون</h3><p>عرض المشروعات والفرص والصور والملفات التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('production')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>شركات الإنتاج والرعاة</h3><p>إضافة الشركات والجهات الراعية وتعديل بياناتها أو حذفها والتحكم في نشرها.</p><button class="btn primary" type="button" onclick="adminOpenSection('sponsors')">إدارة الشركات والرعاة</button></article>
       </div>
     </div>
 
