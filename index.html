@@ -1801,7 +1801,7 @@ renderRadioStations();
 
 <section id="chess" class="page">
   <div class="intro">
-    <h2>نادي الشطرنج</h2>
+    <h2>لعبة الشطرنج</h2>
     <p>العب مع صديق على نفس الجهاز، أو تحدَّ الكمبيوتر، أو ادعُ عضوًا آخر إلى مباراة مباشرة.</p>
   </div>
 
@@ -1846,7 +1846,11 @@ renderRadioStations();
     <p id="chessMessage" style="color:var(--muted)">اختر طريقة اللعب لبدء المباراة.</p>
     <div id="chessOnlineStatus" style="color:var(--muted);font-size:13px;margin:6px 0"></div>
     <div style="max-width:560px;margin:20px auto">
-      <div id="chessBoard" style="display:grid;grid-template-columns:repeat(8,1fr);border:3px solid var(--gold);border-radius:5px;overflow:hidden;aspect-ratio:1"></div>
+      <div id="chessBoard" class="chess-board" style="display:grid;grid-template-columns:repeat(8,1fr);overflow:hidden;aspect-ratio:1"></div>
+    </div>
+    <div class="chess-captures" aria-live="polite">
+      <div><strong>قطع الأبيض المأكولة:</strong> <span id="chessCapturedWhite">—</span></div>
+      <div><strong>قطع الأسود المأكولة:</strong> <span id="chessCapturedBlack">—</span></div>
     </div>
     <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:13px">
       <span>♔ الأبيض</span><span>♚ الأسود</span><span>اضغط القطعة ثم مربع الحركة</span>
@@ -1921,27 +1925,41 @@ renderRadioStations();
 </section>
 
 <style>
-.chess-square.legal-move{outline:3px solid var(--gold);outline-offset:-4px}
+.chess-board{
+  border:5px solid #6b4c32;
+  border-radius:10px;
+  box-shadow:0 10px 28px #0003;
+  background:#6b4c32;
+}
 .chess-square{
-  Aspect-ratio:1;
-  Display:grid;
-  Place-items:center;
-  Border:0;
-  Padding:0;
-  Font-size:clamp(21px,5vw,43px);
-  Line-height:1;
-  Position:relative;
+  aspect-ratio:1;
+  display:grid;
+  place-items:center;
+  border:0;
+  padding:0;
+  font-size:clamp(25px,6vw,48px);
+  line-height:1;
+  position:relative;
+  cursor:pointer;
+  transition:filter .12s ease;
+  -webkit-tap-highlight-color:transparent;
 }
-.chess-light{background:#e8d8b9;color:#171717}
-.chess-dark{background:#785b3e;color:#fff}
+.chess-square:hover{filter:brightness(1.08)}
+.chess-light{background:#f0dfbd;color:#171717}
+.chess-dark{background:#9a704c;color:#fff}
 .chess-square.selected{
-  Outline:4px solid var(--gold);
-  Outline-offset:-4px;
+  box-shadow:inset 0 0 0 4px #f4c542;
+  z-index:1;
 }
-.chess-square:focus-visible{
-  Outline:4px solid #fff;
-  Outline-offset:-4px;
+.chess-square.last-move{background-image:linear-gradient(#facc1560,#facc1560)}
+.chess-square.legal-move{box-shadow:inset 0 0 0 3px #23864b}
+.chess-square:focus-visible{outline:3px solid #1687ff;outline-offset:-3px;z-index:2}
+.chess-captures{
+  max-width:560px;margin:-8px auto 14px;padding:10px 12px;
+  display:grid;gap:6px;background:var(--panel);border:1px solid var(--border);
+  border-radius:9px;font-size:13px;color:var(--muted)
 }
+.chess-captures span{font-size:20px;letter-spacing:2px;color:var(--text)}
 .idea-card{
   Background:var(--panel);
   Border:1px solid var(--border);
@@ -1966,8 +1984,8 @@ function chessInitEngine(){if(chessEngine)return;try{const engineUrl="https://cd
 function chessComputerMove(){if(chessMode!=="computer"||!chessGame||chessGame.game_over()||chessGame.turn()===chessHumanColor||chessEngineBusy)return;if(!chessEngineReady){chessInitEngine();chessMessage("جارٍ تحميل محرك Stockfish...");return;}chessEngineBusy=true;chessMessage("الكمبيوتر يفكر...");chessEngine.postMessage("setoption name Skill Level value "+(document.getElementById("chessDifficulty")?.value||8));chessEngine.postMessage("position fen "+chessGame.fen());chessEngine.postMessage("go depth 10");}
 function chessStartComputer(){chessMode="computer";chessHumanColor=document.getElementById("chessHumanColor").value;chessOnlineDisconnect();resetChess();chessInitEngine();if(chessHumanColor==="b")chessComputerMove();else chessMessage("أنت تلعب بالأبيض. ابدأ أول نقلة.");}
 function resetChess(){if(typeof Chess!=="function"){chessMessage("تعذر تحميل قواعد الشطرنج. تحقق من الإنترنت.");return;}if(chessMode==="online"&&chessOnlineGame){chessMessage("هذه مباراة مباشرة؛ لا يمكن إعادة ضبطها من طرف واحد.");return;}chessGame=new Chess();chessSelected=null;chessLegalMoves=[];chessEngineBusy=false;renderChessBoard();chessRenderHistory();if(chessMode==="computer"&&chessHumanColor==="b")chessComputerMove();else chessMessage(chessMode==="local"?"بدأت لعبة جديدة. الأبيض يبدأ أولًا.":"بدأت المباراة. دورك الآن.");}
-function renderChessBoard(){const box=document.getElementById("chessBoard");if(!box||!chessGame)return;const board=chessGame.board();box.innerHTML="";for(let row=0;row<8;row++){for(let col=0;col<8;col++){const squareName="abcdefgh"[col]+(8-row),piece=board[row][col],square=document.createElement("button");square.type="button";square.className="chess-square "+((row+col)%2===0?"chess-light":"chess-dark");if(chessSelected===squareName)square.classList.add("selected");if(chessLegalMoves.some(m=>m.to===squareName))square.classList.add("legal-move");square.textContent=piece?chessSymbols[piece.color][piece.type]:"";square.setAttribute("aria-label","المربع "+squareName);square.addEventListener("click",()=>handleChessClick(squareName));if(chessMode==="computer"&&(chessEngineBusy||chessGame.turn()!==chessHumanColor))square.disabled=true;box.appendChild(square);}}const turn=document.getElementById("chessTurn");if(turn)turn.textContent="الدور: "+(chessGame.turn()==="w"?"الأبيض":"الأسود");}
-function chessRenderHistory(){const box=document.getElementById("chessMoveHistory");if(!box||!chessGame)return;const h=chessGame.history();box.innerHTML="";for(let i=0;i<h.length;i+=2){const li=document.createElement("li");li.textContent=(Math.floor(i/2)+1)+". "+h[i]+(h[i+1]?"   "+h[i+1]:"");box.appendChild(li);}}
+function renderChessBoard(){const box=document.getElementById("chessBoard");if(!box||!chessGame)return;const board=chessGame.board(),history=chessGame.history({verbose:true}),last=history[history.length-1];box.innerHTML="";for(let row=0;row<8;row++){for(let col=0;col<8;col++){const squareName="abcdefgh"[col]+(8-row),piece=board[row][col],square=document.createElement("button");square.type="button";square.className="chess-square "+((row+col)%2===0?"chess-light":"chess-dark");if(chessSelected===squareName)square.classList.add("selected");if(last&&(last.from===squareName||last.to===squareName))square.classList.add("last-move");if(chessLegalMoves.some(m=>m.to===squareName))square.classList.add("legal-move");square.textContent=piece?chessSymbols[piece.color][piece.type]:"";square.setAttribute("aria-label","المربع "+squareName);square.addEventListener("click",()=>handleChessClick(squareName));if(chessMode==="computer"&&(chessEngineBusy||chessGame.turn()!==chessHumanColor))square.disabled=true;box.appendChild(square);}}const turn=document.getElementById("chessTurn");if(turn)turn.textContent="الدور: "+(chessGame.turn()==="w"?"الأبيض":"الأسود");}
+function chessRenderHistory(){if(!chessGame)return;const box=document.getElementById("chessMoveHistory"),moves=chessGame.history({verbose:true});if(box){box.innerHTML="";for(let i=0;i<moves.length;i+=2){const li=document.createElement("li");li.textContent=(Math.floor(i/2)+1)+". "+moves[i].san+(moves[i+1]?"   "+moves[i+1].san:"");box.appendChild(li);}}const white=document.getElementById("chessCapturedWhite"),black=document.getElementById("chessCapturedBlack");if(white&&black){white.textContent=moves.filter(m=>m.color==="w"&&m.captured).map(m=>chessSymbols.b[m.captured]).join(" ")||"—";black.textContent=moves.filter(m=>m.color==="b"&&m.captured).map(m=>chessSymbols.w[m.captured]).join(" ")||"—";}}
 function handleChessClick(square){if(!chessGame||chessGame.game_over()||chessEngineBusy||chessOnlineBusy)return;if(chessMode==="online"&&chessOnlineGame&&chessOnlineGame.status==="waiting"){chessMessage("انتظر انضمام العضو الآخر قبل بدء اللعب.");return;}if(chessMode==="computer"&&chessGame.turn()!==chessHumanColor)return;if(chessMode==="online"&&chessOnlineGame&&chessGame.turn()!==(chessOnlineGame.white_user_id===chessOnlineUserId?"w":"b"))return;const piece=chessGame.get(square);if(!chessSelected){if(!piece||piece.color!==chessGame.turn()){chessMessage("اختر قطعة من لون اللاعب صاحب الدور.");return;}chessSelected=square;chessLegalMoves=chessGame.moves({square,verbose:true});renderChessBoard();return;}if(piece&&piece.color===chessGame.turn()){chessSelected=square;chessLegalMoves=chessGame.moves({square,verbose:true});renderChessBoard();return;}const targets=chessLegalMoves.filter(m=>m.to===square);if(!targets.length){chessSelected=null;chessLegalMoves=[];renderChessBoard();chessMessage("هذه الحركة غير قانونية. اختر حركة مسموحة.");return;}let promotion="q";if(targets.some(m=>m.flags.includes("p"))){const choice=(prompt("ترقية البيدق إلى: q وزير، r قلعة، b فيل، n حصان","q")||"q").toLowerCase();promotion=["q","r","b","n"].includes(choice)?choice:"q";}const move=chessGame.move({from:chessSelected,to:square,promotion});chessSelected=null;chessLegalMoves=[];if(move)chessAfterMove(move,true);else renderChessBoard();}
 function chessAfterMove(move,isHuman){renderChessBoard();chessRenderHistory();chessPlaySound(chessGame.in_checkmate()?"mate":chessGame.in_check()?"check":move.captured?"capture":"move");if(chessGame.in_checkmate())chessMessage("كش مات! فاز "+(chessGame.turn()==="w"?"الأسود":"الأبيض")+".");else if(chessGame.in_draw())chessMessage("انتهت المباراة بالتعادل.");else if(chessGame.in_check())chessMessage("كش! الملك في خطر.");else chessMessage("تم تنفيذ النقلة: "+move.san);if(chessMode==="computer"&&isHuman&&chessGame.turn()!==chessHumanColor)setTimeout(chessComputerMove,180);if(chessMode==="online"&&chessOnlineGame&&isHuman)chessOnlineSaveMove();}
 function chessUndoMove(){if(!chessGame||chessMode==="online"){chessMessage("التراجع غير متاح في المباريات المباشرة.");return;}if(chessMode==="computer"){if(chessGame.history().length>=2){chessGame.undo();chessGame.undo();}else if(chessGame.history().length)chessGame.undo();}else chessGame.undo();chessSelected=null;chessLegalMoves=[];chessEngineBusy=false;renderChessBoard();chessRenderHistory();chessMessage("تم التراجع عن النقلة.");}
