@@ -2649,7 +2649,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <button class="btn" id="adminRatingsRefresh" type="button" onclick="adminLoadContentRatings()">عرض / تحديث التقييمات</button>
       </div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-top:12px">
-        <div class="admin-item">إجمالي التقييمات<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">عدد التقييمات المعروضة<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
         <div class="admin-item">متوسط آخر 100 تقييم<strong id="adminRatingsAverage" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
       </div>
       <div style="margin-top:14px">
@@ -3417,7 +3417,7 @@ async function adminLoadContentRatings(){
   if(status)status.textContent="جارٍ تحميل ملخص التقييمات...";
   if(button)button.disabled=true;
   try{
-    const {data,error,count}=await adminSupabase.from("content_ratings").select("content_id,rating",{count:"exact"}).limit(500);
+    const {data,error}=await adminSupabase.from("content_ratings").select("content_id,rating",{count:"exact"}).limit(500);
     if(error)throw error;
     const ratings=Array.isArray(data)?data:[];
     const total=Number(count??ratings.length);
@@ -6011,11 +6011,11 @@ async function adminLoadContentRatings(){
   box.innerHTML="<div class='admin-item'>جارٍ التحميل...</div>";
   try{
     const {data,error,count}=await adminSupabase.from("content_ratings")
-      .select("rating,created_at,content:site_content(title,content_type)",{count:"exact"})
+      .select("rating,created_at,content:site_content(title,content_type)")
       .order("created_at",{ascending:false}).limit(100);
     if(error)throw error;
     const rows=Array.isArray(data)?data:[];
-    const total=Number.isFinite(count)?count:rows.length;
+    const total=rows.length;
     const average=rows.length?rows.reduce((sum,row)=>sum+(Number(row.rating)||0),0)/rows.length:0;
     const totalNode=document.getElementById("adminRatingsTotal");
     const averageNode=document.getElementById("adminRatingsAverage");
@@ -6033,7 +6033,7 @@ async function adminLoadContentRatings(){
           "<p class='admin-status'>"+adminEscapeContact(kind)+" · "+adminEscapeContact(date)+"</p></article>";
       }).join("");
     }
-    if(status)status.textContent="تم تحديث التقييمات — المتوسط محسوب من أحدث "+rows.length+" تقييم.";
+    if(status)status.textContent="تم تحميل أحدث "+rows.length+" تقييم دون إجراء مسح شامل لجدول التقييمات.";
   }catch(error){
     box.innerHTML="<div class='admin-item'>تعذر تحميل التقييمات: "+adminEscapeContact(error.message||"خطأ غير معروف")+"</div>";
     if(status)status.textContent="لم يكتمل تحميل التقييمات.";
