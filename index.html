@@ -1504,7 +1504,7 @@ async function loadCrimeStories(){
     if(!publicContentClient)throw new Error("اتصال قاعدة البيانات غير جاهز.");
     const {data,error}=await publicContentClient.from("crime_stories")
       .select("id,title,description,content,image_url,category,author_name,created_at")
-      .eq("is_published",true).order("created_at",{ascending:false}).limit(100);
+      .eq("is_published",true).eq("status","approved").order("created_at",{ascending:false}).limit(100);
     if(error)throw error;
     crimeStoriesData=data||[];renderStories();
   }catch(error){console.warn("تعذر تحميل ملفات الجرائم",error);const box=document.getElementById("storiesItems");if(box)box.innerHTML='<div class="panel">تعذر تحميل الحكايات الآن. حاول تحديث الصفحة.</div>';}
@@ -1513,11 +1513,11 @@ async function adminLoadCrimeStoryQueue(){
   const box=document.getElementById("storiesAdminQueue");
   if(!box||!adminSupabase||!adminSession)return;
   const {data,error}=await adminSupabase.from("crime_stories")
-    .select("id,title,description,content,image_url,category,author_name,created_at")
+    .select("id,title,description,content,image_url,category,author_name,contact,created_at")
     .eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<p>لا توجد طلبات جديدة للمراجعة.</p>';return;}
-  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+'</p><p>التواصل: '+"لا توجد بيانات تواصل عامة"+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+'</p><p>التواصل: '+escapeHTML(item.contact||"لم يضف وسيلة تواصل")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
 }
 async function adminReviewCrimeStory(id,approve){
   if(!adminSupabase||!adminSession||!id)return;
