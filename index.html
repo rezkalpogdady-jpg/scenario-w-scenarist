@@ -4095,7 +4095,8 @@ function distributePublicContent(records){
     renderProjects();
   }
 
-  renderSponsors(grouped.sponsors || []);\n  renderFooterSponsors(grouped.sponsors || []);
+  renderSponsors(grouped.sponsors || []);
+  renderFooterSponsors(grouped.sponsors || []);
 
   if(typeof radioStations!=="undefined"){
     const publicRadioStations=(grouped.radio || []).map(item=>({
