@@ -4491,6 +4491,10 @@ const DEFAULT_TV_CHANNELS = [
   }
 ];
 
+/* مزامنة قائمة المعاينة مع المحاضرات المنشورة */
+academyLessons = window.__ISOLATED_PREVIEW_ACADEMY_CONTENT__.map(item => String(item.title || "").trim()).filter(Boolean);
+renderLessonIndex(window.__ISOLATED_PREVIEW_ACADEMY_CONTENT__);
+
 /* عرض القنوات التلفزيونية في صفحة الإذاعة والتليفزيون */
 function renderTvChannels(items){
   const box=document.getElementById("tvChannels");
