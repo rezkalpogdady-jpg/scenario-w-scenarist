@@ -5,7 +5,7 @@ create table if not exists public.member_posting_blocks (
 );
 
 alter table public.member_posting_blocks enable row level security;
-revoke all on public.member_posting_blocks from anon;
+revoke all on public.member_posting_blocks from public, anon, authenticated;
 grant select, insert, delete on public.member_posting_blocks to authenticated;
 
 drop policy if exists "Admins can manage member posting blocks" on public.member_posting_blocks;
