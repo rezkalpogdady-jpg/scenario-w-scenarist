@@ -74,7 +74,7 @@ create policy "Writers resubmit scripts needing revision"
   on public.writer_scripts for update to authenticated
   using (
     (select auth.uid()) = user_id
-    and status = 'needs_revision'
+    and status in ('pending','approved','needs_revision')
     and exists (
       select 1 from public.member_profiles mp
       where mp.user_id = (select auth.uid())
