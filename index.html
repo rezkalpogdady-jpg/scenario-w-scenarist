@@ -3521,7 +3521,6 @@ async function adminVerifyAdmin(session){
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
   await adminLoadRecords();
-  const storiesAdminPanel=document.getElementById("storiesAdminPanel");
   if(storiesAdminPanel)storiesAdminPanel.style.display="block";
   await adminLoadCrimeStoryQueue();
   await adminLoadScenarioScripts();
