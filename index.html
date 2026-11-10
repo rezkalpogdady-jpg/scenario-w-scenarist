@@ -3360,7 +3360,9 @@ async function adminSetContactStatus(id,status){
   if(error){alert("تعذر تحديث حالة الرسالة: "+error.message);return;}
   await adminLoadContactMessages();
 }
-document.getElementById("platformContactForm")?.addEventListener("submit",async function(event){
+function bindPlatformContactForm(){
+  const contactForm=document.getElementById("platformContactForm");
+  contactForm?.addEventListener("submit",async function(event){
   event.preventDefault();
   const form=this,button=document.getElementById("contactSubmit"),status=document.getElementById("contactFormStatus");
   if(document.getElementById("contactWebsite")?.value.trim()) return;
@@ -3392,7 +3394,13 @@ document.getElementById("platformContactForm")?.addEventListener("submit",async 
   }finally{
     button.disabled=false;button.textContent="إرسال الرسالة";
   }
-});
+  });
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",bindPlatformContactForm,{once:true});
+}else{
+  bindPlatformContactForm();
+}
 
 /* التحقق من أن الحساب مدير فعلاً */
 
