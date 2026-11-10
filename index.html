@@ -2233,7 +2233,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <div><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><span id="adminApprovalBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:27px;padding:0 8px;border-radius:20px;background:var(--gold);color:#17130c;font-weight:800">0</span><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
         <button class="btn primary" id="adminApprovalToggle" type="button" aria-expanded="true" onclick="adminToggleApprovalNotifications()">إخفاء الطلبات</button>
         <button class="btn" type="button" onclick="adminLoadApprovalNotifications()">تحديث الإشعارات</button>
       </div>
@@ -3258,7 +3258,7 @@ async function adminLoadApprovalNotifications(){
   const queues=[
     {table:"member_profiles",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
     {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
-    {table:"writer_scripts",column:"status",label:"سيناريوهات PDF من الكُتّاب",target:"adminWriterScriptsList",loader:"adminLoadWriterScripts"},
+    {table:"writer_scripts",column:"status",label:"سيناريوهات PDF من الكُتّاب",target:"adminWriterScriptsList",loader:"adminLoadWriterScripts",optional:true},
     {table:"writer_ideas",column:"status",label:"أفكار الكُتّاب",target:"adminWriterIdeasList",loader:"adminLoadWriterIdeas"},
     {table:"director_work_submissions",column:"status",label:"نماذج أعمال المخرجين",target:"adminDirectorWorksList",loader:"adminLoadDirectorWorks"},
     {table:"community_submissions",column:"status",label:"طلبات المواهب والمشروعات",target:"adminCommunityList",loader:"adminLoadCommunitySubmissions"},
@@ -3276,7 +3276,8 @@ async function adminLoadApprovalNotifications(){
     }catch(error){return {...item,count:0,failed:true};}
   }));
   const total=results.reduce((sum,item)=>sum+item.count,0);
-  const failed=results.some(item=>item.failed);
+  const badge=document.getElementById("adminApprovalBadge");if(badge)badge.textContent=String(total);
+  const failed=results.some(item=>item.failed&&!item.optional);
   summary.textContent=total
     ? "عندك "+total+" طلبًا منتظرًا للمراجعة. افتح أي بند للانتقال مباشرة إلى مراجعته."
     : "لا توجد طلبات موافقة معلقة حاليًا.";
