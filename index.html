@@ -4569,27 +4569,135 @@ function renderFilms(){
   box.innerHTML='<div id="seriesInPageViewer" class="panel" hidden style="grid-column:1/-1;margin-bottom:18px;border:1px solid var(--gold);padding:16px"></div>'+playlistCards+publishedCards;
 }
 
+let seriesInPagePlayer=null;
+let seriesInPagePlayerReady=false;
+let seriesInPagePlaylistId="";
+let seriesPendingEpisodeIndex=0;
+
+function loadSeriesYoutubeApi(){
+  if(window.YT && window.YT.Player)return Promise.resolve(window.YT);
+  if(window.__scenarioYoutubeApiPromise)return window.__scenarioYoutubeApiPromise;
+  window.__scenarioYoutubeApiPromise=new Promise((resolve,reject)=>{
+    const previousReady=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=function(){
+      if(typeof previousReady==="function"){
+        try{previousReady();}catch(error){}
+      }
+      resolve(window.YT);
+    };
+    const script=document.createElement("script");
+    script.src="https://www.youtube.com/iframe_api";
+    script.async=true;
+    script.onerror=()=>{
+      window.__scenarioYoutubeApiPromise=null;
+      reject(new Error("تعذر تحميل مشغّل YouTube"));
+    };
+    document.head.appendChild(script);
+  });
+  return window.__scenarioYoutubeApiPromise;
+}
+
+function setSeriesEpisodeActive(index){
+  const panel=document.getElementById("seriesInPageViewer");
+  if(!panel)return;
+  const label=panel.querySelector("[data-series-current]");
+  if(label)label.textContent="الحلقة "+(index+1);
+  panel.querySelectorAll("[data-series-episode]").forEach(button=>{
+    const active=Number(button.dataset.seriesEpisode)===index;
+    button.setAttribute("aria-pressed",active?"true":"false");
+    button.style.background=active?"var(--gold)":"transparent";
+    button.style.color=active?"#171717":"var(--text)";
+    button.style.borderColor=active?"var(--gold)":"var(--border)";
+  });
+}
+
+function selectSeriesEpisode(index){
+  const item=FEATURED_FILM_PLAYLISTS.find(entry=>entry.id==="al-bashayer");
+  if(!item || !Number.isInteger(index) || index<0 || index>=Number(item.episodeCount))return;
+  seriesPendingEpisodeIndex=index;
+  setSeriesEpisodeActive(index);
+  if(seriesInPagePlayerReady && seriesInPagePlayer){
+    seriesInPagePlayer.loadPlaylist({
+      listType:"playlist",
+      list:seriesInPagePlaylistId,
+      index:index
+    });
+  }
+}
+
 function openSeriesPlaylist(seriesId){
   const item=FEATURED_FILM_PLAYLISTS.find(entry=>entry.id===seriesId);
   const panel=document.getElementById("seriesInPageViewer");
   if(!item || !panel)return;
+  if(seriesInPagePlayer){
+    try{seriesInPagePlayer.destroy();}catch(error){}
+    seriesInPagePlayer=null;
+  }
+  seriesInPagePlayerReady=false;
+  seriesInPagePlaylistId=item.playlistId;
+  seriesPendingEpisodeIndex=0;
   panel.hidden=false;
+  const episodeButtons=Array.from({length:Number(item.episodeCount)||0},(_,index)=>`
+    <button class="btn" type="button" data-series-episode="${index}" aria-pressed="${index===0?"true":"false"}" onclick="selectSeriesEpisode(${index})" style="min-width:48px;padding:9px 12px;border:1px solid var(--border);background:${index===0?"var(--gold)":"transparent"};color:${index===0?"#171717":"var(--text)"}"> ${index+1} </button>
+  `).join("");
   panel.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
       <h3 style="color:var(--gold);margin:0">${escapeHTML(item.title)} — مشاهدة الحلقات</h3>
       <button class="btn" type="button" onclick="closeSeriesPlaylist()">إغلاق المشغّل</button>
     </div>
     <div style="position:relative;width:100%;aspect-ratio:16/9;min-height:220px;background:#000;border-radius:8px;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(item.playlistId)}&playsinline=1" title="${escapeHTML(item.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+      <div id="seriesInPagePlayerHost" title="${escapeHTML(item.title)}" style="position:absolute;inset:0;width:100%;height:100%"></div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin:10px 0 8px">اختر الحلقة من قائمة التشغيل داخل المشغّل. يتم تحميل المشغّل بعد الضغط فقط.</p>
-    <a class="btn" href="https://www.youtube.com/playlist?list=${encodeURIComponent(item.playlistId)}" target="_blank" rel="noopener noreferrer">لو المشغّل لم يعمل، افتح الحلقات على YouTube</a>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 8px">
+      <strong style="color:var(--gold)" data-series-current>الحلقة 1</strong>
+      <span style="font-size:12px;color:var(--muted)">اختار رقم الحلقة للمشاهدة</span>
+    </div>
+    <div aria-label="اختيار الحلقة" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(48px,1fr));gap:8px">
+      ${episodeButtons}
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 8px">المشغّل وقائمة الحلقات لا يتم تحميلهما إلا بعد الضغط على «شاهد الحلقات». يتم استخدام مشغّل واحد فقط.</p>
+    <a class="btn" href="https://www.youtube.com/playlist?list=${encodeURIComponent(item.playlistId)}" target="_blank" rel="noopener noreferrer">فتح قائمة الحلقات على YouTube</a>
   `;
+  setSeriesEpisodeActive(0);
   panel.scrollIntoView({behavior:"smooth",block:"start"});
+  loadSeriesYoutubeApi().then(YT=>{
+    if(!document.getElementById("seriesInPagePlayerHost"))return;
+    seriesInPagePlayer=new YT.Player("seriesInPagePlayerHost",{
+      width:"100%",
+      height:"100%",
+      playerVars:{playsinline:1,rel:0},
+      events:{
+        onReady:function(event){
+          seriesInPagePlayerReady=true;
+          event.target.cuePlaylist({
+            listType:"playlist",
+            list:seriesInPagePlaylistId,
+            index:seriesPendingEpisodeIndex
+          });
+        },
+        onStateChange:function(event){
+          if(event.data===1 || event.data===2 || event.data===0){
+            const current=event.target.getPlaylistIndex();
+            if(Number.isInteger(current) && current>=0)setSeriesEpisodeActive(current);
+          }
+        }
+      }
+    });
+  }).catch(()=>{
+    const host=document.getElementById("seriesInPagePlayerHost");
+    if(host)host.innerHTML='<p style="color:#fff;text-align:center;padding:24px">تعذر تحميل المشغّل. يمكنك فتح قائمة الحلقات على YouTube.</p>';
+  });
 }
 
 function closeSeriesPlaylist(){
   const panel=document.getElementById("seriesInPageViewer");
+  if(seriesInPagePlayer){
+    try{seriesInPagePlayer.destroy();}catch(error){}
+  }
+  seriesInPagePlayer=null;
+  seriesInPagePlayerReady=false;
+  seriesInPagePlaylistId="";
+  seriesPendingEpisodeIndex=0;
   if(!panel)return;
   panel.innerHTML="";
   panel.hidden=true;
