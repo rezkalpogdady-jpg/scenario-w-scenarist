@@ -2639,6 +2639,25 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminWriterScriptsList" class="grid"><div class="panel">تظهر ملفات PDF المرسلة من الكُتّاب هنا بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
     <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
+    <div class="section-heading" id="adminDecisionCenterHeading">
+      <h2>متابعة التقييمات وآراء الأعضاء</h2>
+      <p>مؤشرات تساعد الإدارة على اتخاذ القرار؛ كتابة المحتوى وتعديله تظل داخل كل صفحة على حدة.</p>
+    </div>
+    <div class="panel" id="adminDecisionCenterPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p id="adminRatingsStatus" class="admin-status" role="status" style="margin:0">اضغط لعرض التقييمات عند الحاجة.</p>
+        <button class="btn" id="adminRatingsRefresh" type="button" onclick="adminLoadContentRatings()">عرض / تحديث التقييمات</button>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-top:12px">
+        <div class="admin-item">إجمالي التقييمات<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+        <div class="admin-item">متوسط آخر 100 تقييم<strong id="adminRatingsAverage" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
+      </div>
+      <div style="margin-top:14px">
+        <h3 style="color:var(--gold)">أحدث تقييمات المحتوى</h3>
+        <div id="adminRatingsList" class="grid"><div class="admin-item">لم يتم تحميل التقييمات بعد.</div></div>
+      </div>
+    </div>
+
     <div class="section-heading" id="adminGrowthStatsHeading">
       <h2>إحصائيات الأعضاء ونمو المنصة</h2>
       <p>ملخص الأعضاء والتفاعل والزيارات — يُحدّث عند فتح اللوحة أو بالضغط على تحديث</p>
@@ -5979,5 +5998,46 @@ async function crimeStorySave(event){
 }
 if(typeof adminSession!=='undefined'&&adminSession)adminSetInlinePublishingVisible(true);
 
+
+
+// تقييمات المحتوى: تحميل عند طلب المدير فقط لتقليل الاستعلامات والحمل على المنصة.
+async function adminLoadContentRatings(){
+  const box=document.getElementById("adminRatingsList");
+  const status=document.getElementById("adminRatingsStatus");
+  const button=document.getElementById("adminRatingsRefresh");
+  if(!box||!adminSupabase||!adminSession)return;
+  if(button)button.disabled=true;
+  if(status)status.textContent="جارٍ تحميل أحدث التقييمات...";
+  box.innerHTML="<div class='admin-item'>جارٍ التحميل...</div>";
+  try{
+    const {data,error,count}=await adminSupabase.from("content_ratings")
+      .select("rating,created_at,content:site_content(title,content_type)",{count:"exact"})
+      .order("created_at",{ascending:false}).limit(100);
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    const total=Number.isFinite(count)?count:rows.length;
+    const average=rows.length?rows.reduce((sum,row)=>sum+(Number(row.rating)||0),0)/rows.length:0;
+    const totalNode=document.getElementById("adminRatingsTotal");
+    const averageNode=document.getElementById("adminRatingsAverage");
+    if(totalNode)totalNode.textContent=total.toLocaleString("ar-EG");
+    if(averageNode)averageNode.textContent=rows.length?average.toFixed(1)+" / 5":"لا توجد تقييمات";
+    if(!rows.length){
+      box.innerHTML="<div class='admin-item'>لا توجد تقييمات مسجلة حتى الآن.</div>";
+    }else{
+      box.innerHTML=rows.map(row=>{
+        const title=row.content?.title||"محتوى غير محدد";
+        const kind=row.content?.content_type||"";
+        const date=row.created_at?new Date(row.created_at).toLocaleString("ar-EG"):"";
+        const rating=Math.max(0,Math.min(5,Number(row.rating)||0));
+        return "<article class='admin-item'><div style='display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap'><strong>"+adminEscapeContact(title)+"</strong><strong style='color:var(--gold)'>"+rating+" / 5 ★</strong></div>"+
+          "<p class='admin-status'>"+adminEscapeContact(kind)+" · "+adminEscapeContact(date)+"</p></article>";
+      }).join("");
+    }
+    if(status)status.textContent="تم تحديث التقييمات — المتوسط محسوب من أحدث "+rows.length+" تقييم.";
+  }catch(error){
+    box.innerHTML="<div class='admin-item'>تعذر تحميل التقييمات: "+adminEscapeContact(error.message||"خطأ غير معروف")+"</div>";
+    if(status)status.textContent="لم يكتمل تحميل التقييمات.";
+  }finally{if(button)button.disabled=false;}
+}
 </script>
 </body></html>
