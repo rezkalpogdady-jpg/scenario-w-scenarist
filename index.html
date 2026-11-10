@@ -772,6 +772,7 @@ function openLesson(index){
   if(listPanel) listPanel.style.display="none";
   if(listHeading) listHeading.style.display="none";
   dialog.style.display="block";
+  if(material?.id) recordPublicContentView("academy",material.id);
   dialog.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
@@ -2485,6 +2486,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <div class="admin-item"><h3 style="margin-top:0">تفاعل المجتمع</h3><p>موضوعات النقاش: <strong id="growthTopics">—</strong></p><p>الردود: <strong id="growthReplies">—</strong></p><p>التعليقات: <strong id="growthComments">—</strong></p></div>
         <div class="admin-item"><h3 style="margin-top:0">أكثر الصفحات زيارة</h3><div id="growthTopPages" class="admin-status">لا توجد بيانات بعد.</div></div>
       </div>
+      <div class="admin-item" style="margin-top:14px">
+        <h3 style="margin-top:0">مشاهدات كل محتوى منشور</h3>
+        <p class="admin-status">عدد الزوار المختلفين الذين فتحوا المحاضرة أو السيناريو أو بدأوا تشغيل الفيديو. الزائر الواحد يُحسب مرة واحدة لكل محتوى.</p>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:420px"><thead><tr><th style="text-align:right;padding:8px">المحتوى</th><th style="text-align:right;padding:8px">النوع</th><th style="text-align:right;padding:8px">المشاهدات الفريدة</th></tr></thead><tbody id="growthContentViews"><tr><td colspan="3">جارٍ تحميل البيانات...</td></tr></tbody></table></div>
+      </div>
     </div>
 
     <div id="adminContentList" class="grid"></div>
@@ -3163,6 +3169,14 @@ async function adminReviewWriterScript(id,status){
 function growthFormatNumber(value){
   return Number(value||0).toLocaleString("ar-EG");
 }
+async function adminLoadContentViewStats(){
+  if(!adminSupabase||!adminSession)return;
+  const box=document.getElementById("growthContentViews");if(!box)return;
+  const {data,error}=await adminSupabase.rpc("admin_content_view_stats");
+  if(error){box.innerHTML='<tr><td colspan="3">تعذر تحميل مشاهدات المحتوى: '+adminEscape(error.message)+'</td></tr>';return;}
+  const rows=Array.isArray(data)?data:[];
+  box.innerHTML=rows.length?rows.map(row=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.title||"محتوى بدون عنوان")+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.content_label||row.content_type)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(row.unique_views)+'</td></tr>').join(""):'<tr><td colspan="3">لا يوجد محتوى منشور حتى الآن.</td></tr>';
+}
 async function adminLoadPlatformGrowthStats(){
   if(!adminSupabase || !adminSession)return;
   const status=document.getElementById("adminGrowthStatsStatus");
@@ -3171,6 +3185,7 @@ async function adminLoadPlatformGrowthStats(){
   if(button)button.disabled=true;
   try{
     const {data,error}=await adminSupabase.rpc("admin_platform_growth_stats");
+    await adminLoadContentViewStats();
     if(error)throw error;
     const stats=Array.isArray(data)?data[0]:data;
     if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
@@ -4101,6 +4116,7 @@ async function openScenarioScript(id){
     if(!row.storage_path)throw new Error("ملف السيناريو غير مرتبط بسجل المكتبة. أبلغ الإدارة.");
     if(row.poster_path){try{const {data:posterData,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(row.poster_path,1800);if(posterError)throw posterError;const posterBox=document.getElementById("scenarioReaderPoster"),posterImage=document.getElementById("scenarioReaderPosterImage");if(posterImage&&posterBox){posterImage.src=posterData.signedUrl;posterImage.alt="أفيش فيلم "+(item.title||"");posterBox.style.display="block";}}catch(posterError){console.warn("تعذر تحميل أفيش الفيلم:",posterError);}}
     const {data:signed,error:signedError}=await client.storage.from("scenario-scripts").createSignedUrl(row.storage_path,1800);if(signedError)throw signedError;
+    recordPublicContentView("scenario",id);
     await renderScenarioPdf(frame,signed.signedUrl,item.title,"");
     const notice=document.getElementById("scenarioReaderNotice");if(notice)notice.textContent=`المؤلف: ${item.author||"غير محدد"} • أساس الإتاحة: ${row.rights_holder} • رابط القراءة مؤقت لمدة 30 دقيقة.`;
   }catch(error){frame.innerHTML=`<div style="padding:24px;color:white;text-align:center"><p>تعذرت إتاحة القراءة: ${escapeHTML(error.message||"تأكد من تسجيل الدخول وإعداد مساحة الملفات الخاصة.")}</p><button class="btn" type="button" onclick="closeScenarioReader()">إغلاق</button></div>`;}
@@ -4213,7 +4229,7 @@ function renderFilms(){
         <h3>${escapeHTML(item.title)}</h3>
         <p>${escapeHTML(item.category || "عمل فني")}</p>
         <p>${escapeHTML(item.description || "")}</p>
-        ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل") : ""}
+        ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
       </div>
     </article>
   `).join("");
@@ -4231,11 +4247,11 @@ function safeHttpUrl(value){
   }catch(_){ return ""; }
 }
 
-function directVideoMarkup(value,label="مشاهدة الفيديو"){
+function directVideoMarkup(value,label="مشاهدة الفيديو",viewType="",viewId=""){
   const url=safeHttpUrl(value);
   if(!url)return "";
   if(/\.(mp4|webm|ogg|m4v)(\?|#|$)/i.test(url)){
-    return `<video controls playsinline preload="metadata" aria-label="${escapeHTML(label)}" style="width:100%;max-height:420px;background:#000;border-radius:8px" src="${escapeHTML(url)}"></video>`;
+    return `<video controls playsinline preload="metadata" aria-label="${escapeHTML(label)}" data-content-view-type="${escapeHTML(viewType)}" data-content-view-id="${escapeHTML(viewId)}" style="width:100%;max-height:420px;background:#000;border-radius:8px" src="${escapeHTML(url)}"></video>`;
   }
   if(/\.m3u8(\?|#|$)/i.test(url)){
     const playerId="media-"+Math.random().toString(36).slice(2,10);
@@ -4254,7 +4270,7 @@ function directVideoMarkup(value,label="مشاهدة الفيديو"){
       const id=parsed.pathname.match(/\/(\d+)/)?.[1];
       if(id) embed="https://player.vimeo.com/video/"+encodeURIComponent(id);
     }
-    if(embed) return `<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden"><iframe src="${embed}" title="${escapeHTML(label)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>`;
+    if(embed) return `<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden"><iframe data-content-view-type="${escapeHTML(viewType)}" data-content-view-id="${escapeHTML(viewId)}" src="${embed}" title="${escapeHTML(label)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe></div>`;
   }catch(_){}
   return `<a class="btn" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`;
 }
@@ -4505,6 +4521,30 @@ document.getElementById("filmsSearch")
 
 document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
+
+/* عدّ زائر واحد فقط لكل محتوى منشور؛ لا نطلب تسجيل الدخول ولا نجمع بيانات شخصية */
+async function recordPublicContentView(contentType,contentId){
+  try{
+    if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
+    let viewerId=localStorage.getItem("scenarioContentViewerId");
+    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return;localStorage.setItem("scenarioContentViewerId",viewerId);}
+    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
+    if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
+  }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
+}
+document.addEventListener("play",event=>{
+  const media=event.target;
+  if(media instanceof HTMLVideoElement && media.dataset.contentViewType && media.dataset.contentViewId){
+    recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
+  }
+},true);
+document.addEventListener("load",event=>{
+  const frame=event.target;
+  if(frame instanceof HTMLIFrameElement && frame.dataset.contentViewType && frame.dataset.contentViewId){
+    recordPublicContentView(frame.dataset.contentViewType,frame.dataset.contentViewId);
+  }
+},true);
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
