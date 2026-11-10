@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.53: إحصائيات نمو المنصة ولوحة أداء مجمعة وخفيفة. | 6.8.52: إدارة بسيطة للمجتمع. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.54: جرائم وحكايات — استقبال المشاركات ومراجعتها ونشر المعتمد داخل الصفحة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.53</title>
+<title>سيناريو وسيناريست – تحديث 6.8.54</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.53">
+<body data-platform-version="6.8.54">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -327,7 +327,7 @@ Main{padding:17px 11px}
 <button data-page="library">مكتبة السيناريو</button>
 <button data-page="films">الأفلام والمسلسلات</button>
 <button data-page="shorts">الأفلام القصيرة</button>
-<button data-page="stories">الجرائم والحكايات</button>
+<button data-page="stories">جرائم وحكايات</button>
 <button data-page="news">الأخبار الفنية</button>
 <button data-page="archive">أرشيف السينما زمان</button>
 <button data-page="community">مجتمع ونقاشات</button>
@@ -410,9 +410,9 @@ Main{padding:17px 11px}
 </article>
 
 <article class="feature">
-<img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="الجرائم والحكايات">
+<img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="جرائم وحكايات">
 <div class="feature-content">
-<h3>الجرائم والحكايات</h3>
+<h3>جرائم وحكايات</h3>
 <p>حكايات وأحداث غامضة وملفات درامية ملهمة للكتابة.</p>
 <button class="btn" onclick="showPage('stories')">اكتشف الحكايات</button>
 </div>
@@ -1301,12 +1301,12 @@ renderShortFilms();
 <!-- نهاية الجزء الثالث -->
 
 <!-- =========================
-     الجزء الرابع: الجرائم والحكايات والأخبار والإنتاج
+     الجزء الرابع: جرائم وحكايات والأخبار والإنتاج
 =========================  -->
 
 <section id="stories" class="page">
   <div class="intro">
-    <h2>ملفات الجرائم والحكايات</h2>
+    <h2>جرائم وحكايات</h2>
     <p>عالم من القضايا الغامضة والجرائم التي هزت المجتمع، وحكايات واقعية تصلح للدراسة والبحث والإلهام الدرامي.</p>
   </div>
 
@@ -1322,13 +1322,50 @@ renderShortFilms();
       <option value="قضايا غامضة">قضايا غامضة</option>
       <option value="جرائم قتل">جرائم قتل</option>
       <option value="احتيال">احتيال</option>
-      <option value="اختفاء">اختفاء وغموض</option>
+      <option value="اختفاء">اختفاء</option>
       <option value="تحقيقات">تحقيقات</option>
       <option value="قضايا تاريخية">قضايا تاريخية</option>
     </select>
   </div>
 
   <div id="storiesItems" class="grid"></div>
+
+  <div class="panel" id="storiesSubmitPanel">
+    <h3 style="color:var(--gold)">شارك بحكايتك أو ملفك</h3>
+    <p>أي زائر يستطيع إرسال حكاية أو ملف جريمة للنشر. سيصل طلبك إلى إدارة المنصة للمراجعة، ولن يظهر للعامة قبل الموافقة.</p>
+    <form id="storiesSubmitForm">
+      <input id="storySubmitTitle" maxlength="180" required placeholder="عنوان الحكاية">
+      <input id="storySubmitAuthor" maxlength="120" required placeholder="اسمك أو الاسم الذي تريد ظهوره">
+      <input id="storySubmitContact" maxlength="180" placeholder="وسيلة تواصل اختيارية (بريد أو هاتف)">
+      <select id="storySubmitCategory" required>
+        <option value="">اختر التصنيف</option>
+        <option>قضايا غامضة</option><option>جرائم قتل</option><option>احتيال</option><option>اختفاء</option><option>تحقيقات</option><option>قضايا تاريخية</option><option>حكاية من خيال المؤلف</option>
+      </select>
+      <textarea id="storySubmitDescription" maxlength="2500" placeholder="نبذة قصيرة عن الحكاية"></textarea>
+      <textarea id="storySubmitContent" maxlength="30000" required placeholder="اكتب الحكاية كاملة هنا (40 حرفًا على الأقل)"></textarea>
+      <input id="storySubmitImage" type="url" placeholder="رابط صورة الغلاف (اختياري ويبدأ بـ https://)">
+      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted)"><input id="storySubmitRights" type="checkbox" required style="width:auto;margin-top:7px"> أقر أن لي حق إرسال هذا المحتوى، وأنني أوضّح ما هو موثق وما هو من خيال المؤلف.</label>
+      <button class="btn primary" type="submit">إرسال طلب النشر للموافقة</button>
+    </form>
+    <p id="storiesSubmitMessage" role="status" style="color:var(--gold);font-size:13px"></p>
+  </div>
+
+  <div class="panel" id="storiesAdminPanel" style="display:none">
+    <h3 style="color:var(--gold)">إدارة صفحة جرائم وحكايات</h3>
+    <p>أضف حكاية مباشرة للنشر، أو راجع طلبات الزوار ووافق عليها أو ارفضها. تظل الكتابة والمراجعة داخل هذه الصفحة.</p>
+    <form id="storiesAdminPublishForm">
+      <input id="storyAdminTitle" maxlength="180" required placeholder="عنوان الحكاية">
+      <input id="storyAdminAuthor" maxlength="120" placeholder="اسم الكاتب">
+      <select id="storyAdminCategory" required><option value="">التصنيف</option><option>قضايا غامضة</option><option>جرائم قتل</option><option>احتيال</option><option>اختفاء</option><option>تحقيقات</option><option>قضايا تاريخية</option><option>حكاية من خيال المؤلف</option></select>
+      <textarea id="storyAdminDescription" maxlength="2500" placeholder="نبذة"></textarea>
+      <textarea id="storyAdminContent" maxlength="30000" required placeholder="نص الحكاية الكامل"></textarea>
+      <input id="storyAdminImage" type="url" placeholder="رابط صورة الغلاف (اختياري)">
+      <button class="btn primary" type="submit">حفظ ونشر الحكاية</button>
+    </form>
+    <p id="storiesAdminPublishMessage" role="status" style="color:var(--gold);font-size:13px"></p>
+    <h3 style="color:var(--gold);margin-top:25px">طلبات النشر المنتظرة</h3>
+    <div id="storiesAdminQueue"><p>سجّل الدخول بحساب المدير لعرض الطلبات.</p></div>
+  </div>
 
   <div class="panel">
     <h3 style="color:var(--gold)">سياسة نشر الحكايات</h3>
@@ -1444,26 +1481,100 @@ function editorialCard(item,kind){
     </article>`;
 }
 
-/* عرض الجرائم والحكايات */
+/* حكايات الجريمة المعتمدة فقط؛ كل طلب جديد يظل مخفيًا حتى موافقة الإدارة */
+let crimeStoriesData=[];
 function renderStories(){
-  const box = document.getElementById("storiesItems");
-  if(!box) return;
-
-  const q = (document.getElementById("storiesSearch")?.value || "").toLowerCase();
-  const category = document.getElementById("storiesCategory")?.value || "";
-
-  const list = editorialData.stories.filter(x =>
-    (!category || x.category===category) &&
-    ((x.title+" "+(x.description||"")).toLowerCase().includes(q))
-  );
-
-  box.innerHTML = list.length
-    ? list.map(x=>editorialCard(x,"stories")).join("")
-    : `<div class="panel" style="grid-column:1/-1;text-align:center">
-        <h3 style="color:var(--gold)">ملفات الحكايات</h3>
-        <p>سيتم عرض القضايا والحكايات بعد إضافتها ومراجعتها من الإدارة.</p>
-      </div>`;
+  const box=document.getElementById("storiesItems");
+  if(!box)return;
+  const q=(document.getElementById("storiesSearch")?.value||"").trim().toLowerCase();
+  const category=document.getElementById("storiesCategory")?.value||"";
+  const list=crimeStoriesData.filter(x=>(!category||x.category===category)&&
+    [x.title,x.description,x.content,x.author_name].some(v=>String(v||"").toLowerCase().includes(q)));
+  box.innerHTML=list.length?list.map(item=>{
+    const image=item.image_url&&/^https?:\/\//i.test(item.image_url)
+      ? '<img src="'+safeHttpUrl(item.image_url)+'" alt="" loading="lazy">'
+      : '<div style="height:170px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:42px;color:var(--gold)">◈</div>';
+    return '<article class="feature">'+image+'<div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3>'+
+      '<p>التصنيف: '+escapeHTML(item.category||"قضايا غامضة")+(item.author_name?' • بقلم '+escapeHTML(item.author_name):'')+'</p>'+
+      '<p>'+escapeHTML(item.description||String(item.content||"").slice(0,230))+'</p>'+
+      '<details><summary class="btn" style="display:inline-block;cursor:pointer">اقرأ الحكاية كاملة</summary><div style="white-space:pre-wrap;line-height:2;margin-top:14px">'+escapeHTML(item.content||"")+'</div></details></div></article>';
+  }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الحكايات</h3><p>لا توجد حكايات منشورة تطابق البحث حاليًا. يمكنك إرسال حكايتك من النموذج وسيتم مراجعتها قبل النشر.</p></div>';
 }
+async function loadCrimeStories(){
+  try{
+    if(!publicContentClient)throw new Error("اتصال قاعدة البيانات غير جاهز.");
+    const {data,error}=await publicContentClient.from("crime_stories")
+      .select("id,title,description,content,image_url,category,author_name,created_at")
+      .eq("is_published",true).eq("status","approved").order("created_at",{ascending:false}).limit(100);
+    if(error)throw error;
+    crimeStoriesData=data||[];renderStories();
+  }catch(error){console.warn("تعذر تحميل ملفات الجرائم",error);const box=document.getElementById("storiesItems");if(box)box.innerHTML='<div class="panel">تعذر تحميل الحكايات الآن. حاول تحديث الصفحة.</div>';}
+}
+async function adminLoadCrimeStoryQueue(){
+  const box=document.getElementById("storiesAdminQueue");
+  if(!box||!adminSupabase||!adminSession)return;
+  const {data,error}=await adminSupabase.from("crime_stories")
+    .select("id,title,description,content,image_url,category,author_name,contact,created_at")
+    .eq("status","pending").order("created_at",{ascending:false}).limit(100);
+  if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
+  if(!data?.length){box.innerHTML='<p>لا توجد طلبات جديدة للمراجعة.</p>';return;}
+  box.innerHTML=data.map(item=>'<article class="admin-item"><h4>'+escapeHTML(item.title)+'</h4><p>التصنيف: '+escapeHTML(item.category||"غير محدد")+' • الكاتب: '+escapeHTML(item.author_name||"غير محدد")+"</p><p>وسيلة التواصل: "+escapeHTML(item.contact||"لم يترك وسيلة تواصل")+'</p><p style="white-space:pre-wrap">'+escapeHTML(item.description||"")+'</p><details><summary>قراءة النص الكامل</summary><div style="white-space:pre-wrap;line-height:2;margin-top:10px">'+escapeHTML(item.content||"")+'</div></details>'+(item.image_url&&/^https?:\/\//i.test(item.image_url)?'<p><a href="'+safeHttpUrl(item.image_url)+'" target="_blank" rel="noopener noreferrer">عرض صورة الغلاف</a></p>':'')+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCrimeStory(\''+item.id+'\',true)">موافقة ونشر</button><button class="btn" onclick="adminReviewCrimeStory(\''+item.id+'\',false)">رفض الطلب</button></div></article>').join("");
+}
+async function adminReviewCrimeStory(id,approve){
+  if(!adminSupabase||!adminSession||!id)return;
+  const {data,error}=await adminSupabase.from("crime_stories")
+    .update({status:approve?"approved":"rejected",is_published:!!approve,reviewed_at:new Date().toISOString()})
+    .eq("id",id).eq("status","pending").select("id").maybeSingle();
+  if(error){alert("تعذرت مراجعة الحكاية: "+error.message);return;}
+  if(!data){alert("لم يتغير الطلب. حدّث القائمة وتأكد من أنه ما زال بانتظار المراجعة.");return;}
+  alert(approve?"تمت الموافقة ونشر الحكاية.":"تم رفض طلب النشر.");
+  await adminLoadCrimeStoryQueue();await loadCrimeStories();
+}
+document.getElementById("storiesSubmitForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const form=this,msg=document.getElementById("storiesSubmitMessage"),button=form.querySelector('[type="submit"]');
+  try{
+    if(!publicContentClient)throw new Error("خدمة النشر غير متاحة حاليًا.");
+    const title=document.getElementById("storySubmitTitle").value.trim();
+    const content=document.getElementById("storySubmitContent").value.trim();
+    const image=document.getElementById("storySubmitImage").value.trim();
+    if(title.length<3||content.length<40)throw new Error("اكتب عنوانًا واضحًا ونصًا لا يقل عن 40 حرفًا.");
+    if(image&&!/^https?:\/\//i.test(image))throw new Error("رابط الصورة يجب أن يبدأ بـ https:// أو http://");
+    button.disabled=true;msg.textContent="جارٍ إرسال طلبك للمراجعة...";
+    const {error}=await publicContentClient.from("crime_stories").insert({
+      title,content,description:document.getElementById("storySubmitDescription").value.trim()||null,
+      image_url:image||null,category:document.getElementById("storySubmitCategory").value,
+      author_name:document.getElementById("storySubmitAuthor").value.trim(),
+      contact:document.getElementById("storySubmitContact").value.trim()||null,
+      status:"pending",is_published:false
+    });
+    if(error)throw error;
+    form.reset();msg.textContent="وصل طلبك بنجاح. سيظهر بعد مراجعته والموافقة عليه من الإدارة.";
+  }catch(error){msg.textContent="لم نتمكن من إرسال الطلب: "+(error.message||"حاول مرة أخرى.");}
+  finally{button.disabled=false;}
+});
+document.getElementById("storiesAdminPublishForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  if(!adminSupabase||!adminSession){alert("سجّل الدخول بحساب المدير أولاً.");return;}
+  const form=this,msg=document.getElementById("storiesAdminPublishMessage"),button=form.querySelector('[type="submit"]');
+  try{
+    const title=document.getElementById("storyAdminTitle").value.trim();
+    const content=document.getElementById("storyAdminContent").value.trim();
+    const image=document.getElementById("storyAdminImage").value.trim();
+    if(title.length<3||content.length<40)throw new Error("اكتب عنوانًا واضحًا ونصًا لا يقل عن 40 حرفًا.");
+    if(image&&!/^https?:\/\//i.test(image))throw new Error("رابط الصورة غير صالح.");
+    button.disabled=true;msg.textContent="جارٍ حفظ الحكاية...";
+    const {error}=await adminSupabase.from("crime_stories").insert({
+      title,content,description:document.getElementById("storyAdminDescription").value.trim()||null,
+      image_url:image||null,category:document.getElementById("storyAdminCategory").value,
+      author_name:document.getElementById("storyAdminAuthor").value.trim()||"إدارة سيناريو وسيناريست",
+      status:"approved",is_published:true,reviewed_at:new Date().toISOString()
+    });
+    if(error)throw error;
+    form.reset();msg.textContent="تم حفظ الحكاية ونشرها في الصفحة.";await loadCrimeStories();
+  }catch(error){msg.textContent="تعذر النشر: "+(error.message||"حاول مرة أخرى.");}
+  finally{button.disabled=false;}
+});
 
 /* عرض الأخبار */
 function renderNews(){
@@ -2315,7 +2426,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأفلام والمسلسلات</h3><p>ملصقات وصور وفيديوهات دعائية وروابط المشاهدة.</p><button class="btn primary" type="button" onclick="adminOpenSection('films')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأفلام القصيرة</h3><p>رفع الفيلم أو رابطه وإضافة الملصق وبيانات صُنّاعه.</p><button class="btn primary" type="button" onclick="adminOpenSection('shorts')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
+        <article class="admin-section-card"><h3>جرائم وحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
@@ -2366,7 +2477,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <option value="talents">المواهب</option>
           <option value="films">الأفلام والمسلسلات</option>
           <option value="shorts">الأفلام القصيرة</option>
-          <option value="stories">الجرائم والحكايات</option>
+          <option value="stories">جرائم وحكايات</option>
           <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
                     <option value="radio">محطات الراديو</option>
@@ -2440,7 +2551,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <option value="talents">المواهب</option>
         <option value="films">الأفلام والمسلسلات</option>
         <option value="shorts">الأفلام القصيرة</option>
-        <option value="stories">الجرائم والحكايات</option>
+        <option value="stories">جرائم وحكايات</option>
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
         <option value="radio">الراديو</option>
@@ -3352,7 +3463,8 @@ async function adminLoadApprovalNotifications(){
     {table:"topic_replies",column:"status",label:"ردود النقاش",target:"adminTopicReplies",loader:"adminLoadCommunityModeration"},
     {table:"content_comments",column:"status",label:"تعليقات المحتوى",target:"adminContentComments",loader:"adminLoadCommunityModeration"},
     {table:"book_marketplace_listings",column:"status",label:"إعلانات سوق الكتب",target:"adminBookListingsPanel",loader:"adminLoadBookListings"},
-    {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"}
+    {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"},
+    {table:"crime_stories",column:"status",label:"حكايات وملفات الجرائم",target:"storiesAdminPanel",loader:"adminLoadCrimeStoryQueue"}
   ];
   const results=await Promise.all(queues.map(async item=>{
     try{
@@ -3377,12 +3489,15 @@ async function adminLoadApprovalNotifications(){
 
 async function adminVerifyAdmin(session){
   adminSession=session;
+  const storiesAdminPanel=document.getElementById("storiesAdminPanel");
+  if(storiesAdminPanel)storiesAdminPanel.style.display="none";
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
 
   const {data,error}=await adminSupabase.auth.getUser();
 
   if(error || !data.user){
     adminSession=null;
+    if(storiesAdminPanel)storiesAdminPanel.style.display="none";
     document.getElementById("adminDashboard").style.display="none";
     document.getElementById("adminLoginPanel").style.display="block";
     adminSetMessage("adminLoginMessage","تعذر التحقق من الحساب. سجّل الدخول بحساب المدير.");
@@ -3407,6 +3522,8 @@ async function adminVerifyAdmin(session){
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
   await adminLoadRecords();
+  if(storiesAdminPanel)storiesAdminPanel.style.display="block";
+  await adminLoadCrimeStoryQueue();
   await adminLoadScenarioScripts();
   await adminLoadIdeas();
   await adminLoadCommunitySubmissions();
@@ -3463,7 +3580,7 @@ const ADMIN_SECTION_META={
   talents:{name:"المواهب",hint:"أضف صورة الموهبة أو فيديو/رابط نموذج الأداء.",accept:"image/*,video/*,audio/*"},
   films:{name:"الأفلام والمسلسلات",hint:"أضف ملصق العمل ورابط التريلر أو المشاهدة المصرح بها.",accept:"image/*,video/*,.pdf"},
   shorts:{name:"الأفلام القصيرة",hint:"أضف صورة الفيلم ورابطه أو ارفع ملف الفيديو.",accept:"image/*,video/*,.pdf"},
-  stories:{name:"الجرائم والحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
+  stories:{name:"جرائم وحكايات",hint:"أضف نص الحكاية وصورة توضيحية ومصدر المعلومات عند الحاجة.",accept:"image/*,.pdf,.doc,.docx"},
   news:{name:"الأخبار الفنية",hint:"اكتب الخبر وأرفق صورته؛ يمكن إضافة رابط المصدر في حقل الرابط.",accept:"image/*,.pdf"},
   archive:{name:"أرشيف السينما",hint:"ارفع صورة أو أفيشًا أو مستندًا أرشيفيًا مع توثيق المصدر في الوصف.",accept:"image/*,.pdf,.doc,.docx"},
   radio:{name:"الإذاعة",hint:"أضف اسم المحطة ورابط البث الصوتي المباشر وصورتها.",accept:"image/*,audio/*"},
@@ -3834,6 +3951,8 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
   if(adminSupabase) await adminSupabase.auth.signOut();
 
   adminSession=null;
+  const storiesAdminPanel=document.getElementById("storiesAdminPanel");
+  if(storiesAdminPanel)storiesAdminPanel.style.display="none";
   adminRecords=[];
 
   document.getElementById("adminDashboard").style.display="none";
@@ -4507,6 +4626,7 @@ async function loadPublicContent(){
     }
 
     distributePublicContent(data || []);
+    await loadCrimeStories();
     await loadApprovedMemberProfiles();
     await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
