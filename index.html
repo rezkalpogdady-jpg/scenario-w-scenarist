@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.52: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.56: إحصائيات نمو المنصة ومشاهدات المحتوى. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.55</title>
+<title>سيناريو وسيناريست – تحديث 6.8.56</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -297,7 +297,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.55">
+<body data-platform-version="6.8.56">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2535,8 +2535,36 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div id="adminWriterScriptsList" class="grid"><div class="panel">تظهر ملفات PDF المرسلة من الكُتّاب هنا بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
     <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>إحصاءات الزيارات</h2></div>
-    <div class="panel"><p id="adminVisitStats">إجمالي الزيارات والزوار الفريدون (إحصاءات مجهّلة).</p></div>
+    <div class="section-heading" id="adminGrowthStatsHeading">
+      <h2>إحصائيات الأعضاء ونمو المنصة</h2>
+      <p>ملخص الأعضاء والتفاعل والزيارات — يُحدّث عند فتح اللوحة أو بالضغط على تحديث</p>
+    </div>
+    <div class="panel" id="adminGrowthStatsPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p id="adminGrowthStatsStatus" class="admin-status" role="status" style="margin:0">يتم تحميل الإحصائيات بعد التحقق من صلاحية المدير.</p>
+        <button class="btn" id="adminGrowthStatsRefresh" type="button" onclick="adminLoadPlatformGrowthStats()">تحديث الإحصائيات</button>
+      </div>
+      <div id="adminGrowthStatsCards" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-top:14px">
+        <div class="admin-item">إجمالي الأعضاء<strong id="growthTotalMembers" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">أعضاء جدد خلال 7 أيام<strong id="growthNewMembers7d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">أعضاء جدد خلال 30 يومًا<strong id="growthNewMembers30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">أعضاء نشطون خلال 30 يومًا<strong id="growthActiveMembers30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">الملفات الشخصية<strong id="growthProfiles" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">إجمالي المشاركات والتعليقات<strong id="growthInteractions" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">إجمالي الزيارات<strong id="growthVisits" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">الزوار الفريدون<strong id="growthUniqueVisitors" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+        <div class="admin-item">الزيارات خلال 30 يومًا<strong id="growthVisits30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px">
+        <div class="admin-item"><h3 style="margin-top:0">تفاعل المجتمع</h3><p>موضوعات النقاش: <strong id="growthTopics">—</strong></p><p>الردود: <strong id="growthReplies">—</strong></p><p>التعليقات: <strong id="growthComments">—</strong></p></div>
+        <div class="admin-item"><h3 style="margin-top:0">أكثر الصفحات زيارة</h3><div id="growthTopPages" class="admin-status">لا توجد بيانات بعد.</div></div>
+      </div>
+      <div class="admin-item" style="margin-top:14px">
+        <h3 style="margin-top:0">مشاهدات كل محتوى منشور</h3>
+        <p class="admin-status">عدد الزوار المختلفين الذين فتحوا المحاضرة أو السيناريو أو بدأوا تشغيل الفيديو. الزائر الواحد يُحسب مرة واحدة لكل محتوى.</p>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:420px"><thead><tr><th style="text-align:right;padding:8px">المحتوى</th><th style="text-align:right;padding:8px">النوع</th><th style="text-align:right;padding:8px">المشاهدات الفريدة</th></tr></thead><tbody id="growthContentViews"><tr><td colspan="3">جارٍ تحميل البيانات...</td></tr></tbody></table></div>
+      </div>
+    </div>
 
     <div id="adminContentList" class="grid"></div>
   </div>
@@ -3211,15 +3239,30 @@ async function adminReviewWriterScript(id,status){
   if(status==="approved")await loadPublicContent();
 }
 
-async function adminLoadVisitStats(){
-  if(!adminSupabase || !adminSession) return;
-  const box=document.getElementById("adminVisitStats");
-  if(!box)return;
-  const {data,error}=await adminSupabase.rpc("admin_visit_stats");
-  if(error){box.textContent="تعذر تحميل الإحصاءات: "+error.message;return;}
-  const stats=Array.isArray(data)?data[0]:data;
-  box.textContent=stats ? `إجمالي الزيارات: ${stats.total_visits} | الزوار الفريدون: ${stats.unique_visitors}` : "لا توجد بيانات زيارات بعد.";
+function growthFormatNumber(value){return Number(value||0).toLocaleString("ar-EG");}
+async function adminLoadContentViewStats(){
+  if(!adminSupabase||!adminSession)return;
+  const box=document.getElementById("growthContentViews");if(!box)return;
+  const {data,error}=await adminSupabase.rpc("admin_content_view_stats");
+  if(error){box.innerHTML='<tr><td colspan="3">تعذر تحميل مشاهدات المحتوى: '+adminEscape(error.message)+'</td></tr>';return;}
+  const rows=Array.isArray(data)?data:[];
+  box.innerHTML=rows.length?rows.map(row=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.title||"محتوى بدون عنوان")+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.content_label||row.content_type)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(row.unique_views)+'</td></tr>').join(""):'<tr><td colspan="3">لا يوجد محتوى منشور حتى الآن.</td></tr>';
 }
+async function adminLoadPlatformGrowthStats(){
+  if(!adminSupabase || !adminSession)return;
+  const status=document.getElementById("adminGrowthStatsStatus"),button=document.getElementById("adminGrowthStatsRefresh");
+  if(status)status.textContent="جارٍ تحديث الإحصائيات...";if(button)button.disabled=true;
+  try{
+    const {data,error}=await adminSupabase.rpc("admin_platform_growth_stats");await adminLoadContentViewStats();
+    if(error)throw error;const stats=Array.isArray(data)?data[0]:data;if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
+    const values={growthTotalMembers:stats.total_members,growthNewMembers7d:stats.new_members_7d,growthNewMembers30d:stats.new_members_30d,growthActiveMembers30d:stats.active_members_30d,growthProfiles:stats.profile_count,growthInteractions:stats.interactions_total,growthVisits:stats.visits_total,growthUniqueVisitors:stats.unique_visitors,growthVisits30d:stats.visits_30d,growthTopics:stats.topics_total,growthReplies:stats.replies_total,growthComments:stats.comments_total};
+    Object.entries(values).forEach(([id,value])=>{const node=document.getElementById(id);if(node)node.textContent=growthFormatNumber(value);});
+    const pages=document.getElementById("growthTopPages");if(pages){const rows=Array.isArray(stats.top_pages)?stats.top_pages:[];pages.innerHTML=rows.length?rows.map(row=>'<p style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:5px 0;margin:0"><span>'+adminEscape(row.page_path||"الرئيسية")+'</span><strong>'+growthFormatNumber(row.visits)+'</strong></p>').join(""):"لا توجد بيانات زيارات بعد.";}
+    if(status)status.textContent="آخر تحديث: "+new Date().toLocaleString("ar-EG")+" — الأرقام مجمعة من قاعدة البيانات.";
+  }catch(error){if(status)status.textContent="تعذر تحميل الإحصائيات: "+(error.message||"تحقق من إعداد قاعدة البيانات.");}
+  finally{if(button)button.disabled=false;}
+}
+async function adminLoadVisitStats(){return adminLoadPlatformGrowthStats();}
 
 /* بدء الاتصال */
 async function adminInitialize(){
