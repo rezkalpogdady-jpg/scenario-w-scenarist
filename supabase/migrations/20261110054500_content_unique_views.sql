@@ -13,6 +13,24 @@ create index if not exists content_views_content_idx
 alter table public.content_views enable row level security;
 revoke all on public.content_views from anon, authenticated, public;
 
+create policy "Public can record valid published content views"
+on public.content_views
+for insert
+to anon, authenticated
+with check (
+  viewer_id is not null
+  and (
+    (content_type='academy' and exists (select 1 from public.site_content c where c.id=content_views.content_id and c.content_type='academy' and c.published=true))
+    or
+    (content_type='film' and exists (select 1 from public.site_content c where c.id=content_views.content_id and c.content_type='films' and c.published=true and nullif(c.content_url,'') is not null))
+    or
+    (content_type='scenario' and exists (select 1 from public.scenario_scripts s where s.id=content_views.content_id and s.published=true and s.rights_confirmed=true and s.rights_status <> 'unverified' and nullif(s.rights_holder,'') is not null))
+    or
+    (content_type='director_video' and exists (select 1 from public.director_work_submissions d where d.id=content_views.content_id and d.status='approved' and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)))
+  )
+);
+grant insert on public.content_views to anon, authenticated;
+
 create or replace function public.record_public_content_view(
   p_content_type text,
   p_content_id text,
@@ -20,34 +38,136 @@ create or replace function public.record_public_content_view(
 )
 returns boolean
 language plpgsql
+security invoker
+set search_path = ''
+as $function$
+declare target_id uuid; viewer_uuid uuid;
+begin
+  if p_content_type not in ('academy','film','scenario','director_video')
+     or p_content_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+
+create or replace function public.admin_content_view_stats()
+returns jsonb
+language plpgsql
+stable
 security definer
 set search_path = ''
 as $function$
-declare
-  target_id uuid;
-  viewer_uuid uuid;
-  valid_content boolean := false;
+declare result jsonb;
 begin
-  if p_content_type not in ('academy','film','scenario','director_video')
-     or p_content_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-     or p_viewer_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+  if auth.uid() is null
+     or coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin' then
+    raise exception 'admin access required' using errcode = '42501';
+  end if;
+
+  select coalesce(jsonb_agg(
+    jsonb_build_object(
+      'content_type', content_type,
+      'content_label', content_label,
+      'content_id', content_id,
+      'title', title,
+      'unique_views', unique_views
+    ) order by unique_views desc, title
+  ), '[]'::jsonb)
+  into result
+  from (
+    select 'academy'::text as content_type, 'محاضرة'::text as content_label,
+      c.id as content_id, c.title, count(v.viewer_id)::bigint as unique_views
+    from public.site_content c
+    left join public.content_views v on v.content_type='academy' and v.content_id=c.id
+    where c.content_type='academy' and c.published=true
+    group by c.id,c.title
+    union all
+    select 'film','فيديو / عمل مرئي',c.id,c.title,count(v.viewer_id)::bigint
+    from public.site_content c
+    left join public.content_views v on v.content_type='film' and v.content_id=c.id
+    where c.content_type='films' and c.published=true and nullif(c.content_url,'') is not null
+    group by c.id,c.title
+    union all
+    select 'scenario','سيناريو',s.id,s.title,count(v.viewer_id)::bigint
+    from public.scenario_scripts s
+    left join public.content_views v on v.content_type='scenario' and v.content_id=s.id
+    where s.published=true and s.rights_confirmed=true and s.rights_status <> 'unverified' and nullif(s.rights_holder,'') is not null
+    group by s.id,s.title
+    union all
+    select 'director_video','فيديو مخرج',d.id,d.title,count(v.viewer_id)::bigint
+    from public.director_work_submissions d
+    left join public.content_views v on v.content_type='director_video' and v.content_id=d.id
+    where d.status='approved' and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)
+    group by d.id,d.title
+  ) content_rows;
+
+  return result;
+end;
+$function$;
+revoke all on function public.admin_content_view_stats() from public;
+revoke all on function public.admin_content_view_stats() from anon;
+grant execute on function public.admin_content_view_stats() to authenticated;
+
+     or p_viewer_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+
+create or replace function public.admin_content_view_stats()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $function$
+declare result jsonb;
+begin
+  if auth.uid() is null
+     or coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin' then
+    raise exception 'admin access required' using errcode = '42501';
+  end if;
+
+  select coalesce(jsonb_agg(
+    jsonb_build_object(
+      'content_type', content_type,
+      'content_label', content_label,
+      'content_id', content_id,
+      'title', title,
+      'unique_views', unique_views
+    ) order by unique_views desc, title
+  ), '[]'::jsonb)
+  into result
+  from (
+    select 'academy'::text as content_type, 'محاضرة'::text as content_label,
+      c.id as content_id, c.title, count(v.viewer_id)::bigint as unique_views
+    from public.site_content c
+    left join public.content_views v on v.content_type='academy' and v.content_id=c.id
+    where c.content_type='academy' and c.published=true
+    group by c.id,c.title
+    union all
+    select 'film','فيديو / عمل مرئي',c.id,c.title,count(v.viewer_id)::bigint
+    from public.site_content c
+    left join public.content_views v on v.content_type='film' and v.content_id=c.id
+    where c.content_type='films' and c.published=true and nullif(c.content_url,'') is not null
+    group by c.id,c.title
+    union all
+    select 'scenario','سيناريو',s.id,s.title,count(v.viewer_id)::bigint
+    from public.scenario_scripts s
+    left join public.content_views v on v.content_type='scenario' and v.content_id=s.id
+    where s.published=true and s.rights_confirmed=true and s.rights_status <> 'unverified' and nullif(s.rights_holder,'') is not null
+    group by s.id,s.title
+    union all
+    select 'director_video','فيديو مخرج',d.id,d.title,count(v.viewer_id)::bigint
+    from public.director_work_submissions d
+    left join public.content_views v on v.content_type='director_video' and v.content_id=d.id
+    where d.status='approved' and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)
+    group by d.id,d.title
+  ) content_rows;
+
+  return result;
+end;
+$function$;
+revoke all on function public.admin_content_view_stats() from public;
+revoke all on function public.admin_content_view_stats() from anon;
+grant execute on function public.admin_content_view_stats() to authenticated;
+ then
     return false;
   end if;
   target_id := p_content_id::uuid;
   viewer_uuid := p_viewer_id::uuid;
-
-  if p_content_type = 'academy' then
-    select exists(select 1 from public.site_content where id=target_id and content_type='academy' and published=true) into valid_content;
-  elsif p_content_type = 'film' then
-    select exists(select 1 from public.site_content where id=target_id and content_type='films' and published=true and nullif(content_url,'') is not null) into valid_content;
-  elsif p_content_type = 'scenario' then
-    select exists(select 1 from public.scenario_scripts where id=target_id and published=true and rights_confirmed=true and rights_status <> 'unverified' and nullif(rights_holder,'') is not null) into valid_content;
-  elsif p_content_type = 'director_video' then
-    select exists(select 1 from public.director_work_submissions where id=target_id and status='approved' and (nullif(storage_path,'') is not null or nullif(external_url,'') is not null)) into valid_content;
-  end if;
-
-  if not valid_content then return false; end if;
-
   insert into public.content_views(content_type,content_id,viewer_id)
   values(p_content_type,target_id,viewer_uuid)
   on conflict (content_type,content_id,viewer_id) do nothing;
