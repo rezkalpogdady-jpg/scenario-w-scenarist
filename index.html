@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.59</title>
+<title>سيناريو وسيناريست – تحديث 6.8.60</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -1427,6 +1427,8 @@ renderShortFilms();
     <p>عالم من القضايا الغامضة والجرائم التي هزت المجتمع، وحكايات واقعية تصلح للدراسة والبحث والإلهام الدرامي.</p>
   </div>
 
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="crimeStoryNew()">＋ إضافة جريمة أو حكاية</button></div>
+  <div id="storiesInlineEditor" class="panel" style="display:none;margin:14px 0"></div>
   <div class="section-heading">
     <h2>حكايات وملفات</h2>
     <p>بحث وتصنيف ومتابعة</p>
@@ -1589,7 +1591,7 @@ function renderStories(){
     const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
     const summary=(item.description||"").trim();
     const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
-    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button></div></article>';
+    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+(window.adminSession?'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(\"'+escapeHTML(String(item.id))+'\")">تعديل المنشور</button>':"")+'</div></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
 }
 function openCrimeStory(id){
@@ -5825,5 +5827,33 @@ document.getElementById('libraryAdminForm')?.addEventListener('submit',async fun
  }catch(err){const paths=[pdf?.path,poster?.path].filter(Boolean);if(paths.length)await adminSupabase.storage.from('scenario-scripts').remove(paths);msg.textContent='تعذر النشر: '+err.message;}
  finally{btn.disabled=false;}
 });
+
+function crimeStoryNew(){if(!adminSession||!adminSupabase){alert('سجّل دخول المدير أولاً.');return;}crimeStoryShowEditor(null);}
+function crimeStoryEdit(id){if(!adminSession||!adminSupabase){alert('سجّل دخول المدير أولاً.');return;}var row=(publicContentRecords||[]).find(function(x){return String(x.id)===String(id);});if(!row){alert('تعذر العثور على الحكاية. حدّث الصفحة.');return;}crimeStoryShowEditor(row);}
+function crimeStoryShowEditor(row){
+ var box=document.getElementById('storiesInlineEditor');if(!box)return;var extra=row&&row.extra_data||{},esc=escapeHTML;
+ box.innerHTML='<h3 style="color:var(--gold)">'+(row?'تعديل الحكاية':'إضافة جريمة أو حكاية')+'</h3><form id="crimeStoryInlineForm" style="display:grid;gap:10px">'+
+ '<label>عنوان القضية</label><input name="title" required maxlength="200" value="'+esc(row?row.title:'')+'">'+
+ '<label>التصنيف</label><select name="category"><option>قضايا غامضة</option><option>جرائم قتل</option><option>احتيال</option><option>اختفاء</option><option>تحقيقات</option><option>قضايا تاريخية</option></select>'+
+ '<label>نوع المحتوى</label><select name="format"><option value="story">حكاية كاملة</option><option value="poster">أفيش جريمة</option></select>'+
+ '<label>نص الحكاية</label><textarea name="description" required maxlength="30000" rows="10">'+esc(row?row.description:'')+'</textarea>'+
+ '<label>الأفيش (مطلوب عند الإضافة)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
+ '<label>رابط المصدر</label><input name="source" type="url" value="'+esc(extra.source_url||'')+'"><label>ملاحظة تحريرية</label><textarea name="note" rows="2">'+esc(extra.editor_note||'')+'</textarea>'+
+ '<label><input name="published" type="checkbox" '+(!row||row.published?'checked':'')+'> نشر على الصفحة</label>'+
+ '<div style="display:flex;gap:8px"><button class="btn primary" type="submit">حفظ</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div><p id="crimeStoryInlineStatus" role="status"></p></form>';
+ box.style.display='block';box.scrollIntoView({behavior:'smooth',block:'center'});var form=document.getElementById('crimeStoryInlineForm');if(row){form.elements.category.value=row.category||'قضايا غامضة';form.elements.format.value=extra.story_format||'story';}form.addEventListener('submit',crimeStorySave);
+}
+function crimeStoryCloseEditor(){var box=document.getElementById('storiesInlineEditor');if(box){box.style.display='none';box.innerHTML='';}}
+async function crimeStorySave(event){
+ event.preventDefault();if(!adminSession||!adminSupabase)return;var form=event.currentTarget,fd=new FormData(form),status=document.getElementById('crimeStoryInlineStatus'),btn=form.querySelector('[type="submit"]'),id=String(fd.get('id')||''),previous=(publicContentRecords||[]).find(function(x){return String(x.id)===id;}),uploaded=null;
+ try{btn.disabled=true;status.textContent='جارٍ الحفظ...';var file=fd.get('image');if(file&&file.size){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('صيغة الصورة JPG أو PNG أو WEBP فقط.');uploaded=await adminInlineUpload(file,'site-media','stories',20*1024*1024);}if(!id&&(!file||!file.size))throw new Error('ارفع أفيشًا قبل إضافة الحكاية.');
+ var extra={media_kind:'image',section_label:'الجرائم والحكايات',story_format:String(fd.get('format')||'story')},source=String(fd.get('source')||'').trim(),note=String(fd.get('note')||'').trim();if(source)extra.source_url=source;if(note)extra.editor_note=note;
+ var record={content_type:'stories',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||'').trim(),image_url:uploaded?uploaded.url:(previous?previous.image_url:null),content_url:null,extra_data:extra,published:fd.get('published')==='on'};
+ var result=id?await adminSupabase.from('site_content').update(record).eq('id',id).select('id').maybeSingle():await adminSupabase.from('site_content').insert(record).select('id').single();if(result.error)throw result.error;if(!result.data)throw new Error('لم يتم الحفظ؛ تحقق من صلاحيات الإدارة.');
+ crimeStoryCloseEditor();await loadPublicContent();if(typeof adminLoadRecords==='function')await adminLoadRecords();
+ }catch(error){if(uploaded&&uploaded.path)await adminSupabase.storage.from('site-media').remove([uploaded.path]);status.textContent='تعذر الحفظ: '+(error.message||'حاول مرة أخرى.');}finally{btn.disabled=false;}
+}
+if(typeof adminSession!=='undefined'&&adminSession)adminSetInlinePublishingVisible(true);
+
 </script>
 </body></html>
