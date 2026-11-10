@@ -3104,6 +3104,7 @@ async function adminReviewWriterScript(id,status){
   if(updateError){if(publishedPath)await adminSupabase.storage.from("scenario-scripts").remove([publishedPath]);alert("تعذر حفظ قرار المراجعة: "+updateError.message);return;}
   alert(status==="approved"?"تم اعتماد السيناريو وإتاحته بصورة مستقلة عن المكتبة.":"تم إرسال ملاحظات التعديل إلى الكاتب.");
   await adminLoadWriterScripts();
+  if(status==="approved")await loadPublicContent();
 }
 
 async function adminLoadVisitStats(){
