@@ -5097,7 +5097,7 @@ function renderBookListings(){
   }
   box.innerHTML=rows.map(item=>{
     const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
-    const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع واتساب</a>':'';
+    const contact=phone?'<a class="btn primary" href="tel:'+phone+'">اتصال بالبائع</a>':'';
     const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
     const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
       ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
@@ -5115,7 +5115,7 @@ function openBookDetails(id){
   const dialog=document.getElementById("bookDetailsDialog"),title=document.getElementById("bookDetailsTitle"),box=document.getElementById("bookDetailsContent");
   if(!dialog||!box)return;
   const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
-  const contact=phone?'<a class="btn primary" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">تواصل مع البائع عبر واتساب</a>':'<p class="admin-status">بيانات التواصل غير متاحة.</p>';
+  const contact=phone?'<a class="btn primary" href="tel:'+phone+'">اتصال بالبائع</a>':'<p class="admin-status">بيانات التواصل غير متاحة.</p>';
   const price=Number(item.price)===0?"مجاني":Number(item.price).toLocaleString("ar-EG",{maximumFractionDigits:2})+" "+escapeHTML(item.currency||"");
   const publishedDate=item.created_at&&!Number.isNaN(Date.parse(item.created_at))
     ?new Date(item.created_at).toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
@@ -5330,7 +5330,7 @@ function adminRenderBookListings(){
     const dateDetails=(publishedAt?'<p class="admin-book-date">تاريخ الإضافة: '+adminEscape(publishedAt)+'</p>':"")
       +(updatedAt?'<p class="admin-book-date">آخر تحديث: '+adminEscape(updatedAt)+'</p>':"");
     const phone=String(item.contact_phone||"").replace(/[^0-9]/g,"");
-    const contact=phone?'<a class="btn" href="https://wa.me/'+phone+'" target="_blank" rel="noopener noreferrer">فتح واتساب البائع</a>':'<span>لا يوجد رقم تواصل صالح</span>';
+    const contact=phone?'<a class="btn" href="tel:'+phone+'">اتصال بالبائع</a>':'<span>لا يوجد رقم تواصل صالح</span>';
     const cover=item.cover_url
       ?'<a href="'+adminEscape(item.cover_url)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block"><img src="'+adminEscape(item.cover_url)+'" alt="غلاف '+adminEscape(item.title)+' — افتح الصورة بالحجم الكامل" loading="lazy" style="width:130px;height:180px;object-fit:contain;background:#111;border:1px solid var(--border);border-radius:8px"></a><p class="admin-book-date">اضغط على الغلاف لفتحه بالحجم الكامل</p>'
       :'<p class="admin-book-date">لا توجد صورة غلاف</p>';
