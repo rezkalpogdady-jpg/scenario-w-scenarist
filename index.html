@@ -1489,12 +1489,12 @@ function renderSponsors(items){
   if(!box)return;
   const sponsors=(items||[]).filter(item=>item && item.title);
   if(!sponsors.length){
-    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">شركات الإنتاج والجهات الراعية</h3><p>ستظهر هنا أسماء الشركات وأفيشاتها أو شعاراتها ونبذة تعريفية عنها بعد اعتمادها من إدارة المنصة.</p></div>';
+    box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">شركات الإنتاج والجهات الراعية</h3><p>ستظهر هنا أسماء الشركات وصورها أو شعاراتها بعد اعتمادها من إدارة المنصة.</p></div>';
     return;
   }
   box.innerHTML=sponsors.map(item=>{
     const poster=item.image ? '<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش أو شعار '+escapeHTML(item.title)+'" style="width:100%;height:210px;object-fit:contain;background:#fff;border-radius:10px;padding:12px">' : '<div style="height:210px;display:grid;place-items:center;background:#202023;border-radius:10px;color:var(--gold);font-size:24px;font-weight:800">'+escapeHTML(item.title)+'</div>';
-    return '<article class="feature"><div style="padding:14px 14px 0">'+poster+'</div><div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.description||"")+'</p></div></article>';
+    return '<article class="feature"><div style="padding:14px 14px 0">'+poster+'</div><div class="feature-content"><h3>'+escapeHTML(item.title)+'</h3>'</p></div></article>';
   }).join("");
 }
 
@@ -3143,6 +3143,26 @@ function adminConfigureMediaKind(){
   if(input) input.accept=accepts[kind]||"*/*";
   if(hint) hint.textContent=({video:"ارفع فيديو من جهازك أو ضع رابط الفيديو في حقل الرابط.",image:"ارفع صورة من جهازك؛ ستُستخدم كصورة أساسية للمحتوى.",audio:"ارفع ملفًا صوتيًا أو ضع رابط تشغيل مباشر.",document:"ارفع PDF أو Word كمرفق للمادة.",article:"يمكن إرفاق صورة أو فيديو أو ملف بالمحتوى المكتوب.",link:"ضع الرابط الخارجي في حقل الرابط ويمكنك إرفاق صورة غلاف."})[kind];
 }
+function adminConfigureSponsorForm(){
+  const isSponsors=document.getElementById("adminContentType")?.value==="sponsors";
+  ["adminMediaKind","adminCategory","adminDescription","adminImage","adminContentUrl","adminExtraData"].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const label=el.previousElementSibling;if(label?.tagName==="LABEL")label.style.display=isSponsors?"none":"";
+    el.style.display=isSponsors?"none":"";
+    if(id==="adminExtraData"&&el.nextElementSibling?.tagName==="P")el.nextElementSibling.style.display=isSponsors?"none":"";
+  });
+  const title=document.getElementById("adminTitle"),titleLabel=title?.previousElementSibling;
+  if(titleLabel)titleLabel.textContent=isSponsors?"اسم الشركة":"عنوان المحتوى";
+  if(title)title.placeholder=isSponsors?"اكتب اسم الشركة":"اكتب العنوان";
+  const file=document.getElementById("adminFile"),fileLabel=file?.previousElementSibling;
+  if(fileLabel)fileLabel.textContent=isSponsors?"صورة الشركة أو الشعار":"رفع أفيش المحاضرة أو ملف المحتوى من جهازك";
+  if(file)file.accept=isSponsors?"image/*":(ADMIN_SECTION_META[document.getElementById("adminContentType")?.value]?.accept||"*/*");
+  const type=document.getElementById("adminContentType");
+  if(type){type.style.display=isSponsors?"none":"";if(type.previousElementSibling)type.previousElementSibling.style.display=isSponsors?"none":"";}
+  const mediaHint=document.getElementById("adminMediaKindHint");if(mediaHint)mediaHint.style.display=isSponsors?"none":"";
+  const mediaLabel=document.querySelector('label[for="adminMediaKind"]');if(mediaLabel)mediaLabel.style.display=isSponsors?"none":"";
+  if(file?.parentElement){file.parentElement.querySelectorAll("p").forEach(p=>p.style.display=isSponsors?"none":"");}
+}
 function adminOpenSection(section){
   const meta=ADMIN_SECTION_META[section];
   if(!meta)return;
@@ -3165,6 +3185,7 @@ function adminOpenSection(section){
   if(filter){filter.value=section;adminRenderRecords();}
   document.getElementById("adminSaveButton").textContent="حفظ محتوى "+meta.name;
   adminConfigureMediaKind();
+  adminConfigureSponsorForm();
   document.getElementById("adminContentEditorHeading")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 document.getElementById("adminMediaKind")?.addEventListener("change",adminConfigureMediaKind);
@@ -3173,6 +3194,7 @@ document.getElementById("adminContentType")?.addEventListener("change",()=>{
   const meta=ADMIN_SECTION_META[section];
   if(meta){document.getElementById("adminEditorSectionTitle").textContent="إدارة محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;const file=document.getElementById("adminFile");if(file)file.accept=meta.accept;}
   adminConfigureMediaKind();
+  adminConfigureSponsorForm();
 });
 
 /* جلب المحتوى */
@@ -3220,7 +3242,7 @@ function adminRenderRecords(){
   box.innerHTML=records.map(item=>`
     <article class="admin-item">
       <h3>${adminEscape(item.title)}</h3>
-      <p>${adminEscape(item.description || "")}</p>
+      ${item.content_type==="sponsors" ? "" : `<p>${adminEscape(item.description || "")}</p>`}
       <p class="admin-status">
         القسم: ${adminEscape(item.content_type)}
         • ${item.published ? "منشور" : "مسودة"}
@@ -3298,15 +3320,15 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   const record={
     content_type:document.getElementById("adminContentType").value,
     title:document.getElementById("adminTitle").value.trim(),
-    category:document.getElementById("adminCategory").value.trim(),
-    description:document.getElementById("adminDescription").value.trim(),
+    category:document.getElementById("adminContentType").value==="sponsors" ? "" : document.getElementById("adminCategory").value.trim(),
+    description:document.getElementById("adminContentType").value==="sponsors" ? "" : document.getElementById("adminDescription").value.trim(),
     image_url:document.getElementById("adminImage").value.trim() || null,
-    content_url:document.getElementById("adminContentUrl").value.trim() || null,
+    content_url:document.getElementById("adminContentType").value==="sponsors" ? null : (document.getElementById("adminContentUrl").value.trim() || null),
     extra_data:{},
     published:document.getElementById("adminPublished").checked
   };
 
-  const extraText=document.getElementById("adminExtraData").value.trim();
+  const extraText=document.getElementById("adminContentType").value==="sponsors" ? "" : document.getElementById("adminExtraData").value.trim();
   if(extraText){
     try{
       const parsed=JSON.parse(extraText);
@@ -3318,14 +3340,15 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
     }
   }
 
-  record.extra_data.media_kind=document.getElementById("adminMediaKind")?.value||"article";
+  record.extra_data.media_kind=record.content_type==="sponsors" ? "image" : (document.getElementById("adminMediaKind")?.value||"article");
   record.extra_data.section_label=ADMIN_SECTION_META[record.content_type]?.name||record.content_type;
 
   if(!record.title){
-    adminSetMessage("adminSaveMessage","اكتب عنوان المحتوى.");
+    adminSetMessage("adminSaveMessage",record.content_type==="sponsors"?"اكتب اسم الشركة.":"اكتب عنوان المحتوى.");
     return;
   }
 
+  if(record.content_type==="sponsors" && !document.getElementById("adminFile")?.files?.[0] && !record.image_url && !id){adminSetMessage("adminSaveMessage","ارفع صورة الشركة أو شعارها.");return;}
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
@@ -3400,6 +3423,7 @@ function adminEditRecord(id){
   document.getElementById("adminExtraData").value=JSON.stringify(item.extra_data || {},null,2);
   document.getElementById("adminMediaKind").value=item.extra_data?.media_kind||"article";
   adminConfigureMediaKind();
+  adminConfigureSponsorForm();
   const meta=ADMIN_SECTION_META[item.content_type];
   if(meta){document.getElementById("adminEditorSectionTitle").textContent="تعديل محتوى: "+meta.name;document.getElementById("adminEditorSectionHint").textContent=meta.hint;}
   document.getElementById("adminPublished").checked=!!item.published;
@@ -3459,12 +3483,14 @@ function adminResetForm(){
   const meta=ADMIN_SECTION_META[selectedSection];
   document.getElementById("adminSaveButton").textContent=meta?"حفظ محتوى "+meta.name:"حفظ المحتوى";
   adminConfigureMediaKind();
+  adminConfigureSponsorForm();
 }
 
 document.getElementById("adminCancelEdit")?.addEventListener("click",adminResetForm);
 document.getElementById("adminSearch")?.addEventListener("input",adminRenderRecords);
 document.getElementById("adminFilter")?.addEventListener("change",adminRenderRecords);
 adminConfigureMediaKind();
+adminConfigureSponsorForm();
 
 /* الخروج */
 document.getElementById("adminLogout")?.addEventListener("click",async()=>{
