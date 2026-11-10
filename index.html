@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.53</title>
+<title>سيناريو وسيناريست – تحديث 6.8.54</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -307,7 +307,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.53">
+<body data-platform-version="6.8.54">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1374,12 +1374,6 @@ renderShortFilms();
 
   <div id="newsItems" class="grid"></div>
 
-  <div class="section-heading" style="margin-top:32px">
-    <h2>أخبار فنية من مصادر خارجية</h2>
-    <p>عناوين وروابط مباشرة للمصادر الأصلية — تتجدد تلقائيًا</p>
-  </div>
-  <div id="newsExternalItems" class="grid"></div>
-  <p id="newsExternalUpdated" class="news-external-note">جارٍ تحميل آخر الأخبار الفنية...</p>
 </section>
 
 <section id="production" class="page">
@@ -5583,31 +5577,14 @@ document.getElementById('libraryAdminForm')?.addEventListener('submit',async fun
       renderTicker();
     }catch(error){console.warn("تعذر تحميل إضافات الشريط",error);}
   }
-  function renderExternalNews(){
-    const box=document.getElementById("newsExternalItems");if(!box)return;
-    if(!tickerExternal.length){
-      box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center">تعذر جلب الأخبار الخارجية حاليًا. سيحاول الشريط التحديث تلقائيًا.</div>';
-      return;
-    }
-    box.innerHTML=tickerExternal.slice(0,8).map(item=>{
-      const date=item.published_at?new Date(item.published_at):null;
-      const dateText=date&&!Number.isNaN(date.getTime())?date.toLocaleDateString("ar-EG"):"";
-      return '<article class="news-external-card"><h3>'+tickerEscape(item.title)+'</h3><p>'+tickerEscape(item.description||"")+'</p><p>المصدر: '+tickerEscape(item.source||"مصدر الخبر")+(dateText?" • "+tickerEscape(dateText):"")+'</p><a href="'+tickerEscape(item.url)+'" target="_blank" rel="noopener noreferrer">اقرأ الخبر في المصدر الأصلي</a></article>';
-    }).join("");
-  }
   async function loadExternalNews(){
-    const status=document.getElementById("newsExternalUpdated");
     try{
       const response=await fetch(FEED_URL,{headers:{Accept:"application/json"},cache:"no-store"});
       if(!response.ok)throw new Error("HTTP "+response.status);
       const payload=await response.json();
       tickerExternal=Array.isArray(payload.items)?payload.items:[];
-      renderTicker();renderExternalNews();
-      if(status)status.textContent="آخر تحديث: "+new Date(payload.updated_at||Date.now()).toLocaleString("ar-EG")+" — تُعرض العناوين وروابط الناشرين، ولا يُعاد نشر نصوص المقالات.";
-    }catch(error){
-      if(status)status.textContent="الأخبار الخارجية غير متاحة مؤقتًا؛ سيُعاد الاتصال تلقائيًا.";
-      console.warn("تعذر تحميل موجز الأخبار الفنية",error);
-    }
+      renderTicker();
+    }catch(error){console.warn("تعذر تحميل موجز الأخبار الفنية",error);}
   }
   document.getElementById("newsSearch")?.addEventListener("input",()=>{});
   renderTicker();
