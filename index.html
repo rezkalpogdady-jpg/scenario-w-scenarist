@@ -6378,4 +6378,72 @@ if(typeof adminSession!=='undefined'&&adminSession)adminSetInlinePublishingVisib
 
 
 </script>
+
+<style id="stories-copy-protection-style">
+/* حماية مؤقتة لقسم الجرائم والحكايات فقط */
+#stories #storiesItems,
+#crimeStoryModalBody{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+#stories #storiesItems img,
+#crimeStoryModalBody img{
+  -webkit-user-drag:none!important;
+  user-drag:none!important;
+}
+#stories #storiesItems .feature-content{
+  position:relative;
+  isolation:isolate;
+}
+#stories #storiesItems .feature-content::after,
+#crimeStoryModalBody::after{
+  content:"سيناريو وسيناريست";
+  position:absolute;
+  z-index:2;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) rotate(-22deg);
+  color:var(--gold,#c6a15b);
+  opacity:.13;
+  font-size:clamp(18px,3vw,30px);
+  font-weight:800;
+  white-space:nowrap;
+  pointer-events:none;
+  text-shadow:0 1px 2px #000;
+}
+#crimeStoryModalBody{position:relative;isolation:isolate;overflow:hidden}
+#crimeStoryModalBody>*{position:relative;z-index:1}
+#crimeStoryModalBody::after{z-index:3;opacity:.11}
+</style>
+<script id="stories-copy-protection-script">
+(()=>{
+  const protectedReadingArea=target=>{
+    if(!(target instanceof Element))return false;
+    if(target.closest('input,textarea,select,button,a,[contenteditable="true"]'))return false;
+    return !!target.closest('#stories #storiesItems, #crimeStoryModalBody');
+  };
+  document.addEventListener('contextmenu',event=>{
+    if(protectedReadingArea(event.target))event.preventDefault();
+  },true);
+  document.addEventListener('copy',event=>{
+    if(protectedReadingArea(event.target))event.preventDefault();
+  },true);
+  document.addEventListener('cut',event=>{
+    if(protectedReadingArea(event.target))event.preventDefault();
+  },true);
+  document.addEventListener('selectstart',event=>{
+    if(protectedReadingArea(event.target))event.preventDefault();
+  },true);
+  document.addEventListener('dragstart',event=>{
+    if(protectedReadingArea(event.target))event.preventDefault();
+  },true);
+  document.addEventListener('keydown',event=>{
+    if(!protectedReadingArea(event.target))return;
+    const key=(event.key||'').toLowerCase();
+    if((event.ctrlKey||event.metaKey)&&['c','x','s','p','a'].includes(key))event.preventDefault();
+  },true);
+})();
+</script>
+
 </body></html>
