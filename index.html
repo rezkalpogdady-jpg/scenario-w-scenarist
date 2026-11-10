@@ -952,7 +952,7 @@ renderLibrary();
       <input id="talentWork2" type="url" inputmode="url" placeholder="رابط مشهد أو برنامج أو تسجيل صوتي">
       <label for="talentWork3">رابط نموذج العمل الثالث (اختياري)</label>
       <input id="talentWork3" type="url" inputmode="url" placeholder="رابط عمل إضافي">
-      <label for="talentContact">رقم الموبايل أو واتساب للتواصل معك *</label>
+      <label for="talentContact">رقم الهاتف للتواصل معك *</label>
       <input id="talentContact" type="tel" inputmode="tel" autocomplete="tel" maxlength="25" required placeholder="مثال: +20 10 0000 0000">
       <p class="muted" style="font-size:12px;margin:0">يمكنك إضافة حتى 3 روابط لأعمالك بدل الفيديو. رقمك يظهر للإدارة فقط ولا يظهر في ملفك العام. لا نطلب حسابًا أو بريدًا إلكترونيًا.</p>
       <button class="btn primary" type="submit">إرسال الموهبة للمراجعة</button>
@@ -1244,7 +1244,7 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
   if(!item.name||!item.category){if(message)message.textContent="من فضلك أدخل الاسم ومجال الموهبة.";return;}
   if(talentAge&&(Number(talentAge)<16||Number(talentAge)>100)){if(message)message.textContent="السن المدخل غير صحيح؛ اترك الحقل فارغًا إذا لم ترغب في ذكره.";return;}
   if(talentExperience&&(Number(talentExperience)<0||Number(talentExperience)>80)){if(message)message.textContent="عدد سنوات الخبرة غير صحيح.";return;}
-  if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم موبايل أو واتساب صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
+  if(!item.contact||phoneDigits<7||item.contact.length>25){if(message)message.textContent="اكتب رقم هاتف صحيحًا مع مفتاح الدولة عند الحاجة.";return;}
   if(talentWorkLinks.some(url=>!safeHttpUrl(url))){if(message)message.textContent="أحد روابط نماذج الأعمال غير صالح؛ استخدم روابط تبدأ بـ http أو https.";return;}
   if(talentWorkLinks.length>3){if(message)message.textContent="يمكن إضافة ثلاثة روابط أعمال كحد أقصى.";return;}
   if(item.bio.length>1900){if(message)message.textContent="النبذة طويلة؛ اختصرها قليلًا ثم حاول مرة أخرى.";return;}
@@ -1607,7 +1607,7 @@ renderProjects();
     </div>
   </div>
   <div class="section-heading" id="bookListingFormHeading"><h2>اعرض كتابك للبيع</h2><p>الإعلان مجاني حاليًا. املأ بيانات كتابك مرة واحدة، وبعد موافقة الإدارة سيظهر للقراء.</p></div>
-  <div class="panel" style="margin-bottom:12px"><strong style="color:var(--gold)">طريقة العرض ببساطة</strong><p style="margin:8px 0 0">ارفع أفيش الكتاب، واكتب بياناته وسعره. لو النسخة إلكترونية، وضّح في النبذة هل التسليم PDF أم القراءة أونلاين. البيع والتواصل مباشرة بينك وبين القارئ عبر واتساب، والمنصة لا تحصل على عمولة حاليًا.</p></div>
+  <div class="panel" style="margin-bottom:12px"><strong style="color:var(--gold)">طريقة العرض ببساطة</strong><p style="margin:8px 0 0">ارفع أفيش الكتاب، واكتب بياناته وسعره. لو النسخة إلكترونية، وضّح في النبذة هل التسليم PDF أم القراءة أونلاين. البيع والتواصل مباشرة بينك وبين القارئ عبر الهاتف، والمنصة لا تحصل على عمولة حاليًا.</p></div>
   <div class="panel">
     <form id="bookListingForm">
       <label>اسم الكتاب *</label><input id="bookTitle" required maxlength="180" placeholder="عنوان الرواية أو الكتاب">
@@ -1622,7 +1622,7 @@ renderProjects();
       <div id="bookCoverPreviewWrap" style="display:none;margin:10px 0"><p style="margin:0 0 8px;color:var(--muted);font-size:13px">معاينة الغلاف قبل نشر الإعلان:</p><img id="bookCoverPreview" alt="معاينة غلاف الكتاب" style="width:145px;height:205px;object-fit:cover;border-radius:8px;border:1px solid var(--gold);display:block"><button class="btn" id="bookCoverRemove" type="button" style="margin-top:8px">إزالة الغلاف واختيار صورة أخرى</button></div>
       <label>نبذة عن الكتاب *</label><textarea id="bookDescription" required maxlength="2500" rows="4" placeholder="اكتب نبذة تشجع القارئ على اقتناء الكتاب"></textarea>
       <label>اسم صاحب الإعلان *</label><input id="bookSellerName" required maxlength="120" placeholder="الاسم الذي سيظهر في الإعلان">
-      <label>رقم الهاتف أو واتساب للتواصل مع البائع *</label><input id="bookContact" required type="tel" maxlength="30" placeholder="اكتب الرقم مع مفتاح الدولة" dir="ltr">
+      <label>رقم الهاتف للتواصل مع البائع *</label><input id="bookContact" required type="tel" maxlength="30" placeholder="اكتب الرقم مع مفتاح الدولة" dir="ltr">
       <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0"><input id="bookRightsConfirm" type="checkbox" required style="width:auto;margin-top:6px"><span>أقر أنني صاحب الكتاب أو لدي الحق في عرضه للبيع، وأن بيانات الإعلان والسعر صحيحة.</span></label>
       <button class="btn primary" type="submit">إرسال الكتاب للمراجعة</button>
     </form>
@@ -2119,7 +2119,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <label>رفع صورة شخصية من جهازك (JPG أو PNG أو WEBP، حتى 5 ميجابايت)</label><input id="accountEditPhoto" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
       <div id="accountPhotoPreviewWrap" style="display:none;margin:8px 0"><img id="accountPhotoPreview" alt="معاينة الصورة الشخصية قبل الإرسال" style="width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)"><p class="admin-status">معاينة الصورة قبل إرسالها لمراجعة الإدارة</p></div>
       <label>أو رابط صورة شخصية (اختياري)</label><input id="accountEditImage" type="url" placeholder="https://..." autocomplete="url">
-      <label>رقم هاتف أو واتساب (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
+      <label>رقم هاتف (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
       <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
       <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
     </form>
