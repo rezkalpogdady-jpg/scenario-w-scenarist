@@ -1513,7 +1513,7 @@ async function adminLoadCrimeStoryQueue(){
   const box=document.getElementById("storiesAdminQueue");
   if(!box||!adminSupabase||!adminSession)return;
   const {data,error}=await adminSupabase.from("crime_stories")
-    .select("id,title,description,content,image_url,category,author_name,created_at")
+    .select("id,title,description,content,image_url,category,author_name,contact,created_at")
     .eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<p>لا توجد طلبات جديدة للمراجعة.</p>';return;}
@@ -3461,7 +3461,8 @@ async function adminLoadApprovalNotifications(){
     {table:"topic_replies",column:"status",label:"ردود النقاش",target:"adminTopicReplies",loader:"adminLoadCommunityModeration"},
     {table:"content_comments",column:"status",label:"تعليقات المحتوى",target:"adminContentComments",loader:"adminLoadCommunityModeration"},
     {table:"book_marketplace_listings",column:"status",label:"إعلانات سوق الكتب",target:"adminBookListingsPanel",loader:"adminLoadBookListings"},
-    {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"}
+    {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"},
+    {table:"crime_stories",column:"status",label:"حكايات وملفات الجرائم",target:"storiesAdminPanel",loader:"adminLoadCrimeStoryQueue"}
   ];
   const results=await Promise.all(queues.map(async item=>{
     try{
