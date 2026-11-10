@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.54: إضافة مسلسلات البشاير والبخيل وأنا وأزمة عائلية بقوائم تشغيل YouTube داخل قسم الأفلام والمسلسلات. | 6.8.53: إحصائيات نمو المنصة ولوحة أداء مجمعة وخفيفة. | 6.8.52: إدارة بسيطة للمجتمع. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.54: تجربة قائمة تشغيل مسلسل البشاير (27 حلقة) داخل قسم الأفلام والمسلسلات. | 6.8.53: إحصائيات نمو المنصة ولوحة أداء مجمعة وخفيفة. | 6.8.52: إدارة بسيطة للمجتمع. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -4201,22 +4201,9 @@ const FEATURED_FILM_PLAYLISTS = [
     id:"al-bashayer",
     title:"مسلسل البشاير",
     category:"مسلسل",
-    description:"قائمة حلقات مسلسل البشاير على YouTube. اختر الحلقة من قائمة التشغيل داخل المشغّل.",
+    episodeCount:27,
+    description:"مسلسل البشاير — 27 حلقة في قائمة تشغيل واحدة على YouTube. اختر الحلقة من قائمة التشغيل داخل المشغّل.",
     playlistId:"PLrqWbgGZMWhGWrZp7HBqTSpk9GvlRJs43"
-  },
-  {
-    id:"al-bakhil-wa-ana",
-    title:"مسلسل البخيل وأنا",
-    category:"مسلسل",
-    description:"قائمة حلقات مسلسل البخيل وأنا على YouTube. اختر الحلقة من قائمة التشغيل داخل المشغّل.",
-    playlistId:"PLrqWbgGZMWhHcZyxk5xAI6l2JrTJ-tW_P"
-  },
-  {
-    id:"azma-aelaya",
-    title:"مسلسل أزمة عائلية",
-    category:"مسلسل",
-    description:"قائمة حلقات مسلسل أزمة عائلية على YouTube. اختر الحلقة من قائمة التشغيل داخل المشغّل.",
-    playlistId:"PLMM16cxm2tg186S0ILvuCJcF__MnaeQ8-"
   }
 ];
 
@@ -4271,7 +4258,7 @@ function renderFilms(){
       </div>
       <div class="feature-content">
         <h3>${escapeHTML(item.title)}</h3>
-        <p>مسلسل • حلقات كاملة</p>
+        <p>مسلسل • ${Number(item.episodeCount || 0) || "حلقات"} حلقة</p>
         <p>${escapeHTML(item.description)}</p>
         <div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden">
           <iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(item.playlistId)}" title="${escapeHTML(item.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
