@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.63</title>
+<title>سيناريو وسيناريست – تحديث 6.8.64</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2520,6 +2520,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <div id="adminBookListingsList" class="grid">افتح مراجعة عروض الكتب لتحميل الإعلانات.</div>
     </div>
 
+<div id="adminContentEditorWrap" style="display:none">
 <div class="section-heading" id="adminContentEditorHeading">
       <h2 id="adminEditorSectionTitle">إضافة أو تعديل محتوى</h2>
       <p id="adminEditorSectionHint">اختر قسمًا من البطاقات بالأعلى لبدء رفع المحتوى.</p>
@@ -2600,6 +2601,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
       <p id="adminSaveMessage" style="color:var(--muted)"></p>
     </div>
+</div>
 
     <div class="section-heading">
       <h2>إدارة محتوى المنصة</h2>
@@ -3755,6 +3757,8 @@ function adminOpenSection(section){
     alert(section==="library"?"إدارة السيناريوهات أصبحت من صفحة مكتبة السيناريوهات مباشرة.":"إدارة الجرائم والحكايات أصبحت من صفحة جرائم وحكايات مباشرة.");
     return;
   }
+  const editor=document.getElementById("adminContentEditorWrap");
+  if(editor)editor.style.display="block";
   const form=document.getElementById("adminContentForm");
   if(form){form.reset();document.getElementById("adminRecordId").value="";}
   const type=document.getElementById("adminContentType");
@@ -4002,6 +4006,8 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
 
 /* تعبئة النموذج للتعديل */
 function adminEditRecord(id){
+  const editor=document.getElementById("adminContentEditorWrap");
+  if(editor)editor.style.display="block";
   const item=adminRecords.find(record=>String(record.id)===String(id));
   if(!item) return;
 
@@ -4094,6 +4100,7 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
 
   adminSession=null;
   adminRecords=[];
+  const editor=document.getElementById("adminContentEditorWrap");if(editor)editor.style.display="none";
   if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
 
   document.getElementById("adminDashboard").style.display="none";
