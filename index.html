@@ -633,7 +633,55 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('library')">＋ إضافة سيناريو جديد</button></div><div id="libraryAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة سيناريو إلى المكتبة</h3><form id="libraryAdminForm"><label>اسم السيناريو / الفيلم</label><input name="title" required maxlength="200"><label>اسم المؤلف</label><input name="author" required maxlength="160"><label>التصنيف</label><select name="category" required><option value="">اختر</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option></select><label>ملخص العمل</label><textarea name="summary" required maxlength="4000"></textarea><label>الأفيش (اختياري)</label><input name="poster" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف السيناريو PDF (حتى 50 ميجابايت)</label><input name="pdf" type="file" accept="application/pdf,.pdf" required><label>صاحب الحقوق / أساس الإتاحة</label><input name="rights" required maxlength="200" placeholder="اسم صاحب الحقوق أو أساس الإتاحة"><label>ملاحظات الحقوق (اختياري)</label><textarea name="rightsNote" maxlength="2000"></textarea><label style="display:flex;gap:8px;align-items:flex-start"><input name="confirm" type="checkbox" required style="width:auto;margin-top:6px"><span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد وجود حق نشره أو تحملي مسؤولية القرار.</span></label><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> إتاحة القراءة للأعضاء</label><button class="btn primary" type="submit">حفظ السيناريو ونشره</button><button class="btn" type="button" onclick="adminToggleInlinePublish('library')">إغلاق</button><p id="libraryAdminMessage" aria-live="polite"></p></form></div><div id="libraryItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('libraryScripts')">＋ إضافة أو تعديل سيناريو</button></div><div id="libraryScriptsAdminPublish" style="display:none;margin:16px 0"><div class="section-heading" id="libraryScenarioEditorHeading">
+      <h2>إضافة أو تعديل سيناريو</h2>
+      <p>أضف السيناريو أو عدّل بياناته من نفس صفحة المكتبة. أدوات الإدارة لا تظهر إلا لحساب مدير المنصة.</p>
+    </div>
+    <div class="panel">
+      <form id="adminScenarioScriptForm">
+        <input id="adminScenarioScriptId" type="hidden">
+        <label>اسم السيناريو / الفيلم</label>
+        <input id="adminScenarioScriptTitle" required maxlength="200" placeholder="عنوان السيناريو">
+        <label>اسم المؤلف</label>
+        <input id="adminScenarioScriptAuthor" required maxlength="160" placeholder="اسم الكاتب">
+        <label>التصنيف</label>
+        <select id="adminScenarioScriptCategory" required>
+          <option value="">اختر التصنيف</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option><option>其他</option>
+        </select>
+        <label>ملخص العمل</label>
+        <textarea id="adminScenarioScriptSummary" required maxlength="4000" placeholder="نبذة مختصرة عن السيناريو"></textarea>
+        <label>أفيش الفيلم (اختياري — JPG أو PNG أو WEBP، حتى 10 ميجابايت)</label>
+        <input id="adminScenarioScriptPoster" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">يمكنك رفع الأفيش عند إضافة السيناريو أو لاحقًا من تعديل البيانات. إذا لم تختر صورة جديدة فسيظل الأفيش الحالي كما هو.</p>
+        <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
+        <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
+        <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
+        <hr style="border-color:var(--border);margin:18px 0">
+        <h4 style="color:var(--gold)">بيانات الحقوق ومسؤولية الإتاحة</h4>
+        <label>صاحب العمل أو أساس قرار الإتاحة</label>
+        <input id="adminScenarioScriptRightsHolder" maxlength="200" placeholder="اسم صاحب العمل أو اكتب: إقرار مدير المنصة">
+        <label>أساس الإتاحة</label>
+        <select id="adminScenarioScriptRightsStatus" required>
+          <option value="unverified">لم يتم التحقق بعد</option>
+          <option value="original_author">عمل أصلي لصاحب الحقوق</option>
+          <option value="permission_granted">تصريح نشر موثق</option>
+          <option value="licensed">ترخيص نشر</option>
+          <option value="public_domain">عمل في الملكية العامة</option>
+          <option value="admin_responsibility">قرار إتاحة بإقرار مدير المنصة</option>
+        </select>
+        <label>ملاحظات قرار الإتاحة (اختياري)</label>
+        <textarea id="adminScenarioScriptRightsNote" maxlength="2000" placeholder="اكتب أي توضيح تراه مناسبًا بشأن قرار النشر"></textarea>
+        <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:var(--white)">
+          <input id="adminScenarioScriptRightsConfirmed" type="checkbox" style="width:auto;margin-top:7px">
+          <span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد أنني أملك حق نشره أو أتحمل مسؤولية قرار نشره.</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء بقرار مني كمدير للمنصة</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
+      </form>
+      <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
+      <div class="section-heading" style="margin-top:20px"><h3 style="color:var(--gold)">مسودات السيناريوهات</h3><p>تظهر هنا للمدير فقط حتى يمكن استكمالها أو نشرها.</p></div><div id="libraryScenarioAdminDrafts" class="grid"></div>
+    </div>
+</div><div id="libraryItems" class="grid"></div>
 
   <div id="scenarioReader" class="panel" role="dialog" aria-modal="true" aria-labelledby="scenarioReaderTitle" style="display:none;margin-top:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2412,55 +2460,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى</h3><div id="adminContentComments" class="grid"></div>
     </div>
 
-    <div class="section-heading" id="adminScenarioLibrarySection">
-      <h2>إدارة مكتبة السيناريوهات الكاملة</h2>
-      <p>ارفع العمل واختر بنفسك حفظه كمسودة أو إتاحته للأعضاء. قرار النشر من صلاحية مدير المنصة.</p>
-    </div>
-    <div class="panel">
-      <form id="adminScenarioScriptForm">
-        <input id="adminScenarioScriptId" type="hidden">
-        <label>اسم السيناريو / الفيلم</label>
-        <input id="adminScenarioScriptTitle" required maxlength="200" placeholder="عنوان السيناريو">
-        <label>اسم المؤلف</label>
-        <input id="adminScenarioScriptAuthor" required maxlength="160" placeholder="اسم الكاتب">
-        <label>التصنيف</label>
-        <select id="adminScenarioScriptCategory" required>
-          <option value="">اختر التصنيف</option><option>دراما</option><option>كوميديا</option><option>تشويق</option><option>رعب</option><option>اجتماعي</option><option>تاريخي</option><option>أكشن</option><option>其他</option>
-        </select>
-        <label>ملخص العمل</label>
-        <textarea id="adminScenarioScriptSummary" required maxlength="4000" placeholder="نبذة مختصرة عن السيناريو"></textarea>
-        <label>أفيش الفيلم (اختياري — JPG أو PNG أو WEBP، حتى 10 ميجابايت)</label>
-        <input id="adminScenarioScriptPoster" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
-        <p style="font-size:12px;color:var(--muted)">يمكنك رفع الأفيش عند إضافة السيناريو أو لاحقًا من تعديل البيانات. إذا لم تختر صورة جديدة فسيظل الأفيش الحالي كما هو.</p>
-        <label>ملف السيناريو الكامل (PDF فقط — حتى 50 ميجابايت)</label>
-        <input id="adminScenarioScriptFile" type="file" accept="application/pdf,.pdf" style="width:100%;padding:10px">
-        <p style="font-size:12px;color:var(--muted)">لأفضل قراءة على الهاتف، احفظ ملف Word بصيغة PDF قبل رفعه. الملف يُخزَّن في مساحة خاصة وليس كرابط عام.</p>
-        <hr style="border-color:var(--border);margin:18px 0">
-        <h4 style="color:var(--gold)">بيانات الحقوق ومسؤولية الإتاحة</h4>
-        <label>صاحب العمل أو أساس قرار الإتاحة</label>
-        <input id="adminScenarioScriptRightsHolder" maxlength="200" placeholder="اسم صاحب العمل أو اكتب: إقرار مدير المنصة">
-        <label>أساس الإتاحة</label>
-        <select id="adminScenarioScriptRightsStatus" required>
-          <option value="unverified">لم يتم التحقق بعد</option>
-          <option value="original_author">عمل أصلي لصاحب الحقوق</option>
-          <option value="permission_granted">تصريح نشر موثق</option>
-          <option value="licensed">ترخيص نشر</option>
-          <option value="public_domain">عمل في الملكية العامة</option>
-          <option value="admin_responsibility">قرار إتاحة بإقرار مدير المنصة</option>
-        </select>
-        <label>ملاحظات قرار الإتاحة (اختياري)</label>
-        <textarea id="adminScenarioScriptRightsNote" maxlength="2000" placeholder="اكتب أي توضيح تراه مناسبًا بشأن قرار النشر"></textarea>
-        <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:var(--white)">
-          <input id="adminScenarioScriptRightsConfirmed" type="checkbox" style="width:auto;margin-top:7px">
-          <span>أقر بصفتي مدير المنصة بمسؤوليتي عن قرار إتاحة هذا العمل، وأؤكد أنني أملك حق نشره أو أتحمل مسؤولية قرار نشره.</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input id="adminScenarioScriptPublished" type="checkbox" style="width:auto"> إتاحة القراءة للأعضاء بقرار مني كمدير للمنصة</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
-      </form>
-      <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
-      <div id="adminScenarioScriptList" class="grid"></div>
-    </div>
-
+    
     <div class="section-heading">
       <h2>إدارة ورفع المحتوى حسب القسم</h2>
       <p>افتح القسم المطلوب لتظهر لك أدوات رفع محتواه وسجلاته فقط</p>
@@ -2468,7 +2468,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div class="panel">
       <div id="adminSectionCards" class="grid">
         <article class="admin-section-card"><h3>الأكاديمية والمحاضرات</h3><p>فيديوهات تعليمية ومواد المحاضرات والملفات المساندة.</p><button class="btn primary" type="button" onclick="adminOpenSection('academy')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>مكتبة السيناريوهات</h3><p>ملفات PDF كاملة مع بيانات المؤلف والتصنيف وحقوق النشر.</p><button class="btn primary" type="button" onclick="adminOpenSection('library')">فتح إدارة السيناريوهات</button></article>
+        
         <article class="admin-section-card"><h3>الكُتّاب</h3><p>إضافة نبذات وصور وأعمال تعريفية للكُتّاب.</p><button class="btn primary" type="button" onclick="adminOpenSection('writers')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>المخرجون</h3><p>إضافة نبذات وصور وروابط نماذج أعمال المخرجين.</p><button class="btn primary" type="button" onclick="adminOpenSection('directors')">إدارة القسم ورفع محتوى</button></article>
         <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
@@ -5728,7 +5728,7 @@ async function adminReviewBookListing(id,status){
 if(typeof adminSession!=='undefined'&&adminSession) adminSetInlinePublishingVisible(true);
 function adminSetInlinePublishingVisible(visible){
  document.querySelectorAll('[data-admin-inline="1"]').forEach(el=>el.style.display=visible?'block':'none');
- if(!visible) ['library','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
+ if(!visible) ['library','libraryScripts','stories','films','archive','shorts'].forEach(id=>{const el=document.getElementById(id+'AdminPublish');if(el)el.style.display='none';});
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
