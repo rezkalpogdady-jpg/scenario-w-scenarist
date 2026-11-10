@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.60</title>
+<title>سيناريو وسيناريست – تحديث 6.8.61</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -679,9 +679,9 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
         <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
       </form>
       <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
-      <div class="section-heading" style="margin-top:20px"><h3 style="color:var(--gold)">إدارة السيناريوهات من صفحة المكتبة</h3><p>تظهر المسودات والمنشورات هنا للمدير فقط؛ يمكنك تعديل العمل أو إيقاف نشره دون الرجوع للوحة الإدارة.</p></div><div id="libraryScenarioAdminDrafts" class="grid"></div>
+      <div id="libraryScenarioAdminDrafts" style="display:none"></div>
     </div>
-</div><div id="libraryItems" class="grid"></div>
+</div><div id="libraryScenarioAdminList" class="grid" data-admin-inline="1" style="display:none;margin:14px 0"></div><div id="libraryItems" class="grid"></div>
 
   <div id="scenarioReader" class="panel" role="dialog" aria-modal="true" aria-labelledby="scenarioReaderTitle" style="display:none;margin-top:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2521,7 +2521,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <label>القسم</label>
         <select id="adminContentType" required>
           <option value="academy">الأكاديمية والمحاضرات</option>
-          <option value="library">مكتبة السيناريوهات</option>
           <option value="writers">الكُتّاب</option>
           <option value="directors">المخرجون</option>
           <option value="talents">المواهب</option>
@@ -4066,11 +4065,13 @@ async function adminLoadScenarioScripts(){
   const {data,error}=await adminSupabase.from("scenario_scripts").select("id,title,author,category,summary,storage_path,poster_path,published,created_at,rights_holder,rights_status,rights_note,rights_confirmed").order("created_at",{ascending:false}).limit(200);
   if(error){scenarioScriptMessage("تعذر تحميل السيناريوهات: "+error.message);return;}
   adminScenarioScriptRecords=data||[];
-  const box=document.getElementById("libraryScenarioAdminDrafts");
+  const box=document.getElementById("libraryScenarioAdminList");
   if(!box)return;
-  box.innerHTML=adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>
+  box.style.display=adminSession?"grid":"none";
+  box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">إدارة السيناريوهات من صفحة المكتبة</h3><p>المسودات والمنشورات تظهر هنا للمدير فقط، دون الرجوع إلى لوحة الإدارة.</p></div>'+
+  (adminScenarioScriptRecords.length?adminScenarioScriptRecords.map(item=>
     '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور ومتاح للقراءة":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions"><button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></article>'
-  ).join(""):'<p style="color:var(--muted)">لا توجد سيناريوهات أو مسودات حتى الآن.</p>';
+  ).join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
 }
 function adminEditScenarioScript(id){
   const item=adminScenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item)return;
@@ -4200,7 +4201,7 @@ function renderScenarioScriptCards(){
 ${item.poster_url?`<img class="scenario-poster-image" src="${escapeHTML(item.poster_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy">`:`<div class="scenario-poster-placeholder"><span>سيناريو وسيناريست</span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category||"سيناريو")}</small></div>`}
 <span class="scenario-poster-shade"></span><span class="scenario-poster-title">${escapeHTML(item.title)}</span></button>
 <div class="scenario-poster-caption"><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.author||"غير محدد")} <span>•</span> ${escapeHTML(item.category||"غير مصنف")}</p>
-<button class="btn primary" type="button" onclick="openScenarioScript(&quot;${item.id}&quot;)">اقرأ السيناريو</button></div></article>`);
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" onclick="openScenarioScript(&quot;${item.id}&quot;)">اقرأ السيناريو</button>${adminSession?`<button class="btn" type="button" onclick="adminEditScenarioScript(&quot;${item.id}&quot;)">تعديل</button>`:""}</div></div></article>`);
   const legacyCards=legacy.map(item=>{const legacyIndex=scenarioLibrary.indexOf(item);return `<article class="feature">${item.cover?`<img src="${escapeHTML(item.cover)}" alt="" loading="lazy">`:""}<div class="feature-content"><h3>${escapeHTML(item.title)}</h3><p>الكاتب: ${escapeHTML(item.author||"غير محدد")}</p><p>التصنيف: ${escapeHTML(item.category||"")}</p><p>${escapeHTML(item.summary||"")}</p>${item.file?`<button class="btn primary" type="button" onclick="openLegacyScenario(${legacyIndex})">اقرأ السيناريو داخل المنصة</button>`:""}</div></article>`;});
   const cards=[...scriptCards,...legacyCards];
   if(!cards.length){box.innerHTML='<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">مكتبة السيناريوهات</h3><p>لا توجد أعمال منشورة تطابق البحث حاليًا.</p></div>';return;}
