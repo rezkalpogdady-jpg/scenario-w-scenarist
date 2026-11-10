@@ -1306,7 +1306,7 @@ renderShortFilms();
 
 <section id="stories" class="page">
   <div class="intro">
-    <h2>ملفات الجرائم والحكايات</h2>
+    <h2>جرائم وحكايات</h2>
     <p>عالم من القضايا الغامضة والجرائم التي هزت المجتمع، وحكايات واقعية تصلح للدراسة والبحث والإلهام الدرامي.</p>
   </div>
 
@@ -3488,12 +3488,15 @@ async function adminLoadApprovalNotifications(){
 
 async function adminVerifyAdmin(session){
   adminSession=session;
+  const storiesAdminPanel=document.getElementById("storiesAdminPanel");
+  if(storiesAdminPanel)storiesAdminPanel.style.display="none";
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
 
   const {data,error}=await adminSupabase.auth.getUser();
 
   if(error || !data.user){
     adminSession=null;
+    if(storiesAdminPanel)storiesAdminPanel.style.display="none";
     document.getElementById("adminDashboard").style.display="none";
     document.getElementById("adminLoginPanel").style.display="block";
     adminSetMessage("adminLoginMessage","تعذر التحقق من الحساب. سجّل الدخول بحساب المدير.");
@@ -3948,6 +3951,8 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
   if(adminSupabase) await adminSupabase.auth.signOut();
 
   adminSession=null;
+  const storiesAdminPanel=document.getElementById("storiesAdminPanel");
+  if(storiesAdminPanel)storiesAdminPanel.style.display="none";
   adminRecords=[];
 
   document.getElementById("adminDashboard").style.display="none";
