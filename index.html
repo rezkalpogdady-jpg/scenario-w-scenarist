@@ -3808,6 +3808,7 @@ async function adminLoadRecords(){
 
   adminRecords=data || [];
   adminRenderRecords();
+  if(typeof renderFilms==="function")renderFilms();
   if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
 }
 
@@ -4139,7 +4140,7 @@ adminInitialize();
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>صورة الأفيش (اختياري)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button class="btn primary" type="submit">حفظ ونشر</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><input type="hidden" name="record_id" value=""><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
 </section>
 
 <!-- مكتبة دعم بث HLS -->
@@ -4543,7 +4544,8 @@ function renderFilms(){
     .trim().toLowerCase();
   const category=document.getElementById("filmsCategory")?.value || "";
 
-  const items=publicContentRecords.filter(item=>
+  const filmSource=adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords;
+  const items=filmSource.filter(item=>
     item.content_type==="films" &&
     (!category || item.category===category) &&
     (item.title+" "+(item.description || ""))
@@ -4587,6 +4589,7 @@ function renderFilms(){
         <p>${escapeHTML(item.category || "عمل فني")}</p>
         <p>${escapeHTML(item.description || "")}</p>
         ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
+        ${adminSession ? `<div class="admin-actions" style="margin-top:12px"><button class="btn" type="button" onclick="adminEditFilm('${item.id}')">تعديل</button><button class="btn" type="button" onclick="adminDeleteFilm('${item.id}')">حذف</button></div>` : ""}
       </div>
     </article>
   `).join("");
