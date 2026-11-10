@@ -3645,7 +3645,8 @@ function adminConfigureSponsorForm(){
   if(titleLabel)titleLabel.textContent=isSponsors?"اسم الشركة":"عنوان المحتوى";
   if(title)title.placeholder=isSponsors?"اكتب اسم الشركة":"اكتب العنوان";
   const file=document.getElementById("adminFile"),fileLabel=file?.previousElementSibling;
-  if(fileLabel)fileLabel.textContent=isSponsors?"الأفيش الدعائي للشركة":"رفع أفيش المحاضرة أو ملف المحتوى من جهازك";
+  const selectedSection=document.getElementById("adminContentType")?.value;
+  if(fileLabel)fileLabel.textContent=isSponsors?"الأفيش الدعائي للشركة":selectedSection==="stories"?"رفع أفيش الجريمة أو صورة الحكاية":"رفع أفيش المحاضرة أو ملف المحتوى من جهازك";
   if(file){file.accept=isSponsors?"image/*":(ADMIN_SECTION_META[document.getElementById("adminContentType")?.value]?.accept||"*/*");if(isSponsors)file.setAttribute("aria-label","رفع الأفيش الدعائي للشركة");}
   const type=document.getElementById("adminContentType");
   if(type){type.style.display=isSponsors?"none":"";if(type.previousElementSibling)type.previousElementSibling.style.display=isSponsors?"none":"";}
@@ -3671,6 +3672,7 @@ function adminOpenSection(section){
   if(hint) hint.textContent=meta.hint;
   const file=document.getElementById("adminFile");
   if(file){file.accept=meta.accept;file.value="";}
+  const mediaKind=document.getElementById("adminMediaKind");if(mediaKind&&section==="stories")mediaKind.value="image";
   const filter=document.getElementById("adminFilter");
   if(filter){filter.value=section;adminRenderRecords();}
   document.getElementById("adminSaveButton").textContent="حفظ محتوى "+meta.name;
@@ -3845,6 +3847,7 @@ document.getElementById("adminContentForm")?.addEventListener("submit",async fun
   adminSetMessage("adminSaveMessage","جارٍ حفظ المحتوى ورفع الملف إن وُجد...");
 
   const previousRecord=id ? adminRecords.find(item=>String(item.id)===String(id)) : null;
+  if(record.content_type==="stories"&&!document.getElementById("adminFile")?.files?.[0]&&!record.image_url&&!previousRecord?.image_url){adminSetMessage("adminSaveMessage","ارفع أفيش الجريمة أو أضف رابط صورة قبل النشر.");return;}
   let uploadedAsset=null;
   try{
     uploadedAsset=await adminUploadSelectedFile();
