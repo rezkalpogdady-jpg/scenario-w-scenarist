@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.59: نشر أفيشات الجرائم والحكايات. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.60: إدارة السيناريوهات والجرائم من صفحاتها مباشرة. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -679,7 +679,7 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
         <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ السيناريو</button><button class="btn" type="button" onclick="resetAdminScenarioScriptForm()">تفريغ الحقول</button></div>
       </form>
       <p id="adminScenarioScriptMessage" role="status" style="color:var(--muted)"></p>
-      <div class="section-heading" style="margin-top:20px"><h3 style="color:var(--gold)">مسودات السيناريوهات</h3><p>تظهر هنا للمدير فقط حتى يمكن استكمالها أو نشرها.</p></div><div id="libraryScenarioAdminDrafts" class="grid"></div>
+      <div class="section-heading" style="margin-top:20px"><h3 style="color:var(--gold)">إدارة السيناريوهات من صفحة المكتبة</h3><p>تظهر المسودات والمنشورات هنا للمدير فقط؛ يمكنك تعديل العمل أو إيقاف نشره دون الرجوع للوحة الإدارة.</p></div><div id="libraryScenarioAdminDrafts" class="grid"></div>
     </div>
 </div><div id="libraryItems" class="grid"></div>
 
@@ -2601,13 +2601,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <select id="adminFilter">
         <option value="">كل الأقسام</option>
         <option value="academy">الأكاديمية</option>
-        <option value="library">المكتبة</option>
+
         <option value="writers">الكُتّاب</option>
         <option value="directors">المخرجون</option>
         <option value="talents">المواهب</option>
         <option value="films">الأفلام والمسلسلات</option>
         <option value="shorts">الأفلام القصيرة</option>
-        <option value="stories">الجرائم والحكايات</option>
+
         <option value="news">الأخبار الفنية</option>
           <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
         <option value="radio">الراديو</option>
@@ -3726,7 +3726,7 @@ function adminRenderRecords(){
   const filter=document.getElementById("adminFilter")?.value || "";
 
   const records=adminRecords.filter(item=>
-    item.content_type!=="stories" &&
+    !["stories","library"].includes(item.content_type) &&
     (!filter || item.content_type===filter) &&
     ((item.title+" "+(item.description||"")+" "+(item.category||""))
       .toLowerCase().includes(q))
