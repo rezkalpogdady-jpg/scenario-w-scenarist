@@ -6128,35 +6128,53 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
   msg.textContent='تعذر رفع الفيلم: '+(err.message||'حاول مرة أخرى.');
  }finally{btn.disabled=false;}
 });
+function adminResetFilmForm(){
+ const form=document.getElementById('filmsAdminForm');if(!form)return;
+ form.reset();form.elements.record_id.value='';
+ document.getElementById('filmsAdminSubmitButton').textContent='حفظ ونشر';
+ document.getElementById('filmsAdminCancelEdit').style.display='none';
+ document.getElementById('filmsAdminMessage').textContent='';
+}
+function adminEditFilm(id){
+ if(!adminSession||!adminSupabase)return;
+ const item=adminRecords.find(record=>String(record.id)===String(id)&&record.content_type==='films');
+ if(!item){alert('لم يتم العثور على العمل. حدّث الصفحة وحاول مرة أخرى.');return;}
+ const form=document.getElementById('filmsAdminForm');
+ form.elements.record_id.value=item.id;form.elements.title.value=item.title||'';
+ form.elements.category.value=item.category||'فيلم';form.elements.description.value=item.description||'';
+ form.elements.url.value=item.content_url||'';form.elements.published.checked=!!item.published;
+ form.elements.image.value='';form.elements.video.value='';
+ document.getElementById('filmsAdminSubmitButton').textContent='حفظ التعديلات';
+ document.getElementById('filmsAdminCancelEdit').style.display='inline-block';
+ const panel=document.getElementById('filmsAdminPublish');panel.style.display='block';
+ panel.scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function adminDeleteFilm(id){
+ if(!adminSession||!adminSupabase)return;
+ if(!confirm('هل أنت متأكد من حذف هذا الفيلم أو المسلسل؟'))return;
+ await adminDeleteRecord(id);await loadPublicContent();
+}
 document.getElementById('filmsAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
- const form=this,fd=new FormData(form),msg=document.getElementById('filmsAdminMessage'),btn=form.querySelector('[type=submit]');let poster=null,video=null;
+ const form=this,fd=new FormData(form),msg=document.getElementById('filmsAdminMessage'),btn=form.querySelector('[type=submit]');
+ const editingId=String(fd.get('record_id')||'').trim();
+ const existing=editingId?adminRecords.find(item=>String(item.id)===editingId&&item.content_type==='films'):null;
+ if(editingId&&!existing){msg.textContent='تعذر العثور على العمل المراد تعديله. حدّث الصفحة وحاول مرة أخرى.';return;}
+ let poster=null,video=null;
  try{
-  btn.disabled=true;msg.textContent='جارٍ رفع الأفيش والفيديو وحفظ بيانات العمل...';
+  btn.disabled=true;msg.textContent='جارٍ حفظ بيانات العمل...';
   const posterFile=fd.get('image'),videoFile=fd.get('video');
-  if(posterFile?.size){
-   if(!['image/jpeg','image/png','image/webp'].includes(posterFile.type))throw new Error('اختر أفيش JPG أو PNG أو WEBP.');
-   poster=await adminInlineUpload(posterFile,'site-media','films',20*1024*1024);
-  }
+  if(posterFile?.size){if(!['image/jpeg','image/png','image/webp'].includes(posterFile.type))throw new Error('اختر أفيش JPG أو PNG أو WEBP.');poster=await adminInlineUpload(posterFile,'site-media','films',20*1024*1024);}
   let videoUrl=String(fd.get('url')||'').trim();
-  if(videoFile?.size){
-   const videoName=String(videoFile.name||'').toLowerCase();
-   const validExtension=/\.(mp4|webm)$/.test(videoName);
-   const validType=['video/mp4','video/webm'].includes(videoFile.type);
-   if(!validExtension||(videoFile.type&&!validType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');
-   video=await adminInlineUpload(videoFile,'site-media','films',50*1024*1024);
-   videoUrl=video.url;
-  }
-  if(videoUrl&&!/^https?:\/\//i.test(videoUrl))throw new Error('رابط الفيديو يجب أن يبدأ بـ https:// أو http://');
-  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||null,content_url:videoUrl||null,extra_data:{media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
-  const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
-  form.reset();msg.textContent=video?'تم رفع الفيديو وحفظ العمل ونشره.':(videoUrl?'تم حفظ العمل ورابط الفيديو.':'تم حفظ العمل وإضافته إلى القسم.');
-  await loadPublicContent();
- }catch(err){
-  const paths=[poster?.path,video?.path].filter(Boolean);
-  if(paths.length)await adminSupabase.storage.from('site-media').remove(paths);
-  msg.textContent='تعذر النشر: '+(err.message||'حاول مرة أخرى.');
- }finally{btn.disabled=false;}
+  if(videoFile?.size){const videoName=String(videoFile.name||'').toLowerCase();const validExtension=videoName.endsWith('.mp4')||videoName.endsWith('.webm');const validType=['video/mp4','video/webm'].includes(videoFile.type);if(!validExtension||(videoFile.type&&!validType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');video=await adminInlineUpload(videoFile,'site-media','films',50*1024*1024);videoUrl=video.url;}
+  if(videoUrl){const parsedUrl=new URL(videoUrl);if(!['http:','https:'].includes(parsedUrl.protocol))throw new Error('رابط الفيديو يجب أن يبدأ بـ https:// أو http://');}
+  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
+  const result=editingId?await adminSupabase.from('site_content').update(record).eq('id',editingId):await adminSupabase.from('site_content').insert(record);
+  if(result.error)throw result.error;
+  adminResetFilmForm();msg.textContent=editingId?'تم حفظ التعديلات بنجاح.':'تم حفظ العمل وإضافته إلى القسم.';
+  await adminLoadRecords();await loadPublicContent();
+ }catch(err){const paths=[poster?.path,video?.path].filter(Boolean);if(paths.length)await adminSupabase.storage.from('site-media').remove(paths);msg.textContent='تعذر الحفظ: '+(err.message||'حاول مرة أخرى.');}
+ finally{btn.disabled=false;}
 });
 document.getElementById('archiveAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase)return;
