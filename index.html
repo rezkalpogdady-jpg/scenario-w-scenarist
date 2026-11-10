@@ -6268,17 +6268,28 @@ async function crimeDbStoryEdit(id){
  box.scrollIntoView({behavior:'smooth',block:'center'});
  const {data,error}=await adminSupabase.from('crime_stories').select('id,title,image_url').eq('id',numericId).maybeSingle();
  if(error||!data){box.innerHTML='<p role="alert">تعذر تحميل القصة: '+escapeHTML(error?.message||'لم يتم العثور عليها.')+'</p>';return;}
- const current=data.image_url&&/^https?:\\/\\//i.test(data.image_url)?safeHttpUrl(data.image_url):'';
+ const current=data.image_url&&/^https?:\/\//i.test(data.image_url)?safeHttpUrl(data.image_url):'';
  box.innerHTML='<h3 style="color:var(--gold)">تعديل أفيش: '+escapeHTML(data.title||'القصة')+'</h3>'+
   (current?'<img src="'+escapeHTML(current)+'" alt="الأفيش الحالي" style="display:block;width:min(100%,220px);max-height:320px;object-fit:contain;margin:12px 0;border-radius:10px">':'<p style="color:var(--muted)">لا يوجد أفيش مرفوع حاليًا.</p>')+
   '<form id="crimeDbPosterForm" style="display:grid;gap:10px">'+
   '<input type="hidden" name="id" value="'+numericId+'">'+
   '<label>اختر الأفيش من الهاتف (JPG أو PNG أو WEBP — حتى 10 ميجابايت)</label>'+
   '<input name="image" type="file" accept="image/jpeg,image/png,image/webp">'+
+  '<img id="crimeDbPosterPreview" alt="معاينة الأفيش الجديد" style="display:none;width:min(100%,220px);max-height:320px;object-fit:contain;margin:8px 0;border-radius:10px">'+
   '<label style="display:flex;align-items:center;gap:8px"><input name="remove" type="checkbox" style="width:auto"> حذف الأفيش الحالي</label>'+
   '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">حفظ الأفيش</button><button class="btn" type="button" onclick="crimeStoryCloseEditor()">إلغاء</button></div>'+
   '<p id="crimeDbPosterStatus" role="status"></p></form>';
  document.getElementById('crimeDbPosterForm').addEventListener('submit',crimeDbPosterSave);
+ const imageInput=document.querySelector('#crimeDbPosterForm input[name="image"]');
+ imageInput.addEventListener('change',()=>{
+  const file=imageInput.files&&imageInput.files[0],preview=document.getElementById('crimeDbPosterPreview');
+  if(!preview)return;
+  if(!file){preview.removeAttribute('src');preview.style.display='none';return;}
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){preview.removeAttribute('src');preview.style.display='none';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{preview.src=String(reader.result||'');preview.style.display='block';};
+  reader.readAsDataURL(file);
+ });
 }
 async function crimeDbPosterSave(event){
  event.preventDefault();
