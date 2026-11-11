@@ -6733,7 +6733,7 @@ function crimeStoryCloseEditor(){var box=document.getElementById('storiesInlineE
 
 /* تعديل أفيش القصص القادمة من crime_stories — متاح للمدير فقط */
 /* محرر شامل لقصص crime_stories — متاح للمدير فقط */
-async function crimeDbStoryEdit(id){
+async async function crimeDbStoryEdit(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
  const numericId=Number(id);
  if(!Number.isSafeInteger(numericId)||numericId<=0)return;
@@ -6844,7 +6844,7 @@ async function crimeDbStoryDelete(id){
  closeCrimeStory();
  await loadPublicContent();
 }
-async function crimeStoryDelete(id){
+async async function crimeStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';});
  if(!row||!confirm('حذف الحكاية «'+row.title+'» نهائيًا؟'))return;
