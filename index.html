@@ -672,6 +672,9 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       #screenwritingBooksLibrary { overflow:hidden; position:relative; }
       #screenwritingBooksLibrary .section-heading h2 { letter-spacing:.2px; }
       #screenwritingBooksLibrary .grid { align-items:stretch; }
+      #screenwritingBooksLibrary .book-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+      @media (max-width:700px) { #screenwritingBooksLibrary .book-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
+      @media (max-width:360px) { #screenwritingBooksLibrary .book-grid { grid-template-columns:1fr; } }
       #screenwritingBooksLibrary article.feature { position:relative; overflow:hidden; min-height:190px; border:1px solid rgba(201,164,92,.22); border-radius:16px; background:linear-gradient(145deg,rgba(201,164,92,.085),rgba(255,255,255,.018) 58%,rgba(0,0,0,.08)); box-shadow:0 8px 22px rgba(0,0,0,.12); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; display:flex; flex-direction:column; align-items:flex-start; }
       #screenwritingBooksLibrary article.feature:hover { transform:translateY(-3px); border-color:rgba(201,164,92,.58); box-shadow:0 13px 28px rgba(0,0,0,.2); }
       #screenwritingBooksLibrary article.feature h4 { color:var(--gold); font-size:16px; line-height:1.65; margin:0 0 8px; }
@@ -690,7 +693,7 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       <span style="color:var(--muted)">نحن نوفر روابط الوصول القانونية فقط، ولا نرفع نسخًا إلكترونية محمية بحقوق النشر دون إذن أصحابها. قد تتغير الأسعار والتوافر حسب البلد.</span>
     </div>
     <h3 style="color:var(--gold);margin:18px 0 10px">كتب باللغة العربية</h3>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+    <div class="grid book-grid">
       <article class="feature" style="padding:14px"><h4>كيف تكتب السيناريو؟ – ورشة كتابة السيناريو</h4><p>سامح الجباس · شرح عملي لأساسيات كتابة السيناريو.</p><a class="btn" href="https://www.jarir.com/sa-en/arabic-books-jrb7465427.html" target="_blank" rel="noopener noreferrer">الكتاب الإلكتروني – جرير</a></article>
       <article class="feature" style="padding:14px"><h4>كتابة السيناريو: تدريبات وتطبيقات</h4><p>د. أشرف توفيق · تدريبات ونماذج للمشهد والشخصية والحوار.</p><a class="btn" href="https://www.jarir.com/arabic-books-jrb6862970.html" target="_blank" rel="noopener noreferrer">الكتاب الإلكتروني – جرير</a></article>
       <article class="feature" style="padding:14px"><h4>السيناريو: دليل احتراف الدراما</h4><p>محمد رفيع · مرجع عربي في احتراف الدراما.</p><a class="btn" href="https://www.jarir.com/arabic-books-633247.html" target="_blank" rel="noopener noreferrer">صفحة الكتاب – جرير</a></article>
@@ -701,7 +704,7 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
       <article class="feature" style="padding:14px"><h4>كيف تكتب السيناريو؟</h4><p>سامح الجباس · نسخة ورقية وبيانات النشر.</p><a class="btn" href="https://www.neelwafurat.com/itempage.aspx?id=egb245183-5260297&search=books" target="_blank" rel="noopener noreferrer">صفحة الكتاب – النيل والفرات</a></article>
     </div>
     <h3 style="color:var(--gold);margin:24px 0 10px">Books in English</h3>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+    <div class="grid book-grid">
       <article class="feature" style="padding:14px"><h4>Screenplay: The Foundations of Screenwriting</h4><p>Syd Field · أساسيات البناء والكتابة السينمائية.</p><a class="btn" href="https://sydfield.com/products/screenplay-the-foundations-of-screenwriting/" target="_blank" rel="noopener noreferrer">Author’s official page</a></article>
       <article class="feature" style="padding:14px"><h4>The Screenwriter’s Workbook</h4><p>Syd Field · تمارين وخطوات عملية لتطوير السيناريو.</p><a class="btn" href="https://sydfield.com/products/the-screenwriters-workbook/" target="_blank" rel="noopener noreferrer">Author’s official page</a></article>
       <article class="feature" style="padding:14px"><h4>Story: Substance, Structure, Style</h4><p>Robert McKee · مرجع متعمق في بنية القصة والدراما.</p><a class="btn" href="https://mckeestory.com/books/story" target="_blank" rel="noopener noreferrer">Author’s official page</a></article>
