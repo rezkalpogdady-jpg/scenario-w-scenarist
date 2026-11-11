@@ -1698,7 +1698,7 @@ function renderStories(){
     const image=item.image?'<img class="story-list-thumb" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="" loading="lazy">':'<div class="story-list-thumb story-list-placeholder">قضية</div>';
     const summary=(item.extra?.summary||item.description||"").trim();
     const excerpt=summary.length>150?summary.slice(0,150).trim()+"…":summary;
-    const canManage=!!adminSession&&(id.startsWith("crime-db-")||(adminRecords||[]).some(row=>String(row.id)===id&&row.content_type==="stories"));
+    const canManage=!!adminSession&&!!adminSupabase;
     return '<article class="story-list-item">'+
       '<button type="button" class="story-list-open" data-crime-story-id="'+escapeHTML(id)+'" aria-label="قراءة '+escapeHTML(item.title)+'">'+image+
       '<span class="story-list-copy"><strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.category||"جرائم وحكايات")+(item.authorName?' · '+escapeHTML(item.authorName):'')+'</small><span>'+escapeHTML(excerpt||"اضغط لقراءة تفاصيل الحكاية كاملة.")+'</span></span></button>'+
@@ -1715,7 +1715,7 @@ function openCrimeStory(id){
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
   const note=item.extra?.editor_note?'<p style="padding:12px;border-right:3px solid var(--gold);background:var(--panel);white-space:pre-line">'+escapeHTML(item.extra.editor_note)+'</p>':"";
   const idValue=String(item.id);
-  const canManage=!!adminSession&&(idValue.startsWith("crime-db-")||(adminRecords||[]).some(row=>String(row.id)===idValue&&row.content_type==="stories"));
+  const canManage=!!adminSession&&!!adminSupabase;
   const actions=canManage?'<div class="story-modal-admin-actions"><button class="btn primary" type="button" data-crime-modal-edit="'+escapeHTML(idValue)+'">تعديل القصة</button><button class="btn" type="button" data-crime-modal-delete="'+escapeHTML(idValue)+'">حذف القصة</button></div>':"";
   body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد تفاصيل إضافية لهذه القضية.")+'</div>'+note+source+actions;
   modal.style.display="block";document.body.style.overflow="hidden";
@@ -6826,7 +6826,7 @@ async function crimeStoryTogglePublish(id,next){
  if(result.error||!result.data){alert('تعذر تغيير حالة النشر: '+(result.error?.message||'راجع صلاحيات الإدارة.'));return;}
  await adminLoadRecords();await loadPublicContent();
 }
-async function crimeDbStoryDelete(id){
+async async function crimeDbStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  const numericId=Number(id);
  if(!Number.isSafeInteger(numericId)||numericId<=0)return;
@@ -6843,7 +6843,7 @@ async function crimeDbStoryDelete(id){
  closeCrimeStory();
  await loadPublicContent();
 }
-async function crimeStoryDelete(id){
+async async function crimeStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';});
  if(!row||!confirm('حذف الحكاية «'+row.title+'» نهائيًا؟'))return;
