@@ -2538,6 +2538,14 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <input id="adminResetEmail" type="email" required autocomplete="email" placeholder="بريد المدير لاستعادة كلمة المرور">
       <button class="btn" type="submit">نسيت كلمة المرور؟ أرسل رابط الاستعادة</button>
     </form>
+    <div class="panel" id="adminRecoveryPanel" style="display:none;margin-top:14px">
+      <h3 style="color:var(--gold)">تعيين كلمة مرور جديدة للمدير</h3>
+      <form id="adminNewPasswordForm">
+        <input id="adminNewPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)">
+        <input id="adminConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة">
+        <button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>
+      </form>
+    </div>
     <p id="adminLoginMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
 
@@ -3255,7 +3263,12 @@ try{
     if(event==="PASSWORD_RECOVERY"){
       const recovery=document.getElementById("accountRecoveryPanel");
       if(recovery) recovery.style.display="block";
-      if(typeof showPage==="function") showPage("account");
+      const adminRecovery=document.getElementById("adminRecoveryPanel");
+      if(adminRecovery){
+        adminRecovery.style.display="block";
+        if(typeof showPage==="function") showPage("admin");
+        adminSetMessage("adminLoginMessage","تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      }else if(typeof showPage==="function") showPage("account");
       accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
     }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
@@ -3879,6 +3892,27 @@ document.getElementById("adminResetForm")?.addEventListener("submit",async funct
     adminSetMessage("adminLoginMessage","إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط آمن لاستعادة كلمة المرور.");
   }catch(error){
     adminSetMessage("adminLoginMessage","تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));
+  }finally{button.disabled=false;}
+});
+
+document.getElementById("adminNewPasswordForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const password=document.getElementById("adminNewPassword").value;
+  const confirmation=document.getElementById("adminConfirmPassword").value;
+  if(password.length<8){adminSetMessage("adminLoginMessage","كلمة المرور يجب ألا تقل عن 8 أحرف.");return;}
+  if(password!==confirmation){adminSetMessage("adminLoginMessage","كلمتا المرور غير متطابقتين.");return;}
+  try{
+    if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
+    button.disabled=true;
+    const {error}=await adminSupabase.auth.updateUser({password});
+    if(error) throw error;
+    await adminSupabase.auth.signOut();
+    document.getElementById("adminRecoveryPanel").style.display="none";
+    this.reset();
+    adminSetMessage("adminLoginMessage","تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
+  }catch(error){
+    adminSetMessage("adminLoginMessage","تعذر تغيير كلمة المرور: "+(error.message||"افتح رابط الاستعادة مرة أخرى."));
   }finally{button.disabled=false;}
 });
 
