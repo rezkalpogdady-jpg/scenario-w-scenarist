@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
 <meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.66</title>
+<title>سيناريو وسيناريست – تحديث 6.8.72</title>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -277,6 +277,28 @@ Main{padding:17px 11px}
   #archiveItems .archive-media-image{max-height:68vh}
 }
 
+/* 6.8.72 — معرض أفيشات الأرشيف مع التنقل بالسحب والأسهم */
+.archive-gallery-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.96);touch-action:pan-y}
+.archive-gallery-modal.is-open{display:flex}
+.archive-gallery-stage{position:relative;width:min(100%,1100px);height:100%;max-height:94vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.archive-gallery-image{display:block;max-width:100%;max-height:calc(94vh - 105px);width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-drag:none;touch-action:pan-y}
+.archive-gallery-caption{color:#f6f1e8;text-align:center;font-size:15px;max-width:90%;overflow-wrap:anywhere}
+.archive-gallery-counter{color:#d6ae62;font-size:13px}
+.archive-gallery-control{position:absolute;z-index:2;border:1px solid rgba(255,255,255,.35);background:rgba(20,20,20,.8);color:#fff;border-radius:50%;width:46px;height:46px;font-size:27px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.archive-gallery-close{top:8px;right:8px;font-size:30px}
+.archive-gallery-prev{left:8px;top:50%;transform:translateY(-50%)}
+.archive-gallery-next{right:8px;top:50%;transform:translateY(-50%)}
+.archive-gallery-control:focus-visible{outline:3px solid #d6ae62;outline-offset:3px}
+#archiveItems .archive-media-image{cursor:zoom-in}
+@media(max-width:640px){
+ .archive-gallery-modal{padding:10px}
+ .archive-gallery-stage{max-height:96vh}
+ .archive-gallery-image{max-height:calc(96vh - 105px);max-width:100%}
+ .archive-gallery-control{width:42px;height:42px}
+ .archive-gallery-prev{left:2px}
+ .archive-gallery-next{right:2px}
+}
+ 
 /* 6.5.4 — تحسين قارئ ومكتبة السيناريو على الهاتف */
 #library .panel input,#library .panel select{width:100%;min-width:0;box-sizing:border-box}
 #library .panel:has(#librarySearch){display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,1fr);gap:12px}
@@ -5309,6 +5331,8 @@ loadApprovedIdeas();
     const q=($('archiveSearch')?.value||'').trim().toLowerCase();
     const cat=$('archiveCategory')?.value||'';
     const rows=archiveRows.filter(x=>(!cat||x.category===cat)&&(`${x.title||''} ${x.description||''} ${x.extra_data?.year||''} ${x.extra_data?.artist||''} ${x.extra_data?.film||''}`).toLowerCase().includes(q));
+    archiveGalleryRows=rows.filter(x=>safeUrl(x.image_url));
+    bindArchiveGallery(box);
     const count=document.getElementById("bookResultsCount");if(count)count.textContent="عدد الكتب المطابقة: "+rows.length;
   if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
@@ -5316,6 +5340,88 @@ loadApprovedIdeas();
       return '<article class="feature archive-poster-card">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" data-archive-view-id="' + esc(x.id) + '">' : '') + '<h3>' + esc(x.title) + '</h3></article>';
     }).join('');
     observeArchivePosterViews(box);
+  }
+  let archiveGalleryRows=[];
+  let archiveGalleryIndex=0;
+  let archiveGalleryModal=null;
+  let archiveGalleryTouchStartX=null;
+  function ensureArchiveGallery(){
+    if(archiveGalleryModal)return archiveGalleryModal;
+    archiveGalleryModal=document.createElement('div');
+    archiveGalleryModal.className='archive-gallery-modal';
+    archiveGalleryModal.id='archiveGalleryModal';
+    archiveGalleryModal.setAttribute('role','dialog');
+    archiveGalleryModal.setAttribute('aria-modal','true');
+    archiveGalleryModal.setAttribute('aria-label','معرض أفيشات أرشيف السينما');
+    archiveGalleryModal.innerHTML='<div class="archive-gallery-stage"><button type="button" class="archive-gallery-control archive-gallery-close" aria-label="إغلاق المعرض">×</button><button type="button" class="archive-gallery-control archive-gallery-prev" aria-label="الأفيش السابق">‹</button><img class="archive-gallery-image" alt=""><button type="button" class="archive-gallery-control archive-gallery-next" aria-label="الأفيش التالي">›</button><div class="archive-gallery-caption"></div><div class="archive-gallery-counter" aria-live="polite"></div></div>';
+    document.body.appendChild(archiveGalleryModal);
+    const image=archiveGalleryModal.querySelector('.archive-gallery-image');
+    archiveGalleryModal.querySelector('.archive-gallery-close').addEventListener('click',closeArchiveGallery);
+    archiveGalleryModal.querySelector('.archive-gallery-prev').addEventListener('click',()=>stepArchiveGallery(-1));
+    archiveGalleryModal.querySelector('.archive-gallery-next').addEventListener('click',()=>stepArchiveGallery(1));
+    archiveGalleryModal.addEventListener('click',event=>{if(event.target===archiveGalleryModal)closeArchiveGallery();});
+    image.addEventListener('touchstart',event=>{archiveGalleryTouchStartX=event.changedTouches?.[0]?.clientX??null;},{passive:true});
+    image.addEventListener('touchend',event=>{
+      if(archiveGalleryTouchStartX===null)return;
+      const endX=event.changedTouches?.[0]?.clientX??archiveGalleryTouchStartX;
+      const delta=endX-archiveGalleryTouchStartX;
+      archiveGalleryTouchStartX=null;
+      if(Math.abs(delta)>45)stepArchiveGallery(delta<0?1:-1);
+    },{passive:true});
+    return archiveGalleryModal;
+  }
+  function renderArchiveGallery(){
+    const modal=ensureArchiveGallery(),item=archiveGalleryRows[archiveGalleryIndex];
+    if(!item){closeArchiveGallery();return;}
+    const image=modal.querySelector('.archive-gallery-image');
+    image.src=safeUrl(item.image_url);
+    image.alt=item.title||'أفيش من أرشيف السينما';
+    modal.querySelector('.archive-gallery-caption').textContent=item.title||'أفيش من أرشيف السينما';
+    modal.querySelector('.archive-gallery-counter').textContent=(archiveGalleryIndex+1).toLocaleString('ar-EG')+' من '+archiveGalleryRows.length.toLocaleString('ar-EG');
+    modal.querySelector('.archive-gallery-prev').disabled=archiveGalleryRows.length<2;
+    modal.querySelector('.archive-gallery-next').disabled=archiveGalleryRows.length<2;
+  }
+  function openArchiveGallery(id){
+    archiveGalleryRows=archiveGalleryRows.length?archiveGalleryRows:archiveRows.filter(x=>safeUrl(x.image_url));
+    const index=archiveGalleryRows.findIndex(item=>String(item.id)===String(id));
+    if(index<0)return;
+    archiveGalleryIndex=index;
+    const modal=ensureArchiveGallery();
+    renderArchiveGallery();
+    modal.classList.add('is-open');
+    document.body.dataset.archiveGalleryPreviousOverflow=document.body.style.overflow||'';
+    document.body.style.overflow='hidden';
+    modal.querySelector('.archive-gallery-close').focus();
+  }
+  function stepArchiveGallery(direction){
+    if(!archiveGalleryRows.length)return;
+    archiveGalleryIndex=(archiveGalleryIndex+direction+archiveGalleryRows.length)%archiveGalleryRows.length;
+    renderArchiveGallery();
+  }
+  function closeArchiveGallery(){
+    if(!archiveGalleryModal)return;
+    archiveGalleryModal.classList.remove('is-open');
+    const previous=document.body.dataset.archiveGalleryPreviousOverflow;
+    document.body.style.overflow=previous||'';
+    delete document.body.dataset.archiveGalleryPreviousOverflow;
+  }
+  document.addEventListener('keydown',event=>{
+    if(!archiveGalleryModal?.classList.contains('is-open'))return;
+    if(event.key==='Escape'){event.preventDefault();closeArchiveGallery();}
+    else if(event.key==='ArrowLeft'){event.preventDefault();stepArchiveGallery(1);}
+    else if(event.key==='ArrowRight'){event.preventDefault();stepArchiveGallery(-1);}
+  });
+  function bindArchiveGallery(box){
+    if(box.dataset.galleryBound==='1')return;
+    box.dataset.galleryBound='1';
+    box.addEventListener('click',event=>{
+      const image=event.target.closest('[data-archive-view-id]');
+      if(image)openArchiveGallery(image.dataset.archiveViewId);
+    });
+    box.addEventListener('keydown',event=>{
+      const image=event.target.closest('[data-archive-view-id]');
+      if(image&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openArchiveGallery(image.dataset.archiveViewId);}
+    });
   }
   async function loadArchive(){
     const box=$('archiveItems');if(!box)return;
