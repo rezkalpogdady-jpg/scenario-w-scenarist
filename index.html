@@ -5256,48 +5256,32 @@ loadApprovedIdeas();
   if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
       const img=safeUrl(x.image_url),file=safeUrl(x.content_url);
-      return `<article class="feature"><div class="feature-content">${img?`<img src="${esc(img)}" alt="${esc(x.title)}" loading="lazy" class="archive-media-image">`:''}<small>${esc(x.category||'من الأرشيف')} ${x.extra_data?.year?' • '+esc(x.extra_data.year):''}</small><h3>${esc(x.title)}</h3><p>${esc(x.description||'')}</p>${x.extra_data?.source?`<p class="muted">المصدر: ${esc(x.extra_data.source)}</p>`:''}${file?`<a class="btn" href="${esc(file)}" target="_blank" rel="noopener">عرض المادة</a>`:''}<div class="archive-feedback" data-content-id="${esc(x.id)}"><div class="rating-line"><label>تقييمك:</label><select class="archive-rating" aria-label="تقييم المادة"><option value="">اختر</option><option value="1">1 نجمة</option><option value="2">2 نجمتان</option><option value="3">3 نجوم</option><option value="4">4 نجوم</option><option value="5">5 نجوم</option></select><button class="btn archive-rate" type="button">إرسال التقييم</button><span class="rating-summary" aria-live="polite">جارٍ تحميل التقييم</span></div><form class="archive-comment-form"><textarea maxlength="2000" required placeholder="اكتب تعليقك أو ذكرياتك عن هذه المادة..."></textarea><button class="btn" type="submit">إرسال التعليق</button></form><div class="archive-comments"></div></div></div></article>`;
+      return '<article class="feature archive-poster-card">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" data-archive-view-id="' + esc(x.id) + '">' : '') + '<h3>' + esc(x.title) + '</h3></article>';
     }).join('');
-    rows.forEach(loadArchiveFeedback);
+    observeArchivePosterViews(box);
   }
   async function loadArchive(){
     const box=$('archiveItems');if(!box)return;
-    try{const {data,error}=await client().from('site_content').select('*').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(200);if(error)throw error;archiveRows=data||[];renderArchive();}
+    try{const {data,error}=await client().from('site_content').select('id,title,category,description,image_url,content_url,extra_data').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(200);if(error)throw error;archiveRows=data||[];renderArchive();}
     catch(e){box.innerHTML=`<div class="panel">تعذر تحميل الأرشيف. تأكد من إعداد قاعدة البيانات واتصال الموقع. ${esc(e.message)}</div>`;}
   }
   window.adminRefreshArchive=loadArchive;
-  async function loadArchiveFeedback(item){
-    const root=document.querySelector(`.archive-feedback[data-content-id="${CSS.escape(item.id)}"]`);if(!root)return;
-    try{
-      const c=client();
-      const [{data:ratings,error:re},{data:comments,error:ce}]=await Promise.all([
-        c.from('content_ratings').select('rating').eq('content_id',item.id),
-        c.from('content_comments').select('id,display_name,body,created_at').eq('content_id',item.id).eq('status','approved').order('created_at',{ascending:false}).limit(30)
-      ]);
-      if(re)throw re;if(ce)throw ce;
-      const avg=ratings?.length?(ratings.reduce((a,b)=>a+Number(b.rating),0)/ratings.length).toFixed(1):'—';
-      root.querySelector('.rating-summary').textContent=`${avg} / 5 (${ratings?.length||0} تقييم)`;
-      const list=root.querySelector('.archive-comments');
-      list.innerHTML=(comments||[]).map(c=>`<div class="panel" style="margin-top:8px"><strong>${esc(c.display_name||'عضو')}</strong><p>${esc(c.body)}</p><small>${new Date(c.created_at).toLocaleDateString('ar-EG')}</small></div>`).join('')||'<p class="muted">لا توجد تعليقات منشورة بعد.</p>';
-    }catch(e){root.querySelector('.rating-summary').textContent='التقييمات ستظهر بعد إعداد قاعدة البيانات';}
+  function observeArchivePosterViews(root){
+    const images=root.querySelectorAll('img[data-archive-view-id]');
+    if(!images.length||!('IntersectionObserver' in window))return;
+    const seen=new Set();
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting||entry.intersectionRatio<0.5)return;
+        const image=entry.target,id=image.dataset.archiveViewId;
+        if(!id||seen.has(id))return;
+        seen.add(id);observer.unobserve(image);
+        if(typeof window.recordPublicContentView==='function')window.recordPublicContentView('archive',id);
+      });
+    },{threshold:0.5});
+    images.forEach(image=>observer.observe(image));
   }
-  document.addEventListener('click',async e=>{
-    const rate=e.target.closest('.archive-rate');if(!rate)return;
-    const root=rate.closest('.archive-feedback'),id=root?.dataset.contentId,rating=Number(root?.querySelector('.archive-rating')?.value);
-    if(!rating){alert('اختر تقييمًا من نجمة إلى خمس نجوم.');return;}
-    try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي قبل التقييم.');return;}
-      const {error}=await client().from('content_ratings').upsert({content_id:id,user_id:user.id,rating},{onConflict:'content_id,user_id'});if(error)throw error;await loadArchiveFeedback(archiveRows.find(x=>x.id===id));alert('تم تسجيل تقييمك.');
-    }catch(err){alert('تعذر تسجيل التقييم: '+err.message);}
-  });
-  document.addEventListener('submit',async e=>{
-    const form=e.target.closest('.archive-comment-form');if(!form)return;e.preventDefault();
-    const root=form.closest('.archive-feedback'),id=root.dataset.contentId,body=form.querySelector('textarea').value.trim();if(!body)return;
-    try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي قبل التعليق.');return;}
-      const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);
-      const {error}=await client().from('content_comments').insert({content_id:id,user_id:user.id,display_name:display,body,status:'pending'});if(error)throw error;form.reset();alert('وصل تعليقك، وسيظهر بعد مراجعة الإدارة.');
-    }catch(err){alert('تعذر إرسال التعليق: '+err.message);}
-  });
-  async function loadTopics(){
+  async function loadTopics(){  async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
     try{
       const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(100);if(error)throw error;
