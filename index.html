@@ -2658,17 +2658,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
-    <div class="panel" id="adminUsersPanel" style="margin-top:14px">
-      <h3 style="color:var(--gold);margin-top:0">إدارة الأدمنز</h3>
-      <p class="admin-status">أضف أدمنًا كامل الصلاحيات باستخدام البريد الإلكتروني لحسابه المسجل. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
-      <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="adminNewUserEmail" type="email" required placeholder="بريد حساب الأدمن الجديد" style="flex:1;min-width:220px">
-        <button class="btn primary" type="submit">إضافة أدمن كامل</button>
-      </form>
-      <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
-      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
-    </div>
-
     <div class="panel" id="adminDecisionCenter" style="margin-top:14px">
       <h3 style="color:var(--gold);margin-top:0">مركز اتخاذ القرار</h3>
       <p class="admin-status">متابعة سريعة للموافقات والرسائل والتقييمات ونمو المنصة. إدارة المحتوى وتعديله تظل من داخل كل صفحة.</p>
@@ -2678,6 +2667,17 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenRatings()"><strong>تقييمات المحتوى</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل الملخص عند الطلب</span></button>
         <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenGrowthStats()"><strong>إحصائيات ونمو المنصة</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب: الأعضاء والتفاعل والزيارات</span></button>
       </div>
+    </div>
+
+    <div class="panel" id="adminUsersPanel" style="margin-top:14px">
+      <h3 style="color:var(--gold);margin-top:0">إدارة الأدمنز</h3>
+      <p class="admin-status">أضف أدمنًا كامل الصلاحيات باستخدام البريد الإلكتروني لحسابه المسجل. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
+      <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="adminNewUserEmail" type="email" required placeholder="بريد حساب الأدمن الجديد" style="flex:1;min-width:220px">
+        <button class="btn primary" type="submit">إضافة أدمن كامل</button>
+      </form>
+      <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
     </div>
 
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
@@ -3908,20 +3908,24 @@ async function adminVerifyAdmin(session){
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
-  await adminLoadAdminUsers();
-  await adminLoadRecords();
-  await adminLoadScenarioScripts();
-  await adminLoadIdeas();
-  await adminLoadCommunitySubmissions();
-  await adminLoadMemberProfiles();
-  await adminLoadMemberWorks();
-  await adminLoadWriterScripts();
-  if(typeof adminLoadDirectorWorks==="function") await adminLoadDirectorWorks();
-  if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
-  if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
-  await adminLoadContactMessages();
-  await adminLoadPlatformGrowthStats();
-  await adminLoadApprovalNotifications();
+  /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
+     الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
+  const initialAdminLoads = [
+    adminLoadAdminUsers(),
+    adminLoadRecords(),
+    adminLoadScenarioScripts(),
+    adminLoadIdeas(),
+    adminLoadCommunitySubmissions(),
+    adminLoadMemberProfiles(),
+    adminLoadMemberWorks(),
+    adminLoadWriterScripts(),
+    typeof adminLoadDirectorWorks==="function" ? adminLoadDirectorWorks() : Promise.resolve(),
+    typeof adminLoadWriterIdeas==="function" ? adminLoadWriterIdeas() : Promise.resolve(),
+    typeof adminLoadCommunityModeration==="function" ? adminLoadCommunityModeration() : Promise.resolve(),
+    adminLoadContactMessages(),
+    adminLoadApprovalNotifications()
+  ];
+  await Promise.allSettled(initialAdminLoads);
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
   if(!window.adminApprovalFocusListener){
