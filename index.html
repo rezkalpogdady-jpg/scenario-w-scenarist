@@ -5363,21 +5363,28 @@ loadApprovedIdeas();
     const kind=row.extra_data?.media_kind==='video'?'الفيديو':'الصورة';
     if(!confirm('هل تريد حذف '+kind+' «'+(row.title||'بدون عنوان')+'» نهائيًا مع ملفاته من التخزين؟'))return;
     if(button){button.disabled=true;button.textContent='جارٍ الحذف...';}
-    const result=await adminSupabase.from('site_content').delete().eq('id',id).eq('content_type','archive').select('id').maybeSingle();
-    if(result.error||!result.data){
-      if(button){button.disabled=false;button.textContent='حذف المادة';}
-      alert('تعذر حذف المادة: '+(result.error?.message||'راجع صلاحيات الإدارة.'));
-      return;
+    let recordDeleted=false;
+    try{
+      const result=await adminSupabase.from('site_content').delete().eq('id',id).eq('content_type','archive').select('id').maybeSingle();
+      if(result.error||!result.data)throw new Error(result.error?.message||'راجع صلاحيات الإدارة.');
+      recordDeleted=true;
+      archiveRows=archiveRows.filter(item=>String(item.id)!==String(id));
+      renderArchive();
+      const paths=[adminStoragePathFromPublicUrl(row.image_url),adminStoragePathFromPublicUrl(row.content_url)].filter(Boolean);
+      if(paths.length){
+        try{
+          const cleanup=await adminSupabase.storage.from('site-media').remove([...new Set(paths)]);
+          if(cleanup.error)throw cleanup.error;
+        }catch(storageError){
+          alert('تم حذف المادة من الأرشيف، لكن تعذر حذف أحد الملفات من التخزين: '+(storageError.message||'خطأ اتصال.'));
+          return;
+        }
+      }
+      alert('تم حذف المادة وملفاتها بنجاح.');
+    }catch(error){
+      if(!recordDeleted&&button){button.disabled=false;button.textContent='حذف المادة';}
+      alert(recordDeleted?'تم حذف المادة، لكن حدث خطأ أثناء تحديث العرض.':'تعذر حذف المادة: '+(error.message||'تحقق من الاتصال وحاول مرة أخرى.'));
     }
-    const paths=[adminStoragePathFromPublicUrl(row.image_url),adminStoragePathFromPublicUrl(row.content_url)].filter(Boolean);
-    let storageError=null;
-    if(paths.length){
-      const cleanup=await adminSupabase.storage.from('site-media').remove([...new Set(paths)]);
-      storageError=cleanup.error;
-    }
-    archiveRows=archiveRows.filter(item=>String(item.id)!==String(id));
-    renderArchive();
-    if(storageError)alert('تم حذف المادة من الأرشيف، لكن تعذر حذف أحد الملفات من التخزين: '+storageError.message);
   };
   let archiveGalleryRows=[];
   let archiveGalleryIndex=0;
