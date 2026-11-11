@@ -1716,8 +1716,9 @@ function openCrimeStory(id){
   const note=item.extra?.editor_note?'<p style="padding:12px;border-right:3px solid var(--gold);background:var(--panel);white-space:pre-line">'+escapeHTML(item.extra.editor_note)+'</p>':"";
   const idValue=String(item.id);
   const canManage=!!adminSession&&!!adminSupabase;
+  const storyText=item.content||item.story||item.fullText||item.extra?.content||item.extra?.story_text||item.extra?.full_text||item.description||item.summary||"لا توجد تفاصيل إضافية لهذه القضية.";
   const actions=canManage?'<div class="story-modal-admin-actions"><button class="btn primary" type="button" data-crime-modal-edit="'+escapeHTML(idValue)+'">تعديل القصة</button><button class="btn" type="button" data-crime-modal-delete="'+escapeHTML(idValue)+'">حذف القصة</button></div>':"";
-  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد تفاصيل إضافية لهذه القضية.")+'</div>'+note+source+actions;
+  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div class="crime-story-full-text" style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(storyText)+'</div>'+note+source+actions;
   modal.style.display="block";document.body.style.overflow="hidden";
 }
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
@@ -6826,7 +6827,7 @@ async function crimeStoryTogglePublish(id,next){
  if(result.error||!result.data){alert('تعذر تغيير حالة النشر: '+(result.error?.message||'راجع صلاحيات الإدارة.'));return;}
  await adminLoadRecords();await loadPublicContent();
 }
-async async function crimeDbStoryDelete(id){
+async function crimeDbStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  const numericId=Number(id);
  if(!Number.isSafeInteger(numericId)||numericId<=0)return;
@@ -6843,7 +6844,7 @@ async async function crimeDbStoryDelete(id){
  closeCrimeStory();
  await loadPublicContent();
 }
-async async function crimeStoryDelete(id){
+async function crimeStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';});
  if(!row||!confirm('حذف الحكاية «'+row.title+'» نهائيًا؟'))return;
