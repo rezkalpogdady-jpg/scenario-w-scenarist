@@ -3738,6 +3738,8 @@ async function adminVerifyAdmin(session){
     window.adminApprovalFocusListener=()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();};
     document.addEventListener("visibilitychange",window.adminApprovalFocusListener);
   }
+  // تحميل إحصائيات المنصة تلقائيًا بعد نجاح دخول المدير، دون تعطيل فتح لوحة الإدارة.
+  void adminLoadPlatformGrowthStats();
 }
 
 /* تسجيل الدخول */
