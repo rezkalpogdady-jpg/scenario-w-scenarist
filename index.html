@@ -5350,7 +5350,7 @@ loadApprovedIdeas();
       const img=safeUrl(x.image_url),video=safeUrl(x.content_url),isVideo=x.extra_data?.media_kind==='video'&&video;
       const mediaHtml=isVideo
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
-        : media;
+        : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
       return '<article class="feature archive-poster-card">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+'</article>';
     }).join('');
     observeArchivePosterViews(box);
