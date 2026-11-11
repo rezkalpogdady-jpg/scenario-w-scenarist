@@ -6456,8 +6456,8 @@ document.getElementById('archiveAdminForm')?.addEventListener('submit',async fun
   }
   if(saved&&window.adminRefreshArchive)await window.adminRefreshArchive();
   if(saved&&typeof adminLoadRecords==='function')await adminLoadRecords();
-  if(saved===1&&mode==='video'){form.reset();document.getElementById('archiveImageFields').style.display='block';document.getElementById('archiveVideoFields').style.display='none';msg.textContent='تم رفع الفيديو وحفظه في أرشيف السينما بنجاح.';}
-  else if(saved&&saved===Array.from(form.elements.images?.files||[]).length){form.reset();msg.textContent='تم رفع وحفظ '+saved+' صورة بنجاح في أرشيف السينما.';}
+  if(saved===1&&mode==='video'){form.reset();document.getElementById('archiveMediaKind')?.dispatchEvent(new Event('change'));msg.textContent='تم رفع الفيديو وحفظه في أرشيف السينما بنجاح.';}
+  else if(saved&&saved===Array.from(form.elements.images?.files||[]).length){form.reset();document.getElementById('archiveMediaKind')?.dispatchEvent(new Event('change'));msg.textContent='تم رفع وحفظ '+saved+' صورة بنجاح في أرشيف السينما.';}
   else if(saved){msg.textContent='تم حفظ '+saved+' مادة، وتعذر حفظ '+failed.length+'. '+failed.slice(0,3).join(' | ');}
   else{msg.textContent='لم تُحفظ أي مادة. '+failed.slice(0,3).join(' | ');}
  }catch(err){
