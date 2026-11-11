@@ -5255,7 +5255,7 @@ loadApprovedIdeas();
     const count=document.getElementById("bookResultsCount");if(count)count.textContent="عدد الكتب المطابقة: "+rows.length;
   if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
-      const img=safeUrl(x.image_url),file=safeUrl(x.content_url);
+      const img=safeUrl(x.image_url);
       return '<article class="feature archive-poster-card">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" data-archive-view-id="' + esc(x.id) + '">' : '') + '<h3>' + esc(x.title) + '</h3></article>';
     }).join('');
     observeArchivePosterViews(box);
@@ -5281,7 +5281,7 @@ loadApprovedIdeas();
     },{threshold:0.5});
     images.forEach(image=>observer.observe(image));
   }
-  async function loadTopics(){  async function loadTopics(){
+  async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
     try{
       const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(100);if(error)throw error;
