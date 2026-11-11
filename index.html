@@ -5196,7 +5196,15 @@ loadApprovedIdeas();
     </select>
     <p class="muted" style="font-size:12px">المواد المنشورة فقط تظهر هنا. يجب أن تكون الصور والقصاصات مملوكة أو مرخصة أو متاحة للاستخدام وفق شروط مصدرها.</p>
   </div>
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة أفيش إلى الأرشيف</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>اختار صورة من معرض الهاتف أو ملفاته، واكتب العنوان والوصف. تأكد من حق استخدام الصورة.</p><form id="archiveAdminForm"><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option>أفيشات زمان</option><option>وجوه من الزمن الجميل</option><option>أخبار وحكايات زمان</option><option>مصر زمان</option><option>كواليس لا تنسى</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>اختيار الصورة من معرض الهاتف</label><input name="image" type="file" accept="image/*" required><p class="muted" style="font-size:12px">اختار الصورة مباشرة من معرض الهاتف أو ملفاته، ثم اكتب الوصف والتفاصيل.</p><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button class="btn primary" type="submit">حفظ ونشر</button><button class="btn" type="button" onclick="document.getElementById('archiveAdminPublish').style.display='none'">إغلاق</button><p id="archiveAdminMessage" aria-live="polite"></p></form></div><div id="archiveItems" class="grid"><div class="panel">جارٍ تحميل الأرشيف...</div></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة أفيش إلى الأرشيف</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>اختار صورة من معرض الهاتف أو ملفاته، واكتب العنوان والوصف. تأكد من حق استخدام الصورة.</p><form id="archiveAdminForm">
+<label>عنوان الأفيش (اختياري عند رفع مجموعة)</label><input name="title" maxlength="200" placeholder="اتركه فارغًا لاستخدام اسم كل صورة تلقائيًا">
+<label>التصنيف</label><select name="category"><option>أفيشات زمان</option><option>وجوه من الزمن الجميل</option><option>أخبار وحكايات زمان</option><option>مصر زمان</option><option>كواليس لا تنسى</option></select>
+<label>وصف موحد للمجموعة (اختياري)</label><textarea name="description" rows="3" maxlength="5000"></textarea>
+<label>اختيار صور متعددة من معرض الهاتف أو الملفات</label><input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+<p class="muted" style="font-size:12px">تقدر تحدد صورًا كثيرة مرة واحدة. كل صورة ستُحفظ كأفيش مستقل، ويُستخدم اسم الملف عنوانًا تلقائيًا إذا لم تكتب عنوانًا موحدًا. الصيغ المدعومة JPG وPNG وWEBP، بحد أقصى 20 ميجابايت للصورة.</p>
+<label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label>
+<button class="btn primary" type="submit">رفع الصور وحفظها كلها</button><button class="btn" type="button" onclick="document.getElementById('archiveAdminPublish').style.display='none'">إغلاق</button>
+<progress id="archiveBulkProgress" max="100" value="0" style="display:none;width:100%;height:12px;margin-top:12px"></progress><p id="archiveAdminMessage" aria-live="polite"></p></form></div><div id="archiveItems" class="grid"><div class="panel">جارٍ تحميل الأرشيف...</div></div>
 </section>
 
 <section id="community" class="page community-page">
@@ -6260,16 +6268,37 @@ document.getElementById('filmsAdminForm')?.addEventListener('submit',async funct
 });
 document.getElementById('archiveAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase)return;
- const form=this,fd=new FormData(form),msg=document.getElementById('archiveAdminMessage'),btn=form.querySelector('[type=submit]');let uploaded=null;
- try{btn.disabled=true;msg.textContent='جارٍ رفع الأفيش والحفظ...';
- const file=fd.get('image');if(!file?.size)throw new Error('اختر الصورة أولاً.');
- if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('اختر صورة JPG أو PNG أو WEBP.');
- uploaded=await adminInlineUpload(file,'site-media','archive',20*1024*1024);
- const record={content_type:'archive',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||'').trim(),image_url:uploaded.url,content_url:null,extra_data:{media_kind:'image',section_label:'أرشيف السينما',rights_note:'تم الرفع بواسطة مدير المنصة'},published:fd.get('published')==='on'};
- const {error}=await adminSupabase.from('site_content').insert(record);if(error)throw error;
- form.reset();msg.textContent='تم حفظ الأفيش وإضافته إلى الأرشيف.';if(window.adminRefreshArchive)await window.adminRefreshArchive();
- }catch(err){if(uploaded)await adminSupabase.storage.from('site-media').remove([uploaded.path]);msg.textContent='تعذر النشر: '+err.message;}
- finally{btn.disabled=false;}
+ const form=this,fd=new FormData(form),msg=document.getElementById('archiveAdminMessage'),btn=form.querySelector('[type=submit]'),progress=document.getElementById('archiveBulkProgress');
+ const files=Array.from(form.elements.images.files||[]),commonTitle=String(fd.get('title')||'').trim(),category=String(fd.get('category')||'أفيشات زمان'),description=String(fd.get('description')||'').trim(),published=fd.get('published')==='on';
+ if(!files.length){msg.textContent='اختار صورة واحدة على الأقل.';return;}
+ const allowed=['image/jpeg','image/png','image/webp'];
+ const invalid=files.find(file=>!allowed.includes(file.type)||file.size>20*1024*1024);
+ if(invalid){msg.textContent='الملف "'+invalid.name+'" غير صالح. استخدم JPG أو PNG أو WEBP، وبحد أقصى 20 ميجابايت للصورة.';return;}
+ btn.disabled=true;progress.style.display='block';progress.value=0;
+ let saved=0,failed=[];
+ try{
+  for(let i=0;i<files.length;i++){
+   const file=files[i];let uploaded=null;
+   try{
+    msg.textContent='جارٍ رفع الصورة '+(i+1)+' من '+files.length+': '+file.name;
+    uploaded=await adminInlineUpload(file,'site-media','archive',20*1024*1024);
+    const fallbackTitle=file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();
+    const title=commonTitle?(files.length===1?commonTitle:commonTitle+' — '+fallbackTitle):fallbackTitle||'أفيش من أرشيف السينما';
+    const record={content_type:'archive',title:title.slice(0,200),category,description,image_url:uploaded.url,content_url:null,extra_data:{media_kind:'image',section_label:'أرشيف السينما',rights_note:'تم الرفع بواسطة مدير المنصة',original_file_name:file.name},published};
+    const {error}=await adminSupabase.from('site_content').insert(record);
+    if(error)throw error;
+    saved++;
+   }catch(itemError){
+    if(uploaded?.path)await adminSupabase.storage.from('site-media').remove([uploaded.path]);
+    failed.push(file.name+': '+(itemError.message||'تعذر الحفظ'));
+   }
+   progress.value=Math.round(((i+1)/files.length)*100);
+  }
+  if(saved&&window.adminRefreshArchive)await window.adminRefreshArchive();
+  if(saved===files.length){form.reset();msg.textContent='تم رفع وحفظ '+saved+' صورة بنجاح في أرشيف السينما.';}
+  else if(saved){msg.textContent='تم حفظ '+saved+' صورة، وتعذر حفظ '+failed.length+'. '+failed.slice(0,3).join(' | ');}
+  else{msg.textContent='لم تُحفظ أي صورة. '+failed.slice(0,3).join(' | ');}
+ }finally{btn.disabled=false;progress.style.display='none';}
 });
 document.getElementById('libraryAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase)return;
