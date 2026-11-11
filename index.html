@@ -186,6 +186,11 @@ Object-fit:cover;
 Display:block;
 }
 .feature-content{padding:15px}
+#shortFilmsItems .short-film-card{min-width:0}
+#shortFilmsItems .short-film-player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#171717;overflow:hidden}
+#shortFilmsItems video[data-short-film-player]{display:block;width:100%;height:100%;max-height:560px;object-fit:contain;background:#171717;border-radius:0}
+#shortFilmsItems .short-film-video-error{margin:0;padding:10px 12px;color:#ffb4a9;font-size:13px}
+#shortFilmsItems .short-film-video-error[hidden]{display:none}
 .feature h3{color:var(--gold);margin:0 0 7px}
 .feature p{color:var(--muted);font-size:14px;margin:0 0 13px}
 
@@ -570,7 +575,17 @@ Main{padding:17px 11px}
 <!-- الأجزاء التالية ستضاف هنا حسب الترتيب -->
 
 <script>
+function stopShortFilmPlayers(){
+  const box=document.getElementById("shortFilmsItems");
+  if(!box)return;
+  box.querySelectorAll("video").forEach(player=>{
+    try{
+      player.pause();
+    }catch(_){}
+  });
+}
 function showPage(id){
+if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 const target=document.getElementById(id);
 if(target) target.classList.add('active');
@@ -581,6 +596,10 @@ button.classList.toggle('active',button.dataset.page===id);
 });
 window.scrollTo({top:0,behavior:'smooth'});
 }
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) stopShortFilmPlayers(false);
+});
+window.addEventListener("pagehide",()=>stopShortFilmPlayers(false));
 document.querySelectorAll('#mainNav button').forEach(button=>{
 button.addEventListener('click',()=>showPage(button.dataset.page));
 });
@@ -1319,7 +1338,34 @@ document.addEventListener("keydown",function(event){
   if(event.key==="Escape")closeTalentProfile();
 });
 
-/* عرض الأفلام القصيرة مع تشغيل الفيديو داخل البطاقة */
+/* عرض الأفلام القصيرة: معاينة من إطار الفيديو وإيقاف التشغيل عند مغادرة القسم */
+function initializeShortFilmPlayers(root=document){
+  root.querySelectorAll("video[data-short-film-player]").forEach(player=>{
+    if(player.dataset.shortFilmReady==="1")return;
+    player.dataset.shortFilmReady="1";
+    player.addEventListener("loadedmetadata",()=>{
+      if(player.dataset.shortFilmPreviewDone==="1")return;
+      player.dataset.shortFilmPreviewDone="1";
+      try{
+        if(Number.isFinite(player.duration)&&player.duration>0){
+          player.currentTime=Math.min(0.12,player.duration/2);
+        }
+      }catch(_){}
+    },{once:true});
+    player.addEventListener("seeked",()=>{
+      player.pause();
+    },{once:true});
+    player.addEventListener("play",()=>{
+      document.querySelectorAll("#shortFilmsItems video[data-short-film-player]").forEach(other=>{
+        if(other!==player)other.pause();
+      });
+    });
+    player.addEventListener("error",()=>{
+      const note=player.parentElement?.querySelector(".short-film-video-error");
+      if(note)note.hidden=false;
+    });
+  });
+}
 function renderShortFilms(){
   const box=document.getElementById("shortFilmsItems");
   if(!box)return;
@@ -1330,13 +1376,15 @@ function renderShortFilms(){
     const poster=safeHttpUrl(item.image||"");
     const extra=item.extra||{};
     const media=video&&extra.media_kind==="video"
-      ? '<video controls playsinline preload="metadata"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' style="width:100%;max-height:420px;background:#000;border-radius:9px" src="'+escapeHTML(video)+'"></video>'
-      : (poster?'<img src="'+escapeHTML(poster)+'" alt="" loading="lazy">':'');
-    return '<article class="feature">'+media+'<div class="feature-content">'+
+      ? '<div class="short-film-player-wrap"><video controls playsinline preload="metadata" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
+      : (poster?'<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy">':'');
+    return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
+      (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
-      (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener">مشاهدة الفيلم</a>':'')+
+      (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a>':'')+
       '</div></article>';
   }).join("");
+  initializeShortFilmPlayers(box);
 }
 
 /* التحقق من مدة فيديو الموهبة محليًا قبل الرفع */
