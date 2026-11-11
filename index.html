@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -17,7 +17,7 @@
 <meta property="og:description" content="منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام، واكتشاف المواهب وصناع السينما.">
 <meta property="og:url" content="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
 <meta name="twitter:card" content="summary">
-<title>سيناريو وسيناريست | منصة عربية لتعليم السيناريو وصناعة الأفلام – 6.8.77</title>
+<title>سيناريو وسيناريست | منصة عربية لتعليم السيناريو وصناعة الأفلام – 6.8.78</title>
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.66">
+<body data-platform-version="6.8.78">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1532,7 +1532,7 @@ renderShortFilms();
   </div>
 
   <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="crimeStoryNew()">＋ إضافة جريمة أو حكاية</button></div>
-  <div id="storiesInlineEditor" class="panel" style="display:none;margin:14px 0"></div><div id="storiesAdminRecords" class="grid" style="display:none;margin:14px 0"></div>
+  <div id="storiesInlineEditor" class="panel" style="display:none;margin:14px 0"></div>
   <div class="section-heading">
     <h2>حكايات وملفات</h2>
     <p>بحث وتصنيف ومتابعة</p>
@@ -1692,14 +1692,19 @@ function renderStories(){
   const category=document.getElementById("storiesCategory")?.value||"";
   const allStories=[...editorialData.stories,...approvedCrimeStories];
   const list=allStories.filter(item=>(!category||item.category===category)&&((item.title+" "+(item.description||"")+" "+(item.authorName||"")).toLowerCase().includes(q)));
+  box.classList.add("stories-single-list");
   box.innerHTML=list.length?list.map(item=>{
-    const format=item.extra?.story_format==="poster"?"poster":"story";
-    const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:12px 12px 0 0;background:#171717">':'<div style="aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#342a1c,#111);color:var(--gold);padding:18px;text-align:center;font-weight:800">'+escapeHTML(item.title)+'</div>';
+    const id=String(item.id);
+    const image=item.image?'<img class="story-list-thumb" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="" loading="lazy">':'<div class="story-list-thumb story-list-placeholder">قضية</div>';
     const summary=(item.extra?.summary||item.description||"").trim();
-    const excerpt=summary.length>190?summary.slice(0,190).trim()+"…":summary;
-    const adminEdit=adminSession?(String(item.id).startsWith("crime-db-")?'<button class="btn" type="button" data-crime-db-edit="'+escapeHTML(String(item.id).slice(9))+'" style="margin-top:8px">تعديل القصة</button>':'<button class="btn" type="button" style="margin-top:8px" onclick="crimeStoryEdit(&quot;'+escapeHTML(String(item.id))+'&quot;)">تعديل المنشور</button>'):"";
-    return '<article class="feature" style="overflow:hidden"><button type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'" aria-label="فتح '+escapeHTML(item.title)+'" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer;text-align:inherit">'+image+'</button><div class="feature-content"><span style="font-size:12px;color:var(--gold)">'+(format==="poster"?"أفيش جريمة":"جريمة وحكاية")+' · '+escapeHTML(item.category||"قضية")+(item.authorName?' · بقلم '+escapeHTML(item.authorName):'')+'</span><h3>'+escapeHTML(item.title)+'</h3><p style="white-space:pre-line">'+escapeHTML(excerpt)+'</p><button class="btn primary" type="button" data-crime-story-id="'+escapeHTML(String(item.id))+'">'+(format==="poster"?"عرض الأفيش":"اقرأ الحكاية")+'</button>'+adminEdit+'</div></article>';
-  }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا. ستظهر هنا الأفيشات والقضايا التي تعتمدها الإدارة.</p></div>';
+    const excerpt=summary.length>150?summary.slice(0,150).trim()+"…":summary;
+    const canManage=!!adminSession&&(id.startsWith("crime-db-")||(adminRecords||[]).some(row=>String(row.id)===id&&row.content_type==="stories"));
+    return '<article class="story-list-item">'+
+      '<button type="button" class="story-list-open" data-crime-story-id="'+escapeHTML(id)+'" aria-label="قراءة '+escapeHTML(item.title)+'">'+image+
+      '<span class="story-list-copy"><strong>'+escapeHTML(item.title)+'</strong><small>'+escapeHTML(item.category||"جرائم وحكايات")+(item.authorName?' · '+escapeHTML(item.authorName):'')+'</small><span>'+escapeHTML(excerpt||"اضغط لقراءة تفاصيل الحكاية كاملة.")+'</span></span></button>'+
+      '<button class="btn primary story-list-read" type="button" data-crime-story-id="'+escapeHTML(id)+'">اقرأ القصة</button>'+
+      '</article>';
+  }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا.</p></div>';
 }
 function openCrimeStory(id){
   const item=[...editorialData.stories,...approvedCrimeStories].find(row=>String(row.id)===String(id));
@@ -1709,15 +1714,32 @@ function openCrimeStory(id){
   const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
   const note=item.extra?.editor_note?'<p style="padding:12px;border-right:3px solid var(--gold);background:var(--panel);white-space:pre-line">'+escapeHTML(item.extra.editor_note)+'</p>':"";
-  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد تفاصيل إضافية لهذه القضية.")+'</div>'+note+source;
+  const idValue=String(item.id);
+  const canManage=!!adminSession&&(idValue.startsWith("crime-db-")||(adminRecords||[]).some(row=>String(row.id)===idValue&&row.content_type==="stories"));
+  const actions=canManage?'<div class="story-modal-admin-actions"><button class="btn primary" type="button" data-crime-modal-edit="'+escapeHTML(idValue)+'">تعديل القصة</button><button class="btn" type="button" data-crime-modal-delete="'+escapeHTML(idValue)+'">حذف القصة</button></div>':"";
+  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(item.description||"لا توجد تفاصيل إضافية لهذه القضية.")+'</div>'+note+source+actions;
   modal.style.display="block";document.body.style.overflow="hidden";
 }
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
 document.getElementById("storiesItems")?.addEventListener("click",event=>{
-  const edit=event.target.closest("[data-crime-db-edit]");
-  if(edit){event.preventDefault();event.stopPropagation();crimeDbStoryEdit(edit.dataset.crimeDbEdit);return;}
   const trigger=event.target.closest("[data-crime-story-id]");
   if(trigger)openCrimeStory(trigger.dataset.crimeStoryId);
+});
+document.getElementById("crimeStoryModalBody")?.addEventListener("click",event=>{
+  const edit=event.target.closest("[data-crime-modal-edit]");
+  if(edit){
+    const id=edit.dataset.crimeModalEdit;
+    closeCrimeStory();
+    if(id.startsWith("crime-db-"))crimeDbStoryEdit(id.slice(9));
+    else crimeStoryEdit(id);
+    return;
+  }
+  const remove=event.target.closest("[data-crime-modal-delete]");
+  if(remove){
+    const id=remove.dataset.crimeModalDelete;
+    if(id.startsWith("crime-db-"))crimeDbStoryDelete(id.slice(9));
+    else crimeStoryDelete(id);
+  }
 });
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeCrimeStory();});
 
@@ -6804,6 +6826,23 @@ async function crimeStoryTogglePublish(id,next){
  if(result.error||!result.data){alert('تعذر تغيير حالة النشر: '+(result.error?.message||'راجع صلاحيات الإدارة.'));return;}
  await adminLoadRecords();await loadPublicContent();
 }
+async function crimeDbStoryDelete(id){
+ if(!adminSession||!adminSupabase)return;
+ const numericId=Number(id);
+ if(!Number.isSafeInteger(numericId)||numericId<=0)return;
+ if(!confirm("هل تريد حذف هذه القصة نهائيًا؟ لا يمكن التراجع عن الحذف."))return;
+ const {data:row,error:readError}=await adminSupabase.from("crime_stories").select("id,title,image_url").eq("id",numericId).maybeSingle();
+ if(readError||!row){alert("تعذر العثور على القصة: "+(readError?.message||"غير موجودة."));return;}
+ const {data,error}=await adminSupabase.from("crime_stories").delete().eq("id",numericId).select("id").maybeSingle();
+ if(error||!data){alert("تعذر حذف القصة: "+(error?.message||"راجع صلاحيات المدير."));return;}
+ const path=adminStoragePathFromPublicUrl(row.image_url);
+ if(path){
+  const {error:cleanupError}=await adminSupabase.storage.from("site-media").remove([path]);
+  if(cleanupError)alert("تم حذف القصة، لكن تعذر حذف الأفيش من التخزين: "+cleanupError.message);
+ }
+ closeCrimeStory();
+ await loadPublicContent();
+}
 async function crimeStoryDelete(id){
  if(!adminSession||!adminSupabase)return;
  var row=(adminRecords||[]).find(function(x){return String(x.id)===String(id)&&x.content_type==='stories';});
@@ -6897,4 +6936,25 @@ if(typeof adminSession!=='undefined'&&adminSession)adminSetInlinePublishingVisib
 })();
 </script>
 
+
+<style id="crime-stories-single-list-style">
+#storiesItems.stories-single-list{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+#storiesItems .story-list-item{display:flex;align-items:center;gap:12px;min-width:0;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+#storiesItems .story-list-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:right;cursor:pointer}
+#storiesItems .story-list-thumb{width:68px;height:88px;flex:0 0 68px;object-fit:cover;border-radius:7px;background:#252525}
+#storiesItems .story-list-placeholder{display:grid;place-items:center;color:var(--gold);font-size:12px}
+#storiesItems .story-list-copy{display:grid;gap:4px;min-width:0}
+#storiesItems .story-list-copy strong{color:var(--gold);font-size:16px}
+#storiesItems .story-list-copy small{color:var(--muted);font-size:11px}
+#storiesItems .story-list-copy>span{color:#d0cbc3;font-size:13px;line-height:1.65}
+#storiesItems .story-list-read{flex:0 0 auto;white-space:nowrap}
+.story-modal-admin-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;padding-top:15px;border-top:1px solid var(--border)}
+@media(max-width:560px){
+ #storiesItems .story-list-item{gap:8px;padding:8px}
+ #storiesItems .story-list-thumb{width:54px;height:72px;flex-basis:54px}
+ #storiesItems .story-list-copy strong{font-size:14px}
+ #storiesItems .story-list-copy>span{font-size:12px}
+ #storiesItems .story-list-read{padding:7px 10px;font-size:12px}
+}
+</style>
 </body></html>
