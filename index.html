@@ -6418,6 +6418,20 @@ document.getElementById('filmsAdminForm')?.addEventListener('submit',async funct
  }catch(err){const paths=[poster?.path,video?.path].filter(Boolean);if(paths.length)await adminSupabase.storage.from('site-media').remove(paths);msg.textContent='تعذر الحفظ: '+(err.message||'حاول مرة أخرى.');}
  finally{btn.disabled=false;}
 });
+/* تفعيل التبديل بين حقول الصور والفيديو داخل أرشيف السينما */
+function archiveSyncMediaFields(){
+ const kind=document.getElementById('archiveMediaKind')?.value||'image';
+ const imageFields=document.getElementById('archiveImageFields');
+ const videoFields=document.getElementById('archiveVideoFields');
+ if(imageFields)imageFields.style.display=kind==='image'?'block':'none';
+ if(videoFields)videoFields.style.display=kind==='video'?'block':'none';
+ const images=document.querySelector('#archiveAdminForm [name="images"]');
+ const video=document.querySelector('#archiveAdminForm [name="video"]');
+ if(images)images.required=kind==='image';
+ if(video)video.required=kind==='video';
+}
+document.getElementById('archiveMediaKind')?.addEventListener('change',archiveSyncMediaFields);
+archiveSyncMediaFields();
 document.getElementById('archiveAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
  const form=this,fd=new FormData(form),msg=document.getElementById('archiveAdminMessage'),btn=form.querySelector('[type=submit]'),progress=document.getElementById('archiveBulkProgress');
