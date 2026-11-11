@@ -3731,6 +3731,7 @@ async function adminVerifyAdmin(session){
   if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
   if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
   await adminLoadContactMessages();
+  await adminLoadPlatformGrowthStats();
   await adminLoadApprovalNotifications();
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
