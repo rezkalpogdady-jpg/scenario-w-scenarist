@@ -4485,7 +4485,16 @@ adminInitialize();
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><input type="hidden" name="record_id" value=""><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><input type="hidden" name="record_id" value=""><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea>
+<label>بلد الإنتاج</label><select name="country"><option value="">غير محدد</option><option value="الهند">الهند</option><option value="مصر">مصر</option><option value="عربي">عربي</option><option value="أجنبي">أجنبي</option></select>
+<label>سنة الإنتاج</label><input name="year" type="number" min="1900" max="2100" placeholder="مثال: 2023">
+<label>الفكرة أو القضية الإنسانية</label><input name="themes" maxlength="300" placeholder="مثال: الإصرار على التعليم ومواجهة الفقر">
+<label>رسالة العمل</label><textarea name="message" rows="2" maxlength="800" placeholder="ما القيمة التي يقدمها العمل للمشاهد؟"></textarea>
+<label>درس لكتّاب السيناريو</label><textarea name="writer_lesson" rows="2" maxlength="800" placeholder="ماذا نتعلم من بناء القصة والشخصيات؟"></textarea>
+<label>مراجعة المحتوى</label><select name="content_review"><option value="pending">لم تتم المراجعة بعد</option><option value="approved_clean">تمت المراجعة — مناسب وفق معايير المنصة</option><option value="rejected">غير مناسب — لا يُنشر</option></select>
+<label>حالة حقوق المشاهدة</label><select name="rights_status"><option value="unverified">لم يتم التحقق من الإتاحة</option><option value="official_source">مصدر رسمي يسمح بالمشاهدة/التضمين</option><option value="permission_granted">تصريح إتاحة</option><option value="licensed">ترخيص نشر أو عرض</option><option value="public_domain">ملكية عامة موثقة</option></select>
+<p class="muted" style="font-size:12px">لا تنشر العمل قبل مراجعة النسخة كاملة والتأكد من خلوها من العري والمشاهد الجنسية والإسفاف، ومن قانونية رابط المشاهدة.</p>
+<label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
 </section>
 
 <!-- مكتبة دعم بث HLS -->
@@ -4916,7 +4925,7 @@ function renderFilms(){
   const items=filmSource.filter(item=>
     item.content_type==="films" &&
     (!category || item.category===category) &&
-    (item.title+" "+(item.description || ""))
+    (item.title+" "+(item.description || "")+" "+String(item.extra_data?.country||"")+" "+String(item.extra_data?.themes||""))
       .toLowerCase().includes(q)
   );
   const playlists=FEATURED_FILM_PLAYLISTS.filter(item=>
@@ -4970,6 +4979,10 @@ function renderFilms(){
         <h3>${escapeHTML(item.title)}</h3>
         <p>${escapeHTML(item.category || "عمل فني")}</p>
         <p>${escapeHTML(item.description || "")}</p>
+        ${item.extra_data?.country ? `<p>بلد الإنتاج: ${escapeHTML(item.extra_data.country)} ${item.extra_data.year?"• "+escapeHTML(item.extra_data.year):""}</p>` : ""}
+        ${item.extra_data?.themes ? `<p><strong>القضية:</strong> ${escapeHTML(item.extra_data.themes)}</p>` : ""}
+        ${item.extra_data?.message ? `<p><strong>رسالة العمل:</strong> ${escapeHTML(item.extra_data.message)}</p>` : ""}
+        ${item.extra_data?.writer_lesson ? `<p><strong>درس للكاتب:</strong> ${escapeHTML(item.extra_data.writer_lesson)}</p>` : ""}
         ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
         ${adminSession ? `<div class="admin-actions" style="margin-top:12px"><button class="btn" type="button" onclick="adminEditFilm('${item.id}')">تعديل</button><button class="btn" type="button" onclick="adminDeleteFilm('${item.id}')">حذف</button></div>` : ""}
       </div>
@@ -6709,6 +6722,14 @@ function adminEditFilm(id){
  form.elements.record_id.value=item.id;form.elements.title.value=item.title||'';
  form.elements.category.value=item.category||'فيلم';form.elements.description.value=item.description||'';
  form.elements.url.value=item.content_url||'';form.elements.published.checked=!!item.published;
+ const extra=item.extra_data&&typeof item.extra_data==='object'?item.extra_data:{};
+ form.elements.country.value=extra.country||'';
+ form.elements.year.value=extra.year||'';
+ form.elements.themes.value=extra.themes||'';
+ form.elements.message.value=extra.message||'';
+ form.elements.writer_lesson.value=extra.writer_lesson||'';
+ form.elements.content_review.value=extra.content_review||'approved_clean';
+ form.elements.rights_status.value=extra.rights_status||'unverified';
  form.elements.image.value='';form.elements.video.value='';
  document.getElementById('filmsAdminSubmitButton').textContent='حفظ التعديلات';
  document.getElementById('filmsAdminCancelEdit').style.display='inline-block';
@@ -6734,7 +6755,12 @@ document.getElementById('filmsAdminForm')?.addEventListener('submit',async funct
   let videoUrl=String(fd.get('url')||'').trim();
   if(videoFile?.size){const videoName=String(videoFile.name||'').toLowerCase();const validExtension=videoName.endsWith('.mp4')||videoName.endsWith('.webm');const validType=['video/mp4','video/webm'].includes(videoFile.type);if(!validExtension||(videoFile.type&&!validType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');video=await adminInlineUpload(videoFile,'site-media','films',50*1024*1024);videoUrl=video.url;}
   if(videoUrl){const parsedUrl=new URL(videoUrl);if(!['http:','https:'].includes(parsedUrl.protocol))throw new Error('رابط الفيديو يجب أن يبدأ بـ https:// أو http://');}
-  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
+  const wantsPublish=fd.get('published')==='on';
+  const contentReview=String(fd.get('content_review')||'pending');
+  const rightsStatus=String(fd.get('rights_status')||'unverified');
+  if(wantsPublish&&contentReview!=='approved_clean')throw new Error('لا يمكن نشر العمل قبل مراجعة محتواه واعتماده وفق معايير المنصة.');
+  if(wantsPublish&&!['official_source','permission_granted','licensed','public_domain'].includes(rightsStatus))throw new Error('لا يمكن نشر رابط مشاهدة قبل توثيق مصدر الإتاحة أو الترخيص أو التصريح.');
+  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),country:String(fd.get('country')||''),year:String(fd.get('year')||''),themes:String(fd.get('themes')||''),message:String(fd.get('message')||''),writer_lesson:String(fd.get('writer_lesson')||''),content_review:contentReview,rights_status:rightsStatus,media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:wantsPublish};
   const result=editingId?await adminSupabase.from('site_content').update(record).eq('id',editingId):await adminSupabase.from('site_content').insert(record);
   if(result.error)throw result.error;
   adminResetFilmForm();msg.textContent=editingId?'تم حفظ التعديلات بنجاح.':'تم حفظ العمل وإضافته إلى القسم.';
