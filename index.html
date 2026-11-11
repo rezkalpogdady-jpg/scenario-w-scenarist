@@ -7,8 +7,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
-<meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.72</title>
+<meta name="description" content="سيناريو وسيناريست منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام والدراما، واكتشاف الكُتّاب والمخرجين والممثلين والمواهب السينمائية.">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<link rel="canonical" href="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:site_name" content="سيناريو وسيناريست">
+<meta property="og:title" content="سيناريو وسيناريست | منصة السينما والسيناريو العربية">
+<meta property="og:description" content="منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام، واكتشاف المواهب وصناع السينما.">
+<meta property="og:url" content="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
+<meta name="twitter:card" content="summary">
+<title>سيناريو وسيناريست | منصة عربية لتعليم السيناريو وصناعة الأفلام</title>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"Organization","name":"سيناريو وسيناريست","url":"https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/","description":"منصة عربية مجانية لتعليم كتابة السيناريو واكتشاف المواهب وصناعة السينما والدراما.","inLanguage":"ar"},
+    {"@type":"WebSite","name":"سيناريو وسيناريست","url":"https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/","inLanguage":"ar","description":"منصة عربية مجانية للسيناريو والسينما والمواهب والأفلام."}
+  ]
+}
+</script>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2512,11 +2530,23 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   <div class="panel" id="adminLoginPanel">
     <h3 style="color:var(--gold)">دخول المدير</h3>
     <form id="adminLoginForm">
-      <input id="adminEmail" type="email" required placeholder="البريد الإلكتروني">
-      <input id="adminPassword" type="password" required placeholder="كلمة المرور">
+      <input id="adminEmail" type="email" required autocomplete="username" placeholder="البريد الإلكتروني">
+      <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
       <button class="btn primary" type="submit">تسجيل الدخول</button>
     </form>
-    <p id="adminLoginMessage" style="color:var(--muted)"></p>
+    <form id="adminResetForm" style="margin-top:12px">
+      <input id="adminResetEmail" type="email" required autocomplete="email" placeholder="بريد المدير لاستعادة كلمة المرور">
+      <button class="btn" type="submit">نسيت كلمة المرور؟ أرسل رابط الاستعادة</button>
+    </form>
+    <div class="panel" id="adminRecoveryPanel" style="display:none;margin-top:14px">
+      <h3 style="color:var(--gold)">تعيين كلمة مرور جديدة للمدير</h3>
+      <form id="adminNewPasswordForm">
+        <input id="adminNewPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)">
+        <input id="adminConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة">
+        <button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>
+      </form>
+    </div>
+    <p id="adminLoginMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
 
   <!-- واجهة الإدارة -->
@@ -3222,6 +3252,13 @@ try{
     if(event==="PASSWORD_RECOVERY"){
       const recovery=document.getElementById("accountRecoveryPanel");
       if(recovery) recovery.style.display="block";
+      const adminRecovery=document.getElementById("adminRecoveryPanel");
+      if(adminRecovery){
+        adminRecovery.style.display="block";
+        if(typeof showPage==="function") showPage("admin");
+        const adminMessage=document.getElementById("adminLoginMessage");
+        if(adminMessage) adminMessage.textContent="تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.";
+      }
       accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
     }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
@@ -3788,6 +3825,44 @@ document.getElementById("adminLoginForm")?.addEventListener("submit",async funct
   }
 
   await adminVerifyAdmin(data.session);
+});
+
+document.getElementById("adminResetForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  try{
+    if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
+    button.disabled=true;
+    const email=document.getElementById("adminResetEmail").value.trim();
+    const {error}=await adminSupabase.auth.resetPasswordForEmail(email,{
+      redirectTo:window.location.origin+window.location.pathname
+    });
+    if(error) throw error;
+    adminSetMessage("adminLoginMessage","إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط آمن لاستعادة كلمة المرور.");
+  }catch(error){
+    adminSetMessage("adminLoginMessage","تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));
+  }finally{button.disabled=false;}
+});
+
+document.getElementById("adminNewPasswordForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const password=document.getElementById("adminNewPassword").value;
+  const confirmation=document.getElementById("adminConfirmPassword").value;
+  if(password.length<8){adminSetMessage("adminLoginMessage","كلمة المرور يجب ألا تقل عن 8 أحرف.");return;}
+  if(password!==confirmation){adminSetMessage("adminLoginMessage","كلمتا المرور غير متطابقتين.");return;}
+  try{
+    if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
+    button.disabled=true;
+    const {error}=await adminSupabase.auth.updateUser({password});
+    if(error) throw error;
+    await adminSupabase.auth.signOut();
+    document.getElementById("adminRecoveryPanel").style.display="none";
+    this.reset();
+    adminSetMessage("adminLoginMessage","تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
+  }catch(error){
+    adminSetMessage("adminLoginMessage","تعذر تغيير كلمة المرور: "+(error.message||"افتح رابط الاستعادة مرة أخرى."));
+  }finally{button.disabled=false;}
 });
 
 /* إعداد أدوات الرفع بحسب القسم ونوع المادة */
