@@ -5337,7 +5337,7 @@ loadApprovedIdeas();
   if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
       const img=safeUrl(x.image_url);
-      return '<article class="feature archive-poster-card">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" data-archive-view-id="' + esc(x.id) + '">' : '') + '<h3>' + esc(x.title) + '</h3></article>';
+      return '<article class="feature archive-poster-card">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '') + '<h3>' + esc(x.title) + '</h3></article>';
     }).join('');
     observeArchivePosterViews(box);
   }
