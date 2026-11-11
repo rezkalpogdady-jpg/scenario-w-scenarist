@@ -3908,20 +3908,24 @@ async function adminVerifyAdmin(session){
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
-  await adminLoadAdminUsers();
-  await adminLoadRecords();
-  await adminLoadScenarioScripts();
-  await adminLoadIdeas();
-  await adminLoadCommunitySubmissions();
-  await adminLoadMemberProfiles();
-  await adminLoadMemberWorks();
-  await adminLoadWriterScripts();
-  if(typeof adminLoadDirectorWorks==="function") await adminLoadDirectorWorks();
-  if(typeof adminLoadWriterIdeas==="function") await adminLoadWriterIdeas();
-  if(typeof adminLoadCommunityModeration==="function") await adminLoadCommunityModeration();
-  await adminLoadContactMessages();
-  await adminLoadPlatformGrowthStats();
-  await adminLoadApprovalNotifications();
+  /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
+     الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
+  const initialAdminLoads = [
+    adminLoadAdminUsers(),
+    adminLoadRecords(),
+    adminLoadScenarioScripts(),
+    adminLoadIdeas(),
+    adminLoadCommunitySubmissions(),
+    adminLoadMemberProfiles(),
+    adminLoadMemberWorks(),
+    adminLoadWriterScripts(),
+    typeof adminLoadDirectorWorks==="function" ? adminLoadDirectorWorks() : Promise.resolve(),
+    typeof adminLoadWriterIdeas==="function" ? adminLoadWriterIdeas() : Promise.resolve(),
+    typeof adminLoadCommunityModeration==="function" ? adminLoadCommunityModeration() : Promise.resolve(),
+    adminLoadContactMessages(),
+    adminLoadApprovalNotifications()
+  ];
+  await Promise.allSettled(initialAdminLoads);
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
   if(!window.adminApprovalFocusListener){
