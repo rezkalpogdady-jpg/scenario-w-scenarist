@@ -4812,6 +4812,29 @@ const FEATURED_FILM_PLAYLISTS = [
       "7EZn0OyF8f4",
       "ikQ694UPZCE"
     ]
+  },
+  {
+    id:"al-bakhil-w-ana",
+    title:"مسلسل البخيل وأنا",
+    category:"مسلسل",
+    description:"اختر رقم الحلقة التي تريد مشاهدتها.",
+    episodes:[
+      "8SXs0Henwcw",
+      "qMOZYlOVTLE",
+      "aCXQWeitRVY",
+      "mHAz0SKSo-I",
+      "x8wk1s8iCL0",
+      "DmWAM9mo2Ys",
+      "iq5GtwmJApg",
+      "03BvbH9ZArs",
+      "neSd4uU65Go",
+      "PGIN1nz3jps",
+      "9-4rhj29Ybo",
+      "0G5ywaNpbAc",
+      "7m3rgAmfKX0",
+      "vG_y9eNxQM8",
+      "CwE93MyVwAs"
+    ]
   }
 ];
 
@@ -4847,13 +4870,13 @@ function renderFilms(){
   const playlistCards=playlists.map(item=>`
     <article class="feature">
       <div style="height:170px;display:grid;place-items:center;text-align:center;padding:18px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a">
-        <div><div style="font-size:42px;margin-bottom:8px">▶</div><strong style="font-size:25px">${escapeHTML(item.title)}</strong><div style="font-size:12px;color:#d8c7a5">26 حلقة</div></div>
+        <div><div style="font-size:42px;margin-bottom:8px">▶</div><strong style="font-size:25px">${escapeHTML(item.title)}</strong><div style="font-size:12px;color:#d8c7a5">${item.episodes.length} حلقة</div></div>
       </div>
       <div class="feature-content">
         <h3>${escapeHTML(item.title)}</h3>
-        <p>مسلسل • 26 حلقة متاحة للاختيار</p>
+        <p>مسلسل • ${item.episodes.length} حلقة متاحة للاختيار</p>
         <p>${escapeHTML(item.description)}</p>
-        <button class="btn primary" type="button" onclick="openSeriesPlaylist('al-bashayer')">شاهد الحلقات داخل المنصة</button>
+        <button class="btn primary" type="button" onclick="openSeriesPlaylist('${item.id}')">شاهد الحلقات داخل المنصة</button>
       </div>
     </article>
   `).join("");
