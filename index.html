@@ -5351,10 +5351,35 @@ loadApprovedIdeas();
       const mediaHtml=isVideo
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
         : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
-      return '<article class="feature archive-poster-card">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+'</article>';
+      const deleteButton=adminSession?'<button type="button" class="btn" style="margin-top:10px" onclick="archiveDelete(\''+esc(x.id)+'\')">حذف المادة</button>':'';
+      return '<article class="feature archive-poster-card">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
     }).join('');
     observeArchivePosterViews(box);
   }
+  window.archiveDelete=async function(id){
+    if(!adminSession||!adminSupabase){alert('هذه العملية متاحة لمدير المنصة فقط.');return;}
+    const row=archiveRows.find(item=>String(item.id)===String(id));
+    if(!row){alert('المادة غير موجودة أو تم تحديث الأرشيف.');return;}
+    const kind=row.extra_data?.media_kind==='video'?'الفيديو':'الصورة';
+    if(!confirm('هل تريد حذف '+kind+' «'+(row.title||'بدون عنوان')+'» نهائيًا مع ملفاته من التخزين؟'))return;
+    const button=document.querySelector('[onclick="archiveDelete(\\''+CSS.escape(String(id))+'\\')"]');
+    if(button){button.disabled=true;button.textContent='جارٍ الحذف...';}
+    const result=await adminSupabase.from('site_content').delete().eq('id',id).eq('content_type','archive').select('id').maybeSingle();
+    if(result.error||!result.data){
+      if(button){button.disabled=false;button.textContent='حذف المادة';}
+      alert('تعذر حذف المادة: '+(result.error?.message||'راجع صلاحيات الإدارة.'));
+      return;
+    }
+    const paths=[adminStoragePathFromPublicUrl(row.image_url),adminStoragePathFromPublicUrl(row.content_url)].filter(Boolean);
+    let storageError=null;
+    if(paths.length){
+      const cleanup=await adminSupabase.storage.from('site-media').remove([...new Set(paths)]);
+      storageError=cleanup.error;
+    }
+    archiveRows=archiveRows.filter(item=>String(item.id)!==String(id));
+    renderArchive();
+    if(storageError)alert('تم حذف المادة من الأرشيف، لكن تعذر حذف أحد الملفات من التخزين: '+storageError.message);
+  };
   let archiveGalleryRows=[];
   let archiveGalleryIndex=0;
   let archiveGalleryModal=null;
