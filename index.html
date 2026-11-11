@@ -575,18 +575,17 @@ Main{padding:17px 11px}
 <!-- الأجزاء التالية ستضاف هنا حسب الترتيب -->
 
 <script>
-function stopShortFilmPlayers(reset=false){
+function stopShortFilmPlayers(){
   const box=document.getElementById("shortFilmsItems");
   if(!box)return;
   box.querySelectorAll("video").forEach(player=>{
     try{
       player.pause();
-      if(reset && Number.isFinite(player.duration)) player.currentTime=0;
     }catch(_){}
   });
 }
 function showPage(id){
-if(id!=="shorts") stopShortFilmPlayers(true);
+if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 const target=document.getElementById(id);
 if(target) target.classList.add('active');
