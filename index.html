@@ -4495,6 +4495,8 @@ adminInitialize();
 <label>حالة حقوق المشاهدة</label><select name="rights_status"><option value="unverified">لم يتم التحقق من الإتاحة</option><option value="official_source">مصدر رسمي يسمح بالمشاهدة/التضمين</option><option value="permission_granted">تصريح إتاحة</option><option value="licensed">ترخيص نشر أو عرض</option><option value="public_domain">ملكية عامة موثقة</option></select>
 <p class="muted" style="font-size:12px">لا تنشر العمل قبل مراجعة النسخة كاملة والتأكد من خلوها من العري والمشاهد الجنسية والإسفاف، ومن قانونية رابط المشاهدة.</p>
 <label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="section-heading" style="margin-top:34px"><h2>الدراسة السينمائية</h2><p>أفلام مميزة ندرس قصصها ورسائلها وبناء شخصياتها، دون توفير روابط مشاهدة غير مصرح بها.</p></div>
+  <div id="filmStudyItems" class="grid"></div>
 </section>
 
 <!-- مكتبة دعم بث HLS -->
@@ -4990,6 +4992,46 @@ function renderFilms(){
   `).join("");
 
   box.innerHTML='<div id="seriesInPageViewer" class="panel" hidden style="grid-column:1/-1;margin-bottom:18px;border:1px solid var(--gold);padding:16px"></div>'+playlistCards+publishedCards;
+  renderFilmStudyLibrary();
+}
+
+const FILM_STUDY_LIBRARY = [
+  {
+    id:"dangal-2016",
+    title:"Dangal",
+    originalTitle:"दंगल",
+    year:"2016",
+    country:"الهند",
+    director:"Nitesh Tiwari",
+    genre:"دراما رياضية وسيرة ذاتية",
+    synopsis:"أب لم يحقق حلمه في الفوز ببطولة المصارعة، يكتشف موهبة ابنتيه ويبدأ تدريبهما لمواجهة العقبات الاجتماعية والرياضية في طريقهما إلى البطولة.",
+    themes:"الإصرار، تمكين الفتيات، الطموح، التدريب، العلاقة بين الآباء والأبناء.",
+    message:"الموهبة والطموح لا تحددهما النوع الاجتماعي أو نظرة المجتمع، والنجاح يحتاج إلى عمل وانضباط ومثابرة.",
+    writerLesson:"يبني الفيلم صراعه من اختلاف وجهات النظر داخل الأسرة، ويحوّل هدفًا رياضيًا واضحًا إلى رحلة نمو للشخصيات. كما يوازن بين انتصارات البطلتين وثمن التدريب والضغط العائلي.",
+    reviewNote:"للدراسة السينمائية فقط حاليًا. لم يجتز بعد مراجعة المحتوى وفق معايير المشاهدة بالموقع، كما لم يُثبت تصريح يتيح عرض الفيلم أو تضمينه."
+  }
+];
+
+function renderFilmStudyLibrary(){
+  const box=document.getElementById("filmStudyItems");
+  if(!box)return;
+  box.innerHTML=FILM_STUDY_LIBRARY.map(item=>`
+    <article class="feature">
+      <div style="min-height:150px;display:grid;place-items:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a">
+        <div><div style="font-size:38px;margin-bottom:8px">🎬</div><strong style="font-size:25px;letter-spacing:1px">${escapeHTML(item.title)}</strong><div style="font-size:13px;margin-top:6px">${escapeHTML(item.originalTitle)} • ${escapeHTML(item.year)}</div></div>
+      </div>
+      <div class="feature-content">
+        <h3>${escapeHTML(item.title)} <span style="font-size:13px;color:var(--gold)">— دراسة سينمائية</span></h3>
+        <p>${escapeHTML(item.country)} • ${escapeHTML(item.genre)} • إخراج: ${escapeHTML(item.director)}</p>
+        <p><strong>ملخص القصة:</strong> ${escapeHTML(item.synopsis)}</p>
+        <p><strong>القضايا:</strong> ${escapeHTML(item.themes)}</p>
+        <p><strong>رسالة الفيلم:</strong> ${escapeHTML(item.message)}</p>
+        <p><strong>درس لكتّاب السيناريو:</strong> ${escapeHTML(item.writerLesson)}</p>
+        <p class="muted" style="font-size:12px;border-top:1px solid var(--line);padding-top:10px">${escapeHTML(item.reviewNote)}</p>
+        <span class="badge" style="display:inline-block;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">دراسة فقط — لا يوجد رابط مشاهدة</span>
+      </div>
+    </article>
+  `).join("");
 }
 
 function adminEditFeaturedSeriesPoster(seriesId){
