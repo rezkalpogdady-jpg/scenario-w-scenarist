@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -7,8 +7,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
-<meta name="description" content="سيناريو وسيناريست – منصة عربية لتعليم السيناريو واكتشاف المواهب وصناعة السينما والدراما">
-<title>سيناريو وسيناريست – تحديث 6.8.72</title>
+<meta name="description" content="سيناريو وسيناريست منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام والدراما، واكتشاف الكُتّاب والمخرجين والممثلين والمواهب السينمائية.">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<link rel="canonical" href="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:site_name" content="سيناريو وسيناريست">
+<meta property="og:title" content="سيناريو وسيناريست | منصة السينما والسيناريو العربية">
+<meta property="og:description" content="منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام، واكتشاف المواهب وصناع السينما.">
+<meta property="og:url" content="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
+<meta name="twitter:card" content="summary">
+<title>سيناريو وسيناريست | منصة عربية لتعليم السيناريو وصناعة الأفلام – 6.8.77</title>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"Organization","name":"سيناريو وسيناريست","url":"https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/","description":"منصة عربية مجانية لتعليم كتابة السيناريو واكتشاف المواهب وصناعة السينما والدراما.","inLanguage":"ar"},
+    {"@type":"WebSite","name":"سيناريو وسيناريست","url":"https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/","inLanguage":"ar","description":"منصة عربية مجانية للسيناريو والسينما والمواهب والأفلام."}
+  ]
+}
+</script>
 
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
@@ -2512,11 +2530,23 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   <div class="panel" id="adminLoginPanel">
     <h3 style="color:var(--gold)">دخول المدير</h3>
     <form id="adminLoginForm">
-      <input id="adminEmail" type="email" required placeholder="البريد الإلكتروني">
-      <input id="adminPassword" type="password" required placeholder="كلمة المرور">
+      <input id="adminEmail" type="email" required autocomplete="username" placeholder="البريد الإلكتروني">
+      <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
       <button class="btn primary" type="submit">تسجيل الدخول</button>
     </form>
-    <p id="adminLoginMessage" style="color:var(--muted)"></p>
+    <form id="adminResetForm" style="margin-top:12px">
+      <input id="adminResetEmail" type="email" required autocomplete="email" placeholder="بريد المدير لاستعادة كلمة المرور">
+      <button class="btn" type="submit">نسيت كلمة المرور؟ أرسل رابط الاستعادة</button>
+    </form>
+    <div class="panel" id="adminRecoveryPanel" style="display:none;margin-top:14px">
+      <h3 style="color:var(--gold)">تعيين كلمة مرور جديدة للمدير</h3>
+      <form id="adminNewPasswordForm">
+        <input id="adminNewPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)">
+        <input id="adminConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة">
+        <button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>
+      </form>
+    </div>
+    <p id="adminLoginMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
 
   <!-- واجهة الإدارة -->
@@ -2533,6 +2563,17 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
           <button class="btn" id="adminLogout">تسجيل الخروج</button>
         </div>
       </div>
+    </div>
+
+    <div class="panel" id="adminUsersPanel" style="margin-top:14px">
+      <h3 style="color:var(--gold);margin-top:0">إدارة الأدمنز</h3>
+      <p class="admin-status">أضف أدمنًا كامل الصلاحيات باستخدام البريد الإلكتروني لحسابه المسجل. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
+      <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="adminNewUserEmail" type="email" required placeholder="بريد حساب الأدمن الجديد" style="flex:1;min-width:220px">
+        <button class="btn primary" type="submit">إضافة أدمن كامل</button>
+      </form>
+      <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
     </div>
 
     <div class="panel" id="adminDecisionCenter" style="margin-top:14px">
@@ -3015,6 +3056,7 @@ document.getElementById("accountLoginForm")?.addEventListener("submit",async fun
 document.getElementById("accountResetForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); const button=this.querySelector('button[type="submit"]');
   try{button.disabled=true;const email=document.getElementById("accountResetEmail").value.trim();
+    localStorage.setItem("scenarioRecoveryTarget","account");
     const {error}=await accountClient().auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split("#")[0]});
     if(error) throw error; accountMessage("إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط استعادة كلمة المرور.");
   }catch(error){accountMessage("تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));}
@@ -3220,9 +3262,19 @@ document.getElementById("accountLogout")?.addEventListener("click",async()=>{
 try{
   accountClient().auth.onAuthStateChange((event,session)=>{
     if(event==="PASSWORD_RECOVERY"){
-      const recovery=document.getElementById("accountRecoveryPanel");
-      if(recovery) recovery.style.display="block";
-      accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      const recoveryTarget=localStorage.getItem("scenarioRecoveryTarget")||"account";
+      localStorage.removeItem("scenarioRecoveryTarget");
+      if(recoveryTarget==="admin"){
+        const adminRecovery=document.getElementById("adminRecoveryPanel");
+        if(adminRecovery) adminRecovery.style.display="block";
+        if(typeof showPage==="function") showPage("admin");
+        adminSetMessage("adminLoginMessage","تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      }else{
+        const recovery=document.getElementById("accountRecoveryPanel");
+        if(recovery) recovery.style.display="block";
+        if(typeof showPage==="function") showPage("account");
+        accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      }
     }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
@@ -3742,6 +3794,7 @@ async function adminVerifyAdmin(session){
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
   document.getElementById("adminUserEmail").textContent=data.user.email || "";
 
+  await adminLoadAdminUsers();
   await adminLoadRecords();
   await adminLoadScenarioScripts();
   await adminLoadIdeas();
@@ -3762,6 +3815,46 @@ async function adminVerifyAdmin(session){
     document.addEventListener("visibilitychange",window.adminApprovalFocusListener);
   }
 }
+
+/* إدارة حسابات الأدمن عبر Edge Function آمنة؛ لا يُكشف مفتاح الخدمة للمتصفح */
+async function adminManageUsers(action,payload={}){
+  if(!adminSupabase || !adminSession) throw new Error("سجّل الدخول كمدير أولاً.");
+  const {data,error}=await adminSupabase.functions.invoke("manage-platform-admins",{body:{action,...payload}});
+  if(error) throw error;
+  if(data?.error) throw new Error(data.error);
+  return data;
+}
+async function adminLoadAdminUsers(){
+  const box=document.getElementById("adminUsersList");
+  if(!box || !adminSession) return;
+  box.textContent="جارٍ تحميل الأدمنز...";
+  try{
+    const data=await adminManageUsers("list");
+    const admins=data.admins||[];
+    box.innerHTML=admins.length?admins.map(item=>'<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><span>'+adminEscape(item.email||"حساب بدون بريد ظاهر")+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?' <strong style="color:var(--gold)">مالك المنصة</strong>':'')+'</span>'+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?'':'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.id)+'">إزالة الصلاحية</button>')+'</div>').join(""):'<div class="panel">لا يوجد أدمنز مسجلون.</div>';
+    box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
+      const id=button.getAttribute("data-remove-admin");
+      if(!confirm("هل تريد إزالة صلاحية الأدمن من هذا الحساب؟")) return;
+      button.disabled=true;
+      try{await adminManageUsers("remove",{user_id:id});await adminLoadAdminUsers();adminSetMessage("adminUsersMessage","تمت إزالة صلاحية الأدمن.");}
+      catch(error){adminSetMessage("adminUsersMessage","تعذر إزالة الأدمن: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
+    }));
+  }catch(error){box.textContent="تعذر تحميل قائمة الأدمنز: "+(error.message||"");}
+}
+document.getElementById("adminAddUserForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const email=document.getElementById("adminNewUserEmail").value.trim();
+  try{
+    button.disabled=true;
+    adminSetMessage("adminUsersMessage","جارٍ إضافة الأدمن...");
+    const result=await adminManageUsers("add",{email});
+    this.reset();
+    adminSetMessage("adminUsersMessage",result.message||"تمت إضافة الأدمن بنجاح.");
+    await adminLoadAdminUsers();
+  }catch(error){adminSetMessage("adminUsersMessage","تعذر إضافة الأدمن: "+(error.message||"حاول مرة أخرى."));}
+  finally{button.disabled=false;}
+});
 
 /* تسجيل الدخول */
 document.getElementById("adminLoginForm")?.addEventListener("submit",async function(event){
@@ -3788,6 +3881,45 @@ document.getElementById("adminLoginForm")?.addEventListener("submit",async funct
   }
 
   await adminVerifyAdmin(data.session);
+});
+
+document.getElementById("adminResetForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  try{
+    if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
+    button.disabled=true;
+    const email=document.getElementById("adminResetEmail").value.trim();
+    localStorage.setItem("scenarioRecoveryTarget","admin");
+    const {error}=await adminSupabase.auth.resetPasswordForEmail(email,{
+      redirectTo:window.location.origin+window.location.pathname
+    });
+    if(error) throw error;
+    adminSetMessage("adminLoginMessage","إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط آمن لاستعادة كلمة المرور.");
+  }catch(error){
+    adminSetMessage("adminLoginMessage","تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));
+  }finally{button.disabled=false;}
+});
+
+document.getElementById("adminNewPasswordForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=this.querySelector('button[type="submit"]');
+  const password=document.getElementById("adminNewPassword").value;
+  const confirmation=document.getElementById("adminConfirmPassword").value;
+  if(password.length<8){adminSetMessage("adminLoginMessage","كلمة المرور يجب ألا تقل عن 8 أحرف.");return;}
+  if(password!==confirmation){adminSetMessage("adminLoginMessage","كلمتا المرور غير متطابقتين.");return;}
+  try{
+    if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
+    button.disabled=true;
+    const {error}=await adminSupabase.auth.updateUser({password});
+    if(error) throw error;
+    await adminSupabase.auth.signOut();
+    document.getElementById("adminRecoveryPanel").style.display="none";
+    this.reset();
+    adminSetMessage("adminLoginMessage","تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
+  }catch(error){
+    adminSetMessage("adminLoginMessage","تعذر تغيير كلمة المرور: "+(error.message||"افتح رابط الاستعادة مرة أخرى."));
+  }finally{button.disabled=false;}
 });
 
 /* إعداد أدوات الرفع بحسب القسم ونوع المادة */

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/sitemap.xml
