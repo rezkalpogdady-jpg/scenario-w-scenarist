@@ -5212,6 +5212,8 @@ loadApprovedIdeas();
     <select id="archiveCategory">
       <option value="">كل مواد الأرشيف</option>
       <option value="أفيشات زمان">أفيشات زمان</option>
+      <option value="إعلانات أفلام">إعلانات أفلام</option>
+      <option value="مشاهد سينمائية">مشاهد سينمائية</option>
       <option value="وجوه من الزمن الجميل">وجوه من الزمن الجميل</option>
       <option value="أخبار وحكايات زمان">أخبار وحكايات زمان</option>
       <option value="مصر زمان">مصر زمان</option>
@@ -5219,7 +5221,7 @@ loadApprovedIdeas();
     </select>
     <p class="muted" style="font-size:12px">المواد المنشورة فقط تظهر هنا. يجب أن تكون الصور والقصاصات مملوكة أو مرخصة أو متاحة للاستخدام وفق شروط مصدرها.</p>
   </div>
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة أفيش إلى الأرشيف</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>أضف صورًا وأفيشات متعددة، أو ارفع إعلان فيلم أو مشهد فيديو واحدًا. لا تنشر إلا مادة تملك حق استخدامها أو لديك تصريح بإتاحتها.</p><form id="archiveAdminForm">
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة مادة (صورة أو فيديو)</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>أضف صورًا وأفيشات متعددة، أو ارفع إعلان فيلم أو مشهد فيديو واحدًا. لا تنشر إلا مادة تملك حق استخدامها أو لديك تصريح بإتاحتها.</p><form id="archiveAdminForm">
 <label>نوع المادة</label><select name="media_kind" id="archiveMediaKind"><option value="image">صور وأفيشات (يمكن اختيار عدة صور)</option><option value="video">إعلان فيلم أو مشهد فيديو</option></select>
 <label>العنوان (اختياري للصور، مطلوب للفيديو)</label><input name="title" maxlength="200" placeholder="عنوان الأفيش أو اسم الفيلم/المشهد">
 <label>التصنيف</label><select name="category"><option>أفيشات زمان</option><option>إعلانات أفلام</option><option>مشاهد سينمائية</option><option>وجوه من الزمن الجميل</option><option>أخبار وحكايات زمان</option><option>مصر زمان</option><option>كواليس لا تنسى</option></select>
@@ -5346,9 +5348,6 @@ loadApprovedIdeas();
   if(!rows.length){box.innerHTML='<div class="panel">لا توجد مواد منشورة تطابق البحث حاليًا. ستضاف المواد من لوحة الإدارة.</div>';return;}
     box.innerHTML=rows.map(x=>{
       const img=safeUrl(x.image_url),video=safeUrl(x.content_url),isVideo=x.extra_data?.media_kind==='video'&&video;
-      const media=isVideo
-        ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"></video><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">'
-        : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
       const mediaHtml=isVideo
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
         : media;
