@@ -3056,6 +3056,7 @@ document.getElementById("accountLoginForm")?.addEventListener("submit",async fun
 document.getElementById("accountResetForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); const button=this.querySelector('button[type="submit"]');
   try{button.disabled=true;const email=document.getElementById("accountResetEmail").value.trim();
+    localStorage.setItem("scenarioRecoveryTarget","account");
     const {error}=await accountClient().auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split("#")[0]});
     if(error) throw error; accountMessage("إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط استعادة كلمة المرور.");
   }catch(error){accountMessage("تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));}
@@ -3261,15 +3262,19 @@ document.getElementById("accountLogout")?.addEventListener("click",async()=>{
 try{
   accountClient().auth.onAuthStateChange((event,session)=>{
     if(event==="PASSWORD_RECOVERY"){
-      const recovery=document.getElementById("accountRecoveryPanel");
-      if(recovery) recovery.style.display="block";
-      const adminRecovery=document.getElementById("adminRecoveryPanel");
-      if(adminRecovery){
-        adminRecovery.style.display="block";
+      const recoveryTarget=localStorage.getItem("scenarioRecoveryTarget")||"account";
+      localStorage.removeItem("scenarioRecoveryTarget");
+      if(recoveryTarget==="admin"){
+        const adminRecovery=document.getElementById("adminRecoveryPanel");
+        if(adminRecovery) adminRecovery.style.display="block";
         if(typeof showPage==="function") showPage("admin");
         adminSetMessage("adminLoginMessage","تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
-      }else if(typeof showPage==="function") showPage("account");
-      accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      }else{
+        const recovery=document.getElementById("accountRecoveryPanel");
+        if(recovery) recovery.style.display="block";
+        if(typeof showPage==="function") showPage("account");
+        accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
+      }
     }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
@@ -3885,6 +3890,7 @@ document.getElementById("adminResetForm")?.addEventListener("submit",async funct
     if(!adminSupabase) throw new Error("خدمة الحسابات غير جاهزة.");
     button.disabled=true;
     const email=document.getElementById("adminResetEmail").value.trim();
+    localStorage.setItem("scenarioRecoveryTarget","admin");
     const {error}=await adminSupabase.auth.resetPasswordForEmail(email,{
       redirectTo:window.location.origin+window.location.pathname
     });
