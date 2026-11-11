@@ -6758,8 +6758,10 @@ document.getElementById('filmsAdminForm')?.addEventListener('submit',async funct
   const wantsPublish=fd.get('published')==='on';
   const contentReview=String(fd.get('content_review')||'pending');
   const rightsStatus=String(fd.get('rights_status')||'unverified');
-  if(wantsPublish&&contentReview!=='approved_clean')throw new Error('لا يمكن نشر العمل قبل مراجعة محتواه واعتماده وفق معايير المنصة.');
-  if(wantsPublish&&!['official_source','permission_granted','licensed','public_domain'].includes(rightsStatus))throw new Error('لا يمكن نشر رابط مشاهدة قبل توثيق مصدر الإتاحة أو الترخيص أو التصريح.');
+  const isNewOrChangedViewing=!!videoUrl&&(!existing?.content_url||videoUrl!==existing.content_url);
+  const isNewRecord=!existing;
+  if(wantsPublish&&(isNewRecord||isNewOrChangedViewing)&&contentReview!=='approved_clean')throw new Error('لا يمكن نشر عمل جديد أو رابط مشاهدة جديد قبل مراجعة المحتوى واعتماده وفق معايير المنصة.');
+  if(wantsPublish&&isNewOrChangedViewing&&!['official_source','permission_granted','licensed','public_domain'].includes(rightsStatus))throw new Error('لا يمكن نشر رابط مشاهدة جديد قبل توثيق مصدر الإتاحة أو الترخيص أو التصريح.');
   const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),country:String(fd.get('country')||''),year:String(fd.get('year')||''),themes:String(fd.get('themes')||''),message:String(fd.get('message')||''),writer_lesson:String(fd.get('writer_lesson')||''),content_review:contentReview,rights_status:rightsStatus,media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:wantsPublish};
   const result=editingId?await adminSupabase.from('site_content').update(record).eq('id',editingId):await adminSupabase.from('site_content').insert(record);
   if(result.error)throw result.error;
