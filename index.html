@@ -1683,30 +1683,34 @@ function editorialCard(item,kind){
     </article>`;
 }
 
-/* عرض الجرائم والحكايات من المحتوى التحريري والقصص المعتمدة في قاعدة crime_stories */
+/* عرض الجرائم والحكايات مع مفتاح فريد يميز مصدر كل سجل */
 let approvedCrimeStories=[];
+let crimeStoryLookup=new Map();
 function renderStories(){
   const box=document.getElementById("storiesItems");
   if(!box)return;
   const q=(document.getElementById("storiesSearch")?.value||"").trim().toLowerCase();
   const category=document.getElementById("storiesCategory")?.value||"";
-  const allStories=[...editorialData.stories,...approvedCrimeStories];
-  const list=allStories.filter(item=>(!category||item.category===category)&&((item.title+" "+(item.description||"")+" "+(item.authorName||"")).toLowerCase().includes(q)));
+  const allStories=[
+    ...editorialData.stories.map(item=>({item,key:"editorial:"+String(item.id)})),
+    ...approvedCrimeStories.map(item=>({item,key:"approved:"+String(item.id)}))
+  ];
+  const list=allStories.filter(({item})=>(!category||item.category===category)&&((item.title+" "+(item.description||"")+" "+(item.authorName||"")).toLowerCase().includes(q)));
+  crimeStoryLookup=new Map(list.map(({item,key})=>[key,item]));
   box.classList.remove("stories-single-list");
   box.classList.add("crime-posters-grid");
-  box.innerHTML=list.length?list.map(item=>{
-    const id=String(item.id);
+  box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-id="'+escapeHTML(id)+'" aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'" aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
       '</button></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا.</p></div>';
 }
-function openCrimeStory(id){
-  const item=[...editorialData.stories,...approvedCrimeStories].find(row=>String(row.id)===String(id));
+function openCrimeStory(key){
+  const item=crimeStoryLookup.get(String(key));
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
   if(!item||!modal||!body||!title)return;
   title.textContent=item.title||"تفاصيل القضية";
@@ -1721,10 +1725,16 @@ function openCrimeStory(id){
   modal.style.display="block";document.body.style.overflow="hidden";
 }
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
-document.getElementById("storiesItems")?.addEventListener("click",event=>{
-  const trigger=event.target.closest("[data-crime-story-id]");
-  if(trigger)openCrimeStory(trigger.dataset.crimeStoryId);
-});
+/* فتح الحكاية من الأفيش أو العنوان: مستمع عام في مرحلة الالتقاط
+   حتى لا يتأثر الفتح بإعادة رسم شبكة الحكايات أو مستمعات العناصر الداخلية. */
+document.addEventListener("click",event=>{
+  const target=event.target;
+  const trigger=target&&typeof target.closest==="function"
+    ?target.closest("#storiesItems [data-crime-story-key]"):null;
+  if(!trigger)return;
+  event.preventDefault();
+  openCrimeStory(trigger.getAttribute("data-crime-story-key"));
+},true);
 document.getElementById("crimeStoryModalBody")?.addEventListener("click",event=>{
   const edit=event.target.closest("[data-crime-modal-edit]");
   if(edit){
