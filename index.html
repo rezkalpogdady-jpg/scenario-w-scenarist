@@ -2399,6 +2399,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <input id="accountLoginPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
       <button class="btn" type="submit">تسجيل الدخول</button>
     </form>
+    <button class="btn" id="accountFacebookLogin" type="button" style="width:100%;margin-top:12px">المتابعة باستخدام فيسبوك</button>
+    <p class="muted" style="font-size:12px;margin:6px 0 14px">لو عندك حساب قديم، استخدم حساب فيسبوك المرتبط بنفس البريد الإلكتروني المؤكد حتى يتمكن النظام من ربط تسجيل الدخول بحسابك الحالي تلقائيًا.</p>
     <form id="accountResetForm" style="margin-top:12px">
       <input id="accountResetEmail" type="email" required placeholder="بريدك لاستعادة كلمة المرور">
       <button class="btn" type="submit">إرسال رابط استعادة كلمة المرور</button>
@@ -2908,9 +2910,9 @@ function accountShowUser(user,profile){
   profilePanel.style.display=user?"block":"none";
   if(!user) return;
   const metadata=user.user_metadata||{};
-  const displayName=profile?.display_name || metadata.display_name || "عضو المنصة";
+  const displayName=profile?.display_name || metadata.display_name || metadata.full_name || metadata.name || "عضو المنصة";
   const accountType=profile?.account_type || metadata.account_type || "writer";
-  document.getElementById("accountProfileSummary").textContent=`${user.email||""} • حساب عضو موثق بالبريد عند اكتمال التأكيد`;
+  document.getElementById("accountProfileSummary").textContent=`${user.email||"حساب فيسبوك"} • حساب عضو`;
   document.getElementById("accountEditName").value=displayName;
   document.getElementById("accountEditType").value=accountType;
   document.getElementById("accountEditCity").value=profile?.city||"";
@@ -3019,7 +3021,7 @@ async function accountLoadProfile(user){
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
     if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
-    if(typeof accountLoadWriterScripts==="function" && (profile?.account_type||user.user_metadata?.account_type)==="writer") await accountLoadWriterScripts();
+    if(typeof accountLoadWriterScripts==="function" && (data?.account_type||user.user_metadata?.account_type||"writer")==="writer") await accountLoadWriterScripts();
     if(typeof accountLoadDirectorWorks==="function") await accountLoadDirectorWorks();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
@@ -3052,6 +3054,27 @@ document.getElementById("accountLoginForm")?.addEventListener("submit",async fun
     if(error) throw error; await accountLoadProfile(data.user); accountMessage("تم تسجيل الدخول بنجاح.");
   }catch(error){accountMessage("تعذر تسجيل الدخول: "+(error.message||"تحقق من البريد وكلمة المرور."));}
   finally{button.disabled=false;}
+});
+document.getElementById("accountFacebookLogin")?.addEventListener("click",async function(){
+  const button=this;
+  try{
+    button.disabled=true;
+    accountMessage("جارٍ تحويلك إلى فيسبوك لتأكيد هويتك...");
+    const redirectTo=window.location.origin+window.location.pathname+"#account";
+    const {error}=await accountClient().auth.signInWithOAuth({
+      provider:"facebook",
+      options:{redirectTo,scopes:"email,public_profile"}
+    });
+    if(error) throw error;
+  }catch(error){
+    const message=String(error?.message||"");
+    if(/provider.*not enabled|unsupported provider|facebook.*disabled/i.test(message)){
+      accountMessage("تسجيل فيسبوك لم يُفعّل بعد في إعدادات المنصة. يمكنك استخدام البريد وكلمة المرور مؤقتًا.");
+    }else{
+      accountMessage("تعذر بدء تسجيل الدخول بفيسبوك: "+(message||"حاول مرة أخرى."));
+    }
+    button.disabled=false;
+  }
 });
 document.getElementById("accountResetForm")?.addEventListener("submit",async function(event){
   event.preventDefault(); const button=this.querySelector('button[type="submit"]');
