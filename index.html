@@ -5386,7 +5386,7 @@ loadApprovedIdeas();
       alert(recordDeleted?'تم حذف المادة، لكن حدث خطأ أثناء تحديث العرض.':'تعذر حذف المادة: '+(error.message||'تحقق من الاتصال وحاول مرة أخرى.'));
     }
   };
-  let archiveGalleryRows=[];  let archiveGalleryRows=[];
+  let archiveGalleryRows=[];
   let archiveGalleryIndex=0;
   let archiveGalleryModal=null;
   let archiveGalleryTouchStartX=null;
@@ -6505,7 +6505,7 @@ document.getElementById('archiveAdminForm')?.addEventListener('submit',async fun
   msg.textContent=(saved?'تم حفظ '+saved+' مادة، لكن تعذر تحديث العرض: ':'تعذر رفع المادة: ')+(err.message||'حاول مرة أخرى.');
  }finally{btn.disabled=false;progress.style.display='none';}
 });
-document.getElementById('libraryAdminForm')?.addEventListener('submit'document.getElementById('libraryAdminForm')?.addEventListener('submit',async function(e){
+document.getElementById('libraryAdminForm')?.addEventListener('submit',async function(e){
  e.preventDefault();if(!adminSession||!adminSupabase)return;
  const form=this,fd=new FormData(form),msg=document.getElementById('libraryAdminMessage'),btn=form.querySelector('[type=submit]');let pdf=null,poster=null;
  try{btn.disabled=true;msg.textContent='جارٍ رفع السيناريو...';
