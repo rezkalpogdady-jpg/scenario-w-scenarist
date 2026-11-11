@@ -6282,7 +6282,7 @@ document.getElementById('archiveAdminForm')?.addEventListener('submit',async fun
    try{
     msg.textContent='جارٍ رفع الصورة '+(i+1)+' من '+files.length+': '+file.name;
     uploaded=await adminInlineUpload(file,'site-media','archive',20*1024*1024);
-    const fallbackTitle=file.name.replace(/\\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();
+    const fallbackTitle=file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();
     const title=commonTitle?(files.length===1?commonTitle:commonTitle+' — '+fallbackTitle):fallbackTitle||'أفيش من أرشيف السينما';
     const record={content_type:'archive',title:title.slice(0,200),category,description,image_url:uploaded.url,content_url:null,extra_data:{media_kind:'image',section_label:'أرشيف السينما',rights_note:'تم الرفع بواسطة مدير المنصة',original_file_name:file.name},published};
     const {error}=await adminSupabase.from('site_content').insert(record);
