@@ -1725,16 +1725,13 @@ function openCrimeStory(key){
   modal.style.display="block";document.body.style.overflow="hidden";
 }
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
-/* فتح الحكاية من الأفيش أو العنوان: مستمع عام في مرحلة الالتقاط
-   حتى لا يتأثر الفتح بإعادة رسم شبكة الحكايات أو مستمعات العناصر الداخلية. */
-document.addEventListener("click",event=>{
+/* فتح الحكاية من داخل قائمة الحكايات فقط دون اعتراض نقرات بقية الموقع. */
+document.getElementById("storiesItems")?.addEventListener("click",event=>{
   const target=event.target;
   const trigger=target&&typeof target.closest==="function"
-    ?target.closest("#storiesItems [data-crime-story-key]"):null;
-  if(!trigger)return;
-  event.preventDefault();
-  openCrimeStory(trigger.getAttribute("data-crime-story-key"));
-},true);
+    ?target.closest("[data-crime-story-key]"):null;
+  if(trigger)openCrimeStory(trigger.getAttribute("data-crime-story-key"));
+});
 document.getElementById("crimeStoryModalBody")?.addEventListener("click",event=>{
   const edit=event.target.closest("[data-crime-modal-edit]");
   if(edit){
