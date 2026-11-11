@@ -667,6 +667,20 @@ button.addEventListener('click',()=>showPage(button.dataset.page));
   </div>
 
   <section class="panel" id="screenwritingBooksLibrary" aria-labelledby="screenwritingBooksTitle" style="margin-top:22px">
+
+    <style>
+      #screenwritingBooksLibrary { overflow:hidden; position:relative; }
+      #screenwritingBooksLibrary .section-heading h2 { letter-spacing:.2px; }
+      #screenwritingBooksLibrary .grid { align-items:stretch; }
+      #screenwritingBooksLibrary article.feature { position:relative; overflow:hidden; min-height:190px; border:1px solid rgba(201,164,92,.22); border-radius:16px; background:linear-gradient(145deg,rgba(201,164,92,.085),rgba(255,255,255,.018) 58%,rgba(0,0,0,.08)); box-shadow:0 8px 22px rgba(0,0,0,.12); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; display:flex; flex-direction:column; align-items:flex-start; }
+      #screenwritingBooksLibrary article.feature:hover { transform:translateY(-3px); border-color:rgba(201,164,92,.58); box-shadow:0 13px 28px rgba(0,0,0,.2); }
+      #screenwritingBooksLibrary article.feature h4 { color:var(--gold); font-size:16px; line-height:1.65; margin:0 0 8px; }
+      #screenwritingBooksLibrary article.feature p { color:var(--muted); font-size:13px; line-height:1.8; margin:0 0 16px; flex:1; }
+      #screenwritingBooksLibrary article.feature a.btn { margin-top:auto; text-decoration:none; border-radius:10px; font-size:13px; }
+      #screenwritingBooksLibrary > h3 { display:flex; align-items:center; gap:10px; }
+      #screenwritingBooksLibrary > h3:after { content:""; height:1px; flex:1; background:linear-gradient(90deg,rgba(201,164,92,.38),transparent); }
+      @media (prefers-reduced-motion:reduce) { #screenwritingBooksLibrary article.feature { transition:none; } #screenwritingBooksLibrary article.feature:hover { transform:none; } }
+    </style>
     <div class="section-heading" style="margin-bottom:14px">
       <h2 id="screenwritingBooksTitle">مكتبة كتب السيناريو</h2>
       <p>مراجع عربية وإنجليزية لتعلّم كتابة السيناريو وتطوير القصة والشخصيات والحبكة. الروابط تفتح صفحات الناشرين أو المكتبات الرسمية؛ وقد يتطلب بعضها شراء الكتاب أو الاشتراك في خدمة القراءة.</p>
