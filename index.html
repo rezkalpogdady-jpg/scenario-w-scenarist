@@ -429,10 +429,10 @@ Main{padding:17px 11px}
 <div class="nav-wrap">
 <nav class="nav" id="mainNav">
 <button class="active" data-page="home">الرئيسية</button>
+<button data-page="filmStudy">مكتبة الدراسة السينمائية</button>
 <button data-page="library">مكتبة السيناريو</button>
 <button data-page="films">الأفلام والمسلسلات</button>
 <button data-page="shorts">الأفلام القصيرة</button>
-<button data-page="stories">الجرائم والحكايات</button>
 <button data-page="news">الأخبار الفنية</button>
 <button data-page="archive">أرشيف السينما زمان</button>
 <button data-page="community">مجتمع ونقاشات</button>
@@ -441,6 +441,7 @@ Main{padding:17px 11px}
 <button data-page="ideas">ورشة الأفكار</button>
 <button data-page="production">الإنتاج والتعاون</button>
 <button data-page="sponsors">شركات الإنتاج والرعاة</button>
+<button data-page="stories">الجرائم والحكايات</button>
 <button data-page="account">حساب المبدع (اختياري)</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="contact">تواصل مع الإدارة</button>
@@ -4463,6 +4464,29 @@ adminInitialize();
      الجزء الثامن: الربط والمراجعة
 =========================  -->
 
+
+<!-- مكتبة الدراسة السينمائية المستقلة -->
+<section id="filmStudy" class="page">
+  <div class="intro" style="background:linear-gradient(120deg,rgba(18,18,18,.96),rgba(70,48,20,.9)),url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80') center/cover">
+    <h2>مكتبة الدراسة السينمائية</h2>
+    <p>اكتشف الأفلام من خلال أفيشاتها، قصصها، أرقام إيراداتها، وتجربة الجمهور والنقاد — مع تحليل يساعدك على فهم صناعة الفيلم وكتابة السيناريو.</p>
+  </div>
+  <div class="panel" style="margin:18px 0">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">
+      <input id="filmStudySearch" type="search" placeholder="ابحث باسم الفيلم أو البلد أو النوع..." aria-label="ابحث في مكتبة الدراسة السينمائية">
+      <select id="filmStudyStatus" aria-label="تصفية مكتبة الدراسة السينمائية">
+        <option value="all">كل الحالات</option>
+        <option value="study-only">دراسة فقط — بلا رابط مشاهدة</option>
+        <option value="review-candidate">رابط مصدر مرشح للمراجعة</option>
+        <option value="public-domain-source">نسخة محددة مصنفة ملكية عامة</option>
+      </select>
+    </div>
+    <p id="filmStudyCount" class="muted" aria-live="polite" style="font-size:13px;margin:12px 0 0"></p>
+  </div>
+  <div id="filmStudyItems" class="grid"></div>
+  <div id="filmStudyDetail" class="panel" hidden style="margin-top:22px;border:1px solid var(--gold);padding:18px"></div>
+</section>
+
 <!-- صفحة الأفلام والمسلسلات الناقصة -->
 <section id="films" class="page">
   <div class="intro">
@@ -4494,18 +4518,7 @@ adminInitialize();
 <label>مراجعة المحتوى</label><select name="content_review"><option value="pending">لم تتم المراجعة بعد</option><option value="approved_clean">تمت المراجعة — مناسب وفق معايير المنصة</option><option value="rejected">غير مناسب — لا يُنشر</option></select>
 <label>حالة حقوق المشاهدة</label><select name="rights_status"><option value="unverified">لم يتم التحقق من الإتاحة</option><option value="official_source">مصدر رسمي يسمح بالمشاهدة/التضمين</option><option value="permission_granted">تصريح إتاحة</option><option value="licensed">ترخيص نشر أو عرض</option><option value="public_domain">ملكية عامة موثقة</option></select>
 <p class="muted" style="font-size:12px">لا تنشر العمل قبل مراجعة النسخة كاملة والتأكد من خلوها من العري والمشاهد الجنسية والإسفاف، ومن قانونية رابط المشاهدة.</p>
-<label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
-  <div class="section-heading" style="margin-top:34px"><h2>الدراسة السينمائية</h2><p>أفلام ندرس قصصها ورسائلها وبناء شخصياتها، مع توضيح الفرق بين الدراسة ورابط المصدر وحالة الحقوق.</p></div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:14px 0">
-    <input id="filmStudySearch" type="search" placeholder="ابحث باسم الفيلم أو البلد أو النوع..." aria-label="ابحث في مكتبة الدراسة السينمائية">
-    <select id="filmStudyStatus" aria-label="تصفية مكتبة الدراسة السينمائية">
-      <option value="all">كل الحالات</option>
-      <option value="study-only">دراسة فقط — بلا رابط مشاهدة</option>
-      <option value="review-candidate">رابط مصدر مرشح للمراجعة</option>
-      <option value="public-domain-source">نسخة محددة مصنفة ملكية عامة</option>
-    </select>
-  </div>
-  <p id="filmStudyCount" class="muted" aria-live="polite" style="font-size:13px;margin:0 0 12px"></p>
+<label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="pon:0 0 12px"></p>
   <div id="filmStudyItems" class="grid"></div>
 </section>
 
@@ -5243,6 +5256,19 @@ function filmStudyAccessStatus(item){
   if(item.sourceUrl)return "review-candidate";
   return "study-only";
 }
+function filmStudyPosterFor(item){
+  const explicit=safeHttpUrl(item.posterUrl||"");
+  if(explicit)return explicit;
+  const source=(adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords||[])
+    .find(record=>record.content_type==="films" &&
+      [item.title,item.originalTitle].some(title=>String(title||"").trim().toLowerCase()===String(record.title||"").trim().toLowerCase()) &&
+      (adminSession||record.published));
+  return source?.image_url?safeHttpUrl(source.image_url):"";
+}
+function filmStudySourceLink(url,label){
+  const safe=safeHttpUrl(url||"");
+  return safe?'<a class="btn" href="'+escapeHTML(safe)+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(label)+'</a>':'<span class="muted">لم يُضف مصدر موثق بعد</span>';
+}
 function renderFilmStudyLibrary(){
   const box=document.getElementById("filmStudyItems");
   if(!box)return;
@@ -5270,26 +5296,47 @@ function renderFilmStudyLibrary(){
   }
   box.innerHTML=filtered.map(item=>{
     const accessStatus=filmStudyAccessStatus(item);
-    const statusLabel=statusLabels[accessStatus];
-    const sourceAction=accessStatus==="public-domain-source"?"فتح النسخة المحددة على ويكيميديا":"فتح رابط المصدر الخارجي";
-    return `
-    <article class="feature">
-      <div style="min-height:150px;display:grid;place-items:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a">
-        <div><div style="font-size:38px;margin-bottom:8px">🎬</div><strong style="font-size:25px;letter-spacing:1px">${escapeHTML(item.title)}</strong><div style="font-size:13px;margin-top:6px">${escapeHTML(item.originalTitle)} • ${escapeHTML(item.year)}</div></div>
-      </div>
-      <div class="feature-content">
-        <h3>${escapeHTML(item.title)} <span style="font-size:13px;color:var(--gold)">— دراسة سينمائية</span></h3>
-        <span class="badge" style="display:inline-block;margin:4px 0 10px;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">${escapeHTML(statusLabel)}</span>
-        <p>${escapeHTML(item.country)} • ${escapeHTML(item.genre)} • إخراج: ${escapeHTML(item.director)}</p>
-        <p><strong>ملخص القصة:</strong> ${escapeHTML(item.synopsis)}</p>
-        <p><strong>القضايا:</strong> ${escapeHTML(item.themes)}</p>
-        <p><strong>رسالة الفيلم:</strong> ${escapeHTML(item.message)}</p>
-        <p><strong>درس لكتّاب السيناريو:</strong> ${escapeHTML(item.writerLesson)}</p>
-        <p class="muted" style="font-size:12px;border-top:1px solid var(--line);padding-top:10px">${escapeHTML(item.reviewNote)}</p>
-        ${item.sourceUrl ? `<a class="btn" href="${escapeHTML(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(sourceAction)}</a>` : `<span class="badge" style="display:inline-block;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">دراسة فقط — لا يوجد رابط مشاهدة</span>`}
-      </div>
-    </article>`;
+    const poster=filmStudyPosterFor(item);
+    const posterMarkup=poster
+      ? '<img src="'+escapeHTML(poster)+'" alt="أفيش فيلم '+escapeHTML(item.title)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">'
+      : '<div style="height:100%;min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:radial-gradient(circle at 50% 30%,#69512a,#151515 72%);color:#f1d89a"><span style="font-size:40px">🎬</span><strong style="font-size:22px;margin-top:14px">'+escapeHTML(item.title)+'</strong><span style="font-size:12px;margin-top:8px">'+escapeHTML(item.originalTitle)+' • '+escapeHTML(item.year)+'</span><small style="margin-top:18px;opacity:.8">الأفيش الرسمي يُضاف بعد توثيق مصدر الصورة</small></div>';
+    return '<article class="feature" style="overflow:hidden;display:flex;flex-direction:column">'
+      +'<button type="button" onclick="openFilmStudyDetail(\''+escapeHTML(item.id)+'\')" aria-label="افتح تفاصيل '+escapeHTML(item.title)+'" style="padding:0;border:0;background:#151515;cursor:pointer;width:100%;height:300px;overflow:hidden">'+posterMarkup+'</button>'
+      +'<div class="feature-content" style="display:flex;flex-direction:column;flex:1">'
+      +'<h3>'+escapeHTML(item.title)+'</h3>'
+      +'<p class="muted">'+escapeHTML(item.originalTitle)+' • '+escapeHTML(item.year)+' • '+escapeHTML(item.country)+'</p>'
+      +'<p>'+escapeHTML(item.genre)+'</p>'
+      +'<p>'+escapeHTML(item.synopsis)+'</p>'
+      +'<p><span class="badge">'+escapeHTML(statusLabels[accessStatus])+'</span></p>'
+      +'<button class="btn primary" type="button" onclick="openFilmStudyDetail(\''+escapeHTML(item.id)+'\')">تفاصيل الفيلم والإيرادات والتقييمات</button>'
+      +'</div></article>';
   }).join("");
+}
+function openFilmStudyDetail(id){
+  const item=FILM_STUDY_LIBRARY.find(entry=>entry.id===id);
+  const panel=document.getElementById("filmStudyDetail");
+  if(!item||!panel)return;
+  const poster=filmStudyPosterFor(item);
+  const accessStatus=filmStudyAccessStatus(item);
+  const boxOffice=item.boxOffice||null;
+  const audience=item.audienceReception||null;
+  const critics=item.criticsReception||null;
+  const meta=(label,value)=>'<div class="panel" style="padding:12px"><strong>'+label+'</strong><p style="margin:7px 0 0">'+escapeHTML(value||"لم تُوثق البيانات بعد — لن نعرض أرقامًا أو تقييمات غير مؤكدة.")+'</p></div>';
+  panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="color:var(--gold);margin:0">'+escapeHTML(item.title)+'</h2><button class="btn" type="button" onclick="closeFilmStudyDetail()">إغلاق التفاصيل</button></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:16px">'
+    +'<div>'+(poster?'<img src="'+escapeHTML(poster)+'" alt="أفيش '+escapeHTML(item.title)+'" style="width:100%;max-height:440px;object-fit:contain;background:#111;border-radius:10px">':'<div style="min-height:300px;display:grid;place-items:center;background:#171717;color:var(--gold);border-radius:10px;font-size:24px">'+escapeHTML(item.title)+'</div>')+'</div>'
+    +'<div><h3>بطاقة الفيلم</h3><p>'+escapeHTML(item.originalTitle)+' • '+escapeHTML(item.year)+'</p><p>البلد: '+escapeHTML(item.country)+'</p><p>النوع: '+escapeHTML(item.genre)+'</p><p>المخرج: '+escapeHTML(item.director)+'</p><p><strong>القصة:</strong> '+escapeHTML(item.synopsis)+'</p><p><strong>الموضوعات:</strong> '+escapeHTML(item.themes)+'</p><p><strong>رسالة الفيلم:</strong> '+escapeHTML(item.message)+'</p></div></div>'
+    +'<h3 style="margin-top:24px;color:var(--gold)">الإيرادات والأداء التجاري</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">'+meta("الإيرادات المحلية",boxOffice?.domestic)+meta("الإيرادات العالمية",boxOffice?.worldwide)+meta("ميزانية الإنتاج",boxOffice?.budget)+meta("مصدر الأرقام",boxOffice?.source)+'</div>'
+    +'<h3 style="margin-top:24px;color:var(--gold)">استقبال الجمهور</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">'+meta("تقييم الجمهور",audience?.rating)+meta("عدد التقييمات",audience?.votes)+meta("انطباع المشاهدين",audience?.summary)+meta("مصدر التقييم",audience?.source)+'</div>'
+    +'<h3 style="margin-top:24px;color:var(--gold)">استقبال النقاد</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">'+meta("التقييم النقدي",critics?.rating)+meta("عدد المراجعات",critics?.reviewCount)+meta("خلاصة النقد",critics?.summary)+meta("مصدر المراجعات",critics?.source)+'</div>'
+    +'<h3 style="margin-top:24px;color:var(--gold)">الدراسة السينمائية</h3><p><strong>درس لكتّاب السيناريو:</strong> '+escapeHTML(item.writerLesson)+'</p><p class="muted">'+escapeHTML(item.reviewNote)+'</p><p>'+filmStudySourceLink(item.dataSourceUrl,"مصدر بيانات الفيلم والإيرادات والتقييمات")+'</p>'
+    +'<p class="muted" style="font-size:12px">حالة الإتاحة: '+escapeHTML(accessStatus==="public-domain-source"?"نسخة محددة مصنفة ملكية عامة":accessStatus==="review-candidate"?"مصدر مرشح للمراجعة":"دراسة فقط")+'. تصنيف المصدر لا يعني تلقائيًا السماح بإعادة رفع الفيلم أو عرضه.</p>';
+  panel.hidden=false;
+  panel.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeFilmStudyDetail(){
+  const panel=document.getElementById("filmStudyDetail");
+  if(panel){panel.hidden=true;panel.innerHTML="";}
 }
 
 function adminEditFeaturedSeriesPoster(seriesId){
