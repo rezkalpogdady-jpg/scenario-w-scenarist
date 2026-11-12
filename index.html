@@ -730,7 +730,8 @@ if(requestedPage && requestedPage.classList.contains("page")){
 showPage(requestedSection,{updateUrl:false});
 }
 },{once:true});
-/* تهيئة سجل المتصفح: عند فتح رابط قسم مباشر، أضف الرئيسية كخطوة رجوع داخل الموقع */
+/* تهيئة سجل المتصفح بعد اكتمال بناء الصفحة؛ عناصر الأقسام موجودة الآن */
+document.addEventListener("DOMContentLoaded",()=>{
 try{
 const initialSection=new URLSearchParams(window.location.search).get("section")||"home";
 const initialPage=document.getElementById(initialSection);
@@ -748,6 +749,7 @@ if(safeInitialSection!=="home"&&!alreadyInitialized){
 }
 if("scrollRestoration" in window.history)window.history.scrollRestoration="manual";
 }catch(error){console.warn("تعذر تهيئة سجل التنقل:",error);}
+},{once:true});
 window.addEventListener("popstate",(event)=>{
 const stateSection=event.state&&event.state.scenarioPlatform===true?event.state.section:null;
 const urlSection=new URLSearchParams(window.location.search).get("section");
