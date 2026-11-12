@@ -690,6 +690,7 @@ button.classList.toggle('active',button.dataset.page===id);
 window.scrollTo({top:0,behavior:'smooth'});
 if(id==="home")updateReadingResumeCard();
 }
+updateReadingResumeCard();
 window.addEventListener("pagehide",saveReadingProgress);
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden) stopShortFilmPlayers(false);
