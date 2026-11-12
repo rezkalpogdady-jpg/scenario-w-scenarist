@@ -4170,7 +4170,7 @@ function adminRenderRecords(){
   const filter=document.getElementById("adminFilter")?.value || "";
 
   const records=adminRecords.filter(item=>
-    !["stories","library"].includes(item.content_type) &&
+    !["stories","library","film_study"].includes(item.content_type) &&
     (!filter || item.content_type===filter) &&
     ((item.title+" "+(item.description||"")+" "+(item.category||""))
       .toLowerCase().includes(q))
