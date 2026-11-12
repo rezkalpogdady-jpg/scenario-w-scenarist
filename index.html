@@ -6291,7 +6291,7 @@ async function loadPublicContent(){
 
     const {data,error}=await publicContentClient
       .from("site_content")
-      .select("*")
+      .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
       .eq("published",true)
       .order("created_at",{ascending:false});
 
