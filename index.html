@@ -3559,7 +3559,19 @@ document.getElementById("accountLogout")?.addEventListener("click",async()=>{
 /* تحديث حالة حساب العضو عند تغير جلسة الدخول */
 try{
   accountClient().auth.onAuthStateChange((event,session)=>{
-    if(event==="SIGNED_IN" && session?.user){
+    if(event==="PASSWORD_RECOVERY"){
+      const recoveryTarget=localStorage.getItem("scenarioRecoveryTarget");
+      localStorage.removeItem("scenarioRecoveryTarget");
+      if(recoveryTarget==="admin"){
+        const adminRecovery=document.getElementById("adminRecoveryPanel");
+        if(adminRecovery)adminRecovery.style.display="block";
+        if(typeof showPage==="function")showPage("admin");
+        adminSetMessage("adminLoginMessage","تم التحقق من رابط استعادة حساب الإدارة. عيّن كلمة مرور جديدة.");
+      }else{
+        accountClient().auth.signOut();
+        accountMessage("استعادة الرقم السري للأعضاء غير متاحة. احتفظ بالرقم السري عند إنشاء العضوية.");
+      }
+    }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
       accountShowUser(null,null);
