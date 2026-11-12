@@ -630,6 +630,7 @@ if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 const target=document.getElementById(id);
 if(target) target.classList.add('active');
+if(id==='filmStudy' && typeof renderFilmStudyLibrary==='function') renderFilmStudyLibrary();
 if(id==='library' && typeof loadPublishedScenarioScripts==='function') loadPublishedScenarioScripts();
 if(id==='books' && typeof loadBookListings==='function') loadBookListings();
 document.querySelectorAll('#mainNav button').forEach(button=>{
