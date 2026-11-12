@@ -4170,7 +4170,7 @@ function adminRenderRecords(){
   const filter=document.getElementById("adminFilter")?.value || "";
 
   const records=adminRecords.filter(item=>
-    !["stories","library"].includes(item.content_type) &&
+    !["stories","library","film_study"].includes(item.content_type) &&
     (!filter || item.content_type===filter) &&
     ((item.title+" "+(item.description||"")+" "+(item.category||""))
       .toLowerCase().includes(q))
@@ -4472,6 +4472,55 @@ adminInitialize();
   <div class="intro" style="background:linear-gradient(120deg,rgba(18,18,18,.96),rgba(70,48,20,.9)),url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80') center/cover">
     <h2>مكتبة الدراسة السينمائية</h2>
     <p>اكتشف الأفلام من خلال أفيشاتها، قصصها، أرقام إيراداتها، وتجربة الجمهور والنقاد — مع تحليل يساعدك على فهم صناعة الفيلم وكتابة السيناريو.</p>
+  </div>
+  <div id="filmStudyAdminTools" class="panel" style="display:none;margin:18px 0;border:1px solid var(--gold)">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+      <div><h3 style="color:var(--gold);margin:0">إدارة مكتبة الدراسة السينمائية</h3><p class="muted" style="margin:6px 0">إضافة وتعديل الأفيشات وبيانات الأفلام من هنا مباشرة.</p></div>
+      <button class="btn primary" type="button" onclick="filmStudyNewItem()">＋ إضافة فيلم للدراسة</button>
+    </div>
+    <form id="filmStudyAdminForm" style="display:none;margin-top:16px">
+      <input type="hidden" name="study_key">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">
+        <label>اسم الفيلم<input name="title" required maxlength="200"></label>
+        <label>الاسم الأصلي<input name="originalTitle" maxlength="200"></label>
+        <label>سنة الإنتاج<input name="year" type="number" min="1888" max="2100"></label>
+        <label>بلد الإنتاج<input name="country" maxlength="120"></label>
+        <label>المخرج<input name="director" maxlength="160"></label>
+        <label>النوع السينمائي<input name="genre" maxlength="180"></label>
+      </div>
+      <label>ملخص القصة<textarea name="synopsis" rows="3" maxlength="5000"></textarea></label>
+      <label>الموضوعات الرئيسية<textarea name="themes" rows="2" maxlength="1500"></textarea></label>
+      <label>رسالة الفيلم<textarea name="message" rows="2" maxlength="1500"></textarea></label>
+      <label>درس لكتّاب السيناريو<textarea name="writerLesson" rows="3" maxlength="3000"></textarea></label>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">
+        <label>أفيش الفيلم — رابط صورة (اختياري)<input name="posterUrl" type="url" placeholder="https://..."></label>
+        <label>أو ارفع الأفيش من جهازك<input name="posterFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+        <label>رابط مصدر الفيلم / المشاهدة المسموح بها<input name="sourceUrl" type="url" placeholder="https://..."></label>
+        <label>اسم المصدر<input name="sourceLabel" maxlength="180"></label>
+        <label>حالة الحقوق / الإتاحة<input name="rightsLabel" maxlength="220"></label>
+        <label>رابط مصدر بيانات الإيرادات والتقييمات<input name="dataSourceUrl" type="url" placeholder="https://..."></label>
+      </div>
+      <h4 style="color:var(--gold)">الإيرادات والأداء التجاري</h4>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        <label>الإيرادات المحلية<input name="boxDomestic"></label><label>الإيرادات العالمية<input name="boxWorldwide"></label><label>ميزانية الإنتاج<input name="boxBudget"></label><label>مصدر الأرقام<input name="boxSource"></label>
+      </div>
+      <h4 style="color:var(--gold)">استقبال الجمهور</h4>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        <label>تقييم الجمهور<input name="audienceRating"></label><label>عدد التقييمات<input name="audienceVotes"></label><label>انطباع الجمهور<textarea name="audienceSummary" rows="2"></textarea></label><label>مصدر التقييم<input name="audienceSource"></label>
+      </div>
+      <h4 style="color:var(--gold)">استقبال النقاد</h4>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        <label>التقييم النقدي<input name="criticsRating"></label><label>عدد المراجعات<input name="criticsCount"></label><label>خلاصة النقد<textarea name="criticsSummary" rows="2"></textarea></label><label>مصدر المراجعات<input name="criticsSource"></label>
+      </div>
+      <label>ملاحظات مراجعة المحتوى وحقوق العرض<textarea name="reviewNote" rows="3" maxlength="3000"></textarea></label>
+      <label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> إظهار البطاقة للزوار</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn primary" type="submit">حفظ بيانات الفيلم</button>
+        <button class="btn" type="button" onclick="filmStudyCancelEdit()">إلغاء</button>
+      </div>
+      <p id="filmStudyAdminMessage" class="muted" aria-live="polite"></p>
+    </form>
+    <div id="filmStudyAdminList" style="margin-top:14px"></div>
   </div>
   <div class="panel" style="margin:18px 0">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">
@@ -4830,7 +4879,7 @@ function sanitizePublicContentRecord(item){
     ? item.extra_data : {};
   const safe={};
   ["name","author","writer","specialty","type","city","director","duration","owner",
-   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label","country","themes","message","writer_lesson","content_review"].forEach(key=>{
+   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label","country","themes","message","writer_lesson","content_review","study_key","study_visibility","originalTitle","genre","synopsis","reviewNote","sourceLabel","rightsLabel","dataSourceUrl","boxDomestic","boxWorldwide","boxBudget","boxSource","audienceRating","audienceVotes","audienceSummary","audienceSource","criticsRating","criticsCount","criticsSummary","criticsSource","writerLesson"].forEach(key=>{
     const value=source[key];
     if(typeof value==="string" || typeof value==="number") safe[key]=value;
   });
@@ -5255,6 +5304,116 @@ const FILM_STUDY_LIBRARY = [
   }
 ];
 
+function filmStudyAllItems(){
+  const records=(adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords||[])
+    .filter(record=>record.content_type==="film_study");
+  const overrides=new Map(records.map(record=>[String(record.extra_data?.study_key||record.id),record]));
+  const base=FILM_STUDY_LIBRARY.map(item=>{
+    const record=overrides.get(String(item.id));
+    if(!record)return {...item};
+    const extra=record.extra_data||{};
+    return {...item,id:String(item.id),title:record.title||item.title,originalTitle:extra.originalTitle||item.originalTitle,
+      year:extra.year||item.year,country:extra.country||item.country,director:extra.director||item.director,
+      genre:record.category||extra.genre||item.genre,synopsis:record.description||item.synopsis,
+      themes:extra.themes||item.themes,message:extra.message||item.message,writerLesson:extra.writerLesson||item.writerLesson,
+      posterUrl:record.image_url||item.posterUrl,sourceUrl:extra.source_url||item.sourceUrl,sourceLabel:extra.sourceLabel||item.sourceLabel,
+      rightsLabel:extra.rightsLabel||item.rightsLabel,reviewNote:extra.reviewNote||item.reviewNote,dataSourceUrl:extra.dataSourceUrl||item.dataSourceUrl,
+      boxOffice:{domestic:extra.boxDomestic||item.boxOffice?.domestic,worldwide:extra.boxWorldwide||item.boxOffice?.worldwide,budget:extra.boxBudget||item.boxOffice?.budget,source:extra.boxSource||item.boxOffice?.source},
+      audienceReception:{rating:extra.audienceRating||item.audienceReception?.rating,votes:extra.audienceVotes||item.audienceReception?.votes,summary:extra.audienceSummary||item.audienceReception?.summary,source:extra.audienceSource||item.audienceReception?.source},
+      criticsReception:{rating:extra.criticsRating||item.criticsReception?.rating,reviewCount:extra.criticsCount||item.criticsReception?.reviewCount,summary:extra.criticsSummary||item.criticsReception?.summary,source:extra.criticsSource||item.criticsReception?.source},
+      _recordId:record.id,_custom:false,_published:!!record.published,_visible:extra.study_visibility!=="hidden"};
+  });
+  const baseIds=new Set(FILM_STUDY_LIBRARY.map(item=>String(item.id)));
+  const custom=records.filter(record=>!baseIds.has(String(record.extra_data?.study_key||record.id))).map(record=>{
+    const extra=record.extra_data||{};
+    return {id:String(extra.study_key||record.id),title:record.title||"",originalTitle:extra.originalTitle||"",year:extra.year||"",country:extra.country||"",director:extra.director||"",genre:record.category||"",synopsis:record.description||"",themes:extra.themes||"",message:extra.message||"",writerLesson:extra.writerLesson||"",posterUrl:record.image_url||"",sourceUrl:extra.source_url||"",sourceLabel:extra.sourceLabel||"",rightsLabel:extra.rightsLabel||"",reviewNote:extra.reviewNote||"",dataSourceUrl:extra.dataSourceUrl||"",boxOffice:{domestic:extra.boxDomestic,worldwide:extra.boxWorldwide,budget:extra.boxBudget,source:extra.boxSource},audienceReception:{rating:extra.audienceRating,votes:extra.audienceVotes,summary:extra.audienceSummary,source:extra.audienceSource},criticsReception:{rating:extra.criticsRating,reviewCount:extra.criticsCount,summary:extra.criticsSummary,source:extra.criticsSource},_recordId:record.id,_custom:true,_published:!!record.published,_visible:extra.study_visibility!=="hidden"};
+  });
+  return [...base.filter(item=>!item._recordId||(item._published&&item._visible)||adminSession),...custom.filter(item=>(item._published&&item._visible)||adminSession)];
+}
+function filmStudyAdminMessage(message){const node=document.getElementById("filmStudyAdminMessage");if(node)node.textContent=message;}
+function filmStudyCancelEdit(){const form=document.getElementById("filmStudyAdminForm");if(form){form.reset();form.style.display="none";}filmStudyAdminMessage("");}
+function filmStudyNewItem(){
+  if(!adminSession||!adminSupabase)return;
+  const form=document.getElementById("filmStudyAdminForm");if(!form)return;
+  form.reset();form.elements.study_key.value="";form.elements.published.checked=true;form.style.display="block";
+  filmStudyAdminMessage("أدخل بيانات الفيلم، ويمكنك رفع الأفيش مباشرة من جهازك.");
+  form.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function filmStudyEditItem(id){
+  if(!adminSession)return;
+  const item=filmStudyAllItems().find(entry=>String(entry.id)===String(id));if(!item)return;
+  const form=document.getElementById("filmStudyAdminForm");if(!form)return;
+  form.reset();
+  const values={study_key:item.id,title:item.title,originalTitle:item.originalTitle,year:item.year,country:item.country,director:item.director,genre:item.genre,synopsis:item.synopsis,themes:item.themes,message:item.message,writerLesson:item.writerLesson,posterUrl:item.posterUrl,sourceUrl:item.sourceUrl,sourceLabel:item.sourceLabel,rightsLabel:item.rightsLabel,dataSourceUrl:item.dataSourceUrl,boxDomestic:item.boxOffice?.domestic,boxWorldwide:item.boxOffice?.worldwide,boxBudget:item.boxOffice?.budget,boxSource:item.boxOffice?.source,audienceRating:item.audienceReception?.rating,audienceVotes:item.audienceReception?.votes,audienceSummary:item.audienceReception?.summary,audienceSource:item.audienceReception?.source,criticsRating:item.criticsReception?.rating,criticsCount:item.criticsReception?.reviewCount,criticsSummary:item.criticsReception?.summary,criticsSource:item.criticsReception?.source,reviewNote:item.reviewNote};
+  Object.entries(values).forEach(([key,value])=>{if(form.elements[key]&&value!==undefined&&value!==null)form.elements[key].value=String(value);});
+  form.elements.published.checked=item._published!==false;
+  form.style.display="block";filmStudyAdminMessage("تعديل: "+item.title+" — اترك الأفيش فارغًا للاحتفاظ بالصورة الحالية.");
+  form.scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function filmStudyDeleteItem(id){
+  if(!adminSession||!adminSupabase)return;
+  const item=filmStudyAllItems().find(entry=>String(entry.id)===String(id));if(!item)return;
+  if(!confirm("هل تريد حذف هذه البطاقة أو إلغاء تعديلها؟"))return;
+  if(item._recordId){
+    const savedRecord=adminRecords.find(record=>String(record.id)===String(item._recordId));
+    const {error}=await adminSupabase.from("site_content").delete().eq("id",item._recordId);
+    if(error){alert("تعذر الحذف: "+error.message);return;}
+    const posterPath=adminStoragePathFromPublicUrl(savedRecord?.image_url);
+    if(posterPath){
+      const {error:storageError}=await adminSupabase.storage.from("site-media").remove([posterPath]);
+      if(storageError)console.warn("تم حذف سجل الدراسة وتعذر تنظيف ملف الأفيش",storageError.message);
+    }
+  }
+  await adminLoadRecords();await loadPublicContent();renderFilmStudyLibrary();
+}
+function filmStudyRenderAdmin(){
+  const tools=document.getElementById("filmStudyAdminTools"),list=document.getElementById("filmStudyAdminList");
+  if(!tools||!list)return;
+  tools.style.display=adminSession?"block":"none";
+  if(!adminSession){list.innerHTML="";return;}
+  const items=filmStudyAllItems();
+  list.innerHTML='<h4 style="margin:12px 0;color:var(--gold)">بطاقات الدراسة — '+items.length+'</h4>'+
+    items.map(item=>'<div class="admin-item" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><strong>'+escapeHTML(item.title)+'</strong><p class="muted" style="margin:4px 0">'+escapeHTML(item.year||"")+' • '+(item._recordId?"له سجل محفوظ":"بطاقة أساسية")+'</p></div><div class="admin-actions"><button class="btn" type="button" onclick="filmStudyEditItem(\''+escapeHTML(item.id)+'\')">تعديل / إضافة أفيش</button>'+(item._recordId?'<button class="btn" type="button" onclick="filmStudyDeleteItem(\''+escapeHTML(item.id)+'\')">'+(item._custom?"حذف البطاقة":"إلغاء التعديلات")+'</button>':"")+'</div></div>').join("");
+}
+document.getElementById("filmStudyAdminForm")?.addEventListener("submit",async function(event){
+  event.preventDefault();
+  if(!adminSession||!adminSupabase){filmStudyAdminMessage("سجل دخول المدير أولًا.");return;}
+  const form=this,field=name=>String(form.elements[name]?.value||"").trim();
+  const key=field("study_key")||("study-"+crypto.randomUUID());
+  const previous=adminRecords.find(record=>record.content_type==="film_study"&&String(record.extra_data?.study_key||record.id)===key);
+  let imageUrl=field("posterUrl")||previous?.image_url||null;
+  const file=form.elements.posterFile.files?.[0];
+  let uploadedPath=null;
+  try{
+    if(file){
+      if(!file.type.startsWith("image/"))throw new Error("اختر ملف صورة صالحًا للأفيش.");
+      if(file.size>12*1024*1024)throw new Error("حجم الأفيش يجب ألا يتجاوز 12 ميجابايت.");
+      const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
+      const path="film-study/"+crypto.randomUUID()+"."+ext;
+      const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});
+      if(error)throw error;uploadedPath=data.path;
+      imageUrl=adminSupabase.storage.from("site-media").getPublicUrl(data.path).data.publicUrl;
+    }
+    const extra={study_key:key,originalTitle:field("originalTitle"),year:field("year"),country:field("country"),director:field("director"),genre:field("genre"),themes:field("themes"),message:field("message"),writerLesson:field("writerLesson"),source_url:field("sourceUrl"),sourceLabel:field("sourceLabel"),rightsLabel:field("rightsLabel"),dataSourceUrl:field("dataSourceUrl"),boxDomestic:field("boxDomestic"),boxWorldwide:field("boxWorldwide"),boxBudget:field("boxBudget"),boxSource:field("boxSource"),audienceRating:field("audienceRating"),audienceVotes:field("audienceVotes"),audienceSummary:field("audienceSummary"),audienceSource:field("audienceSource"),criticsRating:field("criticsRating"),criticsCount:field("criticsCount"),criticsSummary:field("criticsSummary"),criticsSource:field("criticsSource"),reviewNote:field("reviewNote"),study_visibility:form.elements.published.checked?"visible":"hidden"};
+    const payload={content_type:"film_study",title:field("title"),category:field("genre")||"دراسة سينمائية",description:field("synopsis"),image_url:imageUrl,content_url:field("sourceUrl")||null,extra_data:extra,published:true};
+    if(!payload.title)throw new Error("اكتب اسم الفيلم.");
+    const result=previous
+      ? await adminSupabase.from("site_content").update(payload).eq("id",previous.id)
+      : await adminSupabase.from("site_content").insert(payload);
+    if(result.error)throw result.error;
+    if(file&&previous?.image_url){
+      const oldPath=adminStoragePathFromPublicUrl(previous.image_url);
+      if(oldPath&&oldPath!==uploadedPath)await adminSupabase.storage.from("site-media").remove([oldPath]);
+    }
+    filmStudyAdminMessage("تم حفظ بطاقة الدراسة بنجاح.");
+    form.reset();form.style.display="none";
+    await adminLoadRecords();await loadPublicContent();renderFilmStudyLibrary();
+  }catch(error){
+    if(uploadedPath)await adminSupabase.storage.from("site-media").remove([uploadedPath]);
+    filmStudyAdminMessage("تعذر الحفظ: "+(error.message||"حدث خطأ غير متوقع."));
+  }
+});
+
 function filmStudyAccessStatus(item){
   if(item.rightsLabel && item.rightsLabel.includes("ملكية عامة"))return "public-domain-source";
   if(item.sourceUrl)return "review-candidate";
@@ -5288,12 +5447,14 @@ function renderFilmStudyLibrary(){
     "review-candidate":"رابط مصدر خارجي — مرشح للمراجعة وليس اعتمادًا للمشاهدة",
     "public-domain-source":"النسخة المحددة مصنفة ملكية عامة — يلزم فحص المحتوى"
   };
-  const filtered=FILM_STUDY_LIBRARY.filter(item=>{
+  const allItems=filmStudyAllItems();
+  filmStudyRenderAdmin();
+  const filtered=allItems.filter(item=>{
     const matchesStatus=selectedStatus==="all"||filmStudyAccessStatus(item)===selectedStatus;
     const searchable=[item.title,item.originalTitle,item.year,item.country,item.genre,item.themes].join(" ").toLocaleLowerCase("ar");
     return matchesStatus&&(!query||searchable.includes(query));
   });
-  if(count)count.textContent="عرض "+filtered.length+" من "+FILM_STUDY_LIBRARY.length+" عنوانًا";
+  if(count)count.textContent="عرض "+filtered.length+" من "+allItems.length+" عنوانًا";
   if(!filtered.length){
     box.innerHTML='<p class="muted">لا توجد نتائج مطابقة. جرّب كلمة بحث أخرى أو اختر كل الحالات.</p>';
     return;
@@ -5317,7 +5478,7 @@ function renderFilmStudyLibrary(){
   }).join("");
 }
 function openFilmStudyDetail(id){
-  const item=FILM_STUDY_LIBRARY.find(entry=>entry.id===id);
+  const item=filmStudyAllItems().find(entry=>entry.id===id);
   const panel=document.getElementById("filmStudyDetail");
   if(!item||!panel)return;
   const poster=filmStudyPosterFor(item);
