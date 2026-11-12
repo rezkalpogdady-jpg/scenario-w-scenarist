@@ -7565,7 +7565,7 @@ document.getElementById('shortsAdminForm')?.addEventListener('submit',async func
 });
 function adminResetFilmForm(){
  const form=document.getElementById('filmsAdminForm');if(!form)return;
- form.reset();form.elements.record_id.value='';
+ form.reset();form.elements.record_id.value='';form.elements.url.required=true;
  document.getElementById('filmsAdminSubmitButton').textContent='حفظ ونشر';
  document.getElementById('filmsAdminCancelEdit').style.display='none';
  document.getElementById('filmsAdminMessage').textContent='';
@@ -7577,7 +7577,7 @@ function adminEditFilm(id){
  const form=document.getElementById('filmsAdminForm');
  form.elements.record_id.value=item.id;form.elements.title.value=item.title||'';
  form.elements.category.value=item.category||'فيلم';form.elements.description.value=item.description||'';
- form.elements.url.value=item.content_url||'';form.elements.published.checked=!!item.published;
+ form.elements.url.value=item.content_url||'';form.elements.url.required=!(Array.isArray(item.extra_data?.external_episodes)&&item.extra_data.external_episodes.length>0);form.elements.published.checked=!!item.published;
  const extra=item.extra_data&&typeof item.extra_data==='object'?item.extra_data:{};
  form.elements.country.value=extra.country||'';
  form.elements.year.value=extra.year||'';
