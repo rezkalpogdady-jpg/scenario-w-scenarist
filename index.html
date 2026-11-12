@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.93: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.95: روابط مستقلة لكل قسم مع دعم الرجوع والتقدم دون تعارض مع أجزاء الرابط: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.82">
+<body data-platform-version="6.8.95">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -625,11 +625,22 @@ function stopShortFilmPlayers(){
     }catch(_){}
   });
 }
-function showPage(id){
+function showPage(id, options={}){
+const target=document.getElementById(id);
+if(!target || !target.classList.contains('page')) return;
+if(options.updateUrl!==false){
+try{
+const nextUrl=new URL(window.location.href);
+if(id==='home') nextUrl.searchParams.delete('section');
+else nextUrl.searchParams.set('section',id);
+const nextAddress=nextUrl.pathname+nextUrl.search+nextUrl.hash;
+const currentAddress=window.location.pathname+window.location.search+window.location.hash;
+if(nextAddress!==currentAddress) window.history.pushState({section:id},'',nextAddress);
+}catch(error){console.warn('تعذر تحديث رابط القسم:',error);}
+}
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
-const target=document.getElementById(id);
-if(target) target.classList.add('active');
+target.classList.add('active');
 if(id==='filmStudy' && typeof renderFilmStudyLibrary==='function') renderFilmStudyLibrary();
 if(id==='films' && typeof renderFilms==='function') renderFilms();
 if(id==='library' && typeof loadPublishedScenarioScripts==='function') loadPublishedScenarioScripts();
@@ -646,11 +657,21 @@ window.addEventListener("pagehide",()=>stopShortFilmPlayers(false));
 document.querySelectorAll('#mainNav button').forEach(button=>{
 button.addEventListener('click',()=>showPage(button.dataset.page));
 });
-const seoRequestedSection=new URLSearchParams(window.location.search).get("section");
-const seoAllowedSections=new Set(["home","academy","library","writers","directors","talents","shorts","stories","news","production","books","radio","chess","ideas","filmStudy","films","archive","community","contact","about"]);
-if(seoRequestedSection && seoAllowedSections.has(seoRequestedSection)){
-document.addEventListener("DOMContentLoaded",()=>showPage(seoRequestedSection),{once:true});
+/* روابط مباشرة لكل صفحة رئيسية: ?section=pageId */
+document.addEventListener("DOMContentLoaded",()=>{
+const requestedSection=new URLSearchParams(window.location.search).get("section");
+if(!requestedSection)return;
+const requestedPage=document.getElementById(requestedSection);
+if(requestedPage && requestedPage.classList.contains("page")){
+showPage(requestedSection,{updateUrl:false});
 }
+},{once:true});
+/* مزامنة زر الرجوع/التقدم مع القسم المفتوح دون إنشاء سجل تاريخي جديد */
+window.addEventListener("popstate",()=>{
+const requestedSection=new URLSearchParams(window.location.search).get("section")||"home";
+const requestedPage=document.getElementById(requestedSection);
+showPage(requestedPage && requestedPage.classList.contains("page")?requestedSection:"home",{updateUrl:false});
+});
 </script>
 
 
@@ -6642,7 +6663,7 @@ loadApprovedIdeas();
   document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'pending'});if(error)throw error;form.reset();alert('تم إرسال الرد للمراجعة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
   const priorShowPage=window.showPage;
-  if(typeof priorShowPage==='function')window.showPage=function(id){priorShowPage(id);if(id==='archive')loadArchive();if(id==='community')loadTopics();};
+  if(typeof priorShowPage==='function')window.showPage=function(id,options){priorShowPage(id,options);if(id==='archive')loadArchive();if(id==='community')loadTopics();};
   document.addEventListener('DOMContentLoaded',()=>{if($('archiveItems'))loadArchive();if($('communityTopics'))loadTopics();});
   async function adminLoadCommunityModeration(){
     if(typeof adminSupabase==="undefined" || !adminSupabase || !adminSession)return;
