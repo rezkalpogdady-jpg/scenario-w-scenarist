@@ -5251,7 +5251,7 @@ function renderFilms(){
     const posterMarkup=posterRecord?.image_url
       ? `<img src="${safeHttpUrl(posterRecord.image_url)}" alt="أفيش ${escapeHTML(item.title)}" style="display:block;width:100%;height:170px;object-fit:cover">`
       : `<div style="height:170px;display:grid;place-items:center;text-align:center;padding:18px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a"><div><div style="font-size:36px;margin-bottom:8px">▧</div><strong>مكان الأفيش</strong><div style="font-size:12px;color:#d8c7a5">${escapeHTML(item.title)}</div></div></div>`;
-    const posterAdminAction=adminSession
+    const posterAdminAction=adminSession&&!item.recordId
       ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
       : "";
     const clickablePosterMarkup=posterRecord?.content_url
