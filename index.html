@@ -730,13 +730,22 @@ if(requestedPage && requestedPage.classList.contains("page")){
 showPage(requestedSection,{updateUrl:false});
 }
 },{once:true});
-/* تهيئة حالة سجل المتصفح للقسم المفتوح دون إضافة خطوة زائفة */
+/* تهيئة سجل المتصفح: عند فتح رابط قسم مباشر، أضف الرئيسية كخطوة رجوع داخل الموقع */
 try{
 const initialSection=new URLSearchParams(window.location.search).get("section")||"home";
 const initialPage=document.getElementById(initialSection);
 const safeInitialSection=initialPage&&initialPage.classList.contains("page")?initialSection:"home";
 const initialState=window.history.state&&typeof window.history.state==="object"?window.history.state:{};
-window.history.replaceState({...initialState,scenarioPlatform:true,section:safeInitialSection},"",window.location.href);
+const requestedAddress=window.location.pathname+window.location.search+window.location.hash;
+const alreadyInitialized=initialState.scenarioPlatform===true&&initialState.section===safeInitialSection;
+if(safeInitialSection!=="home"&&!alreadyInitialized){
+  const homeUrl=new URL(window.location.href);
+  homeUrl.searchParams.delete("section");
+  window.history.replaceState({...initialState,scenarioPlatform:true,section:"home"},"",homeUrl.pathname+homeUrl.search+homeUrl.hash);
+  window.history.pushState({scenarioPlatform:true,section:safeInitialSection},"",requestedAddress);
+}else{
+  window.history.replaceState({...initialState,scenarioPlatform:true,section:safeInitialSection},"",requestedAddress);
+}
 if("scrollRestoration" in window.history)window.history.scrollRestoration="manual";
 }catch(error){console.warn("تعذر تهيئة سجل التنقل:",error);}
 window.addEventListener("popstate",(event)=>{
