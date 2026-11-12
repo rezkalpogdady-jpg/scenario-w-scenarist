@@ -5372,7 +5372,7 @@ function renderFilms(){
       <article class="feature">
         ${clickablePosterMarkup}
         <div class="feature-content">
-          <h3>${escapeHTML(item.title)}</h3>
+          <h3 style="margin:0 0 8px"><button class="series-title-open" type="button" onclick="openSeriesPlaylist(\'${escapeHTML(item.id)}\')" aria-label="فتح حلقات ${escapeHTML(item.title)}" style="border:0;background:transparent;padding:0;color:var(--gold);font:inherit;font-weight:700;text-align:right;cursor:pointer;text-decoration:underline;text-underline-offset:4px">${escapeHTML(item.title)}</button></h3>
           <p>مسلسل • ${item.externalEpisodes?.length||item.episodes.length} حلقة</p>
           <p>${escapeHTML(item.description)}</p>
           ${item.extraData?.year||item.extraData?.country?'<p>'+escapeHTML([item.extraData.country,item.extraData.year].filter(Boolean).join(' • '))+'</p>':""}
