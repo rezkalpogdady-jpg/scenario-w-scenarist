@@ -3348,7 +3348,7 @@ async function accountLoadProfile(user){
   }
 }
 async function memberAuthRequest(payload){
-  const response=await fetch(ADMIN_SUPABASE_URL+"/functions/v1/member-auth",{method:"POST",headers:{"Content-Type":"application/json","apikey":ADMIN_SUPABASE_KEY,"Authorization":"Bearer "+ADMIN_SUPABASE_KEY},body:JSON.stringify(payload)});
+  const response=await fetch(ADMIN_SUPABASE_URL+"/functions/v1/member-auth",{method:"POST",headers:{"Content-Type":"application/json","apikey":ADMIN_SUPABASE_KEY},body:JSON.stringify(payload)});
   const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||"تعذر إكمال الطلب.");return result;
 }
 async function accountSetMemberSession(result){
