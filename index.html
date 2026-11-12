@@ -3349,7 +3349,7 @@ async function accountLoadProfile(user){
   }
 }
 async function memberAuthRequest(payload){
-  const response=await fetch(ADMIN_SUPABASE_URL+"/functions/v1/member-auth",{method:"POST",headers:{"Content-Type":"application/json","apikey":ADMIN_SUPABASE_KEY},body:JSON.stringify(payload)});
+  const response=await fetch(ADMIN_SUPABASE_URL+"/functions/v1/member-auth",{method:"POST",headers:{"Content-Type":"application/json","apikey":ADMIN_SUPABASE_KEY,"Authorization":"Bearer "+ADMIN_SUPABASE_KEY},body:JSON.stringify(payload)});
   const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||"تعذر إكمال الطلب.");return result;
 }
 async function accountSetMemberSession(result){
@@ -3377,36 +3377,6 @@ document.getElementById("accountLoginForm")?.addEventListener("submit",async fun
     const result=await memberAuthRequest({action:"login",member_number:document.getElementById("accountLoginNumber").value.trim(),password:document.getElementById("accountLoginPassword").value});
     await accountSetMemberSession(result);accountMessage("تم تسجيل الدخول بنجاح.");
   }catch(error){accountMessage(error.message||"رقم العضوية أو الرقم السري غير صحيح.");}finally{button.disabled=false;}
-});
-document.getElementById("accountFacebookLogin")?.addEventListener("click",async function(){
-  const button=this;
-  try{
-    button.disabled=true;
-    accountMessage("جارٍ تحويلك إلى فيسبوك لتأكيد هويتك...");
-    const redirectTo=window.location.origin+window.location.pathname+"#account";
-    const {error}=await accountClient().auth.signInWithOAuth({
-      provider:"facebook",
-      options:{redirectTo,scopes:"email,public_profile"}
-    });
-    if(error) throw error;
-  }catch(error){
-    const message=String(error?.message||"");
-    if(/provider.*not enabled|unsupported provider|facebook.*disabled/i.test(message)){
-      accountMessage("تسجيل فيسبوك لم يُفعّل بعد في إعدادات المنصة. يمكنك استخدام البريد وكلمة المرور مؤقتًا.");
-    }else{
-      accountMessage("تعذر بدء تسجيل الدخول بفيسبوك: "+(message||"حاول مرة أخرى."));
-    }
-    button.disabled=false;
-  }
-});
-document.getElementById("accountResetForm")?.addEventListener("submit",async function(event){
-  event.preventDefault(); const button=this.querySelector('button[type="submit"]');
-  try{button.disabled=true;const email=document.getElementById("accountResetEmail").value.trim();
-    localStorage.setItem("scenarioRecoveryTarget","account");
-    const {error}=await accountClient().auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split("#")[0]});
-    if(error) throw error; accountMessage("إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط استعادة كلمة المرور.");
-  }catch(error){accountMessage("تعذر إرسال رابط الاستعادة: "+(error.message||"حاول مرة أخرى."));}
-  finally{button.disabled=false;}
 });
 document.getElementById("accountEditPhoto")?.addEventListener("change",function(){
   const file=this.files?.[0]||null,wrap=document.getElementById("accountPhotoPreviewWrap"),img=document.getElementById("accountPhotoPreview");
