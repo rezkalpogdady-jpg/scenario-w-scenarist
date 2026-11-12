@@ -685,8 +685,19 @@ if(id==='home') nextUrl.searchParams.delete('section');
 else nextUrl.searchParams.set('section',id);
 const nextAddress=nextUrl.pathname+nextUrl.search+nextUrl.hash;
 const currentAddress=window.location.pathname+window.location.search+window.location.hash;
-if(nextAddress!==currentAddress) window.history.pushState({section:id},'',nextAddress);
-}catch(error){console.warn('تعذر تحديث رابط القسم:',error);}
+const currentState=window.history.state&&typeof window.history.state==='object'?window.history.state:{};
+const activeBefore=document.querySelector('main .page.active');
+const previousSection=activeBefore?.id||new URLSearchParams(window.location.search).get('section')||'home';
+/* ثبّت القسم الحالي في خانة السجل قبل إضافة القسم التالي */
+if(currentState.scenarioPlatform!==true||currentState.section!==previousSection){
+window.history.replaceState({...currentState,scenarioPlatform:true,section:previousSection},'',currentAddress);
+}
+if(nextAddress!==currentAddress){
+window.history.pushState({scenarioPlatform:true,section:id},'',nextAddress);
+}else if(currentState.scenarioPlatform!==true||currentState.section!==id){
+window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'',currentAddress);
+}
+}catch(error){console.warn('تعذر تحديث سجل التنقل:',error);}
 }
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
@@ -719,11 +730,21 @@ if(requestedPage && requestedPage.classList.contains("page")){
 showPage(requestedSection,{updateUrl:false});
 }
 },{once:true});
-/* مزامنة زر الرجوع/التقدم مع القسم المفتوح دون إنشاء سجل تاريخي جديد */
-window.addEventListener("popstate",()=>{
-const requestedSection=new URLSearchParams(window.location.search).get("section")||"home";
+/* تهيئة حالة سجل المتصفح للقسم المفتوح دون إضافة خطوة زائفة */
+try{
+const initialSection=new URLSearchParams(window.location.search).get("section")||"home";
+const initialPage=document.getElementById(initialSection);
+const safeInitialSection=initialPage&&initialPage.classList.contains("page")?initialSection:"home";
+const initialState=window.history.state&&typeof window.history.state==="object"?window.history.state:{};
+window.history.replaceState({...initialState,scenarioPlatform:true,section:safeInitialSection},"",window.location.href);
+if("scrollRestoration" in window.history)window.history.scrollRestoration="manual";
+}catch(error){console.warn("تعذر تهيئة سجل التنقل:",error);}
+window.addEventListener("popstate",(event)=>{
+const stateSection=event.state&&event.state.scenarioPlatform===true?event.state.section:null;
+const urlSection=new URLSearchParams(window.location.search).get("section");
+const requestedSection=stateSection||urlSection||"home";
 const requestedPage=document.getElementById(requestedSection);
-showPage(requestedPage && requestedPage.classList.contains("page")?requestedSection:"home",{updateUrl:false});
+showPage(requestedPage&&requestedPage.classList.contains("page")?requestedSection:"home",{updateUrl:false});
 });
 </script>
 
