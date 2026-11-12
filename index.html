@@ -5355,8 +5355,14 @@ async function filmStudyDeleteItem(id){
   const item=filmStudyAllItems().find(entry=>String(entry.id)===String(id));if(!item)return;
   if(!confirm("هل تريد حذف هذه البطاقة أو إلغاء تعديلها؟"))return;
   if(item._recordId){
+    const savedRecord=adminRecords.find(record=>String(record.id)===String(item._recordId));
     const {error}=await adminSupabase.from("site_content").delete().eq("id",item._recordId);
     if(error){alert("تعذر الحذف: "+error.message);return;}
+    const posterPath=adminStoragePathFromPublicUrl(savedRecord?.image_url);
+    if(posterPath){
+      const {error:storageError}=await adminSupabase.storage.from("site-media").remove([posterPath]);
+      if(storageError)console.warn("تم حذف سجل الدراسة وتعذر تنظيف ملف الأفيش",storageError.message);
+    }
   }
   await adminLoadRecords();await loadPublicContent();renderFilmStudyLibrary();
 }
