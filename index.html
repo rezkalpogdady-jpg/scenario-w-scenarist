@@ -3271,7 +3271,7 @@ function accountShowUser(user,profile){
   const photoField=document.getElementById("accountEditPhoto");if(photoField)photoField.value="";
   const writerPanel=document.getElementById("writerIdeasPanel");if(writerPanel)writerPanel.style.display=accountType==="writer"?"block":"none";
   const profileForm=document.getElementById("accountProfileForm");if(profileForm)profileForm.style.display="none";
-  const profileStatus=document.getElementById("accountProfileStatus");if(profileStatus)profileStatus.style.display="none";
+  const profileStatusVisibility=document.getElementById("accountProfileStatus");if(profileStatusVisibility)profileStatusVisibility.style.display="none";
   const profileToggle=document.getElementById("toggleProfessionalProfile");if(profileToggle)profileToggle.textContent=profile?.account_type?"إدارة ملف الموهبة أو المشروع":"إنشاء ملف موهبة أو مشروع (اختياري)";
   const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=accountType==="director"?"block":"none";
   const scriptsPanel=document.getElementById("writerScriptsPanel");if(scriptsPanel)scriptsPanel.style.display=accountType==="writer"?"block":"none";
@@ -6933,9 +6933,12 @@ async function adminReviewWriterIdea(id,status){
 }
 document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
 document.getElementById("accountEditType")?.addEventListener("change",()=>{
-  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=document.getElementById("accountEditType").value==="director"?"block":"none";
-  const isWriter=document.getElementById("accountEditType").value==="writer",panel=document.getElementById("writerIdeasPanel");
+  const selectedType=document.getElementById("accountEditType").value;
+  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=selectedType==="director"?"block":"none";
+  const isWriter=selectedType==="writer",panel=document.getElementById("writerIdeasPanel"),scripts=document.getElementById("writerScriptsPanel");
   if(panel)panel.style.display=isWriter?"block":"none";
+  if(scripts)scripts.style.display=isWriter?"block":"none";
+  if(isWriter&&accountUser)accountLoadWriterIdeas();
 });
 if(accountUser){accountLoadWriterContact();if(document.getElementById("accountEditType")?.value==="writer")accountLoadWriterIdeas();}
 /* ملف أعمال المخرجين — فيديوهات بحد أقصى 10 دقائق مع مراجعة إدارية */
