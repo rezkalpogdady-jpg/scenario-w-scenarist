@@ -4879,7 +4879,7 @@ function sanitizePublicContentRecord(item){
     ? item.extra_data : {};
   const safe={};
   ["name","author","writer","specialty","type","city","director","duration","owner",
-   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label","country","themes","message","writer_lesson","content_review","study_key","study_visibility","originalTitle","genre","synopsis","reviewNote","sourceLabel","rightsLabel","dataSourceUrl","boxDomestic","boxWorldwide","boxBudget","boxSource","audienceRating","audienceVotes","audienceSummary","audienceSource","criticsRating","criticsCount","criticsSummary","criticsSource"].forEach(key=>{
+   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label","country","themes","message","writer_lesson","content_review","study_key","study_visibility","originalTitle","genre","synopsis","reviewNote","sourceLabel","rightsLabel","dataSourceUrl","boxDomestic","boxWorldwide","boxBudget","boxSource","audienceRating","audienceVotes","audienceSummary","audienceSource","criticsRating","criticsCount","criticsSummary","criticsSource","writerLesson"].forEach(key=>{
     const value=source[key];
     if(typeof value==="string" || typeof value==="number") safe[key]=value;
   });
