@@ -3228,7 +3228,7 @@ function accountShowUser(user,profile){
   const metadata=user.user_metadata||{};
   const displayName=profile?.display_name || metadata.display_name || metadata.full_name || metadata.name || "عضو المنصة";
   const accountType=profile?.account_type || metadata.account_type || "writer";
-  document.getElementById("accountProfileSummary").textContent="رقم العضوية: "+(profile?.member_number||"—")+" • حساب عضو";
+  document.getElementById("accountProfileSummary").textContent="رقم العضوية: "+(user.app_metadata?.member_number||"—")+" • حساب عضو";
   document.getElementById("accountEditName").value=displayName;
   document.getElementById("accountEditType").value=accountType;
   document.getElementById("accountEditCity").value=profile?.city||"";
@@ -3332,7 +3332,7 @@ document.getElementById("writerScriptForm")?.addEventListener("submit",async fun
 async function accountLoadProfile(user){
   try{
     const client=accountClient();
-    const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status,member_number,gender,birth_date").eq("user_id",user.id).maybeSingle();
+    const {data,error}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status").eq("user_id",user.id).maybeSingle();
     if(error) throw error;
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
