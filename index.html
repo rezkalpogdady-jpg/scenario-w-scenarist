@@ -6231,11 +6231,14 @@ async function loadApprovedMemberProfiles(){
   (ideasResult.data||[]).forEach(idea=>{if(!ideasByUser.has(idea.user_id))ideasByUser.set(idea.user_id,[]);ideasByUser.get(idea.user_id).push(idea);});
   const contactsByUser=new Map((contactsResult.data||[]).map(contact=>[contact.user_id,contact.phone]));
   const scriptsByUser=new Map();
-  for(const script of (scriptsResult.data||[])){
+  const signedScripts=await Promise.all((scriptsResult.data||[]).map(async script=>{
     const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrl(script.published_storage_path,1800);
+    return {script,signedUrl:signedError?null:signed?.signedUrl||null};
+  }));
+  signedScripts.forEach(({script,signedUrl})=>{
     if(!scriptsByUser.has(script.user_id))scriptsByUser.set(script.user_id,[]);
-    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl:signedError?null:signed?.signedUrl||null});
-  }
+    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl});
+  });
   if(scriptsResult.error)console.warn("تعذر تحميل سيناريوهات الكُتّاب المعتمدة",scriptsResult.error.message);
   creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";writer.scripts=scriptsByUser.get(writer.userId)||[];}});
 
@@ -6298,9 +6301,12 @@ async function loadPublicContent(){
     }
 
     distributePublicContent(data || []);
-    await loadPublishedCrimeStories();
+    /* تحميل الجرائم وملفات المواهب بالتوازي بدل انتظار كل طلب للذي يليه */
+    await Promise.all([
+      loadPublishedCrimeStories(),
+      loadApprovedMemberProfiles()
+    ]);
     renderStories();
-    await loadApprovedMemberProfiles();
     await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
