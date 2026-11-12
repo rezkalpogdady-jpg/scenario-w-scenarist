@@ -148,7 +148,10 @@ Deno.serve(async (req: Request) => {
   ].filter((value): value is string => Boolean(value));
   if (!allowedKeys.includes(suppliedKey)) return reply(401,{error:"طلب غير مصرح به."});
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > 5000000) return reply(413,{error:"حجم الطلب أكبر من المسموح."});
+    const body = JSON.parse(rawBody);
+    if (!body || typeof body !== "object" || Array.isArray(body)) return reply(400,{error:"بيانات الطلب غير صحيحة."});
     if (body.action !== "signup" && body.action !== "login") return reply(400,{error:"طلب غير معروف."});
     const action = body.action as "signup" | "login";
     if (!await consumeRateLimit(req,action,body)) return reply(429,{error:"وصلت للحد المسموح من المحاولات. انتظر قليلًا ثم حاول مرة أخرى."});
