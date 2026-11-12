@@ -1781,7 +1781,7 @@ function renderStories(){
 }
 function crimeStoryCommentTarget(item){
   const raw=String(item?.id||"");
-  const crimeMatch=raw.match(/^crime-db-(\\d+)$/);
+  const crimeMatch=raw.match(/^crime-db-(\d+)$/);
   if(crimeMatch){
     const numericId=Number(crimeMatch[1]);
     return Number.isSafeInteger(numericId)&&numericId>0?{kind:"crime",id:numericId}:null;
