@@ -22,6 +22,23 @@ alter table public.member_login_directory enable row level security;
 revoke all on public.member_login_directory from anon, authenticated;
 grant all on public.member_login_directory to service_role;
 
+-- Give existing member accounts a member number so their profiles are preserved.
+with numbered as (
+  select user_id, row_number() over (order by created_at, user_id) as rn
+  from public.member_profiles
+  where member_number is null
+)
+update public.member_profiles as profiles
+set member_number = (10000000 + numbered.rn)::text
+from numbered
+where profiles.user_id = numbered.user_id;
+
+insert into public.member_login_directory (member_number, user_id)
+select member_number, user_id
+from public.member_profiles
+where member_number is not null
+on conflict do nothing;
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('member-avatars','member-avatars',true,3145728,array['image/jpeg','image/png','image/webp'])
 on conflict (id) do update set public=true, file_size_limit=3145728,
@@ -31,7 +48,10 @@ drop policy if exists "Read published crime stories or admin" on public.crime_st
 create policy "Members read published crime stories"
 on public.crime_stories for select
 to authenticated
-using (is_published = true or coalesce((select auth.jwt()->'app_metadata'->>'role')='admin',false));
+using (
+  (is_published = true and status = 'approved')
+  or coalesce((select auth.jwt()->'app_metadata'->>'role')='admin',false)
+);
 
 drop policy if exists "Public read published site content" on public.site_content;
 create policy "Public read non-restricted published site content"
