@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.96">
+<body data-platform-version="6.8.97">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -5258,9 +5258,12 @@ function filmSourceLinkMarkup(value,id){
 
 function getAllSeriesPlaylists(){
  const dynamic=(adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords)
-  .filter(item=>item.content_type==="films"&&item.category==="مسلسل"&&Array.isArray(item.extra_data?.episodes)&&item.extra_data.episodes.length)
+  .filter(item=>item.content_type==="films"&&item.category==="مسلسل"&&(
+    (Array.isArray(item.extra_data?.episodes)&&item.extra_data.episodes.length)||
+    (Array.isArray(item.extra_data?.external_episodes)&&item.extra_data.external_episodes.length)
+  ))
   .filter(item=>adminSession||item.published)
-  .map(item=>({id:String(item.id),recordId:item.id,title:item.title,category:"مسلسل",description:item.description||"اختر رقم الحلقة التي تريد مشاهدتها.",episodes:item.extra_data.episodes,posterRecord:item}));
+  .map(item=>({id:String(item.id),recordId:item.id,title:item.title,category:"مسلسل",description:item.description||"اختر الحلقة التي تريد مشاهدتها.",episodes:item.extra_data.episodes||[],externalEpisodes:item.extra_data.external_episodes||[],extraData:item.extra_data||{},posterRecord:item}));
  return [...FEATURED_FILM_PLAYLISTS,...dynamic];
 }
 function adminOpenSeriesForm(){
@@ -5357,9 +5360,11 @@ function renderFilms(){
     const posterMarkup=posterRecord?.image_url
       ? `<img src="${safeHttpUrl(posterRecord.image_url)}" alt="أفيش ${escapeHTML(item.title)}" style="display:block;width:100%;height:170px;object-fit:cover">`
       : `<div style="height:170px;display:grid;place-items:center;text-align:center;padding:18px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a"><div><div style="font-size:36px;margin-bottom:8px">▧</div><strong>مكان الأفيش</strong><div style="font-size:12px;color:#d8c7a5">${escapeHTML(item.title)}</div></div></div>`;
-    const posterAdminAction=adminSession&&!item.recordId
-      ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
-      : "";
+    const posterAdminAction=adminSession&&item.recordId
+      ? `<button class="btn" type="button" onclick="adminEditFilm('${item.recordId}')">${posterRecord?.image_url?"تعديل الأفيش":"إضافة الأفيش"}</button>`
+      : (adminSession&&!item.recordId
+        ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
+        : "");
     const clickablePosterMarkup=posterRecord?.content_url
       ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
       : posterMarkup;
@@ -5368,18 +5373,24 @@ function renderFilms(){
         ${clickablePosterMarkup}
         <div class="feature-content">
           <h3>${escapeHTML(item.title)}</h3>
-          <p>مسلسل • ${item.episodes.length} حلقة متاحة للاختيار</p>
+          <p>مسلسل • ${item.externalEpisodes?.length||item.episodes.length} حلقة</p>
           <p>${escapeHTML(item.description)}</p>
-          <button class="btn primary" type="button" onclick="openSeriesPlaylist('${item.id}')">شاهد الحلقات داخل المنصة</button>
+          ${item.extraData?.year||item.extraData?.country?'<p>'+escapeHTML([item.extraData.country,item.extraData.year].filter(Boolean).join(' • '))+'</p>':""}
+          ${item.extraData?.director?'<p><strong>الإخراج:</strong> '+escapeHTML(item.extraData.director)+'</p>':""}
+          ${item.extraData?.writer?'<p><strong>التأليف:</strong> '+escapeHTML(item.extraData.writer)+'</p>':""}
+          ${item.extraData?.cast?'<p><strong>بطولة:</strong> '+escapeHTML(item.extraData.cast.join('، '))+'</p>':""}
+          ${Array.isArray(item.externalEpisodes)&&item.externalEpisodes.length
+            ? '<div class="series-external-episodes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:12px">'+item.externalEpisodes.map((url,index)=>{const safe=safeHttpUrl(url);return safe?'<a class="btn" href="'+escapeHTML(safe)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(item.recordId||item.id)+'\')">الحلقة '+(index+1)+'</a>':"";}).join("")+'</div>'
+            : '<button class="btn primary" type="button" onclick="openSeriesPlaylist(\''+item.id+'\')">اختيار الحلقة</button>'}
           ${posterAdminAction}
-          ${adminSession&&item.recordId?'<button class="btn" type="button" onclick="adminEditSeriesRecord(\''+item.recordId+'\')">تعديل بيانات الحلقات</button>':""}
+          ${adminSession&&item.recordId&&!item.externalEpisodes?.length?'<button class="btn" type="button" onclick="adminEditSeriesRecord(\''+item.recordId+'\')">تعديل بيانات الحلقات</button>':""}
         </div>
       </article>
     `;
   }).join("");
 
   const publishedCards=items.filter(item=>
-    !FEATURED_FILM_PLAYLISTS.some(playlist=>String(item.title||"").trim()===playlist.title) && !Array.isArray(item.extra_data?.episodes)
+    !FEATURED_FILM_PLAYLISTS.some(playlist=>String(item.title||"").trim()===playlist.title) && !Array.isArray(item.extra_data?.episodes) && !Array.isArray(item.extra_data?.external_episodes)
   ).map(item=>`
     <article class="feature">
       ${item.image_url
