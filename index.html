@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.93: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -1779,6 +1779,27 @@ function renderStories(){
       '</button></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا.</p></div>';
 }
+function crimeStoryCommentTarget(item){
+  const raw=String(item?.id||"");
+  const crimeMatch=raw.match(/^crime-db-(\\d+)$/);
+  if(crimeMatch){
+    const numericId=Number(crimeMatch[1]);
+    return Number.isSafeInteger(numericId)&&numericId>0?{kind:"crime",id:numericId}:null;
+  }
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw)
+    ?{kind:"content",id:raw}:null;
+}
+function crimeStoryCommentsMarkup(item){
+  const target=crimeStoryCommentTarget(item);
+  if(!target)return "";
+  return '<section class="panel" data-crime-comments data-target-kind="'+target.kind+'" data-target-id="'+escapeHTML(String(target.id))+'" style="margin-top:22px">'+
+    '<h3 style="color:var(--gold);margin-top:0">آراء القراء</h3>'+
+    '<p class="muted">شاركنا رأيك في القضية أو الحكاية. التعليقات تظهر للجمهور بعد مراجعة الإدارة.</p>'+
+    '<button class="btn" type="button" data-crime-comments-load>عرض التعليقات والمشاركة</button>'+
+    '<div data-crime-comments-list hidden style="margin-top:14px"></div>'+
+    '<div data-crime-comment-form-wrap></div>'+
+  '</section>';
+}
 function openCrimeStory(key){
   const item=crimeStoryLookup.get(String(key));
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
@@ -1790,10 +1811,115 @@ function openCrimeStory(key){
   const idValue=String(item.id);
   const canManage=!!adminSession&&!!adminSupabase;
   const storyText=item.content||item.story||item.fullText||item.extra?.content||item.extra?.story_text||item.extra?.full_text||item.description||item.summary||"لا توجد تفاصيل إضافية لهذه القضية.";
+  const comments=crimeStoryCommentsMarkup(item);
   const actions=canManage?'<div class="story-modal-admin-actions"><button class="btn primary" type="button" data-crime-modal-edit="'+escapeHTML(idValue)+'">تعديل القصة</button><button class="btn" type="button" data-crime-modal-delete="'+escapeHTML(idValue)+'">حذف القصة</button></div>':"";
-  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div class="crime-story-full-text" style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(storyText)+'</div>'+note+source+actions;
+  body.innerHTML=image+'<p style="color:var(--gold);font-size:13px">'+escapeHTML(item.category||"قضية")+'</p><div class="crime-story-full-text" style="white-space:pre-wrap;line-height:1.95;overflow-wrap:anywhere">'+escapeHTML(storyText)+'</div>'+note+source+comments+actions;
   modal.style.display="block";document.body.style.overflow="hidden";
 }
+async function loadCrimeStoryComments(button){
+  const section=button?.closest("[data-crime-comments]");
+  if(!section||typeof accountClient!=="function")return;
+  const list=section.querySelector("[data-crime-comments-list]");
+  const wrap=section.querySelector("[data-crime-comment-form-wrap]");
+  const isMore=button.hasAttribute("data-crime-comments-more");
+  const offset=isMore?Number(section.dataset.offset||"0"):0;
+  const kind=section.dataset.targetKind,id=section.dataset.targetId;
+  if(!list||!wrap||!["crime","content"].includes(kind)||!id)return;
+  button.disabled=true;button.textContent="جارٍ تحميل التعليقات...";
+  try{
+    const client=accountClient();
+    let query=client.from("content_comments")
+      .select("id,display_name,body,created_at")
+      .eq("status","approved")
+      .order("created_at",{ascending:false})
+      .range(offset,offset+9);
+    query=kind==="crime"?query.eq("crime_story_id",Number(id)):query.eq("content_id",id);
+    const {data,error}=await query;
+    if(error)throw error;
+    list.hidden=false;
+    list.querySelector("[data-crime-comments-more]")?.remove();
+    if(!isMore)list.innerHTML="";
+    if(data?.length){
+      list.insertAdjacentHTML("beforeend",data.map(row=>
+        '<article class="admin-item" style="margin-bottom:9px">'+
+        '<strong>'+escapeHTML(row.display_name||"قارئ")+'</strong>'+
+        '<p style="white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0">'+escapeHTML(row.body||"")+'</p>'+
+        '<small>'+escapeHTML(new Date(row.created_at).toLocaleString("ar-EG"))+'</small>'+
+        '</article>'
+      ).join(""));
+    }else if(!offset){
+      list.innerHTML='<p class="muted">لا توجد تعليقات منشورة حتى الآن. كن أول من يشارك برأيه.</p>';
+    }
+    section.dataset.offset=String(offset+(data?.length||0));
+    if((data||[]).length===10){
+      list.insertAdjacentHTML("beforeend",'<button class="btn" type="button" data-crime-comments-more>عرض المزيد من التعليقات</button>');
+    }
+    if(!isMore)button.hidden=true;
+    if(!wrap.dataset.ready){
+      wrap.dataset.ready="1";
+      const {data:authData,error:authError}=await client.auth.getUser();
+      if(authError)throw authError;
+      if(authData?.user){
+        wrap.innerHTML='<form data-crime-comment-form style="display:grid;gap:9px;margin-top:16px">'+
+          '<label for="crimeStoryCommentInput">اكتب رأيك في الحكاية</label>'+
+          '<textarea id="crimeStoryCommentInput" name="body" rows="3" maxlength="2000" required placeholder="اكتب تعليقًا محترمًا ومفيدًا..."></textarea>'+
+          '<button class="btn primary" type="submit">إرسال التعليق للمراجعة</button>'+
+          '<p class="muted" data-crime-comment-status aria-live="polite">التعليق لا يظهر إلا بعد موافقة الإدارة. الحد الأقصى 3 تعليقات في الدقيقة.</p>'+
+          '</form>';
+      }else{
+        wrap.innerHTML='<div class="panel" style="margin-top:16px"><p>قراءة التعليقات متاحة للجميع، أما كتابة تعليق فتحتاج إلى تسجيل الدخول لحماية القسم من الرسائل المزعجة.</p><button class="btn primary" type="button" data-crime-comments-login>تسجيل الدخول للمشاركة</button></div>';
+      }
+    }
+  }catch(error){
+    list.hidden=false;
+    list.innerHTML='<p role="alert">تعذر تحميل التعليقات الآن. حاول مرة أخرى لاحقًا.</p>';
+    console.warn("crime story comments",error);
+  }finally{
+    button.disabled=false;
+    if(!button.hidden)button.textContent=isMore?"عرض المزيد من التعليقات":"عرض التعليقات والمشاركة";
+  }
+}
+document.getElementById("crimeStoryModalBody")?.addEventListener("submit",async event=>{
+  const form=event.target.closest("[data-crime-comment-form]");
+  if(!form)return;
+  event.preventDefault();
+  const section=form.closest("[data-crime-comments]");
+  const status=form.querySelector("[data-crime-comment-status]");
+  const button=form.querySelector('button[type="submit"]');
+  const body=String(new FormData(form).get("body")||"").trim();
+  if(!section||!body||body.length>2000){if(status)status.textContent="اكتب تعليقًا من 1 إلى 2000 حرف.";return;}
+  try{
+    button.disabled=true;if(status)status.textContent="جارٍ إرسال التعليق...";
+    const client=accountClient();
+    const {data:authData,error:authError}=await client.auth.getUser();
+    if(authError)throw authError;
+    const user=authData?.user;
+    if(!user){
+      if(status)status.textContent="انتهت جلسة الدخول. سجّل الدخول مرة أخرى.";
+      return;
+    }
+    const {data:profile}=await client.from("member_profiles").select("display_name").eq("user_id",user.id).maybeSingle();
+    const metadata=user.user_metadata||{};
+    const displayName=String(profile?.display_name||metadata.display_name||metadata.full_name||metadata.name||"عضو المنصة").trim().slice(0,120)||"عضو المنصة";
+    const kind=section.dataset.targetKind,id=section.dataset.targetId;
+    const payload={
+      content_id:kind==="content"?id:null,
+      crime_story_id:kind==="crime"?Number(id):null,
+      user_id:user.id,
+      display_name:displayName,
+      body,
+      status:"pending"
+    };
+    const {error}=await client.from("content_comments").insert(payload);
+    if(error)throw error;
+    form.reset();
+    if(status)status.textContent="وصل تعليقك بنجاح، وسيظهر للجمهور بعد مراجعة الإدارة. شكرًا لمشاركتك.";
+  }catch(error){
+    if(status)status.textContent="تعذر إرسال التعليق: "+(error.message||"حاول مرة أخرى.");
+  }finally{
+    button.disabled=false;
+  }
+});
 function closeCrimeStory(){const modal=document.getElementById("crimeStoryModal");if(modal)modal.style.display="none";document.body.style.overflow="";}
 /* فتح الحكاية من داخل قائمة الحكايات فقط دون اعتراض نقرات بقية الموقع. */
 document.getElementById("storiesItems")?.addEventListener("click",event=>{
@@ -1803,6 +1929,10 @@ document.getElementById("storiesItems")?.addEventListener("click",event=>{
   if(trigger)openCrimeStory(trigger.getAttribute("data-crime-story-key"));
 });
 document.getElementById("crimeStoryModalBody")?.addEventListener("click",event=>{
+  const load=event.target.closest("[data-crime-comments-load],[data-crime-comments-more]");
+  if(load){loadCrimeStoryComments(load);return;}
+  const login=event.target.closest("[data-crime-comments-login]");
+  if(login){closeCrimeStory();if(typeof showPage==="function")showPage("account");return;}
   const edit=event.target.closest("[data-crime-modal-edit]");
   if(edit){
     const id=edit.dataset.crimeModalEdit;
@@ -2474,7 +2604,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 <section id="account" class="page">
   <div class="intro">
     <h2>حساب المبدع</h2>
-    <p><strong>الدخول والتصفح والقراءة والاستماع ومشاهدة المحتوى متاحة للجميع دون تسجيل أو بريد إلكتروني.</strong> إنشاء الحساب اختياري، ويُستخدم فقط إذا أردت إنشاء ملف مهني أو إرسال أعمالك أو إدارة مشاركاتك.</p>
+    <p><strong>الدخول والتصفح والقراءة والاستماع ومشاهدة المحتوى متاحة للجميع دون تسجيل أو بريد إلكتروني.</strong> إنشاء الحساب اختياري، ويُستخدم إذا أردت إنشاء ملف مهني أو إرسال أعمالك أو المشاركة بالتعليقات على الحكايات.</p>
   </div>
   <div class="panel" id="accountAuthPanel">
     <h3 style="color:var(--gold)">حساب اختياري للمبدعين المشاركين</h3>
@@ -6436,7 +6566,7 @@ loadApprovedIdeas();
     const configs=[
       ['community_topics','adminCommunityTopics','موضوع','title','body','id,status,created_at,display_name,title,category,body'],
       ['topic_replies','adminTopicReplies','رد','display_name','body','id,status,created_at,display_name,body,topic_id'],
-      ['content_comments','adminContentComments','تعليق','display_name','body','id,status,created_at,display_name,body,content_id']
+      ['content_comments','adminContentComments','تعليق','display_name','body','id,status,created_at,display_name,body,content_id,crime_story_id']
     ];
     for(const [table,boxId,label,headField,bodyField,selectFields] of configs){
       const box=$(boxId);if(!box)continue;
@@ -6449,7 +6579,7 @@ loadApprovedIdeas();
           const reviewActions=row.status==='pending'
             ? `<button class="btn primary" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','approved')">موافقة ونشر</button><button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','rejected')">رفض</button>`
             : '';
-          return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
+          return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${row.crime_story_id?'تعليق على حكاية #'+row.crime_story_id:row.content_id?'تعليق على محتوى #'+String(row.content_id).slice(0,8):'تعليق'} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
         }).join(''):`<div class="panel">لا توجد ${label}ات حتى الآن.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
     }
