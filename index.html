@@ -1377,10 +1377,23 @@ renderLibrary();
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script>
-/* بيانات الأقسام */
-let creativeProfiles = {
+/* تحميل المكتبات الخارجية عند الحاجة فقط */
+const scenarioExternalScriptLoads=window.scenarioExternalScriptLoads||(window.scenarioExternalScriptLoads={});
+function loadScenarioExternalScript(src,isReady){
+  if(isReady())return Promise.resolve();
+  if(scenarioExternalScriptLoads[src])return scenarioExternalScriptLoads[src];
+  scenarioExternalScriptLoads[src]=new Promise((resolve,reject)=>{
+    const script=document.createElement("script");script.src=src;script.async=true;
+    script.onload=()=>isReady()?resolve():reject(new Error("لم تكتمل تهيئة المكتبة المطلوبة."));
+    script.onerror=()=>{delete scenarioExternalScriptLoads[src];reject(new Error("تعذر تحميل المكتبة المطلوبة."));};
+    document.head.appendChild(script);
+  });
+  return scenarioExternalScriptLoads[src];
+}
+function ensureTusClient(){return loadScenarioExternalScript("https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js",()=>!!window.tus?.Upload);}
+
+/* بيانات الأقسام */let creativeProfiles = {
   writers: [],
   directors: [],
   talents: [],
@@ -1657,7 +1670,7 @@ document.getElementById("talentRegisterForm")?.addEventListener("submit",async f
       const mime=allowedMime.includes(videoFile.type)?videoFile.type:(mimeByExt[ext]||"");
       if(!mime)throw new Error("صيغة الفيديو غير مدعومة. استخدم MP4 أو WebM أو MOV.");
       if(videoFile.size>50*1024*1024)throw new Error("حجم الفيديو أكبر من 50 ميجابايت. قلّل حجم الملف ثم أعد المحاولة.");
-      if(!window.tus?.Upload)throw new Error("أداة رفع الفيديو لم تُحمّل. حدّث الصفحة وحاول مرة أخرى.");
+      await ensureTusClient();
       if(videoStatus)videoStatus.textContent="جارٍ فحص مدة الفيديو...";
       await validateTalentVideoDuration(videoFile);
       const safeExt=ext==="webm"?"webm":ext==="mov"?"mov":"mp4";
@@ -4704,7 +4717,6 @@ adminInitialize();
 </section>
 
 <!-- مكتبة دعم بث HLS -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <script>
 /* مكتبة قراءة السيناريوهات الكاملة — ملفات PDF خاصة للأعضاء */
@@ -5536,24 +5548,26 @@ function directVideoMarkup(value,label="مشاهدة الفيديو",viewType=""
   return `<a class="btn" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView('${escapeHTML(viewType)}','${escapeHTML(viewId)}')">${escapeHTML(label)}</a>`;
 }
 
-function initializeInlineHlsVideos(root=document){
-  root.querySelectorAll("video[data-hls-url]").forEach(player=>{
-    if(player.dataset.hlsReady==="1") return;
+async function initializeInlineHlsVideos(root=document){
+  const players=Array.from(root.querySelectorAll("video[data-hls-url]")).filter(player=>player.dataset.hlsReady!=="1");
+  if(!players.length)return;
+  const needsLibrary=players.some(player=>!player.canPlayType("application/vnd.apple.mpegurl"));
+  if(needsLibrary){
+    try{await loadScenarioExternalScript("https://cdn.jsdelivr.net/npm/hls.js@latest",()=>!!window.Hls);}
+    catch(error){
+      players.forEach(player=>{player.dataset.hlsReady="0";const note=document.createElement("p");note.className="hls-load-error";note.style.color="var(--muted)";note.textContent="تعذر تحميل مشغل البث. تحقق من الاتصال ثم أعد المحاولة.";player.insertAdjacentElement("afterend",note);});
+      return;
+    }
+  }
+  players.forEach(player=>{
     player.dataset.hlsReady="1";
     const source=player.dataset.hlsUrl;
-    if(window.Hls && Hls.isSupported()){
-      const instance=new Hls({enableWorker:true});
-      instance.loadSource(source);instance.attachMedia(player);
-      instance.on(Hls.Events.ERROR,(_event,data)=>{
-        if(data.fatal){player.dataset.hlsReady="0";instance.destroy();player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>تعذر تشغيل البث. تحقق من الرابط والسماح بالتضمين.</p>");}
-      });
+    if(player.canPlayType("application/vnd.apple.mpegurl")){player.src=source;}
+    else if(window.Hls&&Hls.isSupported()){
+      const instance=new Hls({enableWorker:true});instance.loadSource(source);instance.attachMedia(player);
+      instance.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal){player.dataset.hlsReady="0";instance.destroy();player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>تعذر تشغيل البث. تحقق من الرابط والسماح بالتضمين.</p>");}});
       player._hlsInstance=instance;
-    }else if(player.canPlayType("application/vnd.apple.mpegurl")){
-      player.src=source;
-    }else{
-      player.dataset.hlsReady="0";
-      player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>هذا المتصفح لا يدعم صيغة البث المطلوبة.</p>");
-    }
+    }else{player.dataset.hlsReady="0";player.insertAdjacentHTML("afterend","<p style='color:var(--muted)'>هذا المتصفح لا يدعم صيغة البث المطلوبة.</p>");}
   });
 }
 
@@ -7110,7 +7124,7 @@ document.getElementById('archiveAdminForm')?.addEventListener('submit',async fun
    if(!mime|| (file.type&&file.type!==mime))throw new Error('صيغة الفيديو غير مدعومة. استخدم MP4 أو WebM.');
    if(file.size>50*1024*1024)throw new Error('حجم الفيديو أكبر من 50 ميجابايت.');
    if(!commonTitle)throw new Error('اكتب عنوان الإعلان أو المشهد.');
-   if(!window.tus?.Upload)throw new Error('أداة رفع الفيديو غير متاحة الآن. حدّث الصفحة وحاول مرة أخرى.');
+   await ensureTusClient();
    let poster=null;
    if(posterFile?.size){
     if(!['image/jpeg','image/png','image/webp'].includes(posterFile.type))throw new Error('غلاف الفيديو يجب أن يكون JPG أو PNG أو WEBP.');
