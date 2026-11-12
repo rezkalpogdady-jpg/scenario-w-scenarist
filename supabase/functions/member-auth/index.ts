@@ -55,7 +55,8 @@ async function createMember(body: Record<string, unknown>) {
   const email = internalEmail(memberNumber);
   const {data:created,error:createError} = await admin.auth.admin.createUser({
     email, password, email_confirm:true,
-    user_metadata:{display_name:name,account_type:type}
+    user_metadata:{display_name:name,account_type:type},
+    app_metadata:{member_number:memberNumber}
   });
   if (createError || !created.user) return reply(400,{error:"تعذر إنشاء العضوية. حاول مرة أخرى."});
   const userId = created.user.id;
@@ -79,9 +80,13 @@ async function createMember(body: Record<string, unknown>) {
       if (uploadError) throw uploadError;
       imageUrl = admin.storage.from("member-avatars").getPublicUrl(path).data.publicUrl;
     }
+    const {error:privateDetailsError} = await admin.from("member_private_details").insert({
+      user_id:userId,gender,birth_date:birthDate
+    });
+    if (privateDetailsError) throw privateDetailsError;
     const {error:profileError} = await admin.from("member_profiles").insert({
-      user_id:userId,display_name:name,account_type:type,gender,birth_date:birthDate,
-      member_number:memberNumber,image_url:imageUrl,profile_status:"pending"
+      user_id:userId,display_name:name,account_type:type,
+      image_url:imageUrl,profile_status:"pending"
     });
     if (profileError) throw profileError;
     const {data:sessionData,error:loginError} = await publicAuth.auth.signInWithPassword({email,password});
