@@ -6310,7 +6310,7 @@ async function loadPublicContent(){
   }
 
   try{
-    publicContentClient=window.supabase.createClient(
+    publicContentClient=accountUser?accountClient():window.supabase.createClient(
       ADMIN_SUPABASE_URL,
       ADMIN_SUPABASE_KEY
     );
