@@ -704,6 +704,7 @@ if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
 if(id==='films' && typeof renderFilms==='function') renderFilms();
+if(id==='radio' && typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories') ensurePublishedCrimeStories();
@@ -5618,7 +5619,7 @@ function renderTvChannels(items){
         </div>
       </article>`;
   }).join("");
-  initializeInlineHlsVideos(box);
+  /* تهيئة البث مؤجلة حتى دخول قسم الإذاعة والتليفزيون */
 }
 
 /* توزيع سجلات قاعدة البيانات على أقسام الموقع */
