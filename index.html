@@ -443,7 +443,7 @@ Main{padding:17px 11px}
 <button data-page="sponsors">شركات الإنتاج والرعاة</button>
 <button data-page="stories">الجرائم والحكايات</button>
 <button data-page="account">عضوية الموقع</button>
-<button data-page="creatorProfile">ملف الموهبة (اختياري)</button>
+<button data-page="creatorProfile">إنشاء ملف أو موهبة</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="contact">تواصل مع الإدارة</button>
 <button data-page="about">عن المنصة</button>
@@ -2740,8 +2740,8 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
 <section id="creatorProfile" class="page">
   <div class="intro">
-    <h2>ملف الموهبة (اختياري)</h2>
-    <p>هذا ملف مهني مستقل عن عضوية الموقع. أنشئه فقط إذا أردت الظهور ككاتب أو مخرج أو ممثل أو صاحب موهبة، ويمكنك استخدام عضويتك دون إنشاء هذا الملف.</p>
+    <h2>إنشاء ملف أو موهبة</h2>
+    <p>أنت مسجل بالفعل كعضو في الموقع. إذا أردت عرض موهبتك أو التعريف بنفسك ككاتب أو مخرج أو ممثل، اكتب بيانات الملف هنا. لا تحتاج إلى تسجيل عضوية جديدة.</p>
   </div>
   <div class="panel" id="accountProfilePanel" style="display:none">
     <h3 style="color:var(--gold)">ملفي الشخصي</h3>
@@ -2757,7 +2757,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <form id="accountProfileForm">
       <input id="accountEditName" required maxlength="120" placeholder="الاسم الذي سيظهر للجمهور">
       <select id="accountEditType" required>
-        <option value="writer">كاتب</option><option value="director">مخرج</option>
+        <option value="">اختر نوع الملف أو الموهبة</option><option value="writer">كاتب سيناريو</option><option value="director">مخرج</option>
         <option value="actor">ممثل</option><option value="presenter">مقدم برامج</option>
         <option value="voice">مذيع / تعليق صوتي</option><option value="producer">منتج / صاحب مشروع</option>
       </select>
@@ -3242,7 +3242,7 @@ function accountShowUser(user,profile){
   if(!user) return;
   const metadata=user.user_metadata||{};
   const displayName=profile?.display_name || metadata.display_name || metadata.full_name || metadata.name || "عضو المنصة";
-  const accountType=profile?.account_type || metadata.account_type || "writer";
+  const accountType=profile?.account_type || metadata.account_type || "";
   const memberNumber=accountMemberNumber||user.app_metadata?.member_number||"—";
   const memberWelcome=document.getElementById("accountMemberWelcome");
   if(memberWelcome) memberWelcome.textContent="رقم عضويتك: "+memberNumber+" — احتفظ به للدخول لاحقًا.";
@@ -3356,7 +3356,7 @@ async function accountLoadProfile(user){
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
     if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
-    if(typeof accountLoadWriterScripts==="function" && (data?.account_type||user.user_metadata?.account_type||"writer")==="writer") await accountLoadWriterScripts();
+    if(typeof accountLoadWriterScripts==="function" && data?.account_type==="writer") await accountLoadWriterScripts();
     if(typeof accountLoadDirectorWorks==="function") await accountLoadDirectorWorks();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
