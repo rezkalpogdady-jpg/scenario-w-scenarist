@@ -5365,14 +5365,12 @@ function renderFilms(){
       : (adminSession&&!item.recordId
         ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
         : "");
-    const clickablePosterMarkup=posterRecord?.content_url
-      ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
-      : posterMarkup;
+    const clickablePosterMarkup=`<button type="button" onclick="openSeriesPlaylist('${escapeHTML(item.id)}')" aria-label="مشاهدة حلقات ${escapeHTML(item.title)}" style="display:block;width:100%;padding:0;border:0;background:transparent;cursor:pointer">${posterMarkup}</button>`;
     return `
       <article class="feature">
         ${clickablePosterMarkup}
         <div class="feature-content">
-          <h3>${escapeHTML(item.title)}</h3>
+          <h3 style="margin:0 0 8px"><button class="series-title-open" type="button" onclick="openSeriesPlaylist(\'${escapeHTML(item.id)}\')" aria-label="فتح حلقات ${escapeHTML(item.title)}" style="border:0;background:transparent;padding:0;color:var(--gold);font:inherit;font-weight:700;text-align:right;cursor:pointer;text-decoration:underline;text-underline-offset:4px">${escapeHTML(item.title)}</button></h3>
           <p>مسلسل • ${item.externalEpisodes?.length||item.episodes.length} حلقة</p>
           <p>${escapeHTML(item.description)}</p>
           ${item.extraData?.year||item.extraData?.country?'<p>'+escapeHTML([item.extraData.country,item.extraData.year].filter(Boolean).join(' • '))+'</p>':""}
