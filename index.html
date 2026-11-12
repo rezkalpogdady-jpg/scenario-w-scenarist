@@ -4485,7 +4485,18 @@ adminInitialize();
     </select>
   </div>
 
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><input type="hidden" name="record_id" value=""><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea><label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('films')">＋ إضافة فيلم أو مسلسل</button></div><div id="filmsAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة فيلم أو مسلسل</h3><p>أضف بيانات العمل والملصق ورابط المشاهدة المصرح به إن وجد.</p><form id="filmsAdminForm"><input type="hidden" name="record_id" value=""><label>العنوان</label><input name="title" required maxlength="200"><label>التصنيف</label><select name="category"><option value="فيلم">فيلم</option><option value="مسلسل">مسلسل</option><option value="وثائقي">وثائقي</option></select><label>الوصف والتفاصيل</label><textarea name="description" rows="3" maxlength="5000"></textarea>
+<label>بلد الإنتاج</label><select name="country"><option value="">غير محدد</option><option value="الهند">الهند</option><option value="مصر">مصر</option><option value="عربي">عربي</option><option value="أجنبي">أجنبي</option></select>
+<label>سنة الإنتاج</label><input name="year" type="number" min="1900" max="2100" placeholder="مثال: 2023">
+<label>الفكرة أو القضية الإنسانية</label><input name="themes" maxlength="300" placeholder="مثال: الإصرار على التعليم ومواجهة الفقر">
+<label>رسالة العمل</label><textarea name="message" rows="2" maxlength="800" placeholder="ما القيمة التي يقدمها العمل للمشاهد؟"></textarea>
+<label>درس لكتّاب السيناريو</label><textarea name="writer_lesson" rows="2" maxlength="800" placeholder="ماذا نتعلم من بناء القصة والشخصيات؟"></textarea>
+<label>مراجعة المحتوى</label><select name="content_review"><option value="pending">لم تتم المراجعة بعد</option><option value="approved_clean">تمت المراجعة — مناسب وفق معايير المنصة</option><option value="rejected">غير مناسب — لا يُنشر</option></select>
+<label>حالة حقوق المشاهدة</label><select name="rights_status"><option value="unverified">لم يتم التحقق من الإتاحة</option><option value="official_source">مصدر رسمي يسمح بالمشاهدة/التضمين</option><option value="permission_granted">تصريح إتاحة</option><option value="licensed">ترخيص نشر أو عرض</option><option value="public_domain">ملكية عامة موثقة</option></select>
+<p class="muted" style="font-size:12px">لا تنشر العمل قبل مراجعة النسخة كاملة والتأكد من خلوها من العري والمشاهد الجنسية والإسفاف، ومن قانونية رابط المشاهدة.</p>
+<label>صورة الأفيش (اختياري — اتركها فارغة للاحتفاظ بالصورة الحالية عند التعديل)</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><label>ملف الفيديو (اختياري – MP4 أو WebM حتى 50 ميجابايت)</label><input name="video" type="file" accept=".mp4,.webm,video/mp4,video/webm"><p class="muted" style="font-size:12px">يمكنك رفع فيديو MP4 أو WebM حتى 50 ميجابايت، أو استخدام رابط خارجي دون استهلاك مساحة المنصة. روابط YouTube وVimeo تظهر بمشغّلها داخل صفحة الفيلم، وروابط MP4/WebM أو M3U8 المباشرة تعمل بمشغّل المنصة.</p><label>رابط المشاهدة (YouTube أو Vimeo أو رابط مباشر)</label><input name="url" type="url" placeholder="https://youtu.be/... أو https://example.com/video.mp4"><label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label><button id="filmsAdminSubmitButton" class="btn primary" type="submit">حفظ ونشر</button><button id="filmsAdminCancelEdit" class="btn" type="button" style="display:none" onclick="adminResetFilmForm()">إلغاء التعديل</button><button class="btn" type="button" onclick="document.getElementById('filmsAdminPublish').style.display='none'">إغلاق</button><p id="filmsAdminMessage" aria-live="polite"></p></form></div><div id="filmsItems" class="grid"></div>
+  <div class="section-heading" style="margin-top:34px"><h2>الدراسة السينمائية</h2><p>أفلام مميزة ندرس قصصها ورسائلها وبناء شخصياتها، دون توفير روابط مشاهدة غير مصرح بها.</p></div>
+  <div id="filmStudyItems" class="grid"></div>
 </section>
 
 <!-- مكتبة دعم بث HLS -->
@@ -4792,7 +4803,7 @@ function sanitizePublicContentRecord(item){
     ? item.extra_data : {};
   const safe={};
   ["name","author","writer","specialty","type","city","director","duration","owner",
-   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label"].forEach(key=>{
+   "rights_status","source_url","source","year","body","lesson_text","media_kind","section_label","country","themes","message","writer_lesson","content_review"].forEach(key=>{
     const value=source[key];
     if(typeof value==="string" || typeof value==="number") safe[key]=value;
   });
@@ -4916,7 +4927,7 @@ function renderFilms(){
   const items=filmSource.filter(item=>
     item.content_type==="films" &&
     (!category || item.category===category) &&
-    (item.title+" "+(item.description || ""))
+    (item.title+" "+(item.description || "")+" "+String(item.extra_data?.country||"")+" "+String(item.extra_data?.themes||""))
       .toLowerCase().includes(q)
   );
   const playlists=FEATURED_FILM_PLAYLISTS.filter(item=>
@@ -4930,6 +4941,7 @@ function renderFilms(){
         <h3 style="color:var(--gold)">شاشة الأعمال</h3>
         <p>لا توجد أعمال تطابق البحث الحالي.</p>
       </div>`;
+    renderFilmStudyLibrary();
     return;
   }
 
@@ -4970,6 +4982,10 @@ function renderFilms(){
         <h3>${escapeHTML(item.title)}</h3>
         <p>${escapeHTML(item.category || "عمل فني")}</p>
         <p>${escapeHTML(item.description || "")}</p>
+        ${item.extra_data?.country ? `<p>بلد الإنتاج: ${escapeHTML(item.extra_data.country)} ${item.extra_data.year?"• "+escapeHTML(item.extra_data.year):""}</p>` : ""}
+        ${item.extra_data?.themes ? `<p><strong>القضية:</strong> ${escapeHTML(item.extra_data.themes)}</p>` : ""}
+        ${item.extra_data?.message ? `<p><strong>رسالة العمل:</strong> ${escapeHTML(item.extra_data.message)}</p>` : ""}
+        ${item.extra_data?.writer_lesson ? `<p><strong>درس للكاتب:</strong> ${escapeHTML(item.extra_data.writer_lesson)}</p>` : ""}
         ${item.content_url ? directVideoMarkup(item.content_url,"مشاهدة العمل","film",item.id) : ""}
         ${adminSession ? `<div class="admin-actions" style="margin-top:12px"><button class="btn" type="button" onclick="adminEditFilm('${item.id}')">تعديل</button><button class="btn" type="button" onclick="adminDeleteFilm('${item.id}')">حذف</button></div>` : ""}
       </div>
@@ -4977,6 +4993,261 @@ function renderFilms(){
   `).join("");
 
   box.innerHTML='<div id="seriesInPageViewer" class="panel" hidden style="grid-column:1/-1;margin-bottom:18px;border:1px solid var(--gold);padding:16px"></div>'+playlistCards+publishedCards;
+  renderFilmStudyLibrary();
+}
+
+const FILM_STUDY_LIBRARY = [
+  {
+    id:"dangal-2016",
+    title:"Dangal",
+    originalTitle:"दंगल",
+    year:"2016",
+    country:"الهند",
+    director:"Nitesh Tiwari",
+    genre:"دراما رياضية وسيرة ذاتية",
+    synopsis:"أب لم يحقق حلمه في الفوز ببطولة المصارعة، يكتشف موهبة ابنتيه ويبدأ تدريبهما لمواجهة العقبات الاجتماعية والرياضية في طريقهما إلى البطولة.",
+    themes:"الإصرار، تمكين الفتيات، الطموح، التدريب، العلاقة بين الآباء والأبناء.",
+    message:"الموهبة والطموح لا تحددهما النوع الاجتماعي أو نظرة المجتمع، والنجاح يحتاج إلى عمل وانضباط ومثابرة.",
+    writerLesson:"يبني الفيلم صراعه من اختلاف وجهات النظر داخل الأسرة، ويحوّل هدفًا رياضيًا واضحًا إلى رحلة نمو للشخصيات. كما يوازن بين انتصارات البطلتين وثمن التدريب والضغط العائلي.",
+    reviewNote:"للدراسة السينمائية فقط حاليًا. لم يجتز بعد مراجعة المحتوى وفق معايير المشاهدة بالموقع، كما لم يُثبت تصريح يتيح عرض الفيلم أو تضمينه."
+  },
+  {
+    id:"stanley-ka-dabba-2011",
+    title:"Stanley Ka Dabba",
+    originalTitle:"स्टैनली का डब्बा",
+    year:"2011",
+    country:"الهند",
+    director:"Amole Gupte",
+    genre:"دراما مدرسية اجتماعية",
+    synopsis:"ستانلي طفل محبوب بين زملائه، لكنه لا يحضر صندوق طعام إلى المدرسة، فيشاركه أصدقاؤه طعامهم. يتعامل أحد المدرسين بقسوة مع الموقف، وتكشف الأحداث تدريجيًا ظروف الطفل وما وراء صمته.",
+    themes:"التعاطف، الفقر، التنمر، الصداقة، كرامة الطفل، مسؤولية المدرسة.",
+    message:"قد يخفي سلوك الطفل أو صمته ظروفًا لا نعرفها؛ والرحمة والانتباه أهم من إصدار الأحكام.",
+    writerLesson:"يبدأ الفيلم بتفصيل يومي بسيط — صندوق الطعام — ثم يجعله مدخلًا لكشف عالم الطفل تدريجيًا. هذا مثال على بناء قضية اجتماعية من تفصيلة بصرية متكررة بدل الشرح المباشر.",
+    reviewNote:"مرشح للدراسة فقط في هذه المرحلة. تصنيف Apple TV الهندي يذكر ملاءمته لجميع الأعمار، لكن دليل IMDb يورد واقعة صفع طفل مرتين وإساءة لفظية من رجل مسن؛ يجب فحص النسخة كاملة قبل أي اعتماد للمشاهدة. لم يُثبت تصريح عرض أو تضمين."
+  },
+  {
+    id:"i-am-kalam-2010",
+    title:"I Am Kalam",
+    originalTitle:"आई एम कलाम",
+    year:"2010",
+    country:"الهند",
+    director:"Nila Madhab Panda",
+    genre:"دراما اجتماعية ملهمة",
+    synopsis:"طفل فقير يعمل في مطعم على الطريق ويحلم بالتعليم، فيستلهم شخصية الرئيس عبد الكلام ويقرر أن يصنع لنفسه فرصة للتعلم، وتنشأ بينه وبين أمير شاب صداقة تتحدى الفوارق الطبقية.",
+    themes:"الحق في التعليم، الفقر، التمييز الطبقي، الطموح، الصداقة، الاعتماد على النفس.",
+    message:"ظروف الميلاد لا ينبغي أن تحكم مستقبل الإنسان؛ المعرفة والإصرار ووجود من يؤمن بالطفل قد يفتحون أمامه طريقًا جديدًا.",
+    writerLesson:"يمنح الفيلم بطله هدفًا بسيطًا ومحددًا — أن يتعلم ويصل إلى الرئيس — ثم يضع أمامه عوائق اجتماعية متتابعة. وتتحول الصداقة مع الأمير إلى مرآة تكشف التفاوت الطبقي دون الحاجة إلى خطب تفسيرية طويلة.",
+    reviewNote:"مرشح للدراسة فقط، وليس معتمدًا للمشاهدة بعد. مهرجان Providence للأطفال يوصي به من سن 8 سنوات مع تنبيه إلى انضباط صارم تجاه الطفل، ومراجعة Wogma تذكر شجارًا بالأيدي بين طفل وشاب وتصف اللغة بأنها نظيفة ولا تذكر عريًا أو محتوى جنسيًا. يجب فحص النسخة كاملة قبل الاعتماد، ولم يُثبت تصريح عرض أو تضمين."
+  },
+  {
+    id:"a-trip-to-the-moon-1902",
+    title:"رحلة إلى القمر",
+    originalTitle:"Le Voyage dans la Lune",
+    year:"1902",
+    country:"فرنسا",
+    director:"Georges Méliès",
+    genre:"خيال علمي ومغامرة صامتة",
+    synopsis:"مجموعة من علماء الفلك تنطلق في رحلة خيالية إلى القمر داخل مقذوف أطلقه مدفع عملاق، وتواجه مخلوقات غريبة قبل أن تحاول العودة إلى الأرض.",
+    themes:"الخيال العلمي، الفضول المعرفي، روح المغامرة، الابتكار البصري، بدايات المؤثرات السينمائية.",
+    message:"الخيال والفضول يفتحان أبوابًا جديدة للتفكير، والسينما تستطيع أن تصنع عالمًا كاملًا بالصورة والحركة حتى من دون حوار.",
+    writerLesson:"نموذج مبكر للسرد البصري: فكرة مركزية واحدة، صور أيقونية يسهل تذكرها، انتقالات ومؤثرات داخل الكادر، وحكاية مفهومة من الحركة لا من الحوار.",
+    sourceUrl:"https://commons.wikimedia.org/wiki/File:Le_Voyage_dans_la_lune_(black_and_white,_1902).webm",
+    sourceLabel:"مشاهدة النسخة الصامتة على ويكيميديا كومنز",
+    rightsLabel:"ملكية عامة — النسخة الأصلية المحددة",
+    reviewNote:"النسخة المختارة أبيض وأسود وصامتة، ومدتها 12 دقيقة و46 ثانية، ومصنفة ملكية عامة في سجل ويكيميديا؛ توثيق الملف يذكر وفاة جورج ميلييس عام 1938 وخلو النسخة من قيود حقوق معروفة. لا نستخدم النسخة الملونة المستعادة أو موسيقى مضافة حديثًا لأنها قد تحمل حقوقًا مستقلة. المحتوى مغامرة خيالية تتضمن ضربًا كوميديًا للمخلوقات الفضائية؛ يلزم اختبار العرض على الموقع قبل النشر العام."
+  },
+  {
+    id:"khumba-2013",
+    title:"كومبا",
+    originalTitle:"Khumba",
+    year:"2013",
+    country:"جنوب أفريقيا",
+    director:"Anthony Silverston",
+    genre:"رسوم متحركة ومغامرة عائلية",
+    synopsis:"حمار وحشي يولد بنصف خطوطه فقط، فينطلق في رحلة عبر الصحراء بحثًا عن بركة أسطورية تساعده على استكمال خطوطه وإيجاد مكانه بين القطيع.",
+    themes:"تقبّل الاختلاف، الشجاعة، الانتماء، الصداقة.",
+    message:"الاختلاف ليس عيبًا، والشجاعة تبدأ عندما يتوقف الإنسان عن الخجل من نفسه.",
+    writerLesson:"رحلة بطل واضحة مرتبطة بهدف بصري يسهل تذكره، مع تحويل الاختلاف الشخصي إلى محرك للمغامرة والنمو.",
+    sourceUrl:"https://www.youtube.com/watch?v=OFGvkoUibww",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة الاستوديو",
+    rightsLabel:"رابط من قناة الاستوديو — ليس تصريح إعادة نشر",
+    reviewNote:"مدرج بتصنيف G في دليل الأفلام العائلية، والرابط من قناة Triggerfish Animation Studio بحسب الدليل. يلزم فحص النسخة كاملة قبل اعتمادها نهائيًا لمعيار المحتوى بالموقع."
+  },
+  {
+    id:"rabbit-school-2017",
+    title:"مدرسة الأرانب: حراس البيضة الذهبية",
+    originalTitle:"Rabbit School: Guardians of the Golden Egg",
+    year:"2017",
+    country:"ألمانيا",
+    director:"Ute von Münchow-Pohl",
+    genre:"رسوم متحركة وكوميديا ومغامرة",
+    synopsis:"أرنب من المدينة يجد نفسه في مدرسة سحرية للأرانب، ويساعد أصدقاءه في حماية البيضة الذهبية من الثعالب.",
+    themes:"الصداقة، التعاون، الشجاعة، تحمّل المسؤولية.",
+    message:"التعاون والثقة بالنفس يساعدان على مواجهة الخطر وحماية الآخرين.",
+    writerLesson:"يضع الفيلم الشخصية في عالم غير مألوف، ثم يبني المغامرة حول مهمة واضحة وخصم محدد.",
+    sourceUrl:"https://www.youtube.com/watch?v=PW-gKFGQgNY",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة الموزع",
+    rightsLabel:"رابط من قناة Viva Kids Films — ليس تصريح إعادة نشر",
+    reviewNote:"مدرج بتصنيف G في دليل الأفلام العائلية، والرابط معنون كفيلم كامل على قناة Viva Kids Films. يلزم فحص النسخة كاملة قبل الاعتماد النهائي."
+  },
+  {
+    id:"ferngully-2-1998",
+    title:"فيرن غولي 2: الإنقاذ السحري",
+    originalTitle:"FernGully 2: The Magical Rescue",
+    year:"1998",
+    country:"الولايات المتحدة",
+    director:"Phil Robinson",
+    genre:"رسوم متحركة وفانتازيا ومغامرة",
+    synopsis:"تغادر جنيات الغابة موطنها في رحلة لإنقاذ حيوانات صغيرة اختطفها صيادون.",
+    themes:"حماية البيئة، الرحمة بالحيوان، الشجاعة، العمل الجماعي.",
+    message:"حماية الطبيعة مسؤولية مشتركة، والضعفاء يحتاجون إلى من يدافع عنهم.",
+    writerLesson:"يحوّل الفيلم قضية حماية البيئة إلى مهمة إنقاذ ذات هدف واضح ومخاطر متصاعدة.",
+    sourceUrl:"https://www.youtube.com/watch?v=Ucqq0SDRobY",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Shout! Studios",
+    rightsLabel:"رابط من موزع الفيلم — ليس تصريح إعادة نشر",
+    reviewNote:"مدرج بتصنيف G في دليل الأفلام العائلية، والرابط من قناة Shout! Studios. يلزم فحص النسخة كاملة قبل الاعتماد النهائي."
+  },
+  {
+    id:"finding-callaro-2021",
+    title:"البحث عن كالارو",
+    originalTitle:"Finding Callaro",
+    year:"2021",
+    country:"الولايات المتحدة",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة وخيال علمي ومغامرة",
+    synopsis:"أطفال يعيشون على متن سفينة فضائية ينطلقون في مهمة لإنقاذ صديق ضائع عبر المجرة.",
+    themes:"الصداقة، التعاون، الشجاعة، الاستكشاف.",
+    message:"العمل معًا يساعد الأصدقاء على تجاوز المسافات والمخاطر.",
+    writerLesson:"مهمة إنقاذ محددة تمنح الحكاية هدفًا واضحًا وتدفع المغامرة إلى الأمام.",
+    sourceUrl:"https://www.youtube.com/watch?v=2_Cej0gyVhY",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Family Central",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 79 دقيقة وتصنيف TV-Y7. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"little-bite-big-city-2011",
+    title:"لقمة صغيرة في المدينة الكبيرة",
+    originalTitle:"Little Bite in the Big City (Kukaracha 3D)",
+    year:"2011",
+    country:"غير مثبت في المصدر المختصر",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة وكوميديا ومغامرة",
+    synopsis:"صرصور صغير وأصدقاؤه من الحشرات يحاولون النجاة من خطر مبيد الحشرات داخل مبنى سكني مزدحم.",
+    themes:"الصداقة، التعاون، الشجاعة، البقاء.",
+    message:"الحجم لا يمنع الأصدقاء من التعاون ومواجهة الخطر.",
+    writerLesson:"يخلق الفيلم صراعًا كوميديًا من عالم مألوف يُرى من منظور كائن صغير.",
+    sourceUrl:"https://www.youtube.com/watch?v=8X9hkxYZcb4",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Family Central",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 74 دقيقة وتصنيف G. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"luis-and-aliens-2018",
+    title:"لويس والكائنات الفضائية",
+    originalTitle:"Luis & the Aliens",
+    year:"2018",
+    country:"ألمانيا ولوكسمبورغ والدنمارك",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة وخيال علمي وكوميديا",
+    synopsis:"طفل وحيد يصادق ثلاثة كائنات فضائية مرحة تهبط في علية منزله، بينما يحاول والده إثبات وجود الأطباق الطائرة.",
+    themes:"الصداقة، الاختلاف، الأسرة، الخيال.",
+    message:"التفاهم مع المختلف قد يحوّل الخوف إلى صداقة.",
+    writerLesson:"يجمع الفيلم بين خط عائلي وخط مغامرة خيالية، ويصنع الكوميديا من تصادم عالمين.",
+    sourceUrl:"https://www.youtube.com/watch?v=4S0slvwwFmw",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Viva Kids Films",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 79 دقيقة وتصنيف G. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"back-to-the-sea-2012",
+    title:"العودة إلى البحر",
+    originalTitle:"Back to the Sea",
+    year:"2012",
+    country:"غير مثبت في المصدر المختصر",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة ومغامرة عائلية",
+    synopsis:"سمكة طائرة صغيرة يصطادها صياد، ويساعدها طفل من المدينة على الهرب والعودة إلى البحر.",
+    themes:"الحرية، الصداقة، حماية الكائنات، الانتماء.",
+    message:"مساعدة الآخرين قد تمنحهم فرصة للعودة إلى موطنهم.",
+    writerLesson:"هدف العودة إلى البيت يمنح الرحلة اتجاهًا عاطفيًا واضحًا.",
+    sourceUrl:"https://www.youtube.com/watch?v=hsHGpEhYOE4",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Viva Kids Films",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 92 دقيقة وتصنيف PG. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"two-tails-2018",
+    title:"ذيلان",
+    originalTitle:"Two Tails",
+    year:"2018",
+    country:"روسيا",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة وكوميديا ومغامرة",
+    synopsis:"قطة وجرو يُفترض أنهما خصمان يضطران إلى التعاون لإيقاف مؤامرة شريرة.",
+    themes:"الصداقة، قبول الاختلاف، التعاون، الشجاعة.",
+    message:"قد يصبح المختلف عنك أقرب حليف لك.",
+    writerLesson:"يبني الفيلم علاقة ثنائية متضادة، ثم يجعل التعاون نتيجة ضرورية لتقدم الحبكة.",
+    sourceUrl:"https://www.youtube.com/watch?v=w-M9skumzfw",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Viva Kids Films",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 75 دقيقة وتصنيف PG. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"acorns-operation-crackdown-2015",
+    title:"السناجب: عملية المواجهة",
+    originalTitle:"A.C.O.R.N.S.: Operation Crackdown",
+    year:"2015",
+    country:"غير مثبت في المصدر المختصر",
+    director:"غير مثبت في المصدر المختصر",
+    genre:"رسوم متحركة وكوميديا ومغامرة",
+    synopsis:"سناجب الغابة تتحد لمواجهة رجل أعمال جشع يهدد موطنها ومخزون الطعام لفصل الشتاء.",
+    themes:"حماية البيئة، التعاون، مقاومة الجشع، المسؤولية.",
+    message:"الاتحاد يحمي المجتمع والطبيعة من الاستغلال.",
+    writerLesson:"خصم واضح ومصلحة جماعية مهددة يصنعان صراعًا مفهومًا لجميع الأعمار.",
+    sourceUrl:"https://www.youtube.com/watch?v=hLrFwNGGexg",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Viva Kids Films",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 82 دقيقة وتصنيف G. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  },
+  {
+    id:"louis-luca-mission-moon-2018",
+    title:"لويس ولوكّا: مهمة إلى القمر",
+    originalTitle:"Louis & Luca: Mission to the Moon",
+    year:"2018",
+    country:"النرويج",
+    director:"Rasmus A. Sivertsen",
+    genre:"رسوم متحركة بإيقاف الحركة ومغامرة",
+    synopsis:"عقعق مخترع وأصدقاؤه يصنعون صاروخًا منزليًا للمشاركة في سباق إلى القمر.",
+    themes:"الابتكار، الصداقة، الطموح، العمل الجماعي.",
+    message:"الخيال والابتكار والعمل مع الأصدقاء يمكن أن يحوّلوا فكرة مجنونة إلى مغامرة.",
+    writerLesson:"فكرة سباق ذات موعد نهائي تمنح القصة إيقاعًا وتصاعدًا واضحين.",
+    sourceUrl:"https://www.youtube.com/watch?v=YqEfm2YQ5vc",
+    sourceLabel:"مشاهدة الفيلم الكامل على قناة Viva Kids Films",
+    rightsLabel:"قناة رسمية/موزع بحسب الدليل — لا يعني حق إعادة الرفع",
+    reviewNote:"مصدر الأفلام يدرجه فيلمًا كاملًا مدته 76 دقيقة وتصنيف PG. لم تتم مشاهدة النسخة كاملة؛ يظل مرشحًا للفحص."
+  }
+];
+
+function renderFilmStudyLibrary(){
+  const box=document.getElementById("filmStudyItems");
+  if(!box)return;
+  box.innerHTML=FILM_STUDY_LIBRARY.map(item=>`
+    <article class="feature">
+      <div style="min-height:150px;display:grid;place-items:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a">
+        <div><div style="font-size:38px;margin-bottom:8px">🎬</div><strong style="font-size:25px;letter-spacing:1px">${escapeHTML(item.title)}</strong><div style="font-size:13px;margin-top:6px">${escapeHTML(item.originalTitle)} • ${escapeHTML(item.year)}</div></div>
+      </div>
+      <div class="feature-content">
+        <h3>${escapeHTML(item.title)} <span style="font-size:13px;color:var(--gold)">— دراسة سينمائية</span></h3>
+        <p>${escapeHTML(item.country)} • ${escapeHTML(item.genre)} • إخراج: ${escapeHTML(item.director)}</p>
+        <p><strong>ملخص القصة:</strong> ${escapeHTML(item.synopsis)}</p>
+        <p><strong>القضايا:</strong> ${escapeHTML(item.themes)}</p>
+        <p><strong>رسالة الفيلم:</strong> ${escapeHTML(item.message)}</p>
+        <p><strong>درس لكتّاب السيناريو:</strong> ${escapeHTML(item.writerLesson)}</p>
+        <p class="muted" style="font-size:12px;border-top:1px solid var(--line);padding-top:10px">${escapeHTML(item.reviewNote)}</p>
+        ${item.sourceUrl ? `<a class="btn" href="${escapeHTML(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.sourceLabel||"المصدر الأصلي")}</a><span class="badge" style="display:inline-block;margin-inline-start:8px;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">${escapeHTML(item.rightsLabel||"رابط مصدر خارجي — راجع حالة الحقوق")}</span>` : `<span class="badge" style="display:inline-block;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">دراسة فقط — لا يوجد رابط مشاهدة</span>`}
+      </div>
+    </article>
+  `).join("");
 }
 
 function adminEditFeaturedSeriesPoster(seriesId){
@@ -6709,6 +6980,14 @@ function adminEditFilm(id){
  form.elements.record_id.value=item.id;form.elements.title.value=item.title||'';
  form.elements.category.value=item.category||'فيلم';form.elements.description.value=item.description||'';
  form.elements.url.value=item.content_url||'';form.elements.published.checked=!!item.published;
+ const extra=item.extra_data&&typeof item.extra_data==='object'?item.extra_data:{};
+ form.elements.country.value=extra.country||'';
+ form.elements.year.value=extra.year||'';
+ form.elements.themes.value=extra.themes||'';
+ form.elements.message.value=extra.message||'';
+ form.elements.writer_lesson.value=extra.writer_lesson||'';
+ form.elements.content_review.value=extra.content_review||'pending';
+ form.elements.rights_status.value=extra.rights_status||'unverified';
  form.elements.image.value='';form.elements.video.value='';
  document.getElementById('filmsAdminSubmitButton').textContent='حفظ التعديلات';
  document.getElementById('filmsAdminCancelEdit').style.display='inline-block';
@@ -6734,7 +7013,14 @@ document.getElementById('filmsAdminForm')?.addEventListener('submit',async funct
   let videoUrl=String(fd.get('url')||'').trim();
   if(videoFile?.size){const videoName=String(videoFile.name||'').toLowerCase();const validExtension=videoName.endsWith('.mp4')||videoName.endsWith('.webm');const validType=['video/mp4','video/webm'].includes(videoFile.type);if(!validExtension||(videoFile.type&&!validType))throw new Error('اختر ملف فيديو MP4 أو WebM من ملفات الهاتف.');video=await adminInlineUpload(videoFile,'site-media','films',50*1024*1024);videoUrl=video.url;}
   if(videoUrl){const parsedUrl=new URL(videoUrl);if(!['http:','https:'].includes(parsedUrl.protocol))throw new Error('رابط الفيديو يجب أن يبدأ بـ https:// أو http://');}
-  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:fd.get('published')==='on'};
+  const wantsPublish=fd.get('published')==='on';
+  const contentReview=String(fd.get('content_review')||'pending');
+  const rightsStatus=String(fd.get('rights_status')||'unverified');
+  const isNewOrChangedViewing=!!videoUrl&&(!existing?.content_url||videoUrl!==existing.content_url);
+  const isNewRecord=!existing;
+  if(wantsPublish&&(isNewRecord||isNewOrChangedViewing)&&contentReview!=='approved_clean')throw new Error('لا يمكن نشر عمل جديد أو رابط مشاهدة جديد قبل مراجعة المحتوى واعتماده وفق معايير المنصة.');
+  if(wantsPublish&&isNewOrChangedViewing&&!['official_source','permission_granted','licensed','public_domain'].includes(rightsStatus))throw new Error('لا يمكن نشر رابط مشاهدة جديد قبل توثيق مصدر الإتاحة أو الترخيص أو التصريح.');
+  const record={content_type:'films',title:String(fd.get('title')||'').trim(),category:String(fd.get('category')||''),description:String(fd.get('description')||''),image_url:poster?.url||existing?.image_url||null,content_url:videoUrl||null,extra_data:{...(existing?.extra_data||{}),country:String(fd.get('country')||''),year:String(fd.get('year')||''),themes:String(fd.get('themes')||''),message:String(fd.get('message')||''),writer_lesson:String(fd.get('writer_lesson')||''),content_review:contentReview,rights_status:rightsStatus,media_kind:(video||videoUrl)?'video':'image',section_label:'الأفلام والمسلسلات'},published:wantsPublish};
   const result=editingId?await adminSupabase.from('site_content').update(record).eq('id',editingId):await adminSupabase.from('site_content').insert(record);
   if(result.error)throw result.error;
   adminResetFilmForm();msg.textContent=editingId?'تم حفظ التعديلات بنجاح.':'تم حفظ العمل وإضافته إلى القسم.';
