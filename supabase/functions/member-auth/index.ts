@@ -29,20 +29,24 @@ async function hashRateLimitKey(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
-async function consumeRateLimit(req: Request, action: "signup" | "login", body: Record<string, unknown>) {
-  const ip = req.headers.get("cf-connecting-ip")
-    || req.headers.get("x-real-ip")
-    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || "unknown";
-  const identity = action === "login" ? String(body.member_number ?? "").trim() : "signup";
+async function consumeOneRateLimit(ip: string, action: "signup" | "login", identity: string, limit: number, windowSeconds: number) {
   const keyHash = await hashRateLimitKey(ip + ":" + action + ":" + identity);
-  const limit = action === "signup" ? 5 : 15;
-  const windowSeconds = action === "signup" ? 3600 : 900;
   const {data,error} = await admin.rpc("consume_member_auth_attempt", {
     p_key_hash:keyHash,p_action:action,p_limit:limit,p_window_seconds:windowSeconds
   });
   if (error) throw new Error("خدمة التحقق مشغولة مؤقتًا. حاول لاحقًا.");
   return data === true;
+}
+async function consumeRateLimit(req: Request, action: "signup" | "login", body: Record<string, unknown>) {
+  const ip = req.headers.get("cf-connecting-ip")
+    || req.headers.get("x-real-ip")
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || "unknown";
+  if (action === "signup") return await consumeOneRateLimit(ip,action,"signup",5,3600);
+  const memberNumber = String(body.member_number ?? "").trim();
+  const ipAllowed = await consumeOneRateLimit(ip,action,"all-members",30,900);
+  if (!ipAllowed) return false;
+  return await consumeOneRateLimit(ip,action,memberNumber,8,900);
 }
 function validDate(value: unknown) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
