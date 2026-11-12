@@ -72,6 +72,7 @@ with check (
 
 drop policy if exists "Public read published site content" on public.site_content;
 drop policy if exists "Public read non-restricted published site content" on public.site_content;
+drop policy if exists "Members read non-restricted published site content" on public.site_content;
 create policy "Members read non-restricted published site content"
 on public.site_content for select
 to anon, authenticated
