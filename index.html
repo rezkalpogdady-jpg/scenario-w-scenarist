@@ -442,7 +442,8 @@ Main{padding:17px 11px}
 <button data-page="production">الإنتاج والتعاون</button>
 <button data-page="sponsors">شركات الإنتاج والرعاة</button>
 <button data-page="stories">الجرائم والحكايات</button>
-<button data-page="account">حساب المبدع (اختياري)</button>
+<button data-page="account">عضوية الموقع</button>
+<button data-page="creatorProfile">إنشاء ملف أو موهبة</button>
 <button data-page="admin">الإدارة</button>
 <button data-page="contact">تواصل مع الإدارة</button>
 <button data-page="about">عن المنصة</button>
@@ -677,7 +678,7 @@ function saveReadingProgress(){
 function showPage(id, options={}){
 const target=document.getElementById(id);
 if(!target || !target.classList.contains('page')) return;
-if((id==='stories'||id==='films')&&!accountUser){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
+if((id==='stories'||id==='films'||id==='creatorProfile')&&!accountUser){if(id==='stories'||id==='films'){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');}if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
 saveReadingProgress();
 if(options.updateUrl!==false){
 try{
@@ -2710,17 +2711,16 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
 <section id="account" class="page">
   <div class="intro">
-    <h2>حساب المبدع</h2>
-    <p>التصفح والقراءة والاستماع ومشاهدة المحتوى العام متاحة للجميع. يلزم تسجيل العضوية للدخول إلى قسمي الجرائم والأفلام، ويكون الدخول برقم العضوية والرقم السري.</p>
+    <h2>عضوية الموقع</h2>
+    <p>أنشئ عضويتك العادية لتدخل إلى الموقع برقم عضوية يصدره النظام والرقم السري. التصفح العام متاح للجميع، والعضوية مطلوبة لقسمي الجرائم والأفلام.</p>
   </div>
   <div class="panel" id="accountAuthPanel">
     <h3 style="color:var(--gold)">إنشاء عضوية جديدة</h3>
     <p class="muted">التسجيل برقم عضوية ينشئه النظام. الدخول برقم العضوية والرقم السري فقط، دون بريد إلكتروني أو هاتف.</p>
     <form id="accountSignupForm">
-      <input id="accountName" required maxlength="120" placeholder="الاسم">
-      <select id="accountGender" required><option value="">النوع</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
-      <label for="accountBirthDate">تاريخ الميلاد</label><input id="accountBirthDate" type="date" required>
-      <label for="accountAvatar">الصورة الشخصية (اختياري)</label><input id="accountAvatar" type="file" accept="image/jpeg,image/png,image/webp">
+      <input id="accountName" required maxlength="120" autocomplete="name" placeholder="الاسم">
+      <input id="accountAge" type="number" required min="1" max="120" inputmode="numeric" placeholder="العمر">
+      <input id="accountCountry" required maxlength="100" autocomplete="country-name" placeholder="البلد">
       <input id="accountSignupPassword" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="الرقم السري (8 أحرف على الأقل)">
       <input id="accountSignupPasswordConfirm" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="تأكيد الرقم السري">
       <p class="muted" style="font-size:12px">احتفظ برقم العضوية والرقم السري. عند نسيان الرقم السري لن تتمكن الإدارة من استعادته.</p>
@@ -2729,6 +2729,19 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <h3 style="color:var(--gold)">لديك عضوية بالفعل؟</h3>
     <form id="accountLoginForm"><input id="accountLoginNumber" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required autocomplete="username" placeholder="رقم العضوية (8 أرقام)"><input id="accountLoginPassword" type="password" required autocomplete="current-password" placeholder="الرقم السري"><button class="btn" type="submit">تسجيل الدخول</button></form>
     <p id="accountMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
+  </div>
+  <div class="panel" id="accountMemberPanel" style="display:none">
+    <h3 style="color:var(--gold)">أهلًا بك في عضوية الموقع</h3>
+    <p id="accountMemberWelcome"></p>
+    <p class="muted">عضويتك العادية مستقلة عن ملف الموهبة. يمكنك استخدام الموقع كعضو دون إنشاء ملف مهني.</p>
+    <button class="btn primary" type="button" onclick="showPage('creatorProfile')">إنشاء ملف موهبة اختياري</button>
+  </div>
+</section>
+
+<section id="creatorProfile" class="page">
+  <div class="intro">
+    <h2>إنشاء ملف أو موهبة</h2>
+    <p>أنت مسجل بالفعل كعضو في الموقع. إذا أردت عرض موهبتك أو التعريف بنفسك ككاتب أو مخرج أو ممثل، اكتب بيانات الملف هنا. لا تحتاج إلى تسجيل عضوية جديدة.</p>
   </div>
   <div class="panel" id="accountProfilePanel" style="display:none">
     <h3 style="color:var(--gold)">ملفي الشخصي</h3>
@@ -2744,7 +2757,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <form id="accountProfileForm">
       <input id="accountEditName" required maxlength="120" placeholder="الاسم الذي سيظهر للجمهور">
       <select id="accountEditType" required>
-        <option value="writer">كاتب</option><option value="director">مخرج</option>
+        <option value="">اختر نوع الملف أو الموهبة</option><option value="writer">كاتب سيناريو</option><option value="director">مخرج</option>
         <option value="actor">ممثل</option><option value="presenter">مقدم برامج</option>
         <option value="voice">مذيع / تعليق صوتي</option><option value="producer">منتج / صاحب مشروع</option>
       </select>
@@ -3205,6 +3218,7 @@ function adminConfigReady(){
 /* حسابات الأعضاء: لا تمنح التسجيلات الجديدة صلاحية مدير */
 let accountSupabase=null;
 let accountUser=null;
+let accountMemberNumber="";
 let accountSessionReady=false;
 let pendingProtectedPage=null;
 function accountClient(){
@@ -3221,14 +3235,19 @@ function accountShowUser(user,profile){
   accountUser=user||null;
   const authPanel=document.getElementById("accountAuthPanel");
   const profilePanel=document.getElementById("accountProfilePanel");
-  if(!authPanel||!profilePanel) return;
-  authPanel.style.display=user?"none":"block";
-  profilePanel.style.display=user?"block":"none";
+  const memberPanel=document.getElementById("accountMemberPanel");
+  if(authPanel) authPanel.style.display=user?"none":"block";
+  if(profilePanel) profilePanel.style.display=user?"block":"none";
+  if(memberPanel) memberPanel.style.display=user?"block":"none";
   if(!user) return;
   const metadata=user.user_metadata||{};
   const displayName=profile?.display_name || metadata.display_name || metadata.full_name || metadata.name || "عضو المنصة";
-  const accountType=profile?.account_type || metadata.account_type || "writer";
-  document.getElementById("accountProfileSummary").textContent="رقم العضوية: "+(user.app_metadata?.member_number||"—")+" • حساب عضو";
+  const accountType=profile?.account_type || metadata.account_type || "";
+  const memberNumber=accountMemberNumber||user.app_metadata?.member_number||"—";
+  const memberWelcome=document.getElementById("accountMemberWelcome");
+  if(memberWelcome) memberWelcome.textContent="رقم عضويتك: "+memberNumber+" — احتفظ به للدخول لاحقًا.";
+  const profileSummary=document.getElementById("accountProfileSummary");
+  if(profileSummary) profileSummary.textContent="رقم العضوية: "+memberNumber+" • حساب عضو";
   document.getElementById("accountEditName").value=displayName;
   document.getElementById("accountEditType").value=accountType;
   document.getElementById("accountEditCity").value=profile?.city||"";
@@ -3337,7 +3356,7 @@ async function accountLoadProfile(user){
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
     if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
-    if(typeof accountLoadWriterScripts==="function" && (data?.account_type||user.user_metadata?.account_type||"writer")==="writer") await accountLoadWriterScripts();
+    if(typeof accountLoadWriterScripts==="function" && data?.account_type==="writer") await accountLoadWriterScripts();
     if(typeof accountLoadDirectorWorks==="function") await accountLoadDirectorWorks();
     await accountLoadMemberWorks();
     await accountLoadNotifications();
@@ -3353,6 +3372,7 @@ async function memberAuthRequest(payload){
 }
 async function accountSetMemberSession(result){
   if(!result.session?.access_token||!result.session?.refresh_token)throw new Error("لم يتم إنشاء جلسة الدخول.");
+  accountMemberNumber=String(result.member_number||result.user?.app_metadata?.member_number||"");
   const sr=await accountClient().auth.setSession({access_token:result.session.access_token,refresh_token:result.session.refresh_token});if(sr.error)throw sr.error;
   accountSessionReady=true;await accountLoadProfile(sr.data.user||result.user);await loadPublicContent();
   if(pendingProtectedPage){const next=pendingProtectedPage;pendingProtectedPage=null;showPage(next);}
@@ -3360,13 +3380,14 @@ async function accountSetMemberSession(result){
 document.getElementById("accountSignupForm")?.addEventListener("submit",async function(event){
   event.preventDefault();const button=this.querySelector("button[type=submit]");
   const password=document.getElementById("accountSignupPassword").value,confirm=document.getElementById("accountSignupPasswordConfirm").value;
-  const file=document.getElementById("accountAvatar").files?.[0]||null;
+  const age=Number(document.getElementById("accountAge").value);
+  const country=document.getElementById("accountCountry").value.trim();
   if(password!==confirm){accountMessage("الرقمان السريان غير متطابقين.");return;}
-  if(file&&(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728)){accountMessage("الصورة يجب أن تكون JPG أو PNG أو WEBP وبحد أقصى 3 ميجابايت.");return;}
-  try{button.disabled=true;accountMessage("جارٍ إنشاء العضوية...");let avatar_data_url="";
-    if(file)avatar_data_url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(new Error("تعذر قراءة الصورة."));reader.readAsDataURL(file);});
-    const result=await memberAuthRequest({action:"signup",display_name:document.getElementById("accountName").value.trim(),account_type:"writer",gender:document.getElementById("accountGender").value,birth_date:document.getElementById("accountBirthDate").value,password:password,confirm_password:confirm,avatar_data_url:avatar_data_url});
-    await accountSetMemberSession(result);this.reset();accountMessage("تم إنشاء عضويتك. رقم العضوية: "+result.member_number+" — احتفظ به للدخول.");
+  if(!Number.isInteger(age)||age<1||age>120){accountMessage("أدخل عمرًا صحيحًا.");return;}
+  if(!country){accountMessage("اكتب بلد الإقامة.");return;}
+  try{button.disabled=true;accountMessage("جارٍ إنشاء العضوية...");
+    const result=await memberAuthRequest({action:"signup",display_name:document.getElementById("accountName").value.trim(),age,country,password:password,confirm_password:confirm});
+    await accountSetMemberSession(result);this.reset();accountMessage("تم إنشاء العضوية بنجاح.");
     alert("تم إنشاء العضوية بنجاح. رقم العضوية: "+result.member_number+". احتفظ بالرقم للدخول لاحقًا.");
   }catch(error){accountMessage("تعذر إنشاء العضوية: "+(error.message||"راجع البيانات وحاول مرة أخرى."));}finally{button.disabled=false;}
 });

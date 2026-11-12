@@ -48,25 +48,16 @@ async function consumeRateLimit(req: Request, action: "signup" | "login", body: 
   if (!ipAllowed) return false;
   return await consumeOneRateLimit(ip,action,memberNumber,8,900);
 }
-function validDate(value: unknown) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(value + "T00:00:00Z");
-  return !Number.isNaN(date.getTime())
-    && date.toISOString().slice(0, 10) === value
-    && date.getTime() <= Date.now();
-}
 async function createMember(body: Record<string, unknown>) {
   const name = String(body.display_name ?? "").trim();
   const password = String(body.password ?? "");
   const confirm = String(body.confirm_password ?? "");
-  const type = "writer";
-  const gender = String(body.gender ?? "");
-  const birthDate = body.birth_date;
-  const allowedTypes = ["writer","director","actor","presenter","voice","producer"];
+  const age = Number(body.age);
+  const country = String(body.country ?? "").trim();
   if (name.length < 2 || name.length > 120) return reply(400,{error:"اكتب اسمًا صحيحًا."});
   if (password.length < 8 || password.length > 128 || password !== confirm) return reply(400,{error:"تأكد من تطابق الرقم السري وأن يكون 8 أحرف على الأقل."});
-  if (!allowedTypes.includes(type)) return reply(400,{error:"اختر مجال العضوية."});
-  if (!["male","female"].includes(gender) || !validDate(birthDate)) return reply(400,{error:"أكمل النوع وتاريخ الميلاد."});
+  if (!Number.isInteger(age) || age < 1 || age > 120) return reply(400,{error:"أدخل عمرًا صحيحًا."});
+  if (country.length < 2 || country.length > 100) return reply(400,{error:"اكتب اسم البلد بشكل صحيح."});
 
   let memberNumber = "";
   for (let i=0;i<8;i++) {
@@ -79,7 +70,7 @@ async function createMember(body: Record<string, unknown>) {
   const email = internalEmail(memberNumber);
   const {data:created,error:createError} = await admin.auth.admin.createUser({
     email, password, email_confirm:true,
-    user_metadata:{display_name:name,account_type:type},
+    user_metadata:{display_name:name},
     app_metadata:{member_number:memberNumber}
   });
   if (createError || !created.user) return reply(400,{error:"تعذر إنشاء العضوية. حاول مرة أخرى."});
@@ -105,14 +96,9 @@ async function createMember(body: Record<string, unknown>) {
       imageUrl = admin.storage.from("member-avatars").getPublicUrl(path).data.publicUrl;
     }
     const {error:privateDetailsError} = await admin.from("member_private_details").insert({
-      user_id:userId,gender,birth_date:birthDate
+      user_id:userId,age,country
     });
     if (privateDetailsError) throw privateDetailsError;
-    const {error:profileError} = await admin.from("member_profiles").insert({
-      user_id:userId,display_name:name,account_type:type,
-      image_url:imageUrl,profile_status:"pending"
-    });
-    if (profileError) throw profileError;
     const {data:sessionData,error:loginError} = await publicAuth.auth.signInWithPassword({email,password});
     if (loginError || !sessionData.session) throw loginError || new Error("تعذر بدء الجلسة.");
     return reply(200,{member_number:memberNumber,session:sessionData.session,user:sessionData.user});
