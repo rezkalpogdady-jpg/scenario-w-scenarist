@@ -5390,7 +5390,7 @@ function renderFilms(){
   }).join("");
 
   const publishedCards=items.filter(item=>
-    !FEATURED_FILM_PLAYLISTS.some(playlist=>String(item.title||"").trim()===playlist.title) && !Array.isArray(item.extra_data?.episodes)
+    !FEATURED_FILM_PLAYLISTS.some(playlist=>String(item.title||"").trim()===playlist.title) && !Array.isArray(item.extra_data?.episodes) && !Array.isArray(item.extra_data?.external_episodes)
   ).map(item=>`
     <article class="feature">
       ${item.image_url
