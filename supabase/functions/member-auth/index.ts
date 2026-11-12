@@ -121,6 +121,12 @@ async function signInMember(body: Record<string, unknown>) {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok",{headers:corsHeaders});
   if (req.method !== "POST") return reply(405,{error:"طريقة الطلب غير مدعومة."});
+  const suppliedKey = req.headers.get("apikey") || "";
+  const allowedKeys = [
+    Deno.env.get("SUPABASE_ANON_KEY"),
+    Deno.env.get("SUPABASE_PUBLISHABLE_KEY")
+  ].filter((value): value is string => Boolean(value));
+  if (!allowedKeys.includes(suppliedKey)) return reply(401,{error:"طلب غير مصرح به."});
   try {
     const body = await req.json();
     if (body.action === "signup") return await createMember(body);
