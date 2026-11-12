@@ -5762,7 +5762,7 @@ async function loadApprovedMemberProfiles(){
 }
 let approvedMemberProfilesPromise=null;
 function ensureApprovedMemberProfiles(){
-  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
+  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().then(()=>loadApprovedTalentVideos()).catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
   return approvedMemberProfilesPromise;
 }
 
