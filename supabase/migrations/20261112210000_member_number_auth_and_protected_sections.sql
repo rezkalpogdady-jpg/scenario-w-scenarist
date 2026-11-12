@@ -12,7 +12,7 @@ grant all on public.member_login_directory to service_role;
 create table if not exists public.member_private_details (
   user_id uuid primary key references auth.users(id) on delete cascade,
   gender text not null check (gender in ('male','female')),
-  birth_date date not null check (birth_date <= current_date),
+  birth_date date not null,
   created_at timestamptz not null default now()
 );
 alter table public.member_private_details enable row level security;
