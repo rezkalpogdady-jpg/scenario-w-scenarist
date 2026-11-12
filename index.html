@@ -1184,7 +1184,7 @@ function renderLibrary(){
 
   container.innerHTML = filtered.map(item=>`
     <article class="feature">
-      ${item.cover ? `<img src="${escapeHTML(item.cover)}" alt="">` : ""}
+      ${item.cover ? `<img src="${escapeHTML(item.cover)}" alt="" loading="lazy" decoding="async">` : ""}
       <div class="feature-content">
         <h3>${escapeHTML(item.title)}</h3>
         <p>الكاتب: ${escapeHTML(item.author)}</p>
@@ -2301,7 +2301,7 @@ function radioCard(station){
   return `
     <article class="feature">
       ${station.image
-        ? `<img src="${safeHttpUrl(station.image)}" alt="">`
+        ? `<img src="${safeHttpUrl(station.image)}" alt="" loading="lazy" decoding="async">`
         : `<div style="height:145px;background:linear-gradient(135deg,#302319,#111);display:grid;place-items:center;font-size:45px"></div>`}
       <div class="feature-content">
         <h3>${escapeHTML(station.name)}</h3>
@@ -5245,7 +5245,7 @@ function renderFilms(){
       (adminSession || record.published)
     );
     const posterMarkup=posterRecord?.image_url
-      ? `<img src="${safeHttpUrl(posterRecord.image_url)}" alt="أفيش ${escapeHTML(item.title)}" style="display:block;width:100%;height:170px;object-fit:cover">`
+      ? `<img src="${safeHttpUrl(posterRecord.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover">`
       : `<div style="height:170px;display:grid;place-items:center;text-align:center;padding:18px;background:radial-gradient(circle at 50% 35%,#57452a,#171719 72%);color:#f1d89a"><div><div style="font-size:36px;margin-bottom:8px">▧</div><strong>مكان الأفيش</strong><div style="font-size:12px;color:#d8c7a5">${escapeHTML(item.title)}</div></div></div>`;
     const posterAdminAction=adminSession&&item.recordId
       ? `<button class="btn" type="button" onclick="adminEditFilm('${item.recordId}')">${posterRecord?.image_url?"تعديل الأفيش":"إضافة الأفيش"}</button>`
@@ -5590,7 +5590,7 @@ function renderTvChannels(items){
         : `<span class="muted">رابط المشاهدة غير متاح حاليًا</span>`;
     return `
       <article class="feature">
-        ${channel.image ? `<img src="${safeHttpUrl(channel.image)}" alt="">` : `<div style="height:145px;background:linear-gradient(135deg,#302319,#111);display:grid;place-items:center;font-size:45px">📺</div>`}
+        ${channel.image ? `<img src="${safeHttpUrl(channel.image)}" alt="" loading="lazy" decoding="async">` : `<div style="height:145px;background:linear-gradient(135deg,#302319,#111);display:grid;place-items:center;font-size:45px">📺</div>`}
         <div class="feature-content">
           <h3>${escapeHTML(channel.title)}</h3>
           <p>${escapeHTML(channel.description || "قناة تلفزيونية")}</p>
