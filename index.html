@@ -3559,7 +3559,7 @@ document.getElementById("accountLogout")?.addEventListener("click",async()=>{
 /* تحديث حالة حساب العضو عند تغير جلسة الدخول */
 try{
   accountClient().auth.onAuthStateChange((event,session)=>{
-  }else if(event==="SIGNED_IN" && session?.user){
+    if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
       accountShowUser(null,null);
