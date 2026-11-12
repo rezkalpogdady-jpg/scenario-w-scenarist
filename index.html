@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.93: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.94: استكمال القراءة محليًا دون طلبات إضافية لقاعدة البيانات. تحديث 6.8.93: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.82">
+<body data-platform-version="6.8.94">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -461,6 +461,16 @@ Main{padding:17px 11px}
 مكان للمواهب الجديدة والمشروعات التي تبحث عن فرصة.
 </p>
 <button class="btn primary" onclick="showPage('academy')">اكتشف الأكاديمية</button>
+</div>
+
+<div id="readingResumeCard" class="panel" hidden style="margin:0 0 28px;border-color:var(--gold)">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div style="min-width:0;flex:1">
+      <strong style="color:var(--gold2);display:block">تابع القراءة من حيث توقفت</strong>
+      <span id="readingResumeTitle" style="color:var(--muted);font-size:13px">آخر قسم قرأته</span>
+    </div>
+    <button id="readingResumeButton" class="btn primary" type="button">استكمل القراءة</button>
+  </div>
 </div>
 
 <div class="section-heading">
@@ -625,7 +635,47 @@ function stopShortFilmPlayers(){
     }catch(_){}
   });
 }
+const READING_PROGRESS_KEY="scenarioReadingProgressV1";
+function getActiveReadingPage(){
+  return document.querySelector("main .page.active");
+}
+function updateReadingResumeCard(){
+  const card=document.getElementById("readingResumeCard");
+  const label=document.getElementById("readingResumeTitle");
+  const button=document.getElementById("readingResumeButton");
+  if(!card||!label||!button)return;
+  try{
+    const saved=JSON.parse(localStorage.getItem(READING_PROGRESS_KEY)||"null");
+    const target=saved&&typeof saved.page==="string"?document.getElementById(saved.page):null;
+    if(!saved||!target||saved.page==="home"||!Number.isFinite(Number(saved.scrollY))||Number(saved.scrollY)<120){
+      card.hidden=true;
+      return;
+    }
+    label.textContent=(saved.title||"القسم الذي قرأته")+" • يمكنك استكمال القراءة من آخر موضع";
+    card.hidden=false;
+    button.onclick=()=>{
+      showPage(saved.page);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        window.scrollTo(0,Math.max(0,Number(saved.scrollY)||0));
+        setTimeout(()=>window.scrollTo(0,Math.max(0,Number(saved.scrollY)||0)),450);
+      }));
+    };
+  }catch(_){card.hidden=true;}
+}
+function saveReadingProgress(){
+  try{
+    const active=getActiveReadingPage();
+    if(!active||!active.id||active.id==="home")return;
+    const scrollY=Math.max(0,window.scrollY||window.pageYOffset||0);
+    if(scrollY<120)return;
+    const heading=active.querySelector(".section-heading h2, .intro h2, h2");
+    const title=(heading?.textContent||active.id).trim().slice(0,120);
+    const value={page:active.id,scrollY,title,savedAt:Date.now()};
+    localStorage.setItem(READING_PROGRESS_KEY,JSON.stringify(value));
+  }catch(_){}
+}
 function showPage(id){
+saveReadingProgress();
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 const target=document.getElementById(id);
@@ -638,7 +688,9 @@ document.querySelectorAll('#mainNav button').forEach(button=>{
 button.classList.toggle('active',button.dataset.page===id);
 });
 window.scrollTo({top:0,behavior:'smooth'});
+if(id==="home")updateReadingResumeCard();
 }
+window.addEventListener("pagehide",saveReadingProgress);
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden) stopShortFilmPlayers(false);
 });
