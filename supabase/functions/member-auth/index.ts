@@ -24,6 +24,26 @@ function randomMemberNumber() {
   crypto.getRandomValues(bytes);
   return String(10000000 + (bytes[0] % 90000000));
 }
+
+async function hashRateLimitKey(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+async function consumeRateLimit(req: Request, action: "signup" | "login", body: Record<string, unknown>) {
+  const ip = req.headers.get("cf-connecting-ip")
+    || req.headers.get("x-real-ip")
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || "unknown";
+  const identity = action === "login" ? String(body.member_number ?? "").trim() : "signup";
+  const keyHash = await hashRateLimitKey(ip + ":" + action + ":" + identity);
+  const limit = action === "signup" ? 5 : 15;
+  const windowSeconds = action === "signup" ? 3600 : 900;
+  const {data,error} = await admin.rpc("consume_member_auth_attempt", {
+    p_key_hash:keyHash,p_action:action,p_limit:limit,p_window_seconds:windowSeconds
+  });
+  if (error) throw new Error("خدمة التحقق مشغولة مؤقتًا. حاول لاحقًا.");
+  return data === true;
+}
 function validDate(value: unknown) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + "T00:00:00Z");
@@ -129,9 +149,11 @@ Deno.serve(async (req: Request) => {
   if (!allowedKeys.includes(suppliedKey)) return reply(401,{error:"طلب غير مصرح به."});
   try {
     const body = await req.json();
-    if (body.action === "signup") return await createMember(body);
-    if (body.action === "login") return await signInMember(body);
-    return reply(400,{error:"طلب غير معروف."});
+    if (body.action !== "signup" && body.action !== "login") return reply(400,{error:"طلب غير معروف."});
+    const action = body.action as "signup" | "login";
+    if (!await consumeRateLimit(req,action,body)) return reply(429,{error:"وصلت للحد المسموح من المحاولات. انتظر قليلًا ثم حاول مرة أخرى."});
+    if (action === "signup") return await createMember(body);
+    return await signInMember(body);
   } catch {
     return reply(400,{error:"تعذر قراءة الطلب."});
   }
