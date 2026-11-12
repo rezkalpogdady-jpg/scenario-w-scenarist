@@ -5038,6 +5038,22 @@ const FILM_STUDY_LIBRARY = [
     message:"ظروف الميلاد لا ينبغي أن تحكم مستقبل الإنسان؛ المعرفة والإصرار ووجود من يؤمن بالطفل قد يفتحون أمامه طريقًا جديدًا.",
     writerLesson:"يمنح الفيلم بطله هدفًا بسيطًا ومحددًا — أن يتعلم ويصل إلى الرئيس — ثم يضع أمامه عوائق اجتماعية متتابعة. وتتحول الصداقة مع الأمير إلى مرآة تكشف التفاوت الطبقي دون الحاجة إلى خطب تفسيرية طويلة.",
     reviewNote:"مرشح للدراسة فقط، وليس معتمدًا للمشاهدة بعد. مهرجان Providence للأطفال يوصي به من سن 8 سنوات مع تنبيه إلى انضباط صارم تجاه الطفل، ومراجعة Wogma تذكر شجارًا بالأيدي بين طفل وشاب وتصف اللغة بأنها نظيفة ولا تذكر عريًا أو محتوى جنسيًا. يجب فحص النسخة كاملة قبل الاعتماد، ولم يُثبت تصريح عرض أو تضمين."
+  },
+  {
+    id:"a-trip-to-the-moon-1902",
+    title:"رحلة إلى القمر",
+    originalTitle:"Le Voyage dans la Lune",
+    year:"1902",
+    country:"فرنسا",
+    director:"Georges Méliès",
+    genre:"خيال علمي ومغامرة صامتة",
+    synopsis:"مجموعة من علماء الفلك تنطلق في رحلة خيالية إلى القمر داخل مقذوف أطلقه مدفع عملاق، وتواجه مخلوقات غريبة قبل أن تحاول العودة إلى الأرض.",
+    themes:"الخيال العلمي، الفضول المعرفي، روح المغامرة، الابتكار البصري، بدايات المؤثرات السينمائية.",
+    message:"الخيال والفضول يفتحان أبوابًا جديدة للتفكير، والسينما تستطيع أن تصنع عالمًا كاملًا بالصورة والحركة حتى من دون حوار.",
+    writerLesson:"نموذج مبكر للسرد البصري: فكرة مركزية واحدة، صور أيقونية يسهل تذكرها، انتقالات ومؤثرات داخل الكادر، وحكاية مفهومة من الحركة لا من الحوار.",
+    sourceUrl:"https://commons.wikimedia.org/wiki/File:Le_Voyage_dans_la_lune_(black_and_white,_1902).webm",
+    sourceLabel:"مشاهدة وتحميل النسخة الصامتة من ويكيميديا كومنز",
+    reviewNote:"النسخة المختارة أبيض وأسود وصامتة، ومدتها 12 دقيقة و46 ثانية، ومصنفة ملكية عامة في سجل ويكيميديا؛ توثيق الملف يذكر وفاة جورج ميلييس عام 1938 وخلو النسخة من قيود حقوق معروفة. لا نستخدم النسخة الملونة المستعادة أو موسيقى مضافة حديثًا لأنها قد تحمل حقوقًا مستقلة. المحتوى مغامرة خيالية تتضمن ضربًا كوميديًا للمخلوقات الفضائية؛ يلزم اختبار العرض على الموقع قبل النشر العام."
   }
 ];
 
@@ -5057,7 +5073,7 @@ function renderFilmStudyLibrary(){
         <p><strong>رسالة الفيلم:</strong> ${escapeHTML(item.message)}</p>
         <p><strong>درس لكتّاب السيناريو:</strong> ${escapeHTML(item.writerLesson)}</p>
         <p class="muted" style="font-size:12px;border-top:1px solid var(--line);padding-top:10px">${escapeHTML(item.reviewNote)}</p>
-        <span class="badge" style="display:inline-block;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">دراسة فقط — لا يوجد رابط مشاهدة</span>
+        ${item.sourceUrl ? `<a class="btn" href="${escapeHTML(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.sourceLabel||"المصدر الأصلي")}</a><span class="badge" style="display:inline-block;margin-inline-start:8px;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">ملكية عامة — النسخة الأصلية</span>` : `<span class="badge" style="display:inline-block;padding:5px 9px;border:1px solid var(--gold);border-radius:20px;color:var(--gold)">دراسة فقط — لا يوجد رابط مشاهدة</span>`}
       </div>
     </article>
   `).join("");
