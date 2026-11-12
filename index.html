@@ -2744,8 +2744,10 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <p>أنت مسجل بالفعل كعضو في الموقع. إذا أردت عرض موهبتك أو التعريف بنفسك ككاتب أو مخرج أو ممثل، اكتب بيانات الملف هنا. لا تحتاج إلى تسجيل عضوية جديدة.</p>
   </div>
   <div class="panel" id="accountProfilePanel" style="display:none">
-    <h3 style="color:var(--gold)">ملفي الشخصي</h3>
+    <h3 style="color:var(--gold)">حساب العضوية</h3>
     <p id="accountProfileSummary"></p>
+    <p class="muted">هذا حسابك الأساسي في المنصة. لا يلزمك اختيار مجال مهني أو إنشاء ملف موهبة لاستخدام عضويتك.</p>
+    <button class="btn primary" id="toggleProfessionalProfile" type="button" onclick="toggleProfessionalProfile()">إنشاء ملف موهبة أو مشروع (اختياري)</button>
     <div class="panel" id="memberNotificationsPanel" style="margin:14px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <h3 style="color:var(--gold);margin:0">إشعاراتي <span id="memberNotificationCount" class="admin-status"></span></h3>
@@ -2754,7 +2756,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <div id="memberNotificationsList" aria-live="polite" style="margin-top:12px">جارٍ تحميل الإشعارات...</div>
     </div>
     <p style="color:var(--muted);font-size:13px">يمكنك تحديث اسم العرض ومجالك. لا تمنح هذه البيانات أي صلاحيات إدارية.</p>
-    <form id="accountProfileForm">
+    <form id="accountProfileForm" style="display:none;margin-top:16px">
       <input id="accountEditName" required maxlength="120" placeholder="الاسم الذي سيظهر للجمهور">
       <select id="accountEditType" required>
         <option value="">اختر نوع الملف أو الموهبة</option><option value="writer">كاتب سيناريو</option><option value="director">مخرج</option>
@@ -2774,7 +2776,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
       <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
     </form>
-    <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
+    <p id="accountProfileStatus" role="status" aria-live="polite" style="display:none;color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
     <div class="panel" id="directorWorksPanel" style="display:none;margin-top:18px">
       <h3 style="color:var(--gold)">نماذج أعمالي الإخراجية</h3>
       <p class="muted" style="font-size:13px">اعرض نماذج من أعمالك: فيلم قصير، مشهد، فيديو كليب، حلقة برنامج، إعلان، وثائقي أو أي عمل مرئي. الحد الأقصى لكل فيديو 10 دقائق وحجم الملف 50 ميجابايت. لن يظهر العمل قبل اعتماد ملفك الشخصي وموافقة الإدارة على العمل.</p>
@@ -2812,7 +2814,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <p id="writerScriptMessage" role="status" aria-live="polite" class="muted"></p>
       <h4 style="color:var(--gold)">ملفاتي وحالة المراجعة</h4><div id="myWriterScripts" class="grid"><p class="muted">جارٍ تحميل ملفاتك...</p></div>
     </div>
-    <div class="panel" id="writerIdeasPanel" style="margin-top:18px">
+    <div class="panel" id="writerIdeasPanel" style="display:none;margin-top:18px">
       <h3 style="color:var(--gold)">أفكاري السينمائية</h3>
       <p class="muted" style="font-size:13px">يحق لكل كاتب عرض فكرتين فقط. اكتب ملخصًا يحمي تفاصيل فكرتك، وحدد نوع العمل وحالته. لا تظهر الفكرة للجمهور إلا بعد اعتماد المدير.</p>
       <form id="writerIdeaForm">
@@ -3231,6 +3233,15 @@ function accountMessage(message){
   const el=document.getElementById("accountMessage");
   if(el) el.textContent=message;
 }
+function toggleProfessionalProfile(){
+  const form=document.getElementById("accountProfileForm");
+  if(!form||!accountUser){accountMessage("سجّل الدخول أولًا.");return;}
+  const opening=form.style.display==="none"||!form.style.display;
+  form.style.display=opening?"grid":"none";
+  const status=document.getElementById("accountProfileStatus");if(status)status.style.display=opening?"block":"none";
+  const button=document.getElementById("toggleProfessionalProfile");if(button)button.textContent=opening?"إغلاق نموذج الملف المهني":"إدارة ملف الموهبة أو المشروع";
+  if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});
+}
 function accountShowUser(user,profile){
   accountUser=user||null;
   const authPanel=document.getElementById("accountAuthPanel");
@@ -3259,6 +3270,9 @@ function accountShowUser(user,profile){
   const experienceField=document.getElementById("accountEditExperience");if(experienceField)experienceField.value=profile?.experience_years??"";
   const photoField=document.getElementById("accountEditPhoto");if(photoField)photoField.value="";
   const writerPanel=document.getElementById("writerIdeasPanel");if(writerPanel)writerPanel.style.display=accountType==="writer"?"block":"none";
+  const profileForm=document.getElementById("accountProfileForm");if(profileForm)profileForm.style.display="none";
+  const profileStatusVisibility=document.getElementById("accountProfileStatus");if(profileStatusVisibility)profileStatusVisibility.style.display="none";
+  const profileToggle=document.getElementById("toggleProfessionalProfile");if(profileToggle)profileToggle.textContent=profile?.account_type?"إدارة ملف الموهبة أو المشروع":"إنشاء ملف موهبة أو مشروع (اختياري)";
   const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=accountType==="director"?"block":"none";
   const scriptsPanel=document.getElementById("writerScriptsPanel");if(scriptsPanel)scriptsPanel.style.display=accountType==="writer"?"block":"none";
   const profileStatus=document.getElementById("accountProfileStatus");
@@ -3355,7 +3369,7 @@ async function accountLoadProfile(user){
     if(error) throw error;
     accountShowUser(user,data||null);
     if(typeof accountLoadWriterContact==="function") await accountLoadWriterContact();
-    if(typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
+    if(data?.account_type==="writer" && typeof accountLoadWriterIdeas==="function") await accountLoadWriterIdeas();
     if(typeof accountLoadWriterScripts==="function" && data?.account_type==="writer") await accountLoadWriterScripts();
     if(typeof accountLoadDirectorWorks==="function") await accountLoadDirectorWorks();
     await accountLoadMemberWorks();
@@ -6919,11 +6933,14 @@ async function adminReviewWriterIdea(id,status){
 }
 document.getElementById("writersSearch")?.addEventListener("input",renderWriters);
 document.getElementById("accountEditType")?.addEventListener("change",()=>{
-  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=document.getElementById("accountEditType").value==="director"?"block":"none";
-  const isWriter=document.getElementById("accountEditType").value==="writer",panel=document.getElementById("writerIdeasPanel");
+  const selectedType=document.getElementById("accountEditType").value;
+  const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=selectedType==="director"?"block":"none";
+  const isWriter=selectedType==="writer",panel=document.getElementById("writerIdeasPanel"),scripts=document.getElementById("writerScriptsPanel");
   if(panel)panel.style.display=isWriter?"block":"none";
+  if(scripts)scripts.style.display=isWriter?"block":"none";
+  if(isWriter&&accountUser)accountLoadWriterIdeas();
 });
-if(accountUser){accountLoadWriterContact();accountLoadWriterIdeas();}
+if(accountUser){accountLoadWriterContact();if(document.getElementById("accountEditType")?.value==="writer")accountLoadWriterIdeas();}
 /* ملف أعمال المخرجين — فيديوهات بحد أقصى 10 دقائق مع مراجعة إدارية */
 let directorWorkEditingId=null;
 const directorWorkLabels={short_film:"فيلم قصير",scene:"مشهد سينمائي أو درامي",music_video:"فيديو كليب",program_episode:"حلقة برنامج",advertisement:"إعلان",documentary:"فيلم وثائقي",report:"تقرير تلفزيوني",other:"عمل مرئي آخر"};
