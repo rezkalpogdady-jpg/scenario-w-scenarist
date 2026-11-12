@@ -704,6 +704,12 @@ if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
 if(id==='films' && typeof renderFilms==='function') renderFilms();
+/* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
+if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
+if(id==='stories') ensurePublishedCrimeStories();
+if(id==='ideas') ensureApprovedIdeas();
+if(id==='archive' && typeof window.ensureArchiveLoaded==='function') window.ensureArchiveLoaded();
+if(id==='community' && typeof window.ensureCommunityLoaded==='function') window.ensureCommunityLoaded();
 if(id==='library' && typeof loadPublishedScenarioScripts==='function') loadPublishedScenarioScripts();
 if(id==='books' && typeof loadBookListings==='function') loadBookListings();
 document.querySelectorAll('#mainNav button').forEach(button=>{
@@ -2673,7 +2679,7 @@ function renderIdeas(){
 async function loadApprovedIdeas(){
   const box=document.getElementById("ideasItems");
   try{
-    const {data,error}=await ideasGetClient().from("idea_submissions").select("id,title,work_type,summary,stage,status,created_at").eq("status","approved").order("created_at",{ascending:false});
+    const {data,error}=await ideasGetClient().from("idea_submissions").select("id,title,work_type,summary,stage,status,created_at").eq("status","approved").order("created_at",{ascending:false}).limit(50);
     if(error) throw error;
     workshopIdeas=data||[];renderIdeas();
   }catch(error){
@@ -5754,6 +5760,11 @@ async function loadApprovedMemberProfiles(){
   renderWriters();renderDirectors();renderTalents();
   if(typeof loadApprovedDirectorWorks==="function") await loadApprovedDirectorWorks();
 }
+let approvedMemberProfilesPromise=null;
+function ensureApprovedMemberProfiles(){
+  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
+  return approvedMemberProfilesPromise;
+}
 
 /* تحميل القصص المعتمدة من جدول crime_stories؛ لا تُعرض الطلبات المعلقة أو المرفوضة */
 async function loadPublishedCrimeStories(){
@@ -5778,6 +5789,11 @@ async function loadPublishedCrimeStories(){
     approvedCrimeStories=[];
     console.warn("تعذر تحميل حكايات الجرائم المعتمدة",error);
   }
+}
+let publishedCrimeStoriesPromise=null;
+function ensurePublishedCrimeStories(){
+  if(!publishedCrimeStoriesPromise) publishedCrimeStoriesPromise=loadPublishedCrimeStories().then(()=>renderStories()).catch(error=>{publishedCrimeStoriesPromise=null;console.warn("تعذر تحميل حكايات الجرائم",error);});
+  return publishedCrimeStoriesPromise;
 }
 
 /* إنشاء اتصال عام لقراءة المحتوى المنشور */
@@ -5810,13 +5826,8 @@ async function loadPublicContent(){
     }
 
     distributePublicContent(data || []);
-    /* تحميل الجرائم وملفات المواهب بالتوازي بدل انتظار كل طلب للذي يليه */
-    await Promise.all([
-      loadPublishedCrimeStories(),
-      loadApprovedMemberProfiles()
-    ]);
+    /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
     renderStories();
-    await loadApprovedTalentVideos();
     publicContentMessage("تم تحميل المحتوى المنشور.");
   }catch(error){
     publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
@@ -5865,7 +5876,11 @@ async function recordAnonymousPageVisit(){
 /* تحميل المحتوى عند فتح الموقع */
 loadPublicContent();
 recordAnonymousPageVisit();
-loadApprovedIdeas();
+let approvedIdeasPromise=null;
+function ensureApprovedIdeas(){
+  if(!approvedIdeasPromise) approvedIdeasPromise=loadApprovedIdeas().catch(error=>{approvedIdeasPromise=null;console.warn("تعذر تحميل أفكار الورشة",error);});
+  return approvedIdeasPromise;
+}
 </script>
 
 <!-- نهاية الجزء الثامن -->
@@ -6138,7 +6153,7 @@ loadApprovedIdeas();
   }
   async function loadArchive(){
     const box=$('archiveItems');if(!box)return;
-    try{const {data,error}=await client().from('site_content').select('id,title,category,description,image_url,content_url,extra_data').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(200);if(error)throw error;archiveRows=data||[];renderArchive();}
+    try{const {data,error}=await client().from('site_content').select('id,title,category,description,image_url,content_url,extra_data').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(60);if(error)throw error;archiveRows=data||[];renderArchive();}
     catch(e){box.innerHTML=`<div class="panel">تعذر تحميل الأرشيف. تأكد من إعداد قاعدة البيانات واتصال الموقع. ${esc(e.message)}</div>`;}
   }
   window.adminRefreshArchive=loadArchive;
@@ -6160,7 +6175,7 @@ loadApprovedIdeas();
   async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
     try{
-      const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(100);if(error)throw error;
+      const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(30);if(error)throw error;
       if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return;}
       const user=await currentUser();
       let likeStatsAvailable=!!user,likeStats=[];
@@ -6211,16 +6226,9 @@ loadApprovedIdeas();
     if(!topicIds.length)return;
     const grouped=new Map(topicIds.map(id=>[id,[]]));
     try{
-      const pageSize=1000;let offset=0;
-      while(true){
-        const {data,error}=await client().from('topic_replies').select('topic_id,display_name,body,created_at').in('topic_id',topicIds).eq('status','approved').order('created_at',{ascending:true}).order('id',{ascending:true}).range(offset,offset+pageSize-1);
-        if(error)throw error;
-        const rows=data||[];
-        rows.forEach(reply=>{const list=grouped.get(reply.topic_id);if(list&&list.length<100)list.push(reply);});
-        if(rows.length<pageSize)break;
-        offset+=pageSize;
-        if(offset>=10000)break;
-      }
+      const {data,error}=await client().from('topic_replies').select('topic_id,display_name,body,created_at').in('topic_id',topicIds).eq('status','approved').order('created_at',{ascending:true}).order('id',{ascending:true}).range(0,299);
+      if(error)throw error;
+      (data||[]).forEach(reply=>{const list=grouped.get(reply.topic_id);if(list&&list.length<20)list.push(reply);});
       topicIds.forEach(id=>{
         const box=$('replies-'+id);if(!box)return;
         const replies=grouped.get(id)||[];
@@ -6235,7 +6243,9 @@ loadApprovedIdeas();
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
   const priorShowPage=window.showPage;
   if(typeof priorShowPage==='function')window.showPage=function(id,options){priorShowPage(id,options);if(id==='archive')loadArchive();if(id==='community')loadTopics();};
-  document.addEventListener('DOMContentLoaded',()=>{if($('archiveItems'))loadArchive();if($('communityTopics'))loadTopics();});
+  let archiveLoadPromise=null,communityLoadPromise=null;
+  window.ensureArchiveLoaded=()=>{if(!archiveLoadPromise)archiveLoadPromise=loadArchive().catch(error=>{archiveLoadPromise=null;throw error;});return archiveLoadPromise;};
+  window.ensureCommunityLoaded=()=>{if(!communityLoadPromise)communityLoadPromise=loadTopics().catch(error=>{communityLoadPromise=null;throw error;});return communityLoadPromise;};
   async function adminLoadCommunityModeration(){
     if(typeof adminSupabase==="undefined" || !adminSupabase || !adminSession)return;
     const configs=[
