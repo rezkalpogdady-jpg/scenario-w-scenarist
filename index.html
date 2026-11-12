@@ -3430,23 +3430,6 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
   }catch(error){accountMessage("تعذر حفظ الملف الشخصي: "+(error.message||"راجع إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
 });
-document.getElementById("accountNewPasswordForm")?.addEventListener("submit",async function(event){
-  event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const password=document.getElementById("accountNewPassword").value;
-  const confirmation=document.getElementById("accountConfirmPassword").value;
-  if(password.length<8){accountMessage("كلمة المرور يجب ألا تقل عن 8 أحرف.");return;}
-  if(password!==confirmation){accountMessage("كلمتا المرور غير متطابقتين.");return;}
-  try{
-    button.disabled=true;
-    const {error}=await accountClient().auth.updateUser({password});
-    if(error) throw error;
-    this.reset();
-    document.getElementById("accountRecoveryPanel").style.display="none";
-    accountMessage("تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
-  }catch(error){accountMessage("تعذر تغيير كلمة المرور: "+(error.message||"حاول فتح رابط الاستعادة مرة أخرى."));}
-  finally{button.disabled=false;}
-});
 let editingMemberWorkId = null;
 async function accountLoadNotifications(){
   const box=document.getElementById("memberNotificationsList");
@@ -3573,24 +3556,10 @@ document.getElementById("accountLogout")?.addEventListener("click",async()=>{
   try{const {error}=await accountClient().auth.signOut();if(error)throw error;accountShowUser(null,null);accountMessage("تم تسجيل الخروج.");}
   catch(error){accountMessage("تعذر تسجيل الخروج: "+(error.message||""));}
 });
-/* استقبال رابط استعادة كلمة المرور وتحديث حالة الحساب عند تغير الجلسة */
+/* تحديث حالة حساب العضو عند تغير جلسة الدخول */
 try{
   accountClient().auth.onAuthStateChange((event,session)=>{
-    if(event==="PASSWORD_RECOVERY"){
-      const recoveryTarget=localStorage.getItem("scenarioRecoveryTarget")||"account";
-      localStorage.removeItem("scenarioRecoveryTarget");
-      if(recoveryTarget==="admin"){
-        const adminRecovery=document.getElementById("adminRecoveryPanel");
-        if(adminRecovery) adminRecovery.style.display="block";
-        if(typeof showPage==="function") showPage("admin");
-        adminSetMessage("adminLoginMessage","تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
-      }else{
-        const recovery=document.getElementById("accountRecoveryPanel");
-        if(recovery) recovery.style.display="block";
-        if(typeof showPage==="function") showPage("account");
-        accountMessage("تم التحقق من رابط الاستعادة. عيّن كلمة مرور جديدة.");
-      }
-    }else if(event==="SIGNED_IN" && session?.user){
+  }else if(event==="SIGNED_IN" && session?.user){
       Promise.resolve().then(()=>accountLoadProfile(session.user));
     }else if(event==="SIGNED_OUT"){
       accountShowUser(null,null);
