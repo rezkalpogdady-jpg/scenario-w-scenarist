@@ -711,6 +711,7 @@ button.classList.toggle('active',button.dataset.page===id);
 });
 window.scrollTo({top:0,behavior:'smooth'});
 if(id==="home")updateReadingResumeCard();
+if(id==="chess"&&!chessGame){ensureChessRules().then(()=>{if(document.getElementById("chess")?.classList.contains("active")&&!chessGame)resetChess();}).catch(()=>chessMessage("تعذر تحميل لعبة الشطرنج. تحقق من الاتصال وحاول مرة أخرى."));}
 }
 updateReadingResumeCard();
 window.addEventListener("pagehide",saveReadingProgress);
@@ -1392,6 +1393,7 @@ function loadScenarioExternalScript(src,isReady){
   return scenarioExternalScriptLoads[src];
 }
 function ensureTusClient(){return loadScenarioExternalScript("https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js",()=>!!window.tus?.Upload);}
+function ensureChessRules(){return loadScenarioExternalScript("https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js",()=>typeof window.Chess==="function");}
 
 /* بيانات الأقسام */let creativeProfiles = {
   writers: [],
@@ -2600,7 +2602,6 @@ renderRadioStations();
 .idea-meta{font-size:12px;color:var(--muted)}
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>
 /* نادي الشطرنج: محلي + Stockfish + مباريات أعضاء عبر Supabase */
 const chessSymbols={w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}};
@@ -2641,7 +2642,6 @@ function chessSubscribeOnline(gameId){if(chessOnlineChannel)chessSupabase().remo
 async function chessOnlineSaveMove(){if(!chessOnlineGame||chessOnlineBusy)return;chessOnlineBusy=true;try{const row=chessOnlineGame,finished=chessGame.game_over();const result=chessGame.in_checkmate()?(chessGame.turn()==="w"?"فاز الأسود بكش مات":"فاز الأبيض بكش مات"):chessGame.in_draw()?"تعادل":null;const {data,error}=await chessSupabase().rpc("submit_chess_position",{p_game_id:row.id,p_fen:chessGame.fen(),p_moves:chessGame.history(),p_turn:chessGame.turn(),p_status:finished?"finished":"playing",p_result:result});if(error)throw error;chessOnlineGame=Array.isArray(data)?data[0]:data;}catch(e){chessMessage("تعذر حفظ النقلة: "+(e.message||"تحقق من سياسات قاعدة البيانات."));}finally{chessOnlineBusy=false;}}
 async function chessLoadOpenGames(){const box=document.getElementById("chessOpenGames");if(!box)return;try{await chessRequireUser();const {data,error}=await chessSupabase().from("chess_games").select("id,invite_code,created_at").eq("status","waiting").is("black_user_id",null).order("created_at",{ascending:false}).limit(10);if(error)throw error;box.innerHTML=data?.length?"<h4>تحديات تنتظر لاعبًا</h4>"+data.map(g=>`<div style="padding:8px;border-bottom:1px solid var(--border)"><span dir="ltr">${adminEscape(g.invite_code)}</span> <button class="btn" type="button" onclick="chessJoinOnlineGame('${adminEscape(g.invite_code)}')">انضمام</button></div>`).join(""):"<p style=\"color:var(--muted)\">لا توجد تحديات مفتوحة حاليًا.</p>";}catch(e){box.textContent="تعذر عرض التحديات: "+(e.message||"سجّل الدخول وتأكد من إعداد قاعدة البيانات.");}}
 function GenUIChessCopyInvite(){if(window.currentChessInviteCode&&navigator.clipboard?.writeText){navigator.clipboard.writeText(window.currentChessInviteCode).then(()=>chessMessage("تم نسخ كود الدعوة."),()=>chessMessage("انسخ كود الدعوة يدويًا."));}else chessMessage("انسخ كود الدعوة الظاهر يدويًا.");}
-resetChess();
 </script>
 <script>
 /* =========================
