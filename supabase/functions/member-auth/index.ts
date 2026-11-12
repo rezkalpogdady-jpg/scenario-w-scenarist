@@ -27,13 +27,15 @@ function randomMemberNumber() {
 function validDate(value: unknown) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + "T00:00:00Z");
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return !Number.isNaN(date.getTime())
+    && date.toISOString().slice(0, 10) === value
+    && date.getTime() <= Date.now();
 }
 async function createMember(body: Record<string, unknown>) {
   const name = String(body.display_name ?? "").trim();
   const password = String(body.password ?? "");
   const confirm = String(body.confirm_password ?? "");
-  const type = String(body.account_type ?? "writer");
+  const type = "writer";
   const gender = String(body.gender ?? "");
   const birthDate = body.birth_date;
   const allowedTypes = ["writer","director","actor","presenter","voice","producer"];
@@ -58,11 +60,13 @@ async function createMember(body: Record<string, unknown>) {
   if (createError || !created.user) return reply(400,{error:"تعذر إنشاء العضوية. حاول مرة أخرى."});
   const userId = created.user.id;
   let imageUrl: string | null = null;
+  let uploadedAvatarPath: string | null = null;
   try {
     const {error:directoryError} = await admin.from("member_login_directory").insert({member_number:memberNumber,user_id:userId});
     if (directoryError) throw directoryError;
     const imageData = typeof body.avatar_data_url === "string" ? body.avatar_data_url : "";
     if (imageData) {
+      if (imageData.length > 4200000) throw new Error("حجم الصورة أكبر من المسموح.");
       const match = imageData.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
       if (!match) throw new Error("صيغة الصورة غير مدعومة.");
       const mime = match[1];
@@ -70,6 +74,7 @@ async function createMember(body: Record<string, unknown>) {
       if (!bytes.length || bytes.length > 3145728) throw new Error("حجم الصورة يجب ألا يتجاوز 3 ميجابايت.");
       const ext = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
       const path = `${userId}/avatar.${ext}`;
+      uploadedAvatarPath = path;
       const {error:uploadError} = await admin.storage.from("member-avatars").upload(path,bytes,{contentType:mime,upsert:true});
       if (uploadError) throw uploadError;
       imageUrl = admin.storage.from("member-avatars").getPublicUrl(path).data.publicUrl;
@@ -83,6 +88,7 @@ async function createMember(body: Record<string, unknown>) {
     if (loginError || !sessionData.session) throw loginError || new Error("تعذر بدء الجلسة.");
     return reply(200,{member_number:memberNumber,session:sessionData.session,user:sessionData.user});
   } catch (error) {
+    if (uploadedAvatarPath) await admin.storage.from("member-avatars").remove([uploadedAvatarPath]);
     await admin.auth.admin.deleteUser(userId);
     return reply(400,{error:error instanceof Error ? error.message : "تعذر إكمال إنشاء العضوية."});
   }
@@ -92,7 +98,14 @@ async function signInMember(body: Record<string, unknown>) {
   const password = String(body.password ?? "");
   if (!/^\d{8}$/.test(memberNumber) || !password) return reply(400,{error:"أدخل رقم العضوية والرقم السري."});
   const {data:record,error} = await admin.from("member_login_directory").select("user_id").eq("member_number",memberNumber).maybeSingle();
-  if (error || !record) return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
+  if (error || !record) {
+    // Pass unknown member numbers through Auth as well, so repeated guesses still hit Auth rate limits.
+    await publicAuth.auth.signInWithPassword({
+      email: "unknown-member@members.scenario-w-scenarist.invalid",
+      password
+    });
+    return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
+  }
   const {data:userData,error:userError} = await admin.auth.admin.getUserById(record.user_id);
   if (userError || !userData.user?.email) return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
   const {data,error:loginError} = await publicAuth.auth.signInWithPassword({email:userData.user.email,password});
