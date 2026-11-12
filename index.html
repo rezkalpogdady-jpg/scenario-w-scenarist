@@ -2718,7 +2718,6 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <p class="muted">التسجيل برقم عضوية ينشئه النظام. الدخول برقم العضوية والرقم السري فقط، دون بريد إلكتروني أو هاتف.</p>
     <form id="accountSignupForm">
       <input id="accountName" required maxlength="120" placeholder="الاسم">
-      <select id="accountType" required><option value="">اختر مجال حسابك</option><option value="writer">كاتب</option><option value="director">مخرج</option><option value="actor">ممثل</option><option value="presenter">مقدم برامج</option><option value="voice">مذيع / تعليق صوتي</option><option value="producer">منتج / صاحب مشروع</option></select>
       <select id="accountGender" required><option value="">النوع</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
       <label for="accountBirthDate">تاريخ الميلاد</label><input id="accountBirthDate" type="date" required>
       <label for="accountAvatar">الصورة الشخصية (اختياري)</label><input id="accountAvatar" type="file" accept="image/jpeg,image/png,image/webp">
@@ -3366,7 +3365,7 @@ document.getElementById("accountSignupForm")?.addEventListener("submit",async fu
   if(file&&(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728)){accountMessage("الصورة يجب أن تكون JPG أو PNG أو WEBP وبحد أقصى 3 ميجابايت.");return;}
   try{button.disabled=true;accountMessage("جارٍ إنشاء العضوية...");let avatar_data_url="";
     if(file)avatar_data_url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(new Error("تعذر قراءة الصورة."));reader.readAsDataURL(file);});
-    const result=await memberAuthRequest({action:"signup",display_name:document.getElementById("accountName").value.trim(),account_type:document.getElementById("accountType").value,gender:document.getElementById("accountGender").value,birth_date:document.getElementById("accountBirthDate").value,password:password,confirm_password:confirm,avatar_data_url:avatar_data_url});
+    const result=await memberAuthRequest({action:"signup",display_name:document.getElementById("accountName").value.trim(),account_type:"writer",gender:document.getElementById("accountGender").value,birth_date:document.getElementById("accountBirthDate").value,password:password,confirm_password:confirm,avatar_data_url:avatar_data_url});
     await accountSetMemberSession(result);this.reset();accountMessage("تم إنشاء عضويتك. رقم العضوية: "+result.member_number+" — احتفظ به للدخول.");
     alert("تم إنشاء العضوية بنجاح. رقم العضوية: "+result.member_number+". احتفظ بالرقم للدخول لاحقًا.");
   }catch(error){accountMessage("تعذر إنشاء العضوية: "+(error.message||"راجع البيانات وحاول مرة أخرى."));}finally{button.disabled=false;}
