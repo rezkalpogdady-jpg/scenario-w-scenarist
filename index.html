@@ -7,7 +7,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101010">
-<meta name="description" content="سيناريو وسيناريست منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام والدراما، واكتشاف الكُتّاب والمخرجين والممثلين والمواهب السينمائية.">
+<meta name="description" content="سيناريو وسيناريست منصة عربية مجانية لتعلم كتابة السيناريو والحوار وصناعة الأفلام، ودراسة السينما، واكتشاف الكُتّاب والمخرجين والممثلين والمواهب.">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
 <link rel="canonical" href="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
 <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
 <meta property="og:description" content="منصة عربية مجانية لتعلم كتابة السيناريو، وتطوير الأفلام، واكتشاف المواهب وصناع السينما.">
 <meta property="og:url" content="https://rezkalpogdady-jpg.github.io/scenario-w-scenarist/">
 <meta name="twitter:card" content="summary">
-<title>سيناريو وسيناريست | منصة عربية لتعليم السيناريو وصناعة الأفلام – 6.8.82</title>
+<title>سيناريو وسيناريست | تعلم كتابة السيناريو وصناعة الأفلام واكتشاف المواهب</title>
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -646,6 +646,11 @@ window.addEventListener("pagehide",()=>stopShortFilmPlayers(false));
 document.querySelectorAll('#mainNav button').forEach(button=>{
 button.addEventListener('click',()=>showPage(button.dataset.page));
 });
+const seoRequestedSection=new URLSearchParams(window.location.search).get("section");
+const seoAllowedSections=new Set(["home","academy","library","writers","directors","talents","shorts","stories","news","production","books","radio","chess","ideas","filmStudy","films","archive","community","contact","about"]);
+if(seoRequestedSection && seoAllowedSections.has(seoRequestedSection)){
+document.addEventListener("DOMContentLoaded",()=>showPage(seoRequestedSection),{once:true});
+}
 </script>
 
 
