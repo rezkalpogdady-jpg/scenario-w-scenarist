@@ -61,7 +61,7 @@ begin
       join public.member_profiles mp on mp.user_id = d.user_id
       where d.id::text = p_content_id and d.status = 'approved'
         and mp.account_type = 'director' and mp.profile_status = 'approved'
-        and nullif(d.storage_path,'') is not null
+        and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)
     ) into content_is_public;
   else
     select exists (
