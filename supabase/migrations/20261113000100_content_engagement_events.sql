@@ -2,6 +2,10 @@
 -- Draft migration: reviewed in GitHub branch; do not apply to production until approved.
 begin;
 
+create schema if not exists scenario_analytics_private;
+revoke all on schema scenario_analytics_private from public;
+grant usage on schema scenario_analytics_private to anon, authenticated;
+
 create table if not exists public.content_engagement_events (
   id bigint generated always as identity primary key,
   content_type text not null,
@@ -19,7 +23,7 @@ create index if not exists content_engagement_viewer_idx
 alter table public.content_engagement_events enable row level security;
 revoke all on table public.content_engagement_events from public, anon, authenticated;
 
-create or replace function private.record_public_content_event(
+create or replace function scenario_analytics_private.record_public_content_event(
   p_content_type text,
   p_content_id text,
   p_event_type text,
@@ -92,9 +96,8 @@ begin
 end;
 $function$;
 
-revoke all on function private.record_public_content_event(text,text,text,uuid) from public;
-grant usage on schema private to anon, authenticated;
-grant execute on function private.record_public_content_event(text,text,text,uuid) to anon, authenticated;
+revoke all on function scenario_analytics_private.record_public_content_event(text,text,text,uuid) from public;
+grant execute on function scenario_analytics_private.record_public_content_event(text,text,text,uuid) to anon, authenticated;
 
 create or replace function public.record_public_content_event(
   p_content_type text,
@@ -106,13 +109,13 @@ language sql
 security invoker
 set search_path = ''
 as $function$
-  select private.record_public_content_event(p_content_type,p_content_id,p_event_type,p_viewer_id);
+  select scenario_analytics_private.record_public_content_event(p_content_type,p_content_id,p_event_type,p_viewer_id);
 $function$;
 
 revoke all on function public.record_public_content_event(text,text,text,uuid) from public;
 grant execute on function public.record_public_content_event(text,text,text,uuid) to anon, authenticated;
 
-create or replace function public.admin_content_engagement_stats()
+create or replace function scenario_analytics_private.admin_content_engagement_stats()
 returns jsonb
 language plpgsql
 stable
@@ -158,6 +161,19 @@ begin
   ) x;
   return result;
 end;
+$function$;
+
+revoke all on function scenario_analytics_private.admin_content_engagement_stats() from public;
+grant execute on function scenario_analytics_private.admin_content_engagement_stats() to authenticated;
+
+create or replace function public.admin_content_engagement_stats()
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = ''
+as $function$
+  select scenario_analytics_private.admin_content_engagement_stats();
 $function$;
 
 revoke all on function public.admin_content_engagement_stats() from public;
