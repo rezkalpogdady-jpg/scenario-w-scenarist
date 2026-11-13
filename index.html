@@ -1616,11 +1616,9 @@ function renderShortFilms(){
     const media=poster
       ? '<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy" decoding="async">'
       : '';
-    const externalWatch=video
+    const externalWatch=video&&!isSupabaseStorageUrl(video)
       ? '<a class="btn primary" href="'+escapeHTML(video)+'" target="_blank" rel="noopener noreferrer">مشاهدة خارجية</a>'
-      : (item.work&&safeHttpUrl(item.work)
-        ? '<a class="btn primary" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة خارجية</a>'
-        : '<p style="color:var(--muted)">لا يتوفر رابط مشاهدة خارجي لهذا العمل حاليًا.</p>');
+      : '<p style="color:var(--muted)">لا يتوفر رابط مشاهدة خارجي لهذا العمل حاليًا. يلزم إضافة رابط من YouTube أو منصة فيديو خارجية.</p>';
     return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
@@ -5310,7 +5308,7 @@ function renderFilms(){
   ).map(item=>`
     <article class="feature">
       ${item.image_url
-        ? (item.content_url
+        ? (item.content_url && !isSupabaseStorageUrl(item.content_url)
           ? `<a href="${escapeHTML(safeHttpUrl(item.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(item.id)}')"><img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover"></a>`
           : `<img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover">`)
         : `<div style="height:160px;background:#171717;display:grid;place-items:center;font-size:45px"></div>`}
@@ -5322,7 +5320,9 @@ function renderFilms(){
         ${item.extra_data?.themes ? `<p><strong>القضية:</strong> ${escapeHTML(item.extra_data.themes)}</p>` : ""}
         ${item.extra_data?.message ? `<p><strong>رسالة العمل:</strong> ${escapeHTML(item.extra_data.message)}</p>` : ""}
         ${item.extra_data?.writer_lesson ? `<p><strong>درس للكاتب:</strong> ${escapeHTML(item.extra_data.writer_lesson)}</p>` : ""}
-        ${item.content_url ? filmSourceLinkMarkup(item.content_url,item.id) : ""}
+        ${item.content_url && !isSupabaseStorageUrl(item.content_url)
+          ? filmSourceLinkMarkup(item.content_url,item.id)
+          : (item.content_url ? '<p style="color:var(--muted)">الفيديو محفوظ على استضافة المنصة؛ أضف رابطًا خارجيًا بدلًا منه لتقليل استهلاك البيانات.</p>' : "")}
         ${adminSession ? `<div class="admin-actions" style="margin-top:12px"><button class="btn" type="button" onclick="adminEditFilm('${item.id}')">تعديل</button><button class="btn" type="button" onclick="adminDeleteFilm('${item.id}')">حذف</button></div>` : ""}
       </div>
     </article>
@@ -5499,6 +5499,16 @@ function safeHttpUrl(value){
     const url=new URL(String(value),window.location.href);
     return ["http:","https:"].includes(url.protocol) ? url.href : "";
   }catch(_){ return ""; }
+}
+
+function isSupabaseStorageUrl(value){
+  const url=safeHttpUrl(value);
+  if(!url)return false;
+  try{
+    const parsed=new URL(url);
+    return /(^|\\.)supabase\\.co$/i.test(parsed.hostname) &&
+      /\\/storage\\/v1\\/object\\//i.test(parsed.pathname);
+  }catch(_){return false;}
 }
 
 function directVideoMarkup(value,label="مشاهدة الفيديو",viewType="",viewId=""){
