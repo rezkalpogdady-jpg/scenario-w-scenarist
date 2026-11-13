@@ -5202,7 +5202,7 @@ const FEATURED_FILM_PLAYLISTS = [
 function filmSourceLinkMarkup(value,id){
  const url=safeHttpUrl(value);
  if(!url)return "";
- return '<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(id)+'\')">زيارة المصدر الأصلي ومشاهدة العمل</a>';
+ return '<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(id)+'\');recordPublicContentEvent(\'film\',\''+escapeHTML(id)+'\',\'open\')">زيارة المصدر الأصلي ومشاهدة العمل</a>';
 }
 
 function getAllSeriesPlaylists(){
