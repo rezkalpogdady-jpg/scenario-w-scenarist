@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.99: ملفات الأعضاء والتعليقات الفورية دون انتظار موافقة الإدارة مع حماية من الإساءة | تحديث 6.8.96: دمج استكمال القراءة محليًا مع الروابط المستقلة لكل قسم ودعم الرجوع والتقدم دون طلبات قاعدة بيانات: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.100: اختيار العضو من قائمة أرقام العضوية وترقية المدير بصلاحيات كاملة مع تحكم المالك فقط. 6.8.99: ملفات الأعضاء والتعليقات الفورية دون انتظار موافقة الإدارة مع حماية من الإساءة | تحديث 6.8.96: دمج استكمال القراءة محليًا مع الروابط المستقلة لكل قسم ودعم الرجوع والتقدم دون طلبات قاعدة بيانات: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.99">
+<body data-platform-version="6.8.100">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -2925,15 +2925,12 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
-    <div class="panel" id="adminUsersPanel" style="margin-top:14px">
-      <h3 style="color:var(--gold);margin-top:0">إدارة المديرين والأعضاء</h3>
-      <p class="admin-status">أضف أي عضو لديه حساب مسجل بإدخال بريده الإلكتروني المستخدم في المنصة، وسيحصل على صلاحيات المدير. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
-      <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="adminNewUserEmail" type="email" required placeholder="البريد الإلكتروني المسجل للعضو" style="flex:1;min-width:220px">
-        <button class="btn primary" type="submit">ترقية العضو إلى مدير</button>
-      </form>
+    <div class="panel" id="adminUsersPanel" style="margin-top:14px;display:none">
+      <h3 style="color:var(--gold);margin-top:0">إدارة الأعضاء والمديرين</h3>
+      <p class="admin-status">اختر أي عضو من القائمة لترقيته إلى مدير بصلاحيات إدارة المنصة. يمكنك البحث بالاسم أو رقم العضوية. تعيين المديرين وإلغاء صلاحياتهم متاح لصاحب المنصة فقط.</p>
+      <input id="adminMemberSearch" type="search" placeholder="ابحث باسم العضو أو رقم العضوية" aria-label="بحث عن عضو" style="width:100%;margin:8px 0">
       <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
-      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
+      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأعضاء...</div>
     </div>
 
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
@@ -4101,6 +4098,7 @@ async function adminLoadApprovalNotifications(){
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
 }
 
+let adminCanManageAdmins = false;
 async function adminVerifyAdmin(session){
   adminSession=session;
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
@@ -4130,12 +4128,16 @@ async function adminVerifyAdmin(session){
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
-  document.getElementById("adminUserEmail").textContent=data.user.email || "";
+  adminCanManageAdmins = data.user.id === "0ecade12-50a9-4b30-ba90-4fab3393c7b3";
+  const adminUsersPanel = document.getElementById("adminUsersPanel");
+  if (adminUsersPanel) adminUsersPanel.style.display = adminCanManageAdmins ? "block" : "none";
+  const adminIdentity = document.getElementById("adminUserEmail");
+  if (adminIdentity) adminIdentity.textContent = (data.user.user_metadata?.display_name || "مدير المنصة") + (data.user.app_metadata?.member_number ? " • عضوية " + data.user.app_metadata.member_number : "");
 
   /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
      الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
   const initialAdminLoads = [
-    adminLoadAdminUsers(),
+    ...(adminCanManageAdmins ? [adminLoadAdminUsers()] : []),
     adminLoadRecords(),
     adminLoadScenarioScripts(),
     adminLoadIdeas(),
@@ -4166,37 +4168,48 @@ async function adminManageUsers(action,payload={}){
   if(data?.error) throw new Error(data.error);
   return data;
 }
+let adminMemberRows = [];
+function adminRenderMemberRows(){
+  const box=document.getElementById("adminUsersList");
+  const search=(document.getElementById("adminMemberSearch")?.value||"").trim().toLowerCase();
+  if(!box)return;
+  const rows=adminMemberRows.filter(item =>
+    !search || String(item.display_name||"").toLowerCase().includes(search) || String(item.member_number||"").includes(search)
+  );
+  box.innerHTML=rows.length?rows.map(item=>{
+    const status=item.is_owner?'<strong style="color:var(--gold)">مالك المنصة</strong>':item.is_admin?'<strong style="color:var(--gold)">مدير</strong>':'<span class="admin-status">عضو</span>';
+    const action=item.is_owner?'':item.is_admin
+      ?'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.user_id)+'">إلغاء صلاحية المدير</button>'
+      :'<button class="btn primary" type="button" data-promote-member="'+adminEscape(item.member_number)+'">ترقية إلى مدير</button>';
+    return '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><div><strong>'+adminEscape(item.display_name||"عضو بدون اسم")+'</strong><div class="admin-status" style="margin-top:4px">رقم العضوية: '+adminEscape(item.member_number)+' • '+status+'</div></div>'+action+'</div>';
+  }).join(""):'<div class="panel">لا توجد نتائج مطابقة.</div>';
+  box.querySelectorAll("[data-promote-member]").forEach(button=>button.addEventListener("click",async()=>{
+    const number=button.getAttribute("data-promote-member");
+    if(!confirm("هل تريد منح هذا العضو صلاحيات مدير المنصة كاملة؟"))return;
+    button.disabled=true;
+    try{const result=await adminManageUsers("add",{member_number:number});adminSetMessage("adminUsersMessage",result.message||"تمت ترقية العضو.");await adminLoadAdminUsers();}
+    catch(error){adminSetMessage("adminUsersMessage","تعذرت الترقية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
+  }));
+  box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
+    const id=button.getAttribute("data-remove-admin");
+    if(!confirm("هل تريد إلغاء صلاحيات المدير من هذا العضو؟"))return;
+    button.disabled=true;
+    try{const result=await adminManageUsers("remove",{user_id:id});adminSetMessage("adminUsersMessage",result.message||"تم إلغاء الصلاحية.");await adminLoadAdminUsers();}
+    catch(error){adminSetMessage("adminUsersMessage","تعذر إلغاء الصلاحية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
+  }));
+}
 async function adminLoadAdminUsers(){
   const box=document.getElementById("adminUsersList");
-  if(!box || !adminSession) return;
-  box.textContent="جارٍ تحميل المديرين...";
+  if(!box || !adminSession || !adminCanManageAdmins)return;
+  box.textContent="جارٍ تحميل قائمة الأعضاء...";
   try{
     const data=await adminManageUsers("list");
-    const admins=data.admins||[];
-    box.innerHTML=admins.length?admins.map(item=>'<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><span>'+adminEscape(item.email||"حساب بدون بريد ظاهر")+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?' <strong style="color:var(--gold)">مالك المنصة</strong>':'')+'</span>'+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?'':'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.id)+'">إزالة الصلاحية</button>')+'</div>').join(""):'<div class="panel">لا يوجد أدمنز مسجلون.</div>';
-    box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
-      const id=button.getAttribute("data-remove-admin");
-      if(!confirm("هل تريد إزالة صلاحية الأدمن من هذا الحساب؟")) return;
-      button.disabled=true;
-      try{await adminManageUsers("remove",{user_id:id});await adminLoadAdminUsers();adminSetMessage("adminUsersMessage","تمت إزالة صلاحية الأدمن.");}
-      catch(error){adminSetMessage("adminUsersMessage","تعذر إزالة الأدمن: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
-    }));
-  }catch(error){box.textContent="تعذر تحميل قائمة الأدمنز: "+(error.message||"");}
+    adminMemberRows=data.members||[];
+    adminRenderMemberRows();
+  }catch(error){box.textContent="تعذر تحميل قائمة الأعضاء: "+(error.message||"");}
 }
-document.getElementById("adminAddUserForm")?.addEventListener("submit",async function(event){
-  event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const email=document.getElementById("adminNewUserEmail").value.trim();
-  try{
-    button.disabled=true;
-    adminSetMessage("adminUsersMessage","جارٍ إضافة الأدمن...");
-    const result=await adminManageUsers("add",{email});
-    this.reset();
-    adminSetMessage("adminUsersMessage",result.message||"تمت إضافة الأدمن بنجاح.");
-    await adminLoadAdminUsers();
-  }catch(error){adminSetMessage("adminUsersMessage","تعذر إضافة الأدمن: "+(error.message||"حاول مرة أخرى."));}
-  finally{button.disabled=false;}
-});
+document.getElementById("adminMemberSearch")?.addEventListener("input",adminRenderMemberRows);
+
 
 /* تسجيل الدخول */
 document.getElementById("adminLoginForm")?.addEventListener("submit",async function(event){
