@@ -5484,6 +5484,8 @@ function openSeriesPlaylist(seriesId){
   const item=getAllSeriesPlaylists().find(entry=>entry.id===seriesId);
   const panel=document.getElementById("seriesInPageViewer");
   if(!item || !panel)return;
+  const analyticsRecordId=item.recordId||item.posterRecord?.id||(publicContentRecords||[]).find(record=>record.content_type==="films"&&String(record.title||"").trim()===item.title)?.id;
+  if(analyticsRecordId)recordPublicContentEvent("film",analyticsRecordId,"open");
   if(seriesInPagePlayer){
     try{seriesInPagePlayer.destroy();}catch(error){}
     seriesInPagePlayer=null;
@@ -5536,8 +5538,7 @@ function openSeriesPlaylist(seriesId){
         },
         onStateChange:function(event){
           if(event.data===YT.PlayerState.PLAYING){
-            const analyticsId=item.recordId||item.posterRecord?.id;
-            if(analyticsId)recordPublicContentEvent("film",analyticsId,"video_play");
+            if(analyticsRecordId)recordPublicContentEvent("film",analyticsRecordId,"video_play");
           }
         },
         onError:function(){
