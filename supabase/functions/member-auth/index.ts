@@ -113,7 +113,8 @@ async function signInMember(body: Record<string, unknown>) {
   const password = String(body.password ?? "");
   if (!/^\d{8}$/.test(memberNumber) || !password) return reply(400,{error:"أدخل رقم العضوية والرقم السري."});
   const {data:record,error} = await admin.from("member_login_directory").select("user_id").eq("member_number",memberNumber).maybeSingle();
-  if (error || !record) {
+  if (error) throw new Error("تعذر التحقق من رقم العضوية مؤقتًا.");
+  if (!record) {
     // Pass unknown member numbers through Auth as well, so repeated guesses still hit Auth rate limits.
     await publicAuth.auth.signInWithPassword({
       email: "unknown-member@members.scenario-w-scenarist.invalid",
@@ -122,7 +123,8 @@ async function signInMember(body: Record<string, unknown>) {
     return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
   }
   const {data:userData,error:userError} = await admin.auth.admin.getUserById(record.user_id);
-  if (userError || !userData.user?.email) return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
+  if (userError) throw new Error("تعذر التحقق من حساب العضوية مؤقتًا.");
+  if (!userData.user?.email) return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
   const {data,error:loginError} = await publicAuth.auth.signInWithPassword({email:userData.user.email,password});
   if (loginError || !data.session) return reply(401,{error:"رقم العضوية أو الرقم السري غير صحيح."});
   return reply(200,{session:data.session,user:data.user});
@@ -137,17 +139,40 @@ Deno.serve(async (req: Request) => {
     Deno.env.get("SUPABASE_PUBLISHABLE_KEY")
   ].filter((value): value is string => Boolean(value));
   if (!allowedKeys.includes(suppliedKey)) return reply(401,{error:"طلب غير مصرح به."});
+  let rawBody: string;
   try {
-    const rawBody = await req.text();
-    if (new TextEncoder().encode(rawBody).byteLength > 5000000) return reply(413,{error:"حجم الطلب أكبر من المسموح."});
-    const body = JSON.parse(rawBody);
-    if (!body || typeof body !== "object" || Array.isArray(body)) return reply(400,{error:"بيانات الطلب غير صحيحة."});
-    if (body.action !== "signup" && body.action !== "login") return reply(400,{error:"طلب غير معروف."});
-    const action = body.action as "signup" | "login";
-    if (!await consumeRateLimit(req,action,body)) return reply(429,{error:"وصلت للحد المسموح من المحاولات. انتظر قليلًا ثم حاول مرة أخرى."});
+    rawBody = await req.text();
+  } catch {
+    return reply(400,{error:"تعذر قراءة بيانات الطلب."});
+  }
+  if (new TextEncoder().encode(rawBody).byteLength > 5000000) return reply(413,{error:"حجم الطلب أكبر من المسموح."});
+
+  let body: Record<string, unknown>;
+  try {
+    const parsed: unknown = JSON.parse(rawBody);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return reply(400,{error:"بيانات الطلب غير صحيحة."});
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return reply(400,{error:"صيغة بيانات الطلب غير صحيحة."});
+  }
+
+  if (body.action !== "signup" && body.action !== "login") return reply(400,{error:"طلب غير معروف."});
+  const action = body.action as "signup" | "login";
+
+  try {
+    if (!await consumeRateLimit(req,action,body)) {
+      return reply(429,{error:"وصلت للحد المسموح من المحاولات. انتظر قليلًا ثم حاول مرة أخرى."});
+    }
+  } catch (error) {
+    console.error("member-auth rate-limit service unavailable", error instanceof Error ? error.name : "unknown");
+    return reply(503,{error:"خدمة التحقق من المحاولات غير متاحة مؤقتًا. حاول بعد قليل."});
+  }
+
+  try {
     if (action === "signup") return await createMember(body);
     return await signInMember(body);
-  } catch {
-    return reply(400,{error:"تعذر قراءة الطلب."});
+  } catch (error) {
+    console.error("member-auth operation failed", action, error instanceof Error ? error.name : "unknown");
+    return reply(503,{error:"تعذر إتمام العملية مؤقتًا. حاول بعد قليل."});
   }
 });
