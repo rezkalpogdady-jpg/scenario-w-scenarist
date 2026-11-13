@@ -6239,11 +6239,11 @@ function ensureApprovedIdeas(){
     box.dataset.galleryBound='1';
     box.addEventListener('click',event=>{
       const image=event.target.closest('[data-archive-view-id]');
-      if(image)openArchiveGallery(image.dataset.archiveViewId);
+      if(image){recordPublicContentEvent("archive",image.dataset.archiveViewId,"open");openArchiveGallery(image.dataset.archiveViewId);}
     });
     box.addEventListener('keydown',event=>{
       const image=event.target.closest('[data-archive-view-id]');
-      if(image&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openArchiveGallery(image.dataset.archiveViewId);}
+      if(image&&(event.key==='Enter'||event.key===' ')){event.preventDefault();recordPublicContentEvent("archive",image.dataset.archiveViewId,"open");openArchiveGallery(image.dataset.archiveViewId);}
     });
   }
   async function loadArchive(){
