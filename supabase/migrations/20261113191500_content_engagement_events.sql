@@ -8,7 +8,7 @@ grant usage on schema scenario_analytics_private to anon, authenticated;
 
 create table if not exists public.content_engagement_events (
   id bigint generated always as identity primary key,
-  content_type text not null check (content_type in ('academy','crime_story','scenario','archive','stories')),
+  content_type text not null check (content_type in ('academy','crime_story','scenario','archive')),
   content_id text not null,
   event_type text not null check (event_type in ('impression','open')),
   viewer_id uuid not null,
@@ -38,7 +38,7 @@ declare
   lock_key bigint;
 begin
   if p_content_type is null or p_content_id is null or p_viewer_id is null
-     or p_content_type not in ('academy','crime_story','scenario','archive','stories')
+     or p_content_type not in ('academy','crime_story','scenario','archive')
      or p_event_type is null or p_event_type not in ('impression','open')
      or length(p_content_id) > 80 then
     return false;
@@ -62,14 +62,6 @@ begin
       where c.id::text = p_content_id
         and c.content_type = 'academy'
         and c.published = true
-    ) into content_is_public;
-  elsif p_content_type = 'stories' then
-    select exists (
-      select 1 from public.site_content c
-      where c.id::text = p_content_id
-        and c.content_type = 'stories'
-        and c.published = true
-        and nullif(btrim(coalesce(c.description,'')),'') is not null
     ) into content_is_public;
   elsif p_content_type = 'archive' then
     select exists (
@@ -157,11 +149,6 @@ begin
           and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
           and nullif(s.rights_holder,'') is not null
       ))
-      or (e.content_type = 'stories' and exists (
-        select 1 from public.site_content c
-        where c.id::text = e.content_id and c.content_type = 'stories' and c.published = true
-          and nullif(btrim(coalesce(c.description,'')),'') is not null
-      ))
       or (e.content_type = 'archive' and exists (
         select 1 from public.site_content c
         where c.id::text = e.content_id and c.content_type = 'archive' and c.published = true
@@ -181,7 +168,7 @@ begin
     from eligible_events e
     left join public.site_content sc
       on sc.id::text = e.content_id and sc.content_type = e.content_type
-      and e.content_type in ('academy','archive','stories')
+      and e.content_type in ('academy','archive')
     left join public.crime_stories cs
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
