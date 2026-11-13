@@ -1616,14 +1616,15 @@ function renderShortFilms(){
     const poster=safeHttpUrl(item.image||"");
     const extra=item.extra||{};
     const media=video&&extra.media_kind==="video"
-      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
+      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(item.id?' data-content-view-type="shorts" data-content-view-id="'+escapeHTML(item.id)+'"':'')+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
       : (poster?'<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy">':'');
-    return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
+    return '<article class="feature short-film-card"'+(item.id?' data-content-impression-type="shorts" data-content-impression-id="'+escapeHTML(item.id)+'"':"")+'>'+media+'<div class="feature-content">'+
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
       (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a>':'')+
       '</div></article>';
   }).join("");
+  observePublicContentImpressions(box);
   initializeShortFilmPlayers(box);
 }
 
@@ -3799,6 +3800,7 @@ async function adminLoadMemberWorks(){
     return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
   }));
   box.innerHTML=cards.join("");
+  observePublicContentImpressions(box);
 }
 async function adminReviewMemberWork(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
@@ -4952,7 +4954,7 @@ function renderScenarioScriptCards(){
   const category=document.getElementById("libraryCategory")?.value||"";
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
-  const scriptCards=items.map(item=>`<article class="scenario-poster-card">
+  const scriptCards=items.map(item=>`<article class="scenario-poster-card" data-content-impression-type="scenario" data-content-impression-id="${escapeHTML(item.id)}">
 <button class="scenario-poster-open" type="button" aria-label="عرض سيناريو ${escapeHTML(item.title)}" onclick="openScenarioScript(&quot;${item.id}&quot;)">
 ${item.poster_url?`<img class="scenario-poster-image" src="${escapeHTML(item.poster_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy">`:`<div class="scenario-poster-placeholder"><span>سيناريو وسيناريست</span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category||"سيناريو")}</small></div>`}
 <span class="scenario-poster-shade"></span><span class="scenario-poster-title">${escapeHTML(item.title)}</span></button>
@@ -5032,6 +5034,7 @@ async function openLegacyScenario(index){
 }
 async function openScenarioScript(id){
   const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item||!item.published||!item.rights_confirmed)return;
+  recordPublicContentEvent("scenario",id,"open");
   const frame=showScenarioReader(item.title,`المؤلف: ${item.author||"غير محدد"} • قراءة عامة متاحة للجميع`);if(!frame)return;
   try{
     const client=scenarioLibraryClient();
