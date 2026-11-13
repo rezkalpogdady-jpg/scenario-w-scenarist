@@ -1902,8 +1902,14 @@ function renderStories(){
   box.classList.add("crime-posters-grid");
   box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
+    const rawId=String(item.id||"");
+    const crimeDbMatch=rawId.match(/^crime-db-(\d+)$/);
+    const isEditorialStory=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(rawId);
+    const analyticsAttrs=crimeDbMatch
+      ? ' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(crimeDbMatch[1])+'"'
+      : (isEditorialStory?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(rawId)+'"':"");
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':"")+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+analyticsAttrs+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
@@ -1939,6 +1945,8 @@ function openCrimeStory(key){
   const analyticsId=String(item.id||"");
   const crimeDbMatch=analyticsId.match(/^crime-db-(\d+)$/);
   if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
+  else if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(analyticsId))
+    recordPublicContentEvent("stories",analyticsId,"open");
   title.textContent=item.title||"تفاصيل القضية";
   const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
@@ -3876,7 +3884,7 @@ async function adminLoadContentViewStats(){
   });
   const items=[...grouped.values()].sort((a,b)=>a.title.localeCompare(b.title,"ar"));
   box.innerHTML=items.length?items.map(item=>{
-    const typeLabels={academy:"درس / محاضرة",crime_story:"منشور",scenario:"سيناريو مكتوب",archive:"مقال مكتوب"};
+    const typeLabels={academy:"درس / محاضرة",crime_story:"منشور",stories:"منشور مكتوب",scenario:"سيناريو مكتوب",archive:"مقال مكتوب"};
     return '<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(item.title)+'<small style="display:block;color:var(--muted)">'+adminEscape(typeLabels[item.type]||item.type)+'</small></td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(item.seen)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(item.read)+'</td></tr>';
   }).join(""):'<tr><td colspan="3">لسه مفيش مشاهدات أو قراءات مسجلة.</td></tr>';
 }
@@ -5920,7 +5928,7 @@ async function recordPublicContentView(){
 }
 async function recordPublicContentEvent(contentType,contentId,eventType){
   try{
-    const allowedContentTypes=["academy","crime_story","scenario","archive"];
+    const allowedContentTypes=["academy","crime_story","scenario","archive","stories"];
     if(!window.supabase||!adminConfigReady()||!allowedContentTypes.includes(String(contentType))||!contentId||!["impression","open"].includes(eventType))return;
     const viewerId=await getPublicContentViewerId();if(!viewerId)return;
     const client=getPublicContentAnalyticsClient();if(!client)return;
