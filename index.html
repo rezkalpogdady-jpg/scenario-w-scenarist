@@ -4748,12 +4748,15 @@ async function adminLoadScenarioScripts(){
   const box=document.getElementById("libraryScenarioAdminList");
   if(!box)return;
   box.style.display="grid";
-  const cards=await Promise.all(adminScenarioScriptRecords.map(async item=>{
-    let posterUrl="";
-    if(item.poster_path){
-      try{const {data:poster,error:posterError}=await adminSupabase.storage.from("scenario-scripts").createSignedUrl(item.poster_path,900);if(!posterError)posterUrl=poster?.signedUrl||"";}
-      catch(posterError){console.warn("تعذر تجهيز أفيش المعاينة الإدارية:",posterError);}
-    }
+  const posterPaths=[...new Set(adminScenarioScriptRecords.map(item=>item.poster_path).filter(Boolean))];
+  const posterUrls=new Map();
+  if(posterPaths.length){
+    const {data:posters,error:posterError}=await adminSupabase.storage.from("scenario-scripts").createSignedUrls(posterPaths,900);
+    if(posterError)console.warn("تعذر تجهيز أفيشات المعاينة الإدارية:",posterError);
+    (posters||[]).forEach(poster=>{if(poster.path&&poster.signedUrl)posterUrls.set(poster.path,poster.signedUrl);});
+  }
+  const cards=adminScenarioScriptRecords.map(item=>{
+    const posterUrl=posterUrls.get(item.poster_path)||"";
     return '<article class="admin-item" style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
       (posterUrl?'<img src="'+adminEscape(posterUrl)+'" alt="أفيش '+adminEscape(item.title)+'" loading="lazy" style="width:96px;height:136px;object-fit:cover;border-radius:8px">':'<div aria-label="لا يوجد أفيش" style="width:96px;height:136px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;text-align:center">لا يوجد أفيش</div>')+
       '<div style="flex:1;min-width:180px"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions">'+
@@ -4892,11 +4895,14 @@ async function loadPublishedScenarioScripts(force=false){
     if(error)throw error;
 const records=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());
 const client=scenarioLibraryClient();
-scenarioScriptRecords=await Promise.all(records.map(async item=>{
-let posterUrl="";
-if(item.poster_path){try{const {data:poster,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(item.poster_path,3600);if(!posterError)posterUrl=poster?.signedUrl||"";}catch(posterError){console.warn("تعذر تجهيز أفيش السيناريو:",posterError);}}
-return {...item,poster_url:posterUrl};
-}));
+const posterPaths=[...new Set(records.map(item=>item.poster_path).filter(Boolean))];
+const posterUrls=new Map();
+if(posterPaths.length){
+  const {data:posters,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrls(posterPaths,3600);
+  if(posterError)console.warn("تعذر تجهيز أفيشات مكتبة السيناريوهات:",posterError);
+  (posters||[]).forEach(poster=>{if(poster.path&&poster.signedUrl)posterUrls.set(poster.path,poster.signedUrl);});
+}
+scenarioScriptRecords=records.map(item=>({...item,poster_url:posterUrls.get(item.poster_path)||""}));
 renderScenarioScriptCards();
   }catch(error){box.dataset.scriptsLoaded="0";box.innerHTML=`<div class="panel" style="grid-column:1/-1"><p>تعذر تحميل مكتبة السيناريوهات الكاملة: ${escapeHTML(error.message||"تحقق من إعداد قاعدة البيانات.")}</p></div>`;}
 }
