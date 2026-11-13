@@ -143,7 +143,7 @@ begin
     from public.content_engagement_events e
     left join public.site_content sc
       on sc.id::text = e.content_id and sc.content_type = e.content_type
-      and e.content_type in ('academy','stories','archive')
+      and e.content_type in ('academy','archive')
     left join public.crime_stories cs
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
