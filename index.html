@@ -6759,20 +6759,35 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
 });
 async function loadApprovedDirectorWorks(){
   if(!publicContentClient)return;
+  const directorIds=[...new Set(creativeProfiles.directors
+    .filter(profile=>profile.memberProfileRow&&profile.userId)
+    .map(profile=>profile.userId))];
+  if(!directorIds.length){
+    creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=[];});
+    renderDirectors();
+    return;
+  }
   const {data,error}=await publicContentClient.from("director_work_submissions")
     .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url")
-    .eq("status","approved").order("created_at",{ascending:false}).limit(300);
+    .eq("status","approved").in("user_id",directorIds)
+    .order("created_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
   const grouped=new Map();
-  for(const work of data||[]){
-    let mediaUrl=work.external_url||"";
-    if(work.storage_path){
-      const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrl(work.storage_path,3600);
-      if(signedError){console.warn("تعذر تجهيز فيديو منشور",signedError.message);continue;}
-      mediaUrl=signed?.signedUrl||"";
-    }
-    if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
-    grouped.get(work.user_id).push({...work,mediaUrl});
+  const works=data||[];
+  for(let offset=0;offset<works.length;offset+=8){
+    const batch=await Promise.all(works.slice(offset,offset+8).map(async work=>{
+      let mediaUrl=work.external_url||"";
+      if(work.storage_path){
+        const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrl(work.storage_path,3600);
+        if(signedError){console.warn("تعذر تجهيز فيديو منشور",signedError.message);return null;}
+        mediaUrl=signed?.signedUrl||"";
+      }
+      return {...work,mediaUrl};
+    }));
+    batch.filter(Boolean).forEach(work=>{
+      if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
+      grouped.get(work.user_id).push(work);
+    });
   }
   creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
   renderDirectors();
