@@ -5911,14 +5911,9 @@ function getPublicContentAnalyticsClient(){
   publicContentAnalyticsClient=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
   return publicContentAnalyticsClient;
 }
-async function recordPublicContentView(contentType,contentId){
-  try{
-    if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
-    const viewerId=await getPublicContentViewerId();if(!viewerId)return;
-    const client=getPublicContentAnalyticsClient();if(!client)return;
-    const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
-    if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
-  }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
+async function recordPublicContentView(){
+  /* تم إيقاف عداد المشاهدات القديم حتى لا تختلط إحصائيات الفيديوهات بالأعمال المكتوبة. */
+  return;
 }
 async function recordPublicContentEvent(contentType,contentId,eventType){
   try{
