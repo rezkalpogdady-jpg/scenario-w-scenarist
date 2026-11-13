@@ -1613,16 +1613,20 @@ function renderShortFilms(){
     const video=safeHttpUrl(item.work||item.url||"");
     const poster=safeHttpUrl(item.image||"");
     const extra=item.extra||{};
-    const media=video&&extra.media_kind==="video"
-      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
-      : (poster?'<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy">':'');
+    const media=poster
+      ? '<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy" decoding="async">'
+      : '';
+    const externalWatch=video
+      ? '<a class="btn primary" href="'+escapeHTML(video)+'" target="_blank" rel="noopener noreferrer">مشاهدة خارجية</a>'
+      : (item.work&&safeHttpUrl(item.work)
+        ? '<a class="btn primary" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة خارجية</a>'
+        : '<p style="color:var(--muted)">لا يتوفر رابط مشاهدة خارجي لهذا العمل حاليًا.</p>');
     return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
-      (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a>':'')+
+      externalWatch+
       '</div></article>';
   }).join("");
-  initializeShortFilmPlayers(box);
 }
 
 /* التحقق من مدة فيديو الموهبة محليًا قبل الرفع */
@@ -5449,60 +5453,24 @@ function openSeriesPlaylist(seriesId){
   }
   seriesInPagePlayerReady=false;
   seriesPendingEpisodeIndex=0;
-  seriesEpisodeIds=item.episodes.slice();
+  seriesEpisodeIds=Array.isArray(item.episodes)?item.episodes.slice():[];
   seriesEpisodeChosenBeforeReady=false;
-  const openToken=++seriesPlayerOpenToken;
+  seriesPlayerOpenToken++;
+  const externalEpisodes=Array.isArray(item.externalEpisodes)&&item.externalEpisodes.length
+    ? item.externalEpisodes.map(safeHttpUrl).filter(Boolean)
+    : seriesEpisodeIds.map(id=>"https://www.youtube.com/watch?v="+encodeURIComponent(id));
   panel.hidden=false;
-
   panel.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-      <h3 style="color:var(--gold);margin:0">${escapeHTML(item.title)} — مشاهدة الحلقات</h3>
-      <button class="btn" type="button" onclick="closeSeriesPlaylist()">إغلاق المشغّل</button>
+      <h3 style="color:var(--gold);margin:0">${escapeHTML(item.title)} — مشاهدة خارجية</h3>
+      <button class="btn" type="button" onclick="closeSeriesPlaylist()">إغلاق القائمة</button>
     </div>
-    <div style="position:relative;width:100%;aspect-ratio:16/9;min-height:220px;background:#000;border-radius:8px;overflow:hidden">
-      <div id="seriesInPagePlayerHost" title="${escapeHTML(item.title)}" style="position:absolute;inset:0;width:100%;height:100%"></div>
+    <p style="font-size:13px;color:var(--muted);margin:8px 0 14px">اختار الحلقة لفتحها مباشرة على المصدر الخارجي. مشغّل الفيديو لا يعمل داخل المنصة.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px">
+      ${externalEpisodes.length?externalEpisodes.map((url,index)=>'<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(item.recordId||item.id)+'\')">الحلقة '+(index+1)+'</a>').join(""):'<p style="color:var(--muted)">لا توجد روابط خارجية متاحة للحلقات.</p>'}
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 8px">
-      <strong style="color:var(--gold)" data-series-current>الحلقة 1</strong>
-      <span style="font-size:12px;color:var(--muted)" data-series-count>26 حلقة</span>
-    </div>
-    <div data-series-episode-list aria-label="اختيار الحلقة" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(48px,1fr));gap:8px"></div>
-    <p style="font-size:12px;color:var(--muted);margin:10px 0 8px">اختر رقم الحلقة لتشغيل رابطها مباشرة. يتم تحميل مشغّل YouTube عند فتح المشاهدة فقط، مع استخدام مشغّل واحد.</p>
-    <a class="btn" data-series-external-link href="https://youtu.be/${encodeURIComponent(item.episodes[0])}" target="_blank" rel="noopener noreferrer">فتح الحلقة المختارة على YouTube</a>
   `;
-  renderSeriesEpisodeButtons(seriesEpisodeIds);
   panel.scrollIntoView({behavior:"smooth",block:"start"});
-  loadSeriesYoutubeApi().then(YT=>{
-    if(openToken!==seriesPlayerOpenToken || !document.getElementById("seriesInPagePlayerHost"))return;
-    seriesInPagePlayer=new YT.Player("seriesInPagePlayerHost",{
-      width:640,
-      height:360,
-      videoId:seriesEpisodeIds[seriesPendingEpisodeIndex],
-      playerVars:{playsinline:1,rel:0,origin:window.location.origin},
-      events:{
-        onReady:function(event){
-          const playerFrame=event.target.getIframe();
-          playerFrame.style.width="100%";
-          playerFrame.style.height="100%";
-          playerFrame.style.position="absolute";
-          playerFrame.style.inset="0";
-          seriesInPagePlayerReady=true;
-          if(seriesEpisodeChosenBeforeReady){
-            event.target.loadVideoById(seriesEpisodeIds[seriesPendingEpisodeIndex]);
-          }else{
-            event.target.cueVideoById(seriesEpisodeIds[seriesPendingEpisodeIndex]);
-          }
-        },
-        onError:function(){
-          const host=document.getElementById("seriesInPagePlayerHost");
-          if(host)host.innerHTML='<p style="color:#fff;text-align:center;padding:24px">تعذر تشغيل هذه الحلقة داخل المشغّل. استخدم رابط YouTube للحلقة المختارة.</p>';
-        }
-      }
-    });
-  }).catch(()=>{
-    const host=document.getElementById("seriesInPagePlayerHost");
-    if(host)host.innerHTML='<p style="color:#fff;text-align:center;padding:24px">تعذر تحميل المشغّل. يمكنك فتح الحلقة المختارة على YouTube.</p>';
-  });
 }
 
 function closeSeriesPlaylist(){
