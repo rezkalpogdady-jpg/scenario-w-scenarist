@@ -6362,7 +6362,7 @@ function ensureApprovedIdeas(){
     const box=$('communityTopics');if(!box)return false;
     try{
       const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(30);if(error)throw error;
-      if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return;}
+      if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return true;}
       const user=await currentUser();
       let likeStatsAvailable=!!user,likeStats=[];
       if(user){
