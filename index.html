@@ -1900,12 +1900,13 @@ function renderStories(){
   box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'" aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id||""))?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(String(item.id))+'"':""))+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
       '</button></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا.</p></div>';
+  observePublicContentImpressions(box);
 }
 function crimeStoryCommentTarget(item){
   const raw=String(item?.id||"");
@@ -1932,6 +1933,10 @@ function openCrimeStory(key){
   const item=crimeStoryLookup.get(String(key));
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
   if(!item||!modal||!body||!title)return;
+  const analyticsId=String(item.id||"");
+  const crimeDbMatch=analyticsId.match(/^crime-db-(\\d+)$/);
+  if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
+  else if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(analyticsId))recordPublicContentEvent("stories",analyticsId,"open");
   title.textContent=item.title||"تفاصيل القضية";
   const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
@@ -5864,21 +5869,63 @@ document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
 
 /* عدّ زائر واحد فقط لكل محتوى منشور؛ لا نطلب تسجيل الدخول ولا نجمع بيانات شخصية */
+async function getPublicContentViewerId(){
+  try{
+    let viewerId=localStorage.getItem("scenarioContentViewerId");
+    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return null;localStorage.setItem("scenarioContentViewerId",viewerId);}
+    return viewerId;
+  }catch(_){return null;}
+}
 async function recordPublicContentView(contentType,contentId){
   try{
     if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
-    let viewerId=localStorage.getItem("scenarioContentViewerId");
-    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return;localStorage.setItem("scenarioContentViewerId",viewerId);}
+    const viewerId=await getPublicContentViewerId();if(!viewerId)return;
     const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
     const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
     if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
   }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
 }
+async function recordPublicContentEvent(contentType,contentId,eventType){
+  try{
+    if(!window.supabase||!adminConfigReady()||!contentType||!contentId||!["impression","open","video_play"].includes(eventType))return;
+    const viewerId=await getPublicContentViewerId();if(!viewerId)return;
+    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const {error}=await client.rpc("record_public_content_event",{
+      p_content_type:String(contentType),p_content_id:String(contentId),p_event_type:eventType,p_viewer_id:viewerId
+    });
+    if(error)console.warn("تعذر تسجيل حدث المحتوى",error.message);
+  }catch(error){console.warn("تعذر تسجيل حدث المحتوى",error);}
+}
+window.recordPublicContentEvent=recordPublicContentEvent;
+const publicImpressionSeenNodes=new WeakSet();
+function observePublicContentImpressions(root=document){
+  if(!root||!("IntersectionObserver" in window))return;
+  const nodes=root.querySelectorAll("[data-content-impression-type][data-content-impression-id]");
+  if(!nodes.length)return;
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const node=entry.target;
+      if(!entry.isIntersecting||entry.intersectionRatio<0.5||publicImpressionSeenNodes.has(node))return;
+      publicImpressionSeenNodes.add(node);
+      observer.unobserve(node);
+      window.setTimeout(()=>{
+        if(!node.isConnected)return;
+        const rect=node.getBoundingClientRect();
+        const visible=rect.bottom>0&&rect.right>0&&rect.top<window.innerHeight&&rect.left<window.innerWidth;
+        if(visible)recordPublicContentEvent(node.dataset.contentImpressionType,node.dataset.contentImpressionId,"impression");
+      },800);
+    });
+  },{threshold:0.5});
+  nodes.forEach(node=>{if(!publicImpressionSeenNodes.has(node))observer.observe(node);});
+}
 document.addEventListener("play",event=>{
   const media=event.target;
-  if(media instanceof HTMLVideoElement&&media.dataset.contentViewType&&media.dataset.contentViewId)recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
+  if(media instanceof HTMLVideoElement&&media.dataset.contentViewType&&media.dataset.contentViewId){
+    recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
+    recordPublicContentEvent(media.dataset.contentViewType,media.dataset.contentViewId,"video_play");
+  }
 },true);
-/* لا نعدّ تحميل iframe مشاهدة؛ لا نسجل الفيديو المضمّن إلا عند توافر إشارة تشغيل مؤكدة من واجهة المشغل. */
+/* تحميل iframe لا يثبت بدء التشغيل؛ فيديوهات YouTube/Vimeo لا تُحتسب حتى تصل إشارة تشغيل مؤكدة من المشغل. */
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
@@ -6054,8 +6101,9 @@ function ensureApprovedIdeas(){
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
         : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
       const deleteButton=adminSession?'<button type="button" class="btn" style="margin-top:10px" onclick="archiveDelete(\''+esc(x.id)+'\',this)">حذف المادة</button>':'';
-      return '<article class="feature archive-poster-card">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
+      return '<article class="feature archive-poster-card" data-content-impression-type="archive" data-content-impression-id="'+esc(x.id)+'">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
     }).join('');
+    observePublicContentImpressions(box);
     observeArchivePosterViews(box);
   }
   window.archiveDelete=async function(id,button){
@@ -6177,19 +6225,8 @@ function ensureApprovedIdeas(){
   }
   window.adminRefreshArchive=loadArchive;
   function observeArchivePosterViews(root){
-    const images=root.querySelectorAll('img[data-archive-view-id]');
-    if(!images.length||!('IntersectionObserver' in window))return;
-    const seen=new Set();
-    const observer=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting||entry.intersectionRatio<0.5)return;
-        const image=entry.target,id=image.dataset.archiveViewId;
-        if(!id||seen.has(id))return;
-        seen.add(id);observer.unobserve(image);
-        if(typeof window.recordPublicContentView==='function')window.recordPublicContentView('archive',id);
-      });
-    },{threshold:0.5});
-    images.forEach(image=>observer.observe(image));
+    /* الانطباع يُسجل على بطاقة الأرشيف بعد ظهورها فعليًا؛ لا نخلطه بفتح المحتوى. */
+    observePublicContentImpressions(root);
   }
   async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
