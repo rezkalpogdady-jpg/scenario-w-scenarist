@@ -5917,9 +5917,9 @@ async function recordPublicContentEvent(contentType,contentId,eventType){
   }catch(error){console.warn("تعذر تسجيل حدث المحتوى",error);}
 }
 window.recordPublicContentEvent=recordPublicContentEvent;
-const publicImpressionSeenNodes=new WeakSet();
 function observePublicContentImpressions(root=document){
   if(!root||!("IntersectionObserver" in window))return;
+  const publicImpressionSeenNodes=window.__scenarioPublicImpressionSeenNodes||(window.__scenarioPublicImpressionSeenNodes=new WeakSet());
   const nodes=root.querySelectorAll("[data-content-impression-type][data-content-impression-id]");
   if(!nodes.length)return;
   const observer=new IntersectionObserver(entries=>{
