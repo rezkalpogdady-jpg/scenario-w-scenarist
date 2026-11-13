@@ -1900,7 +1900,7 @@ function renderStories(){
   box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id||""))?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(String(item.id))+'"':""))+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id||""))?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(String(item.id))+'"':""))+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
@@ -1934,7 +1934,7 @@ function openCrimeStory(key){
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
   if(!item||!modal||!body||!title)return;
   const analyticsId=String(item.id||"");
-  const crimeDbMatch=analyticsId.match(/^crime-db-(\\d+)$/);
+  const crimeDbMatch=analyticsId.match(/^crime-db-(\d+)$/);
   if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
   else if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(analyticsId))recordPublicContentEvent("stories",analyticsId,"open");
   title.textContent=item.title||"تفاصيل القضية";
