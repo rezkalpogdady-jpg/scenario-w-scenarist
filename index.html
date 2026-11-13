@@ -4762,7 +4762,7 @@ async function adminLoadScenarioScripts(){
       '<div style="flex:1;min-width:180px"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions">'+
       (item.storage_path?'<button class="btn primary" type="button" onclick="adminPreviewScenarioScript(\''+item.id+'\')">قراءة السيناريو</button>':'')+
       '<button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></div></article>';
-  }));
+  });
   box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">مكتبة السيناريوهات — عرض وقراءة وإدارة</h3><p>تظهر الأفيشات هنا للمدير، ويمكن قراءة المنشور والمسودة دون تغيير حالة النشر.</p></div>'+
     (cards.length?cards.join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
 }
