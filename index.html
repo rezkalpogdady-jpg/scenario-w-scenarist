@@ -5937,44 +5937,49 @@ async function loadPublicStories(){
   }
 }
 
-/* إنشاء اتصال عام لقراءة المحتوى المنشور */
-async function loadPublicContent(){
-  if(!adminConfigReady()){
-    publicContentMessage("إعدادات supabase غير مكتملة.");
-    return;
-  }
-
-  if(!window.supabase){
-    publicContentMessage("مكتبة supabase غير متاحة.");
-    return;
-  }
-
-  try{
-    publicContentClient=accountUser?accountClient():window.supabase.createClient(
-      ADMIN_SUPABASE_URL,
-      ADMIN_SUPABASE_KEY
-    );
-
-    const {data,error}=await publicContentClient
-      .from("site_content")
-      .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
-      .eq("published",true)
-      .neq("content_type","stories")
-      .order("created_at",{ascending:false});
-
-    if(error){
-      publicContentMessage("تعذر تحميل المحتوى: "+error.message);
-      return;
+/* إنشاء اتصال عام لقراءة المحتوى المنشور؛ دمج الطلبات المتزامنة */
+let publicContentLoadPromise=null;
+function loadPublicContent(){
+  if(publicContentLoadPromise)return publicContentLoadPromise;
+  const request=(async()=>{
+    if(!adminConfigReady()){
+      publicContentMessage("إعدادات supabase غير مكتملة.");
+      return false;
     }
-
-    distributePublicContent(data || []);
-    /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
-    renderStories();
-    publicContentMessage("تم تحميل المحتوى المنشور.");
-  }catch(error){
-    publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
-    console.error(error);
-  }
+    if(!window.supabase){
+      publicContentMessage("مكتبة supabase غير متاحة.");
+      return false;
+    }
+    try{
+      publicContentClient=accountUser?accountClient():window.supabase.createClient(
+        ADMIN_SUPABASE_URL,
+        ADMIN_SUPABASE_KEY
+      );
+      const {data,error}=await publicContentClient
+        .from("site_content")
+        .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
+        .eq("published",true)
+        .neq("content_type","stories")
+        .order("created_at",{ascending:false});
+      if(error){
+        publicContentMessage("تعذر تحميل المحتوى: "+error.message);
+        return false;
+      }
+      distributePublicContent(data || []);
+      /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
+      renderStories();
+      publicContentMessage("تم تحميل المحتوى المنشور.");
+      return true;
+    }catch(error){
+      publicContentMessage("حدث خطأ أثناء تحميل المحتوى.");
+      console.error(error);
+      return false;
+    }
+  })();
+  publicContentLoadPromise=request;
+  return request.finally(()=>{
+    if(publicContentLoadPromise===request)publicContentLoadPromise=null;
+  });
 }
 
 document.getElementById("filmsSearch")
@@ -6344,9 +6349,9 @@ function ensureApprovedIdeas(){
     });
   }
   async function loadArchive(){
-    const box=$('archiveItems');if(!box)return;
-    try{const {data,error}=await client().from('site_content').select('id,title,category,description,image_url,content_url,extra_data').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(60);if(error)throw error;archiveRows=data||[];renderArchive();}
-    catch(e){box.innerHTML=`<div class="panel">تعذر تحميل الأرشيف. تأكد من إعداد قاعدة البيانات واتصال الموقع. ${esc(e.message)}</div>`;}
+    const box=$('archiveItems');if(!box)return false;
+    try{const {data,error}=await client().from('site_content').select('id,title,category,description,image_url,content_url,extra_data').eq('content_type','archive').eq('published',true).order('created_at',{ascending:false}).limit(60);if(error)throw error;archiveRows=data||[];renderArchive();return true;}
+    catch(e){box.innerHTML=`<div class="panel">تعذر تحميل الأرشيف. تأكد من إعداد قاعدة البيانات واتصال الموقع. ${esc(e.message)}</div>`;return false;}
   }
   window.adminRefreshArchive=loadArchive;
   function observeArchivePosterViews(root){
@@ -6354,7 +6359,7 @@ function ensureApprovedIdeas(){
     observePublicContentImpressions(root);
   }
   async function loadTopics(){
-    const box=$('communityTopics');if(!box)return;
+    const box=$('communityTopics');if(!box)return false;
     try{
       const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(30);if(error)throw error;
       if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return;}
@@ -6372,7 +6377,8 @@ function ensureApprovedIdeas(){
         return `<article class="community-post"><div class="community-post-head"><span class="community-avatar" aria-hidden="true">${esc((t.display_name||'ع').trim().charAt(0))}</span><div class="community-post-meta"><strong>${esc(t.display_name||'عضو')}</strong><small>${new Date(t.created_at).toLocaleDateString('ar-EG')} • ${esc(t.category||'حوار عام')}</small></div></div><div class="community-post-body">${esc(t.body)}</div><div class="community-like-row"><button class="btn community-like-btn" type="button" data-topic-like="${esc(t.id)}" data-liked="${liked}" aria-pressed="${liked}" ${user&&!likeStatsAvailable?'disabled':''}>${likeLabel}</button><span class="community-like-count">${likeCount}</span></div><div class="community-replies-label">الردود</div><div class="topic-replies" id="replies-${esc(t.id)}"><p class="muted">جارٍ تحميل الردود...</p></div><form class="topic-reply-form" data-topic-id="${esc(t.id)}"><textarea rows="2" maxlength="2000" required placeholder="اكتب ردك..."></textarea><button class="btn" type="submit">إرسال الرد</button></form></article>`;
       }).join('');
       await loadRepliesBatch(data);
-    }catch(e){box.innerHTML=`<div class="panel">تعذر تحميل المناقشات: ${esc(e.message)}</div>`;}
+      return true;
+    }catch(e){box.innerHTML=`<div class="panel">تعذر تحميل المناقشات: ${esc(e.message)}</div>`;return false;}
   }
   document.addEventListener('click',async e=>{
     const button=e.target.closest('[data-topic-like]');if(!button)return;
@@ -6423,10 +6429,17 @@ function ensureApprovedIdeas(){
   document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'approved'});if(error)throw error;form.reset();const repliesBox=$('replies-'+form.dataset.topicId);if(repliesBox)repliesBox.insertAdjacentHTML('beforeend',`<div class="community-reply"><strong>${esc(display)}</strong><p>${esc(body)}</p><small>${new Date().toLocaleDateString('ar-EG')}</small></div>`);alert('تم نشر ردك مباشرة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
   const priorShowPage=window.showPage;
-  if(typeof priorShowPage==='function')window.showPage=function(id,options){priorShowPage(id,options);if(id==='archive')loadArchive();if(id==='community')loadTopics();};
+  /* المسار الأساسي يتولى التحميل عبر ensure*؛ لا نكرر الطلب من الغلاف الإضافي. */
+  if(typeof priorShowPage==='function')window.showPage=function(id,options){priorShowPage(id,options);};
   let archiveLoadPromise=null,communityLoadPromise=null;
-  window.ensureArchiveLoaded=()=>{if(!archiveLoadPromise)archiveLoadPromise=loadArchive().catch(error=>{archiveLoadPromise=null;throw error;});return archiveLoadPromise;};
-  window.ensureCommunityLoaded=()=>{if(!communityLoadPromise)communityLoadPromise=loadTopics().catch(error=>{communityLoadPromise=null;throw error;});return communityLoadPromise;};
+  window.ensureArchiveLoaded=()=>{
+    if(!archiveLoadPromise)archiveLoadPromise=loadArchive().then(ok=>{if(ok===false)archiveLoadPromise=null;});
+    return archiveLoadPromise;
+  };
+  window.ensureCommunityLoaded=()=>{
+    if(!communityLoadPromise)communityLoadPromise=loadTopics().then(ok=>{if(ok===false)communityLoadPromise=null;});
+    return communityLoadPromise;
+  };
   async function adminLoadCommunityModeration(){
     if(typeof adminSupabase==="undefined" || !adminSupabase || !adminSession)return;
     const configs=[
