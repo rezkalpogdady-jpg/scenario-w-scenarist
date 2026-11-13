@@ -1001,7 +1001,7 @@ function renderLessonIndex(materials = []){
     const shortDescription=firstSentence.length>118
       ? firstSentence.slice(0,115).replace(/\s+\S*$/,"")+"…"
       : (firstSentence || "شرح عملي وأمثلة وتدريب تطبيقي.");
-    return `<article class="feature academy-lesson-card" style="padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
+    return `<article class="feature academy-lesson-card"${material?.id?' data-content-impression-type="academy" data-content-impression-id="'+escapeHTML(material.id)+'"':""} style="padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
       <div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <span style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:30px;padding:0 8px;border-radius:7px;background:#302719;color:var(--gold);font-weight:800;font-size:14px">${String(index+1).padStart(2,"0")}</span>
@@ -1013,6 +1013,7 @@ function renderLessonIndex(materials = []){
       <button class="btn" type="button" style="align-self:flex-start" data-open-lesson="${index}">اقرأ المحاضرة</button>
     </article>`;
   }).join("");
+  observePublicContentImpressions(lessonsContainer);
 }
 
 let currentLessonUtterance = null;
@@ -1096,6 +1097,7 @@ function openLesson(index){
   const lesson=academyLessons[index];
   if(!lesson) return;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
+  if(material?.id)recordPublicContentEvent("academy",material.id,"open");
   const dialog=document.getElementById("lessonDialog");
   const listPanel=document.getElementById("academyLessonsPanel");
   const listHeading=document.getElementById("academyLessonsHeading");
@@ -1614,14 +1616,15 @@ function renderShortFilms(){
     const poster=safeHttpUrl(item.image||"");
     const extra=item.extra||{};
     const media=video&&extra.media_kind==="video"
-      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
+      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(item.id?' data-content-view-type="shorts" data-content-view-id="'+escapeHTML(item.id)+'"':'')+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
       : (poster?'<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy">':'');
-    return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
+    return '<article class="feature short-film-card"'+(item.id?' data-content-impression-type="shorts" data-content-impression-id="'+escapeHTML(item.id)+'"':"")+'>'+media+'<div class="feature-content">'+
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
       (!video&&item.work?'<a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة الفيلم</a>':'')+
       '</div></article>';
   }).join("");
+  observePublicContentImpressions(box);
   initializeShortFilmPlayers(box);
 }
 
@@ -1899,13 +1902,20 @@ function renderStories(){
   box.classList.add("crime-posters-grid");
   box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
+    const rawId=String(item.id||"");
+    const crimeDbMatch=rawId.match(/^crime-db-(\d+)$/);
+    const isEditorialStory=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(rawId);
+    const analyticsAttrs=crimeDbMatch
+      ? ' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(crimeDbMatch[1])+'"'
+      : (isEditorialStory?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(rawId)+'"':"");
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'" aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+analyticsAttrs+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
       '</button></article>';
   }).join(""):'<div class="panel" style="grid-column:1/-1;text-align:center"><h3 style="color:var(--gold)">ملفات الجرائم والحكايات</h3><p>لا توجد حكايات منشورة حاليًا.</p></div>';
+  observePublicContentImpressions(box);
 }
 function crimeStoryCommentTarget(item){
   const raw=String(item?.id||"");
@@ -1932,6 +1942,11 @@ function openCrimeStory(key){
   const item=crimeStoryLookup.get(String(key));
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
   if(!item||!modal||!body||!title)return;
+  const analyticsId=String(item.id||"");
+  const crimeDbMatch=analyticsId.match(/^crime-db-(\d+)$/);
+  if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
+  else if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(analyticsId))
+    recordPublicContentEvent("stories",analyticsId,"open");
   title.textContent=item.title||"تفاصيل القضية";
   const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
@@ -3123,33 +3138,31 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
     <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
     <div class="section-heading" id="adminGrowthStatsHeading">
-      <h2>إحصائيات الأعضاء ونمو المنصة</h2>
-      <p>ملخص الأعضاء والتفاعل والزيارات — يُحدّث عند فتح اللوحة أو بالضغط على تحديث</p>
+      <h2>إحصائيات الموقع</h2>
+      <p>عدد زوار الموقع، ومشاهدات وقراءات المحتوى المكتوب فقط.</p>
     </div>
     <div class="panel" id="adminGrowthStatsPanel">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <p id="adminGrowthStatsStatus" class="admin-status" role="status" style="margin:0">يتم تحميل الإحصائيات بعد التحقق من صلاحية المدير.</p>
-        <button class="btn" id="adminGrowthStatsRefresh" type="button" onclick="adminLoadPlatformGrowthStats()">تحديث الإحصائيات</button>
-      </div>
-      <div id="adminGrowthStatsCards" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-top:14px">
-        <div class="admin-item">إجمالي الأعضاء<strong id="growthTotalMembers" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">أعضاء جدد خلال 7 أيام<strong id="growthNewMembers7d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">أعضاء جدد خلال 30 يومًا<strong id="growthNewMembers30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">أعضاء نشطون خلال 30 يومًا<strong id="growthActiveMembers30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">الملفات الشخصية<strong id="growthProfiles" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">إجمالي المشاركات والتعليقات<strong id="growthInteractions" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">إجمالي الزيارات<strong id="growthVisits" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">الزوار الفريدون<strong id="growthUniqueVisitors" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-        <div class="admin-item">الزيارات خلال 30 يومًا<strong id="growthVisits30d" style="display:block;color:var(--gold);font-size:25px">—</strong></div>
-      </div>
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px">
-        <div class="admin-item"><h3 style="margin-top:0">تفاعل المجتمع</h3><p>موضوعات النقاش: <strong id="growthTopics">—</strong></p><p>الردود: <strong id="growthReplies">—</strong></p><p>التعليقات: <strong id="growthComments">—</strong></p></div>
-        <div class="admin-item"><h3 style="margin-top:0">أكثر الصفحات زيارة</h3><div id="growthTopPages" class="admin-status">لا توجد بيانات بعد.</div></div>
+        <button class="btn" id="adminGrowthStatsRefresh" type="button" onclick="adminLoadPlatformGrowthStats()">تحديث</button>
       </div>
       <div class="admin-item" style="margin-top:14px">
-        <h3 style="margin-top:0">مشاهدات كل محتوى منشور</h3>
-        <p class="admin-status">عدد الزوار المختلفين الذين فتحوا المحاضرة أو السيناريو أو بدأوا تشغيل الفيديو. الزائر الواحد يُحسب مرة واحدة لكل محتوى.</p>
-        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:420px"><thead><tr><th style="text-align:right;padding:8px">المحتوى</th><th style="text-align:right;padding:8px">النوع</th><th style="text-align:right;padding:8px">المشاهدات الفريدة</th></tr></thead><tbody id="growthContentViews"><tr><td colspan="3">جارٍ تحميل البيانات...</td></tr></tbody></table></div>
+        <div>زوار الموقع</div>
+        <strong id="growthUniqueVisitors" style="display:block;color:var(--gold);font-size:30px">—</strong>
+      </div>
+      <div class="admin-item" style="margin-top:14px">
+        <h3 style="margin-top:0">مشاهدات المنشورات وقراءات الدروس</h3>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;min-width:420px">
+            <thead><tr>
+              <th style="text-align:right;padding:8px">المحتوى المكتوب</th>
+              <th style="text-align:right;padding:8px">شافوه</th>
+              <th style="text-align:right;padding:8px">فتحوه للقراءة</th>
+            </tr></thead>
+            <tbody id="growthContentEngagement"><tr><td colspan="3">جارٍ تحميل البيانات...</td></tr></tbody>
+          </table>
+        </div>
+        <p class="admin-status">يُحسب الشخص مرة واحدة لكل محتوى من خلال معرّف متصفح عشوائي. لا تُحسب الفيديوهات أو الصور.</p>
       </div>
     </div>
 
@@ -3786,6 +3799,7 @@ async function adminLoadMemberWorks(){
     return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
   }));
   box.innerHTML=cards.join("");
+  observePublicContentImpressions(box);
 }
 async function adminReviewMemberWork(id,status){
   if(!adminSupabase||!adminSession||!["approved","rejected"].includes(status))return;
@@ -3854,25 +3868,46 @@ async function adminReviewWriterScript(id,status){
 function growthFormatNumber(value){return Number(value||0).toLocaleString("ar-EG");}
 async function adminLoadContentViewStats(){
   if(!adminSupabase||!adminSession)return;
-  const box=document.getElementById("growthContentViews");if(!box)return;
-  const {data,error}=await adminSupabase.rpc("admin_content_view_stats");
-  if(error){box.innerHTML='<tr><td colspan="3">تعذر تحميل مشاهدات المحتوى: '+adminEscape(error.message)+'</td></tr>';return;}
+  const box=document.getElementById("growthContentEngagement");
+  if(!box)return;
+  const {data,error}=await adminSupabase.rpc("admin_content_engagement_stats");
+  if(error){box.innerHTML='<tr><td colspan="3">تعذر تحميل إحصائيات المحتوى: '+adminEscape(error.message)+'</td></tr>';return;}
   const rows=Array.isArray(data)?data:[];
-  box.innerHTML=rows.length?rows.map(row=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.title||"محتوى بدون عنوان")+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.content_label||row.content_type)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(row.unique_views)+'</td></tr>').join(""):'<tr><td colspan="3">لا يوجد محتوى منشور حتى الآن.</td></tr>';
+  const grouped=new Map();
+  rows.forEach(row=>{
+    if(!row.content_id)return;
+    const key=String(row.content_type)+":"+String(row.content_id);
+    if(!grouped.has(key))grouped.set(key,{title:row.title||"محتوى بدون عنوان",type:row.content_type,seen:0,read:0});
+    const item=grouped.get(key);
+    if(row.event_type==="impression")item.seen=Number(row.unique_viewers)||0;
+    if(row.event_type==="open")item.read=Number(row.unique_viewers)||0;
+  });
+  const items=[...grouped.values()].sort((a,b)=>a.title.localeCompare(b.title,"ar"));
+  box.innerHTML=items.length?items.map(item=>{
+    const typeLabels={academy:"درس / محاضرة",crime_story:"منشور",stories:"منشور مكتوب",scenario:"سيناريو مكتوب",archive:"مقال مكتوب"};
+    return '<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(item.title)+'<small style="display:block;color:var(--muted)">'+adminEscape(typeLabels[item.type]||item.type)+'</small></td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(item.seen)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(item.read)+'</td></tr>';
+  }).join(""):'<tr><td colspan="3">لسه مفيش مشاهدات أو قراءات مسجلة.</td></tr>';
 }
 async function adminLoadPlatformGrowthStats(){
-  if(!adminSupabase || !adminSession)return;
-  const status=document.getElementById("adminGrowthStatsStatus"),button=document.getElementById("adminGrowthStatsRefresh");
-  if(status)status.textContent="جارٍ تحديث الإحصائيات...";if(button)button.disabled=true;
+  if(!adminSupabase||!adminSession)return;
+  const status=document.getElementById("adminGrowthStatsStatus");
+  const button=document.getElementById("adminGrowthStatsRefresh");
+  if(status)status.textContent="جارٍ تحديث الإحصائيات...";
+  if(button)button.disabled=true;
   try{
-    const {data,error}=await adminSupabase.rpc("admin_platform_growth_stats");await adminLoadContentViewStats();
-    if(error)throw error;const stats=Array.isArray(data)?data[0]:data;if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
-    const values={growthTotalMembers:stats.total_members,growthNewMembers7d:stats.new_members_7d,growthNewMembers30d:stats.new_members_30d,growthActiveMembers30d:stats.active_members_30d,growthProfiles:stats.profile_count,growthInteractions:stats.interactions_total,growthVisits:stats.visits_total,growthUniqueVisitors:stats.unique_visitors,growthVisits30d:stats.visits_30d,growthTopics:stats.topics_total,growthReplies:stats.replies_total,growthComments:stats.comments_total};
-    Object.entries(values).forEach(([id,value])=>{const node=document.getElementById(id);if(node)node.textContent=growthFormatNumber(value);});
-    const pages=document.getElementById("growthTopPages");if(pages){const rows=Array.isArray(stats.top_pages)?stats.top_pages:[];pages.innerHTML=rows.length?rows.map(row=>'<p style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:5px 0;margin:0"><span>'+adminEscape(row.page_path||"الرئيسية")+'</span><strong>'+growthFormatNumber(row.visits)+'</strong></p>').join(""):"لا توجد بيانات زيارات بعد.";}
-    if(status)status.textContent="آخر تحديث: "+new Date().toLocaleString("ar-EG")+" — الأرقام مجمعة من قاعدة البيانات.";
-  }catch(error){if(status)status.textContent="تعذر تحميل الإحصائيات: "+(error.message||"تحقق من إعداد قاعدة البيانات.");}
-  finally{if(button)button.disabled=false;}
+    const {data,error}=await adminSupabase.rpc("admin_platform_growth_stats");
+    await adminLoadContentViewStats();
+    if(error)throw error;
+    const stats=Array.isArray(data)?data[0]:data;
+    if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
+    const visitors=document.getElementById("growthUniqueVisitors");
+    if(visitors)visitors.textContent=growthFormatNumber(stats.unique_visitors);
+    if(status)status.textContent="آخر تحديث: "+new Date().toLocaleString("ar-EG");
+  }catch(error){
+    if(status)status.textContent="تعذر تحميل إحصائيات زوار الموقع: "+(error.message||"تحقق من إعداد قاعدة البيانات.");
+  }finally{
+    if(button)button.disabled=false;
+  }
 }
 async function adminLoadContentRatings(){
   if(!adminSupabase||!adminSession)return;
@@ -4927,7 +4962,7 @@ function renderScenarioScriptCards(){
   const category=document.getElementById("libraryCategory")?.value||"";
   const items=scenarioScriptRecords.filter(x=>x.published&&(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
   const legacy=(typeof scenarioLibrary!=="undefined"?scenarioLibrary:[]).filter(x=>(!category||x.category===category)&&(`${x.title} ${x.author} ${x.summary}`).toLowerCase().includes(q));
-  const scriptCards=items.map(item=>`<article class="scenario-poster-card">
+  const scriptCards=items.map(item=>`<article class="scenario-poster-card" data-content-impression-type="scenario" data-content-impression-id="${escapeHTML(item.id)}">
 <button class="scenario-poster-open" type="button" aria-label="عرض سيناريو ${escapeHTML(item.title)}" onclick="openScenarioScript(&quot;${item.id}&quot;)">
 ${item.poster_url?`<img class="scenario-poster-image" src="${escapeHTML(item.poster_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy">`:`<div class="scenario-poster-placeholder"><span>سيناريو وسيناريست</span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category||"سيناريو")}</small></div>`}
 <span class="scenario-poster-shade"></span><span class="scenario-poster-title">${escapeHTML(item.title)}</span></button>
@@ -5007,6 +5042,7 @@ async function openLegacyScenario(index){
 }
 async function openScenarioScript(id){
   const item=scenarioScriptRecords.find(x=>String(x.id)===String(id));if(!item||!item.published||!item.rights_confirmed)return;
+  recordPublicContentEvent("scenario",id,"open");
   const frame=showScenarioReader(item.title,`المؤلف: ${item.author||"غير محدد"} • قراءة عامة متاحة للجميع`);if(!frame)return;
   try{
     const client=scenarioLibraryClient();
@@ -5180,7 +5216,7 @@ const FEATURED_FILM_PLAYLISTS = [
 function filmSourceLinkMarkup(value,id){
  const url=safeHttpUrl(value);
  if(!url)return "";
- return '<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(id)+'\')">زيارة المصدر الأصلي ومشاهدة العمل</a>';
+ return '<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(id)+'\');recordPublicContentEvent(\'film\',\''+escapeHTML(id)+'\',\'open\')">زيارة المصدر الأصلي ومشاهدة العمل</a>';
 }
 
 function getAllSeriesPlaylists(){
@@ -5293,10 +5329,10 @@ function renderFilms(){
         ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
         : "");
     const clickablePosterMarkup=posterRecord?.content_url
-      ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
+      ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentEvent('film','${escapeHTML(posterRecord.id)}','open');recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
       : posterMarkup;
     return `
-      <article class="feature">
+      <article class="feature"${posterRecord?.id?' data-content-impression-type="film" data-content-impression-id="'+escapeHTML(posterRecord.id)+'"':""}>
         ${clickablePosterMarkup}
         <div class="feature-content">
           <h3>${escapeHTML(item.title)}</h3>
@@ -5319,10 +5355,10 @@ function renderFilms(){
   const publishedCards=items.filter(item=>
     !FEATURED_FILM_PLAYLISTS.some(playlist=>String(item.title||"").trim()===playlist.title) && !Array.isArray(item.extra_data?.episodes) && !Array.isArray(item.extra_data?.external_episodes)
   ).map(item=>`
-    <article class="feature">
+    <article class="feature" data-content-impression-type="film" data-content-impression-id="${escapeHTML(item.id)}">
       ${item.image_url
         ? (item.content_url
-          ? `<a href="${escapeHTML(safeHttpUrl(item.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(item.id)}')"><img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover"></a>`
+          ? `<a href="${escapeHTML(safeHttpUrl(item.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentEvent('film','${escapeHTML(item.id)}','open');recordPublicContentView('film','${escapeHTML(item.id)}')"><img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover"></a>`
           : `<img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover">`)
         : `<div style="height:160px;background:#171717;display:grid;place-items:center;font-size:45px"></div>`}
       <div class="feature-content">
@@ -5340,6 +5376,7 @@ function renderFilms(){
   `).join("");
 
   box.innerHTML='<div id="seriesInPageViewer" class="panel" hidden style="grid-column:1/-1;margin-bottom:18px;border:1px solid var(--gold);padding:16px"></div>'+playlistCards+publishedCards;
+  observePublicContentImpressions(box);
 
 }
 
@@ -5458,6 +5495,8 @@ function openSeriesPlaylist(seriesId){
   const item=getAllSeriesPlaylists().find(entry=>entry.id===seriesId);
   const panel=document.getElementById("seriesInPageViewer");
   if(!item || !panel)return;
+  const analyticsRecordId=item.recordId||item.posterRecord?.id||(publicContentRecords||[]).find(record=>record.content_type==="films"&&String(record.title||"").trim()===item.title)?.id;
+  if(analyticsRecordId)recordPublicContentEvent("film",analyticsRecordId,"open");
   if(seriesInPagePlayer){
     try{seriesInPagePlayer.destroy();}catch(error){}
     seriesInPagePlayer=null;
@@ -5506,6 +5545,11 @@ function openSeriesPlaylist(seriesId){
             event.target.loadVideoById(seriesEpisodeIds[seriesPendingEpisodeIndex]);
           }else{
             event.target.cueVideoById(seriesEpisodeIds[seriesPendingEpisodeIndex]);
+          }
+        },
+        onStateChange:function(event){
+          if(event.data===YT.PlayerState.PLAYING){
+            /* تشغيل الحلقات خارج نطاق إحصائيات الأعمال المكتوبة. */
           }
         },
         onError:function(){
@@ -5864,24 +5908,71 @@ document.getElementById("filmsCategory")
   ?.addEventListener("change",renderFilms);
 
 /* عدّ زائر واحد فقط لكل محتوى منشور؛ لا نطلب تسجيل الدخول ولا نجمع بيانات شخصية */
-async function recordPublicContentView(contentType,contentId){
+async function getPublicContentViewerId(){
   try{
-    if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
     let viewerId=localStorage.getItem("scenarioContentViewerId");
-    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return;localStorage.setItem("scenarioContentViewerId",viewerId);}
-    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
-    const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
-    if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
-  }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
+    if(!viewerId){viewerId=window.crypto?.randomUUID?.();if(!viewerId)return null;localStorage.setItem("scenarioContentViewerId",viewerId);}
+    return viewerId;
+  }catch(_){return null;}
 }
-document.addEventListener("play",event=>{
-  const media=event.target;
-  if(media instanceof HTMLVideoElement&&media.dataset.contentViewType&&media.dataset.contentViewId)recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
-},true);
-document.addEventListener("load",event=>{
-  const frame=event.target;
-  if(frame instanceof HTMLIFrameElement&&frame.dataset.contentViewType&&frame.dataset.contentViewId)recordPublicContentView(frame.dataset.contentViewType,frame.dataset.contentViewId);
-},true);
+let publicContentAnalyticsClient=null;
+function getPublicContentAnalyticsClient(){
+  if(publicContentAnalyticsClient)return publicContentAnalyticsClient;
+  if(!window.supabase||!adminConfigReady())return null;
+  publicContentAnalyticsClient=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+  return publicContentAnalyticsClient;
+}
+async function recordPublicContentView(){
+  /* تم إيقاف عداد المشاهدات القديم حتى لا تختلط إحصائيات الفيديوهات بالأعمال المكتوبة. */
+  return;
+}
+async function recordPublicContentEvent(contentType,contentId,eventType){
+  try{
+    const allowedContentTypes=["academy","crime_story","scenario","archive","stories"];
+    if(!window.supabase||!adminConfigReady()||!allowedContentTypes.includes(String(contentType))||!contentId||!["impression","open"].includes(eventType))return;
+    const viewerId=await getPublicContentViewerId();if(!viewerId)return;
+    const client=getPublicContentAnalyticsClient();if(!client)return;
+    const {error}=await client.rpc("record_public_content_event",{
+      p_content_type:String(contentType),p_content_id:String(contentId),p_event_type:eventType,p_viewer_id:viewerId
+    });
+    if(error)console.warn("تعذر تسجيل حدث المحتوى",error.message);
+  }catch(error){console.warn("تعذر تسجيل حدث المحتوى",error);}
+}
+window.recordPublicContentEvent=recordPublicContentEvent;
+function observePublicContentImpressions(root=document){
+  if(!root||!("IntersectionObserver" in window))return;
+  const publicImpressionSeenNodes=window.__scenarioPublicImpressionSeenNodes||(window.__scenarioPublicImpressionSeenNodes=new WeakSet());
+  const nodes=root.querySelectorAll("[data-content-impression-type][data-content-impression-id]");
+  if(!nodes.length)return;
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const node=entry.target;
+      if(publicImpressionSeenNodes.has(node))return;
+      if(!entry.isIntersecting||entry.intersectionRatio<0.5){
+        const pending=node.__scenarioImpressionTimer;
+        if(pending){window.clearTimeout(pending);delete node.__scenarioImpressionTimer;}
+        return;
+      }
+      if(node.__scenarioImpressionTimer)return;
+      node.__scenarioImpressionTimer=window.setTimeout(()=>{
+        delete node.__scenarioImpressionTimer;
+        if(!node.isConnected||publicImpressionSeenNodes.has(node))return;
+        const rect=node.getBoundingClientRect();
+        const width=Math.max(0,Math.min(rect.right,window.innerWidth)-Math.max(rect.left,0));
+        const height=Math.max(0,Math.min(rect.bottom,window.innerHeight)-Math.max(rect.top,0));
+        const area=Math.max(0,rect.width)*Math.max(0,rect.height);
+        const visibleRatio=area>0?(width*height)/area:0;
+        if(visibleRatio>=0.5){
+          publicImpressionSeenNodes.add(node);
+          observer.unobserve(node);
+          recordPublicContentEvent(node.dataset.contentImpressionType,node.dataset.contentImpressionId,"impression");
+        }
+      },800);
+    });
+  },{threshold:0.5});
+  nodes.forEach(node=>{if(!publicImpressionSeenNodes.has(node))observer.observe(node);});
+}
+/* لا نسجل تشغيل الفيديو أو تحميل المشغلات ضمن إحصائيات الأعمال المكتوبة. */
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
@@ -5889,7 +5980,8 @@ async function recordAnonymousPageVisit(){
     if(!window.supabase || !adminConfigReady()) return;
     let visitorId=localStorage.getItem("scenarioVisitorId");
     if(!visitorId){visitorId=(window.crypto&&typeof window.crypto.randomUUID==="function"?window.crypto.randomUUID():"v-"+Date.now()+"-"+Math.random().toString(36).slice(2));localStorage.setItem("scenarioVisitorId",visitorId);}
-    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const client=getPublicContentAnalyticsClient();
+    if(!client)return;
     const {error}=await client.from("page_visits").insert({visitor_id:visitorId,page_path:location.pathname+location.hash});
     if(error) console.warn("تعذر تسجيل الزيارة",error.message);
   }catch(error){console.warn("تعذر تسجيل الزيارة",error);}
@@ -6057,8 +6149,10 @@ function ensureApprovedIdeas(){
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
         : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
       const deleteButton=adminSession?'<button type="button" class="btn" style="margin-top:10px" onclick="archiveDelete(\''+esc(x.id)+'\',this)">حذف المادة</button>':'';
-      return '<article class="feature archive-poster-card">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
+      const writtenArchive=x.extra_data?.media_kind==='article'&&String(x.description||'').trim();
+      return '<article class="feature archive-poster-card"'+(writtenArchive?' data-content-impression-type="archive" data-content-impression-id="'+esc(x.id)+'"':'')+'>'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
     }).join('');
+    observePublicContentImpressions(box);
     observeArchivePosterViews(box);
   }
   window.archiveDelete=async function(id,button){
@@ -6166,11 +6260,11 @@ function ensureApprovedIdeas(){
     box.dataset.galleryBound='1';
     box.addEventListener('click',event=>{
       const image=event.target.closest('[data-archive-view-id]');
-      if(image)openArchiveGallery(image.dataset.archiveViewId);
+      if(image){recordPublicContentEvent("archive",image.dataset.archiveViewId,"open");openArchiveGallery(image.dataset.archiveViewId);}
     });
     box.addEventListener('keydown',event=>{
       const image=event.target.closest('[data-archive-view-id]');
-      if(image&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openArchiveGallery(image.dataset.archiveViewId);}
+      if(image&&(event.key==='Enter'||event.key===' ')){event.preventDefault();recordPublicContentEvent("archive",image.dataset.archiveViewId,"open");openArchiveGallery(image.dataset.archiveViewId);}
     });
   }
   async function loadArchive(){
@@ -6180,19 +6274,8 @@ function ensureApprovedIdeas(){
   }
   window.adminRefreshArchive=loadArchive;
   function observeArchivePosterViews(root){
-    const images=root.querySelectorAll('img[data-archive-view-id]');
-    if(!images.length||!('IntersectionObserver' in window))return;
-    const seen=new Set();
-    const observer=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting||entry.intersectionRatio<0.5)return;
-        const image=entry.target,id=image.dataset.archiveViewId;
-        if(!id||seen.has(id))return;
-        seen.add(id);observer.unobserve(image);
-        if(typeof window.recordPublicContentView==='function')window.recordPublicContentView('archive',id);
-      });
-    },{threshold:0.5});
-    images.forEach(image=>observer.observe(image));
+    /* الانطباع يُسجل على بطاقة الأرشيف بعد ظهورها فعليًا؛ لا نخلطه بفتح المحتوى. */
+    observePublicContentImpressions(root);
   }
   async function loadTopics(){
     const box=$('communityTopics');if(!box)return;
