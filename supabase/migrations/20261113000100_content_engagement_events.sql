@@ -56,12 +56,13 @@ begin
         and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
         and nullif(s.rights_holder,'') is not null
     ) into content_is_public;
-  elsif p_content_type = 'scenario' then
+  elsif p_content_type in ('academy','stories','archive') then
     select exists (
-      select 1 from public.scenario_scripts s
-      where s.id::text = p_content_id and s.published = true
-        and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
-        and nullif(s.rights_holder,'') is not null
+      select 1 from public.site_content c
+      where c.id::text = p_content_id
+        and c.content_type = p_content_type
+        and c.published = true
+        and (p_content_type <> 'archive' or coalesce(c.extra_data->>'media_kind','') <> 'video')
     ) into content_is_public;
   elsif p_content_type in ('academy','stories','archive') then
     select exists (
