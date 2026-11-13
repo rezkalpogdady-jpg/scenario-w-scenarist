@@ -38,7 +38,7 @@ declare
   lock_key bigint;
 begin
   if p_content_type is null or p_content_id is null or p_viewer_id is null
-     or p_content_type not in ('academy','crime_story','stories','scenario','archive')
+     or p_content_type not in ('academy','crime_story','scenario','archive')
      or p_event_type is null or p_event_type not in ('impression','open')
      or length(p_content_id) > 80 then
     return false;
@@ -56,16 +56,21 @@ begin
         and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
         and nullif(s.rights_holder,'') is not null
     ) into content_is_public;
-  elsif p_content_type in ('academy','stories','archive') then
+  elsif p_content_type = 'academy' then
     select exists (
       select 1 from public.site_content c
       where c.id::text = p_content_id
-        and c.content_type = p_content_type
+        and c.content_type = 'academy'
         and c.published = true
-        and (p_content_type <> 'archive' or (
-          coalesce(c.extra_data->>'media_kind','') <> 'video'
-          and nullif(btrim(coalesce(c.description,'')),'') is not null
-        ))
+    ) into content_is_public;
+  elsif p_content_type = 'archive' then
+    select exists (
+      select 1 from public.site_content c
+      where c.id::text = p_content_id
+        and c.content_type = 'archive'
+        and c.published = true
+        and c.extra_data->>'media_kind' = 'article'
+        and nullif(btrim(coalesce(c.description,'')),'') is not null
     ) into content_is_public;
 
   end if;
@@ -143,7 +148,7 @@ begin
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
       on e.content_type = 'scenario' and ss.id::text = e.content_id
-    where e.content_type in ('academy','crime_story','stories','scenario','archive')
+    where e.content_type in ('academy','crime_story','scenario','archive')
     group by e.content_type,e.content_id,e.event_type,sc.title,cs.title,ss.title
 
     union all
@@ -155,7 +160,7 @@ begin
       count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
     from public.content_engagement_events e
-    where e.content_type in ('academy','crime_story','stories','scenario','archive')
+    where e.content_type in ('academy','crime_story','scenario','archive')
     group by e.content_type,e.event_type
   ) x;
   return result;
