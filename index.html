@@ -5878,10 +5878,7 @@ document.addEventListener("play",event=>{
   const media=event.target;
   if(media instanceof HTMLVideoElement&&media.dataset.contentViewType&&media.dataset.contentViewId)recordPublicContentView(media.dataset.contentViewType,media.dataset.contentViewId);
 },true);
-document.addEventListener("load",event=>{
-  const frame=event.target;
-  if(frame instanceof HTMLIFrameElement&&frame.dataset.contentViewType&&frame.dataset.contentViewId)recordPublicContentView(frame.dataset.contentViewType,frame.dataset.contentViewId);
-},true);
+/* لا نعدّ تحميل iframe مشاهدة؛ لا نسجل الفيديو المضمّن إلا عند توافر إشارة تشغيل مؤكدة من واجهة المشغل. */
 
 /* تسجيل زيارة مجهّلة عند فتح الصفحة؛ لا نجمع بريدًا أو اسمًا */
 async function recordAnonymousPageVisit(){
