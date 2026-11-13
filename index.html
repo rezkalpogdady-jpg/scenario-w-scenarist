@@ -2958,6 +2958,12 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
+    <div class="panel" id="adminLoadHealth" role="status" aria-live="polite" style="margin-top:14px">
+      <strong style="color:var(--gold)">حالة تحميل لوحة الإدارة</strong>
+      <p id="adminLoadHealthSummary" class="admin-status" style="margin:8px 0 0">سيظهر هنا ملخص حالة تحميل الأقسام.</p>
+      <ul id="adminLoadHealthItems" style="margin:8px 0 0;padding-right:22px;display:none"></ul>
+    </div>
+
     <div class="panel" id="adminUsersPanel" style="margin-top:14px;display:none">
       <h3 style="color:var(--gold);margin-top:0">إدارة الأعضاء والمديرين</h3>
       <p class="admin-status">اختر أي عضو من القائمة لترقيته إلى مدير بصلاحيات إدارة المنصة. يمكنك البحث بالاسم أو رقم العضوية. تعيين المديرين وإلغاء صلاحياتهم متاح لصاحب المنصة فقط.</p>
@@ -3256,6 +3262,23 @@ let adminRecords = [];
 function adminSetMessage(id,message){
   const el=document.getElementById(id);
   if(el) el.textContent=message;
+}
+
+function adminSetLoadHealth(results){
+  const summary=document.getElementById("adminLoadHealthSummary");
+  const list=document.getElementById("adminLoadHealthItems");
+  if(!summary||!list)return;
+  const failed=results.filter(item=>item.status==="rejected");
+  const completed=results.length-failed.length;
+  if(!failed.length){
+    summary.textContent="اكتمل تشغيل "+completed+" عملية تحميل دون استثناءات برمجية. هذا لا يغني عن فحص محتوى كل قسم.";
+    list.replaceChildren();
+    list.style.display="none";
+    return;
+  }
+  summary.textContent="تعذر تشغيل "+failed.length+" من أصل "+results.length+" عملية تحميل. باقي الأقسام استمرت في التحميل.";
+  list.innerHTML=failed.map(item=>"<li>"+adminEscape(item.label)+": "+adminEscape(item.reason?.message||String(item.reason||"خطأ غير معروف"))+"</li>").join("");
+  list.style.display="block";
 }
 
 function adminConfigReady(){
@@ -3986,28 +4009,29 @@ async function adminLoadVisitStats(){return adminLoadPlatformGrowthStats();}
 async function adminInitialize(){
   if(!adminConfigReady()){
     adminSetMessage("adminLoginMessage",
-      "أدخل رابط المشروع ومفتاح publishable أولاً في إعدادات الكود.");
+      "إعدادات الاتصال غير مكتملة. تحقق من رابط المشروع ومفتاح publishable.");
     return;
   }
 
   if(!window.supabase){
     adminSetMessage("adminLoginMessage",
-      "تعذر تحميل مكتبة الاتصال. تحقق من الإنترنت.");
+      "تعذر تحميل مكتبة الاتصال. تحقق من الإنترنت ثم أعد المحاولة.");
     return;
   }
 
-  /* استخدام عميل Supabase واحد للحسابات ولوحة الإدارة حتى لا تتضارب الجلسات */
-  adminSupabase=accountClient();
-
-  const {data,error}=await adminSupabase.auth.getSession();
-
-  if(error){
-    adminSetMessage("adminLoginMessage",error.message);
-    return;
-  }
-
-  if(data.session){
-    await adminVerifyAdmin(data.session);
+  try{
+    /* استخدام عميل Supabase واحد للحسابات ولوحة الإدارة حتى لا تتضارب الجلسات */
+    adminSupabase=accountClient();
+    const {data,error}=await adminSupabase.auth.getSession();
+    if(error)throw error;
+    if(data?.session)await adminVerifyAdmin(data.session);
+  }catch(error){
+    adminSession=null;
+    adminSetMessage("adminLoginMessage","تعذر استعادة جلسة الإدارة: "+(error?.message||"خطأ اتصال غير معروف"));
+    const dashboard=document.getElementById("adminDashboard");
+    const login=document.getElementById("adminLoginPanel");
+    if(dashboard)dashboard.style.display="none";
+    if(login)login.style.display="block";
   }
 }
 
@@ -4134,18 +4158,25 @@ async function adminLoadApprovalNotifications(){
       const {count,error}=await adminSupabase.from(item.table).select(item.key||"id",{count:"exact",head:true}).eq(item.column,"pending");
       if(error)throw error;
       return {...item,count:Number(count)||0};
-    }catch(error){return {...item,count:0,failed:true};}
+    }catch(error){return {...item,count:null,failed:true,errorMessage:error?.message||"تعذر الاتصال"};}
   }));
-  const total=results.reduce((sum,item)=>sum+item.count,0);
+  const total=results.reduce((sum,item)=>sum+(item.failed?0:item.count),0);
+  const active=results.filter(item=>!item.failed&&item.count>0);
+  const failedItems=results.filter(item=>item.failed&&!item.optional);
   const badge=document.getElementById("adminApprovalBadge");if(badge)badge.textContent=String(total);
-  const decisionCount=document.getElementById("adminDecisionPendingCount");if(decisionCount)decisionCount.textContent=total+" طلبات بانتظار القرار";
-  const failed=results.some(item=>item.failed&&!item.optional);
+  const decisionCount=document.getElementById("adminDecisionPendingCount");
+  if(decisionCount)decisionCount.textContent=failedItems.length
+    ? total+" طلبًا مؤكدًا · تعذر فحص "+failedItems.length+" قسمًا"
+    : total+" طلبات بانتظار القرار";
   summary.textContent=total
-    ? "عندك "+total+" طلبًا منتظرًا للمراجعة. افتح أي بند للانتقال مباشرة إلى مراجعته."
-    : "لا توجد طلبات موافقة معلقة حاليًا.";
-  if(failed)summary.textContent+=" تعذر فحص بعض الأقسام مؤقتًا.";
-  const active=results.filter(item=>item.count>0);
-  box.innerHTML=active.length?active.map(item=>'<button type="button" class="admin-item" style="text-align:right;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%" onclick="adminGoToApproval(\''+item.target+'\',\''+item.loader+'\')"><span><strong>'+adminEscape(item.label)+'</strong><small style="display:block;color:var(--muted);margin-top:5px">اضغط لفتح قائمة المراجعة</small></span><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 9px;border-radius:30px;background:var(--gold);color:#17130c;font-weight:800">'+item.count+'</span></button>').join(""):'<div class="panel" style="text-align:center">كل الموافقات محدثة — لا توجد طلبات جديدة الآن.</div>';
+    ? "عدد الطلبات المؤكدة المعلقة: "+total+". افتح أي بند للانتقال إلى مراجعته."
+    : failedItems.length
+      ? "تعذر تأكيد خلو قوائم الموافقات من الطلبات؛ بعض الأقسام لم تستجب."
+      : "لا توجد طلبات معلقة في الأقسام التي تم فحصها بنجاح.";
+  if(failedItems.length)summary.textContent+=" فشل فحص "+failedItems.length+" قسمًا.";
+  const activeMarkup=active.map(item=>'<button type="button" class="admin-item" style="text-align:right;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%" onclick="adminGoToApproval(\''+item.target+'\',\''+item.loader+'\')"><span><strong>'+adminEscape(item.label)+'</strong><small style="display:block;color:var(--muted);margin-top:5px">اضغط لفتح قائمة المراجعة</small></span><span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 9px;border-radius:30px;background:var(--gold);color:#17130c;font-weight:800">'+item.count+'</span></button>').join("");
+  const failedMarkup=failedItems.map(item=>'<div class="admin-item" style="border-color:var(--danger,#b44)"><strong>'+adminEscape(item.label)+'</strong><small style="display:block;color:var(--muted);margin-top:5px">تعذر فحص هذه القائمة: '+adminEscape(item.errorMessage)+'</small></div>').join("");
+  box.innerHTML=activeMarkup+failedMarkup||'<div class="panel" style="text-align:center">لا توجد طلبات معلقة في الأقسام التي تم فحصها بنجاح.</div>';
   box.style.display=adminApprovalNotificationsOpen?"grid":"none";
   const toggle=document.getElementById("adminApprovalToggle");
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
@@ -4156,9 +4187,14 @@ async function adminVerifyAdmin(session){
   adminSession=session;
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
 
-  const {data,error}=await adminSupabase.auth.getUser();
+  let data,error;
+  try{
+    ({data,error}=await adminSupabase.auth.getUser());
+  }catch(authError){
+    error=authError;
+  }
 
-  if(error || !data.user){
+  if(error || !data?.user){
     adminSession=null;
     document.getElementById("adminDashboard").style.display="none";
     document.getElementById("adminLoginPanel").style.display="block";
@@ -4190,21 +4226,22 @@ async function adminVerifyAdmin(session){
   /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
      الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
   const initialAdminLoads = [
-    ...(adminCanManageAdmins ? [adminLoadAdminUsers()] : []),
-    adminLoadRecords(),
-    adminLoadScenarioScripts(),
-    adminLoadIdeas(),
-    adminLoadCommunitySubmissions(),
-    adminLoadMemberProfiles(),
-    adminLoadMemberWorks(),
-    adminLoadWriterScripts(),
-    typeof adminLoadDirectorWorks==="function" ? adminLoadDirectorWorks() : Promise.resolve(),
-    typeof adminLoadWriterIdeas==="function" ? adminLoadWriterIdeas() : Promise.resolve(),
-    typeof adminLoadCommunityModeration==="function" ? adminLoadCommunityModeration() : Promise.resolve(),
-    adminLoadContactMessages(),
-    adminLoadApprovalNotifications()
+    ...(adminCanManageAdmins ? [{label:"إدارة الأعضاء والمديرين",run:()=>adminLoadAdminUsers()}] : []),
+    {label:"محتوى المنصة",run:()=>adminLoadRecords()},
+    {label:"مكتبة السيناريوهات",run:()=>adminLoadScenarioScripts()},
+    {label:"الأفكار والمشروعات",run:()=>adminLoadIdeas()},
+    {label:"طلبات المجتمع",run:()=>adminLoadCommunitySubmissions()},
+    {label:"ملفات الأعضاء",run:()=>adminLoadMemberProfiles()},
+    {label:"أعمال الأعضاء",run:()=>adminLoadMemberWorks()},
+    {label:"سيناريوهات الكُتّاب",run:()=>adminLoadWriterScripts()},
+    {label:"أعمال المخرجين",run:()=>typeof adminLoadDirectorWorks==="function"?adminLoadDirectorWorks():Promise.resolve()},
+    {label:"أفكار الكُتّاب",run:()=>typeof adminLoadWriterIdeas==="function"?adminLoadWriterIdeas():Promise.resolve()},
+    {label:"إشراف المجتمع",run:()=>typeof adminLoadCommunityModeration==="function"?adminLoadCommunityModeration():Promise.resolve()},
+    {label:"رسائل التواصل",run:()=>adminLoadContactMessages()},
+    {label:"الموافقات المعلقة",run:()=>adminLoadApprovalNotifications()}
   ];
-  await Promise.allSettled(initialAdminLoads);
+  const initialAdminResults=await Promise.allSettled(initialAdminLoads.map(item=>Promise.resolve().then(item.run)));
+  adminSetLoadHealth(initialAdminResults.map((result,index)=>({...result,label:initialAdminLoads[index].label})));
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
   if(!window.adminApprovalFocusListener){
@@ -4428,6 +4465,7 @@ async function adminLoadRecords(){
   if(!adminSupabase || !adminSession) return;
 
   const box=document.getElementById("adminContentList");
+  if(!box)return;
   box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
 
   const {data,error}=await adminSupabase
