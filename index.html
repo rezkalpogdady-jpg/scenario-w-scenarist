@@ -5904,11 +5904,18 @@ async function getPublicContentViewerId(){
     return viewerId;
   }catch(_){return null;}
 }
+let publicContentAnalyticsClient=null;
+function getPublicContentAnalyticsClient(){
+  if(publicContentAnalyticsClient)return publicContentAnalyticsClient;
+  if(!window.supabase||!adminConfigReady())return null;
+  publicContentAnalyticsClient=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+  return publicContentAnalyticsClient;
+}
 async function recordPublicContentView(contentType,contentId){
   try{
     if(!window.supabase||!adminConfigReady()||!contentType||!contentId)return;
     const viewerId=await getPublicContentViewerId();if(!viewerId)return;
-    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const client=getPublicContentAnalyticsClient();if(!client)return;
     const {error}=await client.rpc("record_public_content_view",{p_content_type:contentType,p_content_id:String(contentId),p_viewer_id:viewerId});
     if(error)console.warn("تعذر تسجيل مشاهدة المحتوى",error.message);
   }catch(error){console.warn("تعذر تسجيل مشاهدة المحتوى",error);}
@@ -5917,7 +5924,7 @@ async function recordPublicContentEvent(contentType,contentId,eventType){
   try{
     if(!window.supabase||!adminConfigReady()||!contentType||!contentId||!["impression","open","video_play"].includes(eventType))return;
     const viewerId=await getPublicContentViewerId();if(!viewerId)return;
-    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const client=getPublicContentAnalyticsClient();if(!client)return;
     const {error}=await client.rpc("record_public_content_event",{
       p_content_type:String(contentType),p_content_id:String(contentId),p_event_type:eventType,p_viewer_id:viewerId
     });
