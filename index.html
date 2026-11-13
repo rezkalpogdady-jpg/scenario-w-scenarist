@@ -707,7 +707,7 @@ if(id==='films' && typeof renderFilms==='function') renderFilms();
 if(id==='radio' && typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
-if(id==='stories'){loadPublicContent().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
+if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
 if(id==='ideas') ensureApprovedIdeas();
 if(id==='archive' && typeof window.ensureArchiveLoaded==='function') window.ensureArchiveLoaded();
 if(id==='community' && typeof window.ensureCommunityLoaded==='function') window.ensureCommunityLoaded();
@@ -1938,10 +1938,28 @@ function crimeStoryCommentsMarkup(item){
     '<div data-crime-comment-form-wrap></div>'+
   '</section>';
 }
-function openCrimeStory(key){
+async function openCrimeStory(key){
   const item=crimeStoryLookup.get(String(key));
   const modal=document.getElementById("crimeStoryModal"),body=document.getElementById("crimeStoryModalBody"),title=document.getElementById("crimeStoryModalTitle");
   if(!item||!modal||!body||!title)return;
+  const editorialId=String(item.id||"");
+  if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(editorialId)&&!item.description){
+    title.textContent=item.title||"تفاصيل القضية";
+    body.innerHTML='<p style="text-align:center;padding:28px">جارٍ تحميل نص الحكاية...</p>';
+    modal.style.display="block";document.body.style.overflow="hidden";
+    try{
+      const {data,error}=await publicContentClient.from("site_content").select("description,extra_data")
+        .eq("id",editorialId).eq("content_type","stories").eq("published",true).maybeSingle();
+      if(error)throw error;
+      if(!data)throw new Error("الحكاية غير متاحة حاليًا.");
+      item.description=data.description||"";
+      item.extra={...(item.extra||{}),...(data.extra_data||{})};
+    }catch(error){
+      body.innerHTML='<p role="alert" style="text-align:center;padding:28px">تعذر تحميل نص الحكاية. أغلق النافذة وحاول مرة أخرى.</p>';
+      console.warn("تعذر تحميل نص الحكاية:",error);
+      return;
+    }
+  }
   const analyticsId=String(item.id||"");
   const crimeDbMatch=analyticsId.match(/^crime-db-(\d+)$/);
   if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
@@ -5736,7 +5754,7 @@ function distributePublicContent(records){
   }
 
   if(typeof editorialData!=="undefined"){
-    replaceArray(editorialData.stories,grouped.stories || []);
+    if(Array.isArray(grouped.stories)) replaceArray(editorialData.stories,grouped.stories);
     replaceArray(editorialData.news,grouped.news || []);
     replaceArray(editorialData.projects,grouped.production || []);
 
@@ -5862,6 +5880,25 @@ function ensurePublishedCrimeStories(){
   return publishedCrimeStoriesPromise;
 }
 
+/* تحميل فهرس الحكايات بخفة، وتأجيل نص القصة الكامل حتى يفتحها القارئ */
+async function loadPublicStories(){
+  const box=document.getElementById("storiesItems");
+  try{
+    if(!adminConfigReady()||!window.supabase)throw new Error("خدمة قاعدة البيانات غير متاحة الآن.");
+    publicContentClient=accountUser?accountClient():window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const {data,error}=await publicContentClient.from("site_content")
+      .select("id,content_type,title,category,image_url,extra_data,published,created_at")
+      .eq("content_type","stories").eq("published",true)
+      .order("created_at",{ascending:false}).limit(100);
+    if(error)throw error;
+    replaceArray(editorialData.stories,(data||[]).map(row=>mapContentRecord(row)));
+    renderStories();
+  }catch(error){
+    console.error("تعذر تحميل فهرس الجرائم والحكايات:",error);
+    if(box)box.innerHTML='<div class="panel" role="alert" style="grid-column:1/-1;text-align:center">تعذر تحميل الحكايات الآن. حاول تحديث الصفحة بعد قليل.</div>';
+  }
+}
+
 /* إنشاء اتصال عام لقراءة المحتوى المنشور */
 async function loadPublicContent(){
   if(!adminConfigReady()){
@@ -5884,6 +5921,7 @@ async function loadPublicContent(){
       .from("site_content")
       .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
       .eq("published",true)
+      .neq("content_type","stories")
       .order("created_at",{ascending:false});
 
     if(error){
