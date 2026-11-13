@@ -3867,7 +3867,7 @@ async function adminReviewWriterScript(id,status){
 }
 
 function growthFormatNumber(value){return Number(value||0).toLocaleString("ar-EG");}
-async async function adminLoadContentViewStats(){
+async function adminLoadContentViewStats(){
   if(!adminSupabase||!adminSession)return;
   const legacyBox=document.getElementById("growthContentViews");
   const eventBox=document.getElementById("growthContentEngagement");
