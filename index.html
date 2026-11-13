@@ -5506,8 +5506,8 @@ function isSupabaseStorageUrl(value){
   if(!url)return false;
   try{
     const parsed=new URL(url);
-    return /(^|\\.)supabase\\.co$/i.test(parsed.hostname) &&
-      /\\/storage\\/v1\\/object\\//i.test(parsed.pathname);
+    return (parsed.hostname==="supabase.co" || parsed.hostname.endsWith(".supabase.co")) &&
+      parsed.pathname.includes("/storage/v1/object/");
   }catch(_){return false;}
 }
 
