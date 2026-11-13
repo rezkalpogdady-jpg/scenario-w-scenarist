@@ -4161,11 +4161,13 @@ async function adminLoadApprovalNotifications(){
     }catch(error){return {...item,count:null,failed:true,errorMessage:error?.message||"تعذر الاتصال"};}
   }));
   const total=results.reduce((sum,item)=>sum+(item.failed?0:item.count),0);
-  const badge=document.getElementById("adminApprovalBadge");if(badge)badge.textContent=String(total);
-  const decisionCount=document.getElementById("adminDecisionPendingCount");if(decisionCount)decisionCount.textContent=total+" طلبات بانتظار القرار";
-  const failed=results.some(item=>item.failed&&!item.optional);
   const active=results.filter(item=>!item.failed&&item.count>0);
   const failedItems=results.filter(item=>item.failed&&!item.optional);
+  const badge=document.getElementById("adminApprovalBadge");if(badge)badge.textContent=String(total);
+  const decisionCount=document.getElementById("adminDecisionPendingCount");
+  if(decisionCount)decisionCount.textContent=failedItems.length
+    ? total+" طلبًا مؤكدًا · تعذر فحص "+failedItems.length+" قسمًا"
+    : total+" طلبات بانتظار القرار";
   summary.textContent=total
     ? "عدد الطلبات المؤكدة المعلقة: "+total+". افتح أي بند للانتقال إلى مراجعته."
     : failedItems.length
