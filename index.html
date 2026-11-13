@@ -2926,11 +2926,11 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
     </div>
 
     <div class="panel" id="adminUsersPanel" style="margin-top:14px">
-      <h3 style="color:var(--gold);margin-top:0">إدارة الأدمنز</h3>
-      <p class="admin-status">أضف أدمنًا كامل الصلاحيات باستخدام البريد الإلكتروني لحسابه المسجل. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
+      <h3 style="color:var(--gold);margin-top:0">إدارة المديرين والأعضاء</h3>
+      <p class="admin-status">أضف أي عضو لديه حساب مسجل بإدخال بريده الإلكتروني المستخدم في المنصة، وسيحصل على صلاحيات المدير. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
       <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="adminNewUserEmail" type="email" required placeholder="بريد حساب الأدمن الجديد" style="flex:1;min-width:220px">
-        <button class="btn primary" type="submit">إضافة أدمن كامل</button>
+        <input id="adminNewUserEmail" type="email" required placeholder="البريد الإلكتروني المسجل للعضو" style="flex:1;min-width:220px">
+        <button class="btn primary" type="submit">ترقية العضو إلى مدير</button>
       </form>
       <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
       <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
@@ -4169,7 +4169,7 @@ async function adminManageUsers(action,payload={}){
 async function adminLoadAdminUsers(){
   const box=document.getElementById("adminUsersList");
   if(!box || !adminSession) return;
-  box.textContent="جارٍ تحميل الأدمنز...";
+  box.textContent="جارٍ تحميل المديرين...";
   try{
     const data=await adminManageUsers("list");
     const admins=data.admins||[];
