@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- سيناريو وسيناريست | تحديث 6.8.96: دمج استكمال القراءة محليًا مع الروابط المستقلة لكل قسم ودعم الرجوع والتقدم دون طلبات قاعدة بيانات: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
+<!-- سيناريو وسيناريست | تحديث 6.8.100: اختيار العضو من قائمة أرقام العضوية وترقية المدير بصلاحيات كاملة مع تحكم المالك فقط. 6.8.99: ملفات الأعضاء والتعليقات الفورية دون انتظار موافقة الإدارة مع حماية من الإساءة | تحديث 6.8.96: دمج استكمال القراءة محليًا مع الروابط المستقلة لكل قسم ودعم الرجوع والتقدم دون طلبات قاعدة بيانات: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
 <head>
@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.8.98">
+<body data-platform-version="6.8.100">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -1922,7 +1922,7 @@ function crimeStoryCommentsMarkup(item){
   if(!target)return "";
   return '<section class="panel" data-crime-comments data-target-kind="'+target.kind+'" data-target-id="'+escapeHTML(String(target.id))+'" style="margin-top:22px">'+
     '<h3 style="color:var(--gold);margin-top:0">آراء القراء</h3>'+
-    '<p class="muted">شاركنا رأيك في القضية أو الحكاية. التعليقات تظهر للجمهور بعد مراجعة الإدارة.</p>'+
+    '<p class="muted">شاركنا رأيك في القضية أو الحكاية. التعليقات تظهر فورًا، ويمكن للإدارة حذف المخالف منها.</p>'+
     '<button class="btn" type="button" data-crime-comments-load>عرض التعليقات والمشاركة</button>'+
     '<div data-crime-comments-list hidden style="margin-top:14px"></div>'+
     '<div data-crime-comment-form-wrap></div>'+
@@ -1991,8 +1991,8 @@ async function loadCrimeStoryComments(button){
         wrap.innerHTML='<form data-crime-comment-form style="display:grid;gap:9px;margin-top:16px">'+
           '<label for="crimeStoryCommentInput">اكتب رأيك في الحكاية</label>'+
           '<textarea id="crimeStoryCommentInput" name="body" rows="3" maxlength="2000" required placeholder="اكتب تعليقًا محترمًا ومفيدًا..."></textarea>'+
-          '<button class="btn primary" type="submit">إرسال التعليق للمراجعة</button>'+
-          '<p class="muted" data-crime-comment-status aria-live="polite">التعليق لا يظهر إلا بعد موافقة الإدارة. الحد الأقصى 3 تعليقات في الدقيقة.</p>'+
+          '<button class="btn primary" type="submit">نشر التعليق</button>'+
+          '<p class="muted" data-crime-comment-status aria-live="polite">سيظهر تعليقك فورًا. الحد الأقصى 3 تعليقات في الدقيقة للحد من الرسائل المزعجة.</p>'+
           '</form>';
       }else{
         wrap.innerHTML='<div class="panel" style="margin-top:16px"><p>قراءة التعليقات متاحة للجميع، أما كتابة تعليق فتحتاج إلى تسجيل الدخول لحماية القسم من الرسائل المزعجة.</p><button class="btn primary" type="button" data-crime-comments-login>تسجيل الدخول للمشاركة</button></div>';
@@ -2036,12 +2036,14 @@ document.getElementById("crimeStoryModalBody")?.addEventListener("submit",async 
       user_id:user.id,
       display_name:displayName,
       body,
-      status:"pending"
+      status:"approved"
     };
     const {error}=await client.from("content_comments").insert(payload);
     if(error)throw error;
     form.reset();
-    if(status)status.textContent="وصل تعليقك بنجاح، وسيظهر للجمهور بعد مراجعة الإدارة. شكرًا لمشاركتك.";
+    const commentsList=section.querySelector("[data-crime-comments-list]");
+    if(commentsList){commentsList.hidden=false;commentsList.insertAdjacentHTML("afterbegin",'<article class="admin-item" style="margin-bottom:9px"><strong>'+escapeHTML(displayName)+'</strong><p style="white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0">' + escapeHTML(body) + '</p><small>'+escapeHTML(new Date().toLocaleString("ar-EG"))+'</small></article>');}
+    if(status)status.textContent="تم نشر تعليقك مباشرة. شكرًا لمشاركتك.";
   }catch(error){
     if(status)status.textContent="تعذر إرسال التعليق: "+(error.message||"حاول مرة أخرى.");
   }finally{
@@ -2786,13 +2788,13 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       <label>المؤهل أو الدراسة (اختياري)</label><input id="accountEditEducation" maxlength="180" placeholder="مثال: دراسة سيناريو أو معهد سينما">
       <label>سنوات الخبرة في الكتابة (اختياري)</label><input id="accountEditExperience" type="number" min="0" max="60" placeholder="عدد السنوات">
       <label>رفع صورة شخصية من جهازك (JPG أو PNG أو WEBP، حتى 5 ميجابايت)</label><input id="accountEditPhoto" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="width:100%;padding:10px">
-      <div id="accountPhotoPreviewWrap" style="display:none;margin:8px 0"><img id="accountPhotoPreview" alt="معاينة الصورة الشخصية قبل الإرسال" style="width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)"><p class="admin-status">معاينة الصورة قبل إرسالها لمراجعة الإدارة</p></div>
+      <div id="accountPhotoPreviewWrap" style="display:none;margin:8px 0"><img id="accountPhotoPreview" alt="معاينة الصورة الشخصية قبل الإرسال" style="width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)"><p class="admin-status">معاينة الصورة قبل حفظ الملف</p></div>
       <label>أو رابط صورة شخصية (اختياري)</label><input id="accountEditImage" type="url" placeholder="https://..." autocomplete="url">
       <label>رقم هاتف (اختياري)</label><input id="accountEditPhone" type="tel" maxlength="30" placeholder="أدخل رقم التواصل مع مفتاح الدولة" dir="ltr">
       <label style="display:flex;align-items:center;gap:8px"><input id="accountEditContactPublic" type="checkbox" style="width:auto"> أسمح بعرض رقم التواصل في ملفي العام</label>
-      <button class="btn primary" type="submit">حفظ الملف وإرساله لمراجعة الإدارة</button>
+      <button class="btn primary" type="submit">حفظ الملف ونشره مباشرة</button>
     </form>
-    <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">الملف الشخصي لا يظهر للعامة قبل موافقة الإدارة.</p>
+    <p id="accountProfileStatus" role="status" aria-live="polite" style="color:var(--muted);font-size:13px">ملفك يظهر في دليل المبدعين بعد الحفظ مباشرة، ويمكنك تعديله في أي وقت.</p>
     <div class="panel" id="directorWorksPanel" style="display:none;margin-top:18px">
       <h3 style="color:var(--gold)">نماذج أعمالي الإخراجية</h3>
       <p class="muted" style="font-size:13px">اعرض نماذج من أعمالك: فيلم قصير، مشهد، فيديو كليب، حلقة برنامج، إعلان، وثائقي أو أي عمل مرئي. الحد الأقصى لكل فيديو 10 دقائق وحجم الملف 50 ميجابايت. لن يظهر العمل قبل اعتماد ملفك الشخصي وموافقة الإدارة على العمل.</p>
@@ -2923,15 +2925,12 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
       </div>
     </div>
 
-    <div class="panel" id="adminUsersPanel" style="margin-top:14px">
-      <h3 style="color:var(--gold);margin-top:0">إدارة الأدمنز</h3>
-      <p class="admin-status">أضف أدمنًا كامل الصلاحيات باستخدام البريد الإلكتروني لحسابه المسجل. حساب مالك المنصة الأساسي محمي ولا يمكن إزالته.</p>
-      <form id="adminAddUserForm" style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="adminNewUserEmail" type="email" required placeholder="بريد حساب الأدمن الجديد" style="flex:1;min-width:220px">
-        <button class="btn primary" type="submit">إضافة أدمن كامل</button>
-      </form>
+    <div class="panel" id="adminUsersPanel" style="margin-top:14px;display:none">
+      <h3 style="color:var(--gold);margin-top:0">إدارة الأعضاء والمديرين</h3>
+      <p class="admin-status">اختر أي عضو من القائمة لترقيته إلى مدير بصلاحيات إدارة المنصة. يمكنك البحث بالاسم أو رقم العضوية. تعيين المديرين وإلغاء صلاحياتهم متاح لصاحب المنصة فقط.</p>
+      <input id="adminMemberSearch" type="search" placeholder="ابحث باسم العضو أو رقم العضوية" aria-label="بحث عن عضو" style="width:100%;margin:8px 0">
       <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
-      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأدمنز...</div>
+      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأعضاء...</div>
     </div>
 
     <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
@@ -3280,7 +3279,7 @@ function accountShowUser(user,profile){
   const directorPanel=document.getElementById("directorWorksPanel");if(directorPanel)directorPanel.style.display=accountType==="director"?"block":"none";
   const scriptsPanel=document.getElementById("writerScriptsPanel");if(scriptsPanel)scriptsPanel.style.display=accountType==="writer"?"block":"none";
   const profileStatus=document.getElementById("accountProfileStatus");
-  if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور ومعتمد. أي تعديل جديد سيعيده للمراجعة." : profile?.profile_status==="rejected" ? "الملف لم يُعتمد. عدّل بياناتك ثم أعد إرساله للمراجعة." : "ملفك قيد المراجعة أو لم يُرسل بعد، ولن يظهر للعامة قبل الموافقة.";
+  if(profileStatus) profileStatus.textContent=profile?.profile_status==="approved" ? "ملفك منشور للعامة. أي تعديل تحفظه يظهر مباشرة." : profile?.profile_status==="rejected" ? "الملف مخفي بقرار إداري. يمكنك تعديله وحفظه لإعادة نشره." : "أكمل بياناتك واحفظها لنشر ملفك مباشرة.";
 }
 
 /* اسكريبتاتي: ملفات PDF مستقلة عن مكتبة السيناريوهات */
@@ -3457,7 +3456,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
       if(uploadError)throw uploadError;
       finalImageUrl=client.storage.from("platform-images").getPublicUrl(uploaded.path).data.publicUrl;
     }
-    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,profile_status:"pending",updated_at:new Date().toISOString()},{onConflict:"user_id"});
+    const {error}=await client.from("member_profiles").upsert({user_id:accountUser.id,display_name,account_type,city,specialty,image_url:finalImageUrl,work_url:work_url||null,bio,education,experience_years,profile_status:"approved",updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(error)throw error;
     const {error:contactError}=await client.from("writer_contact").upsert({user_id:accountUser.id,phone,is_public:contactPublic,updated_at:new Date().toISOString()},{onConflict:"user_id"});
     if(contactError)throw contactError;
@@ -3465,7 +3464,7 @@ document.getElementById("accountProfileForm")?.addEventListener("submit",async f
     if(metaError)throw metaError;
     const {data:profile}=await client.from("member_profiles").select("display_name,account_type,bio,city,specialty,image_url,work_url,education,experience_years,profile_status").eq("user_id",accountUser.id).maybeSingle();
     accountShowUser(accountUser,profile);await accountLoadWriterContact();
-    accountMessage("تم حفظ بياناتك وإرسال الملف لمراجعة الإدارة قبل نشره.");
+    accountMessage("تم حفظ ملفك ونشره مباشرة في دليل المبدعين. يمكنك تعديله في أي وقت.");
   }catch(error){accountMessage("تعذر حفظ الملف الشخصي: "+(error.message||"راجع إعداد قاعدة البيانات."));}
   finally{button.disabled=false;}
 });
@@ -4099,6 +4098,7 @@ async function adminLoadApprovalNotifications(){
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
 }
 
+let adminCanManageAdmins = false;
 async function adminVerifyAdmin(session){
   adminSession=session;
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
@@ -4128,12 +4128,16 @@ async function adminVerifyAdmin(session){
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
-  document.getElementById("adminUserEmail").textContent=data.user.email || "";
+  adminCanManageAdmins = data.user.id === "0ecade12-50a9-4b30-ba90-4fab3393c7b3";
+  const adminUsersPanel = document.getElementById("adminUsersPanel");
+  if (adminUsersPanel) adminUsersPanel.style.display = adminCanManageAdmins ? "block" : "none";
+  const adminIdentity = document.getElementById("adminUserEmail");
+  if (adminIdentity) adminIdentity.textContent = (data.user.user_metadata?.display_name || "مدير المنصة") + (data.user.app_metadata?.member_number ? " • عضوية " + data.user.app_metadata.member_number : "");
 
   /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
      الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
   const initialAdminLoads = [
-    adminLoadAdminUsers(),
+    ...(adminCanManageAdmins ? [adminLoadAdminUsers()] : []),
     adminLoadRecords(),
     adminLoadScenarioScripts(),
     adminLoadIdeas(),
@@ -4164,37 +4168,48 @@ async function adminManageUsers(action,payload={}){
   if(data?.error) throw new Error(data.error);
   return data;
 }
+let adminMemberRows = [];
+function adminRenderMemberRows(){
+  const box=document.getElementById("adminUsersList");
+  const search=(document.getElementById("adminMemberSearch")?.value||"").trim().toLowerCase();
+  if(!box)return;
+  const rows=adminMemberRows.filter(item =>
+    !search || String(item.display_name||"").toLowerCase().includes(search) || String(item.member_number||"").includes(search)
+  );
+  box.innerHTML=rows.length?rows.map(item=>{
+    const status=item.is_owner?'<strong style="color:var(--gold)">مالك المنصة</strong>':item.is_admin?'<strong style="color:var(--gold)">مدير</strong>':'<span class="admin-status">عضو</span>';
+    const action=item.is_owner?'':item.is_admin
+      ?'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.user_id)+'">إلغاء صلاحية المدير</button>'
+      :'<button class="btn primary" type="button" data-promote-member="'+adminEscape(item.member_number)+'">ترقية إلى مدير</button>';
+    return '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><div><strong>'+adminEscape(item.display_name||"عضو بدون اسم")+'</strong><div class="admin-status" style="margin-top:4px">رقم العضوية: '+adminEscape(item.member_number)+' • '+status+'</div></div>'+action+'</div>';
+  }).join(""):'<div class="panel">لا توجد نتائج مطابقة.</div>';
+  box.querySelectorAll("[data-promote-member]").forEach(button=>button.addEventListener("click",async()=>{
+    const number=button.getAttribute("data-promote-member");
+    if(!confirm("هل تريد منح هذا العضو صلاحيات مدير المنصة كاملة؟"))return;
+    button.disabled=true;
+    try{const result=await adminManageUsers("add",{member_number:number});adminSetMessage("adminUsersMessage",result.message||"تمت ترقية العضو.");await adminLoadAdminUsers();}
+    catch(error){adminSetMessage("adminUsersMessage","تعذرت الترقية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
+  }));
+  box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
+    const id=button.getAttribute("data-remove-admin");
+    if(!confirm("هل تريد إلغاء صلاحيات المدير من هذا العضو؟"))return;
+    button.disabled=true;
+    try{const result=await adminManageUsers("remove",{user_id:id});adminSetMessage("adminUsersMessage",result.message||"تم إلغاء الصلاحية.");await adminLoadAdminUsers();}
+    catch(error){adminSetMessage("adminUsersMessage","تعذر إلغاء الصلاحية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
+  }));
+}
 async function adminLoadAdminUsers(){
   const box=document.getElementById("adminUsersList");
-  if(!box || !adminSession) return;
-  box.textContent="جارٍ تحميل الأدمنز...";
+  if(!box || !adminSession || !adminCanManageAdmins)return;
+  box.textContent="جارٍ تحميل قائمة الأعضاء...";
   try{
     const data=await adminManageUsers("list");
-    const admins=data.admins||[];
-    box.innerHTML=admins.length?admins.map(item=>'<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><span>'+adminEscape(item.email||"حساب بدون بريد ظاهر")+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?' <strong style="color:var(--gold)">مالك المنصة</strong>':'')+'</span>'+(item.id==="0ecade12-50a9-4b30-ba90-4fab3393c7b3"?'':'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.id)+'">إزالة الصلاحية</button>')+'</div>').join(""):'<div class="panel">لا يوجد أدمنز مسجلون.</div>';
-    box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
-      const id=button.getAttribute("data-remove-admin");
-      if(!confirm("هل تريد إزالة صلاحية الأدمن من هذا الحساب؟")) return;
-      button.disabled=true;
-      try{await adminManageUsers("remove",{user_id:id});await adminLoadAdminUsers();adminSetMessage("adminUsersMessage","تمت إزالة صلاحية الأدمن.");}
-      catch(error){adminSetMessage("adminUsersMessage","تعذر إزالة الأدمن: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
-    }));
-  }catch(error){box.textContent="تعذر تحميل قائمة الأدمنز: "+(error.message||"");}
+    adminMemberRows=data.members||[];
+    adminRenderMemberRows();
+  }catch(error){box.textContent="تعذر تحميل قائمة الأعضاء: "+(error.message||"");}
 }
-document.getElementById("adminAddUserForm")?.addEventListener("submit",async function(event){
-  event.preventDefault();
-  const button=this.querySelector('button[type="submit"]');
-  const email=document.getElementById("adminNewUserEmail").value.trim();
-  try{
-    button.disabled=true;
-    adminSetMessage("adminUsersMessage","جارٍ إضافة الأدمن...");
-    const result=await adminManageUsers("add",{email});
-    this.reset();
-    adminSetMessage("adminUsersMessage",result.message||"تمت إضافة الأدمن بنجاح.");
-    await adminLoadAdminUsers();
-  }catch(error){adminSetMessage("adminUsersMessage","تعذر إضافة الأدمن: "+(error.message||"حاول مرة أخرى."));}
-  finally{button.disabled=false;}
-});
+document.getElementById("adminMemberSearch")?.addEventListener("input",adminRenderMemberRows);
+
 
 /* تسجيل الدخول */
 document.getElementById("adminLoginForm")?.addEventListener("submit",async function(event){
@@ -6246,7 +6261,7 @@ function ensureApprovedIdeas(){
     }
   }
   $('communityTopicForm')?.addEventListener('submit',async e=>{e.preventDefault();const body=$('communityTopicBody').value.trim();if(!body){notice('communityTopicMessage','اكتب موضوعك أولًا.');return;}notice('communityTopicMessage','جارٍ إرسال الموضوع...');try{const user=await currentUser();if(!user){notice('communityTopicMessage','سجل الدخول من صفحة حسابي أولًا.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);let title=(body.split(/\r?\n/).find(line=>line.trim())||body).trim().slice(0,180);if(title.length<3)title=('نقاش: '+title).slice(0,180);const {error}=await client().from('community_topics').insert({user_id:user.id,display_name:display,title,category:'حوار عام',body,status:'pending'});if(error)throw error;e.target.reset();notice('communityTopicMessage','وصل موضوعك للمراجعة، وسيظهر بعد الموافقة.');}catch(err){notice('communityTopicMessage','تعذر إرسال الموضوع: '+err.message);}});
-  document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'pending'});if(error)throw error;form.reset();alert('تم إرسال الرد للمراجعة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
+  document.addEventListener('submit',async e=>{const form=e.target.closest('.topic-reply-form');if(!form)return;e.preventDefault();const body=form.querySelector('textarea').value.trim();try{const user=await currentUser();if(!user){alert('سجل الدخول من صفحة حسابي للرد.');return;}const display=(user.user_metadata?.display_name||user.user_metadata?.name||user.email?.split('@')[0]||'عضو').slice(0,120);const {error}=await client().from('topic_replies').insert({topic_id:form.dataset.topicId,user_id:user.id,display_name:display,body,status:'approved'});if(error)throw error;form.reset();const repliesBox=$('replies-'+form.dataset.topicId);if(repliesBox)repliesBox.insertAdjacentHTML('beforeend',`<div class="community-reply"><strong>${esc(display)}</strong><p>${esc(body)}</p><small>${new Date().toLocaleDateString('ar-EG')}</small></div>`);alert('تم نشر ردك مباشرة.');}catch(err){alert('تعذر إرسال الرد: '+err.message);}});
   $('archiveSearch')?.addEventListener('input',renderArchive);$('archiveCategory')?.addEventListener('change',renderArchive);
   const priorShowPage=window.showPage;
   if(typeof priorShowPage==='function')window.showPage=function(id,options){priorShowPage(id,options);if(id==='archive')loadArchive();if(id==='community')loadTopics();};
