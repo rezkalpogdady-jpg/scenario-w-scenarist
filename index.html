@@ -1623,7 +1623,7 @@ function renderShortFilms(){
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
       (item.description?'<p style="white-space:pre-wrap">'+escapeHTML(item.description)+'</p>':'')+
       externalWatch+
-      (adminSession&&item.id?'<button class="btn" type="button" onclick="adminEditRecord(\\''+escapeHTML(item.id)+'\\')">تعديل رابط المشاهدة</button>':'')+
+      (adminSession&&item.id?'<button class="btn" type="button" data-record-id="'+escapeHTML(item.id)+'" onclick="adminEditRecord(this.dataset.recordId)">تعديل رابط المشاهدة</button>':'')+
       '</div></article>';
   }).join("");
 }
