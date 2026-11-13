@@ -19,7 +19,7 @@ create index if not exists content_engagement_viewer_idx
 alter table public.content_engagement_events enable row level security;
 revoke all on table public.content_engagement_events from public, anon, authenticated;
 
-create or replace function public.record_public_content_event(
+create or replace function private.record_public_content_event(
   p_content_type text,
   p_content_id text,
   p_event_type text,
@@ -54,8 +54,10 @@ begin
   elsif p_content_type = 'director_video' then
     select exists (
       select 1 from public.director_work_submissions d
+      join public.member_profiles mp on mp.user_id = d.user_id
       where d.id::text = p_content_id and d.status = 'approved'
-        and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)
+        and mp.account_type = 'director' and mp.profile_status = 'approved'
+        and nullif(d.storage_path,'') is not null
     ) into content_is_public;
   else
     select exists (
@@ -88,6 +90,23 @@ begin
   values (p_content_type,p_content_id,p_event_type,p_viewer_id);
   return true;
 end;
+$function$;
+
+revoke all on function private.record_public_content_event(text,text,text,uuid) from public;
+grant usage on schema private to anon, authenticated;
+grant execute on function private.record_public_content_event(text,text,text,uuid) to anon, authenticated;
+
+create or replace function public.record_public_content_event(
+  p_content_type text,
+  p_content_id text,
+  p_event_type text,
+  p_viewer_id uuid
+) returns boolean
+language sql
+security invoker
+set search_path = ''
+as $function$
+  select private.record_public_content_event(p_content_type,p_content_id,p_event_type,p_viewer_id);
 $function$;
 
 revoke all on function public.record_public_content_event(text,text,text,uuid) from public;
