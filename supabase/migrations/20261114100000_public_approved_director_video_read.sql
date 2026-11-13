@@ -1,5 +1,8 @@
 -- Allow logged-out visitors to create signed URLs for approved director work videos only.
 -- Keep the bucket private; pending submissions and unapproved profiles remain inaccessible.
+-- Idempotent because the policy was also applied directly to the live project.
+drop policy if exists "Public can read approved director work videos" on storage.objects;
+
 create policy "Public can read approved director work videos"
 on storage.objects
 for select
