@@ -1445,7 +1445,7 @@ function profileCard(item, type){
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(cardBio)}</p>
-        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="metadata" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
+        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="none" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
         ${talentAction}
       </div>
     </article>`;
@@ -1555,7 +1555,7 @@ function showTalentProfile(index){
   let work="";
   if(item.work){
     work=item.workIsVideo
-      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="metadata" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
+      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="none" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
       : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
   }
   const extraWorks=portfolioLinks.length?'<div style="margin-top:18px"><h4 style="color:var(--gold)">نماذج أعمال إضافية</h4>'+portfolioLinks.map(link=>'<p><a class="btn" href="'+escapeHTML(safeHttpUrl(link.url))+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(link.label)+'</a></p>').join("")+'</div>':"";
@@ -1614,7 +1614,7 @@ function renderShortFilms(){
     const poster=safeHttpUrl(item.image||"");
     const extra=item.extra||{};
     const media=video&&extra.media_kind==="video"
-      ? '<div class="short-film-player-wrap"><video controls playsinline preload="metadata" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
+      ? '<div class="short-film-player-wrap"><video controls playsinline preload="none" data-short-film-player="1"'+(poster?' poster="'+escapeHTML(poster)+'"':'')+' aria-label="'+escapeHTML(item.title||"فيلم قصير")+'" src="'+escapeHTML(video)+'"></video><p class="short-film-video-error" hidden>تعذر تحميل الفيديو. قد يكون رابط الملف غير متاح أو بصيغة غير مدعومة.</p></div>'
       : (poster?'<img src="'+escapeHTML(poster)+'" alt="'+escapeHTML(item.title||"")+'" loading="lazy">':'');
     return '<article class="feature short-film-card">'+media+'<div class="feature-content">'+
       (item.title?'<h3>'+escapeHTML(item.title)+'</h3>':'')+
@@ -1630,7 +1630,7 @@ function validateTalentVideoDuration(file){
   return new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file);
     const video=document.createElement("video");
-    video.preload="metadata";
+    video.preload="none";
     const finish=(error)=>{URL.revokeObjectURL(url);video.removeAttribute("src");video.load();error?reject(error):resolve();};
     video.onloadedmetadata=()=>{const duration=Number(video.duration);if(!Number.isFinite(duration)||duration<=0){finish(new Error("تعذر قراءة مدة الفيديو. جرّب ملف MP4 واضحًا."));return;}if(duration>600){finish(new Error("مدة الفيديو أطول من 10 دقائق. اختر فيديو أقصر."));return;}finish();};
     video.onerror=()=>finish(new Error("تعذر قراءة الفيديو. استخدم MP4 أو WebM أو MOV."));
@@ -3681,7 +3681,7 @@ async function adminLoadCommunitySubmissions(){
     const heading=isTalent?item.name:item.title;
     const details=isTalent?"المجال: "+(item.category||"")+" • المدينة: "+(item.city||"غير محددة"):"النوع: "+(item.category||"")+" • صاحب المشروع: "+(item.owner_name||"");
     const isStoredVideo=String(item.work_url||"").startsWith("talent-video:");
-    const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
+    const workPreview=isStoredVideo?(item.reviewVideoUrl?'<video controls playsinline preload="none" style="width:100%;max-height:360px;background:#000;border-radius:8px" src="'+adminEscape(item.reviewVideoUrl)+'"></video>':'<p>تعذر تجهيز معاينة الفيديو؛ تحقق من صلاحيات التخزين.</p>'):(item.work_url?'<p><a href="'+adminEscape(item.work_url)+'" target="_blank" rel="noopener">فتح نموذج العمل</a></p>':"");
     return '<article class="admin-item"><h3>'+adminEscape(heading)+'</h3><p>'+adminEscape(details)+'</p><p>'+adminEscape(item.bio||item.description||"")+'</p><p>رقم التواصل (خاص بالإدارة): '+adminEscape(item.contact||"غير مضاف")+'</p>'+workPreview+(isTalent?'<label style="display:flex;align-items:center;gap:8px;margin:12px 0;color:var(--gold2)"><input id="communityWriter-'+item.id+'" type="checkbox" style="width:auto;margin:0">إضافة هذا الملف أيضًا إلى صفحة مؤلفي السيناريو (بعد التأكد من التخصص)</label>':"")+'<div class="admin-actions"><button class="btn primary" onclick="adminReviewCommunity(\''+item.id+'\',\'approved\',document.getElementById(\'communityWriter-'+item.id+'\')?.checked)">موافقة ونشر</button><button class="btn" onclick="adminReviewCommunity(\''+item.id+'\',\'rejected\')">رفض</button></div></article>';
   }).join("");
 }
@@ -4748,18 +4748,21 @@ async function adminLoadScenarioScripts(){
   const box=document.getElementById("libraryScenarioAdminList");
   if(!box)return;
   box.style.display="grid";
-  const cards=await Promise.all(adminScenarioScriptRecords.map(async item=>{
-    let posterUrl="";
-    if(item.poster_path){
-      try{const {data:poster,error:posterError}=await adminSupabase.storage.from("scenario-scripts").createSignedUrl(item.poster_path,900);if(!posterError)posterUrl=poster?.signedUrl||"";}
-      catch(posterError){console.warn("تعذر تجهيز أفيش المعاينة الإدارية:",posterError);}
-    }
+  const posterPaths=[...new Set(adminScenarioScriptRecords.map(item=>item.poster_path).filter(Boolean))];
+  const posterUrls=new Map();
+  if(posterPaths.length){
+    const {data:posters,error:posterError}=await adminSupabase.storage.from("scenario-scripts").createSignedUrls(posterPaths,900);
+    if(posterError)console.warn("تعذر تجهيز أفيشات المعاينة الإدارية:",posterError);
+    (posters||[]).forEach(poster=>{if(poster.path&&poster.signedUrl)posterUrls.set(poster.path,poster.signedUrl);});
+  }
+  const cards=adminScenarioScriptRecords.map(item=>{
+    const posterUrl=posterUrls.get(item.poster_path)||"";
     return '<article class="admin-item" style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">'+
       (posterUrl?'<img src="'+adminEscape(posterUrl)+'" alt="أفيش '+adminEscape(item.title)+'" loading="lazy" style="width:96px;height:136px;object-fit:cover;border-radius:8px">':'<div aria-label="لا يوجد أفيش" style="width:96px;height:136px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;text-align:center">لا يوجد أفيش</div>')+
       '<div style="flex:1;min-width:180px"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.author)+' • '+adminEscape(item.category)+'</p><p>'+(item.published?"منشور":"مسودة غير منشورة")+' • '+(item.rights_confirmed?"بيانات الحقوق مكتملة":"بيانات الحقوق تحتاج استكمالًا")+'</p><div class="admin-actions">'+
       (item.storage_path?'<button class="btn primary" type="button" onclick="adminPreviewScenarioScript(\''+item.id+'\')">قراءة السيناريو</button>':'')+
       '<button class="btn" type="button" onclick="adminEditScenarioScript(\''+item.id+'\')">تعديل</button><button class="btn" type="button" onclick="adminToggleScenarioScript(\''+item.id+'\','+(!item.published)+')">'+(item.published?"إيقاف النشر":"نشر")+'</button><button class="btn" type="button" onclick="adminDeleteScenarioScript(\''+item.id+'\')">حذف</button></div></div></article>';
-  }));
+  });
   box.innerHTML='<div class="section-heading" style="grid-column:1/-1"><h3 style="color:var(--gold)">مكتبة السيناريوهات — عرض وقراءة وإدارة</h3><p>تظهر الأفيشات هنا للمدير، ويمكن قراءة المنشور والمسودة دون تغيير حالة النشر.</p></div>'+
     (cards.length?cards.join(""):'<p class="panel">لا توجد سيناريوهات أو مسودات حتى الآن.</p>');
 }
@@ -4892,11 +4895,14 @@ async function loadPublishedScenarioScripts(force=false){
     if(error)throw error;
 const records=(data||[]).filter(x=>x.rights_confirmed===true&&x.rights_status!=="unverified"&&!!String(x.rights_holder||"").trim());
 const client=scenarioLibraryClient();
-scenarioScriptRecords=await Promise.all(records.map(async item=>{
-let posterUrl="";
-if(item.poster_path){try{const {data:poster,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrl(item.poster_path,3600);if(!posterError)posterUrl=poster?.signedUrl||"";}catch(posterError){console.warn("تعذر تجهيز أفيش السيناريو:",posterError);}}
-return {...item,poster_url:posterUrl};
-}));
+const posterPaths=[...new Set(records.map(item=>item.poster_path).filter(Boolean))];
+const posterUrls=new Map();
+if(posterPaths.length){
+  const {data:posters,error:posterError}=await client.storage.from("scenario-scripts").createSignedUrls(posterPaths,3600);
+  if(posterError)console.warn("تعذر تجهيز أفيشات مكتبة السيناريوهات:",posterError);
+  (posters||[]).forEach(poster=>{if(poster.path&&poster.signedUrl)posterUrls.set(poster.path,poster.signedUrl);});
+}
+scenarioScriptRecords=records.map(item=>({...item,poster_url:posterUrls.get(item.poster_path)||""}));
 renderScenarioScriptCards();
   }catch(error){box.dataset.scriptsLoaded="0";box.innerHTML=`<div class="panel" style="grid-column:1/-1"><p>تعذر تحميل مكتبة السيناريوهات الكاملة: ${escapeHTML(error.message||"تحقق من إعداد قاعدة البيانات.")}</p></div>`;}
 }
@@ -5531,7 +5537,7 @@ function directVideoMarkup(value,label="مشاهدة الفيديو",viewType=""
   const url=safeHttpUrl(value);
   if(!url)return "";
   if(/\.(mp4|webm|ogg|m4v)(\?|#|$)/i.test(url)){
-    return `<video controls playsinline preload="metadata" aria-label="${escapeHTML(label)}" data-content-view-type="${escapeHTML(viewType)}" data-content-view-id="${escapeHTML(viewId)}" style="width:100%;max-height:420px;background:#000;border-radius:8px" src="${escapeHTML(url)}"></video>`;
+    return `<video controls playsinline preload="none" aria-label="${escapeHTML(label)}" data-content-view-type="${escapeHTML(viewType)}" data-content-view-id="${escapeHTML(viewId)}" style="width:100%;max-height:420px;background:#000;border-radius:8px" src="${escapeHTML(url)}"></video>`;
   }
   if(/\.m3u8(\?|#|$)/i.test(url)){
     const playerId="media-"+Math.random().toString(36).slice(2,10);
@@ -6458,7 +6464,7 @@ function directorWorkSafeUrl(value){try{const u=new URL(value);return ["https:",
 async function directorVideoDuration(file){
   return new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file),video=document.createElement("video");
-    video.preload="metadata";
+    video.preload="none";
     video.onloadedmetadata=()=>{const duration=video.duration;URL.revokeObjectURL(url);resolve(duration);};
     video.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("تعذر قراءة مدة الفيديو. استخدم MP4 أو WebM أو MOV."));};
     video.src=url;
@@ -6599,7 +6605,7 @@ function renderDirectors(){
   box.innerHTML=list.map(x=>{
     const works=(x.works||[]).map(w=>{
       const embed=directorEmbedUrl(w.mediaUrl||"");
-      const player=w.storage_path&&w.mediaUrl?'<video controls playsinline preload="metadata" data-content-view-type="director_video" data-content-view-id="'+directorWorkEsc(w.id)+'" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="'+directorWorkEsc(w.mediaUrl)+'"></video>':embed?'<iframe data-content-view-type="director_video" data-content-view-id="'+directorWorkEsc(w.id)+'" src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px"></iframe>':'<a class="btn" href="'+directorWorkEsc(w.mediaUrl||"")+'" target="_blank" rel="noopener noreferrer">مشاهدة العمل</a>';
+      const player=w.storage_path&&w.mediaUrl?'<video controls playsinline preload="none" data-content-view-type="director_video" data-content-view-id="'+directorWorkEsc(w.id)+'" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="'+directorWorkEsc(w.mediaUrl)+'"></video>':embed?'<iframe data-content-view-type="director_video" data-content-view-id="'+directorWorkEsc(w.id)+'" src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px"></iframe>':'<a class="btn" href="'+directorWorkEsc(w.mediaUrl||"")+'" target="_blank" rel="noopener noreferrer">مشاهدة العمل</a>';
       return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px">'+player+'<h4 style="color:var(--gold);margin:10px 0 4px">'+directorWorkEsc(w.title)+'</h4><p class="admin-status">'+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+' • '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p><p>'+directorWorkEsc(w.description||"")+'</p></div>';
     }).join("");
     const image=x.image?'<img src="'+directorWorkEsc(x.image)+'" alt="" loading="lazy" style="width:100%;height:210px;object-fit:cover;border-radius:10px">':'<div style="height:150px;background:linear-gradient(135deg,#342a1c,#111);display:grid;place-items:center;font-size:48px;color:var(--gold)">🎬</div>';
@@ -6626,7 +6632,7 @@ async function adminLoadDirectorWorks(){
       if(!signedError)mediaUrl=signed?.signedUrl||"";
     }
     const embed=directorEmbedUrl(mediaUrl);
-    const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="metadata" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
+    const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="none" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
     cards.push('<article class="admin-item"><h3>'+directorWorkEsc(w.title)+'</h3><p>المخرج: '+directorWorkEsc(names.get(w.user_id)||"عضو")+' • '+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+'</p><p>المدة: '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p>'+player+'<p>'+directorWorkEsc(w.description||"")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>');
   }
   box.innerHTML=cards.join("");
