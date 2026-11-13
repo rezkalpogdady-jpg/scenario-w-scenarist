@@ -34,7 +34,7 @@ declare
   lock_key bigint;
 begin
   if p_content_type is null or p_content_id is null or p_viewer_id is null
-     or p_event_type not in ('impression','open','video_play')
+     or p_event_type is null or p_event_type not in ('impression','open','video_play')
      or length(p_content_type) > 40 or length(p_content_id) > 80 then
     return false;
   end if;
@@ -60,7 +60,9 @@ begin
   else
     select exists (
       select 1 from public.site_content c
-      where c.id::text = p_content_id and c.content_type = p_content_type and c.published = true
+      where c.id::text = p_content_id
+        and c.content_type = case when p_content_type = 'film' then 'films' else p_content_type end
+        and c.published = true
     ) into content_is_public;
   end if;
 
@@ -115,7 +117,7 @@ begin
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
     from public.content_engagement_events e
     left join public.site_content sc
-      on sc.id::text = e.content_id and sc.content_type = e.content_type
+      on sc.id::text = e.content_id and sc.content_type = case when e.content_type = 'film' then 'films' else e.content_type end
     left join public.crime_stories cs
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
