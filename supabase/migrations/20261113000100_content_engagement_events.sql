@@ -62,7 +62,10 @@ begin
       where c.id::text = p_content_id
         and c.content_type = p_content_type
         and c.published = true
-        and (p_content_type <> 'archive' or coalesce(c.extra_data->>'media_kind','') <> 'video')
+        and (p_content_type <> 'archive' or (
+          coalesce(c.extra_data->>'media_kind','') <> 'video'
+          and nullif(btrim(coalesce(c.description,'')),'') is not null
+        ))
     ) into content_is_public;
 
   end if;
