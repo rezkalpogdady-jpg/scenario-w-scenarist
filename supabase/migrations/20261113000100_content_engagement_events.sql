@@ -10,7 +10,7 @@ create table if not exists public.content_engagement_events (
   id bigint generated always as identity primary key,
   content_type text not null,
   content_id text not null,
-  event_type text not null check (event_type in ('impression','open','video_play')),
+  event_type text not null check (event_type in ('impression','open')),
   viewer_id uuid not null,
   occurred_at timestamptz not null default now()
 );
@@ -38,8 +38,9 @@ declare
   lock_key bigint;
 begin
   if p_content_type is null or p_content_id is null or p_viewer_id is null
-     or p_event_type is null or p_event_type not in ('impression','open','video_play')
-     or length(p_content_type) > 40 or length(p_content_id) > 80 then
+     or p_content_type not in ('academy','crime_story','stories','scenario','archive')
+     or p_event_type is null or p_event_type not in ('impression','open')
+     or length(p_content_id) > 80 then
     return false;
   end if;
 
@@ -55,20 +56,20 @@ begin
         and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
         and nullif(s.rights_holder,'') is not null
     ) into content_is_public;
-  elsif p_content_type = 'director_video' then
+  elsif p_content_type = 'scenario' then
     select exists (
-      select 1 from public.director_work_submissions d
-      join public.member_profiles mp on mp.user_id = d.user_id
-      where d.id::text = p_content_id and d.status = 'approved'
-        and mp.account_type = 'director' and mp.profile_status = 'approved'
-        and (nullif(d.storage_path,'') is not null or nullif(d.external_url,'') is not null)
+      select 1 from public.scenario_scripts s
+      where s.id::text = p_content_id and s.published = true
+        and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
+        and nullif(s.rights_holder,'') is not null
     ) into content_is_public;
-  else
+  elsif p_content_type in ('academy','stories','archive') then
     select exists (
       select 1 from public.site_content c
       where c.id::text = p_content_id
-        and c.content_type = case when p_content_type = 'film' then 'films' else p_content_type end
+        and c.content_type = p_content_type
         and c.published = true
+        and (p_content_type <> 'archive' or coalesce(c.extra_data->>'media_kind','') <> 'video')
     ) into content_is_public;
   end if;
 
@@ -132,21 +133,21 @@ begin
   into result
   from (
     select e.content_type, e.content_id, e.event_type,
-      coalesce(sc.title, cs.title, ss.title, dw.title, 'محتوى منشور') as title,
+      coalesce(sc.title, cs.title, ss.title, 'محتوى منشور') as title,
       count(*)::bigint as total_events,
       count(distinct e.viewer_id)::bigint as unique_viewers,
       count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
     from public.content_engagement_events e
     left join public.site_content sc
-      on sc.id::text = e.content_id and sc.content_type = case when e.content_type = 'film' then 'films' else e.content_type end
+      on sc.id::text = e.content_id and sc.content_type = e.content_type
+      and e.content_type in ('academy','stories','archive')
     left join public.crime_stories cs
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
       on e.content_type = 'scenario' and ss.id::text = e.content_id
-    left join public.director_work_submissions dw
-      on e.content_type = 'director_video' and dw.id::text = e.content_id
-    group by e.content_type,e.content_id,e.event_type,sc.title,cs.title,ss.title,dw.title
+    where e.content_type in ('academy','crime_story','stories','scenario','archive')
+    group by e.content_type,e.content_id,e.event_type,sc.title,cs.title,ss.title
 
     union all
 
@@ -157,6 +158,7 @@ begin
       count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
     from public.content_engagement_events e
+    where e.content_type in ('academy','crime_story','stories','scenario','archive')
     group by e.content_type,e.event_type
   ) x;
   return result;
