@@ -3860,32 +3860,6 @@ async function adminReviewWriterScript(id,status){
 function growthFormatNumber(value){return Number(value||0).toLocaleString("ar-EG");}
 async function adminLoadContentViewStats(){
   if(!adminSupabase||!adminSession)return;
-  const legacyBox=document.getElementById("growthContentViews");
-  const eventBox=document.getElementById("growthContentEngagement");
-  if(legacyBox){
-    const oldPanel=legacyBox.closest(".admin-item");
-    if(oldPanel)oldPanel.hidden=true;
-    legacyBox.innerHTML='<tr><td colspan="3">تم توحيد الإحصائيات في الجدول التالي للأعمال المكتوبة فقط.</td></tr>';
-  }
-  if(eventBox){
-    const {data,error}=await adminSupabase.rpc("admin_content_engagement_stats");
-    if(error){eventBox.innerHTML='<tr><td colspan="6">إحصائيات الأحداث غير مفعلة بعد: '+adminEscape(error.message)+'</td></tr>';return;}
-    const rows=Array.isArray(data)?data:[];
-    const labels={impression:"ظهور العمل المكتوب",open:"فتح العمل للقراءة"};
-    eventBox.innerHTML=rows.length?rows.map(row=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(row.title||"محتوى بدون عنوان")+'<small style="display:block;color:var(--muted)">'+adminEscape(row.content_type)+'</small></td><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(labels[row.event_type]||row.event_type)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+growthFormatNumber(row.total_events)+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+growthFormatNumber(row.unique_viewers)+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+growthFormatNumber(row.events_7d)+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+growthFormatNumber(row.events_30d)+'</td></tr>').join(""):'<tr><td colspan="6">لا توجد أحداث مسجلة حتى الآن.</td></tr>';
-  }
-}
-async function adminLoadPlatformGrowthStats(){
-  if(!adminSupabase || !adminSession)return;
-  const status=document.getElementById("adminGrowthStatsStatus"),button=document.getElementById("adminGrowthStatsRefresh");
-  if(status)status.textContent="جارٍ تحديث الإحصائيات...";if(button)button.disabled=true;
-  try{
-    const {data,error}=await adminSupabase.rpc("admin_platform_growth_stats");await adminLoadContentViewStats();
-    if(error)throw error;const stats=Array.isArray(data)?data[0]:data;if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
-    const values={growthTotalMembers:stats.total_members,growthNewMembers7d:stats.new_members_7d,growthNewMembers30d:stats.new_members_30d,growthActiveMembers30d:stats.active_members_30d,growthProfiles:stats.profile_count,growthInteractions:stats.interactions_total,growthVisits:stats.visits_total,growthUniqueVisitors:stats.unique_visitors,growthVisits30d:stats.visits_30d,growthTopics:stats.topics_total,growthReplies:stats.replies_total,growthComments:stats.comments_total};
-    Object.entries(values).forEach(([id,value])=>{const node=document.getElementById(id);if(node)node.textContent=growthFormatNumber(value);});
-    const pages=document.getElementById("growthTopPages");if(pages){const rows=Array.isArray(stats.top_pages)?stats.top_pages:[];pages.innerHTML=rows.length?rasync function adminLoadContentViewStats(){
-  if(!adminSupabase||!adminSession)return;
   const box=document.getElementById("growthContentEngagement");
   if(!box)return;
   const {data,error}=await adminSupabase.rpc("admin_content_engagement_stats");
@@ -3926,7 +3900,45 @@ async function adminLoadPlatformGrowthStats(){
   }finally{
     if(button)button.disabled=false;
   }
-} var(--border)">'+growthFormatNumber(item.count)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+item.average.toFixed(2)+'</td></tr>').join("");
+}
+async function adminLoadContentRatings(){
+  if(!adminSupabase||!adminSession)return;
+  const status=document.getElementById("adminRatingsStatus"),button=document.getElementById("adminRatingsRefresh");
+  const totalNode=document.getElementById("adminRatingsTotal"),averageNode=document.getElementById("adminRatingsAverage"),sampleNode=document.getElementById("adminRatingsSample"),rowsNode=document.getElementById("adminRatingsRows"),note=document.getElementById("adminRatingsFootnote");
+  if(status)status.textContent="جارٍ تحميل ملخص التقييمات...";
+  if(button)button.disabled=true;
+  try{
+    const {data,error,count}=await adminSupabase.from("content_ratings").select("content_id,rating",{count:"exact"}).limit(500);
+    if(error)throw error;
+    const ratings=Array.isArray(data)?data:[];
+    const total=Number(count??ratings.length);
+    if(totalNode)totalNode.textContent=growthFormatNumber(total);
+    if(sampleNode)sampleNode.textContent=growthFormatNumber(ratings.length);
+    const numeric=ratings.map(item=>Number(item.rating)).filter(value=>Number.isFinite(value)&&value>=1&&value<=5);
+    const average=numeric.length?(numeric.reduce((sum,value)=>sum+value,0)/numeric.length).toFixed(2):"—";
+    if(averageNode)averageNode.textContent=average;
+    if(!ratings.length){
+      if(rowsNode)rowsNode.innerHTML='<tr><td colspan="3">لا توجد تقييمات مسجلة حتى الآن.</td></tr>';
+      if(status)status.textContent="اكتمل الفحص — لا توجد تقييمات.";
+      if(note)note.textContent="تم الفحص دون تعديل أي بيانات.";
+      return;
+    }
+    const ids=[...new Set(ratings.map(item=>item.content_id).filter(Boolean))];
+    const {data:contentRows,error:contentError}=ids.length?await adminSupabase.from("site_content").select("id,title,content_type").in("id",ids):{data:[],error:null};
+    if(contentError)throw contentError;
+    const titles=new Map((contentRows||[]).map(item=>[String(item.id),item]));
+    const grouped=new Map();
+    ratings.forEach(item=>{
+      const key=String(item.content_id||"غير مرتبط");
+      if(!grouped.has(key))grouped.set(key,[]);
+      const value=Number(item.rating);if(Number.isFinite(value)&&value>=1&&value<=5)grouped.get(key).push(value);
+    });
+    const labels={academy:"الأكاديمية",writers:"الكُتّاب",directors:"المخرجون",talents:"المواهب",films:"الأفلام",shorts:"الأفلام القصيرة",news:"الأخبار",archive:"الأرشيف",stories:"الجرائم والحكايات"};
+    const summary=[...grouped.entries()].map(([id,values])=>{
+      const item=titles.get(id);
+      return {title:item?.title||"محتوى غير متاح أو محذوف",count:values.length,average:values.length?values.reduce((sum,value)=>sum+value,0)/values.length:0,type:labels[item?.content_type]||item?.content_type||""};
+    }).sort((a,b)=>b.count-a.count||b.average-a.average);
+    if(rowsNode)rowsNode.innerHTML=summary.map(item=>'<tr><td style="padding:8px;border-top:1px solid var(--border)">'+adminEscape(item.title)+(item.type?' <small style="color:var(--muted)">• '+adminEscape(item.type)+'</small>':'')+'</td><td style="padding:8px;border-top:1px solid var(--border)">'+growthFormatNumber(item.count)+'</td><td style="padding:8px;border-top:1px solid var(--border);font-weight:800;color:var(--gold)">'+item.average.toFixed(2)+'</td></tr>').join("");
     if(status)status.textContent="اكتمل تحميل التقييمات.";
     if(note)note.textContent=total>ratings.length?"المتوسط والتوزيع حسب المحتوى محسوبان من عينة "+ratings.length+" تقييمًا من إجمالي "+total+"؛ اضغط التحديث لاحقًا لمراجعة أحدث البيانات المتاحة.":"تم حساب المتوسطات من جميع التقييمات التي أعادتها قاعدة البيانات. لم يتم تعديل أو حذف أي تقييم.";
   }catch(error){
