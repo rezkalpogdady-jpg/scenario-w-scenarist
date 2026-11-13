@@ -3865,7 +3865,7 @@ async function adminReviewWriterScript(id,status){
 }
 
 function growthFormatNumber(value){return Number(value||0).toLocaleString("ar-EG");}
-async function adminLoadContentViewStats(){
+async async function adminLoadContentViewStats(){
   if(!adminSupabase||!adminSession)return;
   const legacyBox=document.getElementById("growthContentViews");
   const eventBox=document.getElementById("growthContentEngagement");
@@ -5318,7 +5318,7 @@ function renderFilms(){
         ? `<button class="btn" type="button" onclick="adminEditFeaturedSeriesPoster('${item.id}')">${posterRecord?"تعديل الأفيش":"إضافة الأفيش"}</button>`
         : "");
     const clickablePosterMarkup=posterRecord?.content_url
-      ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
+      ? `<a href="${escapeHTML(safeHttpUrl(posterRecord.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentEvent('film','${escapeHTML(posterRecord.id)}','open');recordPublicContentView('film','${escapeHTML(posterRecord.id)}')">${posterMarkup}</a>`
       : posterMarkup;
     return `
       <article class="feature"${posterRecord?.id?' data-content-impression-type="film" data-content-impression-id="'+escapeHTML(posterRecord.id)+'"':""}>
@@ -5347,7 +5347,7 @@ function renderFilms(){
     <article class="feature" data-content-impression-type="film" data-content-impression-id="${escapeHTML(item.id)}">
       ${item.image_url
         ? (item.content_url
-          ? `<a href="${escapeHTML(safeHttpUrl(item.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentView('film','${escapeHTML(item.id)}')"><img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover"></a>`
+          ? `<a href="${escapeHTML(safeHttpUrl(item.content_url))}" target="_blank" rel="noopener noreferrer" aria-label="فتح مصدر ${escapeHTML(item.title)}" onclick="recordPublicContentEvent('film','${escapeHTML(item.id)}','open');recordPublicContentView('film','${escapeHTML(item.id)}')"><img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover"></a>`
           : `<img src="${safeHttpUrl(item.image_url)}" alt="أفيش ${escapeHTML(item.title)}" loading="lazy" decoding="async" style="display:block;width:100%;height:170px;object-fit:cover">`)
         : `<div style="height:160px;background:#171717;display:grid;place-items:center;font-size:45px"></div>`}
       <div class="feature-content">
