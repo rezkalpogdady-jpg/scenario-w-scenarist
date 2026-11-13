@@ -5980,7 +5980,8 @@ async function recordAnonymousPageVisit(){
     if(!window.supabase || !adminConfigReady()) return;
     let visitorId=localStorage.getItem("scenarioVisitorId");
     if(!visitorId){visitorId=(window.crypto&&typeof window.crypto.randomUUID==="function"?window.crypto.randomUUID():"v-"+Date.now()+"-"+Math.random().toString(36).slice(2));localStorage.setItem("scenarioVisitorId",visitorId);}
-    const client=window.supabase.createClient(ADMIN_SUPABASE_URL,ADMIN_SUPABASE_KEY);
+    const client=getPublicContentAnalyticsClient();
+    if(!client)return;
     const {error}=await client.from("page_visits").insert({visitor_id:visitorId,page_path:location.pathname+location.hash});
     if(error) console.warn("تعذر تسجيل الزيارة",error.message);
   }catch(error){console.warn("تعذر تسجيل الزيارة",error);}
