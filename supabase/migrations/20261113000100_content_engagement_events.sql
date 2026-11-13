@@ -8,7 +8,7 @@ grant usage on schema scenario_analytics_private to anon, authenticated;
 
 create table if not exists public.content_engagement_events (
   id bigint generated always as identity primary key,
-  content_type text not null,
+  content_type text not null check (content_type in ('academy','crime_story','scenario','archive')),
   content_id text not null,
   event_type text not null check (event_type in ('impression','open')),
   viewer_id uuid not null,
@@ -131,6 +131,31 @@ begin
     raise exception 'admin access required' using errcode = '42501';
   end if;
 
+  with eligible_events as (
+    select e.*
+    from public.content_engagement_events e
+    where
+      (e.content_type = 'academy' and exists (
+        select 1 from public.site_content c
+        where c.id::text = e.content_id and c.content_type = 'academy' and c.published = true
+      ))
+      or (e.content_type = 'crime_story' and exists (
+        select 1 from public.crime_stories c
+        where c.id::text = e.content_id and c.status = 'approved' and c.is_published = true
+      ))
+      or (e.content_type = 'scenario' and exists (
+        select 1 from public.scenario_scripts s
+        where s.id::text = e.content_id and s.published = true
+          and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
+          and nullif(s.rights_holder,'') is not null
+      ))
+      or (e.content_type = 'archive' and exists (
+        select 1 from public.site_content c
+        where c.id::text = e.content_id and c.content_type = 'archive' and c.published = true
+          and c.extra_data->>'media_kind' = 'article'
+          and nullif(btrim(coalesce(c.description,'')),'') is not null
+      ))
+  )
   select coalesce(jsonb_agg(to_jsonb(x) order by x.total_events desc, x.title), '[]'::jsonb)
   into result
   from (
@@ -140,7 +165,7 @@ begin
       count(distinct e.viewer_id)::bigint as unique_viewers,
       count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
-    from public.content_engagement_events e
+    from eligible_events e
     left join public.site_content sc
       on sc.id::text = e.content_id and sc.content_type = e.content_type
       and e.content_type in ('academy','archive')
@@ -148,7 +173,6 @@ begin
       on e.content_type = 'crime_story' and cs.id::text = e.content_id
     left join public.scenario_scripts ss
       on e.content_type = 'scenario' and ss.id::text = e.content_id
-    where e.content_type in ('academy','crime_story','scenario','archive')
     group by e.content_type,e.content_id,e.event_type,sc.title,cs.title,ss.title
 
     union all
@@ -159,8 +183,7 @@ begin
       count(distinct e.viewer_id)::bigint as unique_viewers,
       count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
       count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
-    from public.content_engagement_events e
-    where e.content_type in ('academy','crime_story','scenario','archive')
+    from eligible_events e
     group by e.content_type,e.event_type
   ) x;
   return result;
