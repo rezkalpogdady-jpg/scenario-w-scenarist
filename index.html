@@ -5828,12 +5828,18 @@ function distributePublicContent(records){
 async function loadApprovedTalentVideos(){
   if(!publicContentClient)return;
   const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:"));
-  for(const item of items){
-    const path=item.work.slice("talent-video:".length);
-    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    if(error){console.warn("تعذر تجهيز فيديو موهبة منشور",error.message);item.work="";continue;}
-    item.work=data?.signedUrl||"";item.workIsVideo=!!item.work;
+  const paths=[...new Set(items.map(item=>item.work.slice("talent-video:".length)).filter(Boolean))];
+  const signedUrls=new Map();
+  if(paths.length){
+    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrls(paths,3600);
+    if(error)console.warn("تعذر تجهيز روابط فيديوهات المواهب",error.message);
+    else (data||[]).forEach(item=>{if(item.path&&item.signedUrl)signedUrls.set(item.path,item.signedUrl);});
   }
+  items.forEach(item=>{
+    const path=item.work.slice("talent-video:".length);
+    item.work=signedUrls.get(path)||"";
+    item.workIsVideo=!!item.work;
+  });
   renderTalents();
 }
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
@@ -5868,13 +5874,17 @@ async function loadApprovedMemberProfiles(){
   (ideasResult.data||[]).forEach(idea=>{if(!ideasByUser.has(idea.user_id))ideasByUser.set(idea.user_id,[]);ideasByUser.get(idea.user_id).push(idea);});
   const contactsByUser=new Map((contactsResult.data||[]).map(contact=>[contact.user_id,contact.phone]));
   const scriptsByUser=new Map();
-  const signedScripts=await Promise.all((scriptsResult.data||[]).map(async script=>{
-    const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrl(script.published_storage_path,1800);
-    return {script,signedUrl:signedError?null:signed?.signedUrl||null};
-  }));
-  signedScripts.forEach(({script,signedUrl})=>{
+  const publishedScripts=scriptsResult.data||[];
+  const scriptPaths=[...new Set(publishedScripts.map(script=>script.published_storage_path).filter(Boolean))];
+  const signedScriptUrls=new Map();
+  if(scriptPaths.length){
+    const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrls(scriptPaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط السيناريوهات المنشورة",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedScriptUrls.set(item.path,item.signedUrl);});
+  }
+  publishedScripts.forEach(script=>{
     if(!scriptsByUser.has(script.user_id))scriptsByUser.set(script.user_id,[]);
-    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl});
+    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl:signedScriptUrls.get(script.published_storage_path)||null});
   });
   if(scriptsResult.error)console.warn("تعذر تحميل سيناريوهات الكُتّاب المعتمدة",scriptsResult.error.message);
   creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";writer.scripts=scriptsByUser.get(writer.userId)||[];}});
@@ -6757,16 +6767,20 @@ async function loadApprovedDirectorWorks(){
     .eq("status","approved").order("created_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
   const grouped=new Map();
-  for(const work of data||[]){
-    let mediaUrl=work.external_url||"";
-    if(work.storage_path){
-      const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrl(work.storage_path,3600);
-      if(signedError){console.warn("تعذر تجهيز فيديو منشور",signedError.message);continue;}
-      mediaUrl=signed?.signedUrl||"";
-    }
+  const works=data||[];
+  const storagePaths=[...new Set(works.map(work=>work.storage_path).filter(Boolean))];
+  const signedWorkUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrls(storagePaths,3600);
+    if(signedError)console.warn("تعذر تجهيز روابط نماذج أعمال المخرجين",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedWorkUrls.set(item.path,item.signedUrl);});
+  }
+  works.forEach(work=>{
+    const mediaUrl=work.storage_path?(signedWorkUrls.get(work.storage_path)||""):(work.external_url||"");
+    if(!mediaUrl)return;
     if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
     grouped.get(work.user_id).push({...work,mediaUrl});
-  }
+  });
   creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
   renderDirectors();
 }
