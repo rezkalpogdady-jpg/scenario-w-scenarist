@@ -64,14 +64,7 @@ begin
         and c.published = true
         and (p_content_type <> 'archive' or coalesce(c.extra_data->>'media_kind','') <> 'video')
     ) into content_is_public;
-  elsif p_content_type in ('academy','stories','archive') then
-    select exists (
-      select 1 from public.site_content c
-      where c.id::text = p_content_id
-        and c.content_type = p_content_type
-        and c.published = true
-        and (p_content_type <> 'archive' or coalesce(c.extra_data->>'media_kind','') <> 'video')
-    ) into content_is_public;
+
   end if;
 
   if not content_is_public then
