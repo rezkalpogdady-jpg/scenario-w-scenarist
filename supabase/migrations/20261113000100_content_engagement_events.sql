@@ -125,6 +125,17 @@ begin
     left join public.director_work_submissions dw
       on e.content_type = 'director_video' and dw.id::text = e.content_id
     group by e.content_type,e.content_id,e.event_type,sc.title,cs.title,ss.title,dw.title
+
+    union all
+
+    select e.content_type, null::text as content_id, e.event_type,
+      'إجمالي القسم'::text as title,
+      count(*)::bigint as total_events,
+      count(distinct e.viewer_id)::bigint as unique_viewers,
+      count(*) filter (where e.occurred_at >= now() - interval '7 days')::bigint as events_7d,
+      count(*) filter (where e.occurred_at >= now() - interval '30 days')::bigint as events_30d
+    from public.content_engagement_events e
+    group by e.content_type,e.event_type
   ) x;
   return result;
 end;
