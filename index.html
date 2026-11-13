@@ -2041,6 +2041,8 @@ document.getElementById("crimeStoryModalBody")?.addEventListener("submit",async 
     const {error}=await client.from("content_comments").insert(payload);
     if(error)throw error;
     form.reset();
+    const commentsList=section.querySelector("[data-crime-comments-list]");
+    if(commentsList){commentsList.hidden=false;commentsList.insertAdjacentHTML("afterbegin",'<article class="admin-item" style="margin-bottom:9px"><strong>'+escapeHTML(displayName)+'</strong><p style="white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0">' + escapeHTML(body) + '</p><small>'+escapeHTML(new Date().toLocaleString("ar-EG"))+'</small></article>');}
     if(status)status.textContent="تم نشر تعليقك مباشرة. شكرًا لمشاركتك.";
   }catch(error){
     if(status)status.textContent="تعذر إرسال التعليق: "+(error.message||"حاول مرة أخرى.");
