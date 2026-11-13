@@ -1903,7 +1903,7 @@ function renderStories(){
   box.innerHTML=list.length?list.map(({item,key})=>{
     const image=item.image?'<img class="crime-poster-image" src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy">':'<span class="crime-poster-placeholder">ملفات الجرائم والحكايات</span>';
     return '<article class="crime-poster-card">'+
-      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(item.id||""))?' data-content-impression-type="stories" data-content-impression-id="'+escapeHTML(String(item.id))+'"':""))+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
+      '<button type="button" class="crime-poster-open" data-crime-story-key="'+escapeHTML(key)+'"'+(String(item.id||"").match(/^crime-db-(\d+)$/)?' data-content-impression-type="crime_story" data-content-impression-id="'+escapeHTML(String(item.id).slice(9))+'"':"")+' aria-label="افتح قصة '+escapeHTML(item.title)+'">'+
       '<span class="crime-poster-art">'+image+'</span>'+
       '<span class="crime-poster-title">'+escapeHTML(item.title||"قضية غامضة")+'</span>'+
       '<span class="crime-poster-category">'+escapeHTML(item.category||"جرائم وحكايات")+'</span>'+
@@ -1939,7 +1939,6 @@ function openCrimeStory(key){
   const analyticsId=String(item.id||"");
   const crimeDbMatch=analyticsId.match(/^crime-db-(\d+)$/);
   if(crimeDbMatch)recordPublicContentEvent("crime_story",crimeDbMatch[1],"open");
-  else if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(analyticsId))recordPublicContentEvent("stories",analyticsId,"open");
   title.textContent=item.title||"تفاصيل القضية";
   const image=item.image?'<img src="'+escapeHTML(safeHttpUrl(item.image))+'" alt="أفيش '+escapeHTML(item.title)+'" loading="lazy" style="display:block;width:min(100%,390px);max-height:560px;object-fit:contain;margin:0 auto 20px;border-radius:10px">':"";
   const source=item.extra?.source_url?'<p style="margin-top:18px"><strong>مصدر إضافي:</strong> <a href="'+escapeHTML(safeHttpUrl(item.extra.source_url))+'" target="_blank" rel="noopener noreferrer">فتح المصدر</a></p>':"";
@@ -5917,7 +5916,7 @@ async function recordPublicContentView(){
 }
 async function recordPublicContentEvent(contentType,contentId,eventType){
   try{
-    const allowedContentTypes=["academy","crime_story","stories","scenario","archive"];
+    const allowedContentTypes=["academy","crime_story","scenario","archive"];
     if(!window.supabase||!adminConfigReady()||!allowedContentTypes.includes(String(contentType))||!contentId||!["impression","open"].includes(eventType))return;
     const viewerId=await getPublicContentViewerId();if(!viewerId)return;
     const client=getPublicContentAnalyticsClient();if(!client)return;
@@ -6137,7 +6136,8 @@ function ensureApprovedIdeas(){
         ? '<video controls playsinline preload="none" '+(img?'poster="'+esc(img)+'" ':'')+'data-content-view-type="archive" data-content-view-id="'+esc(x.id)+'" style="display:block;width:100%;max-height:420px;background:#000;border-radius:10px;margin:0 auto 14px"><source src="'+esc(video)+'" type="'+(video.toLowerCase().includes('.webm')?'video/webm':'video/mp4')+'">متصفحك لا يدعم تشغيل الفيديو.</video>'
         : (img ? '<img src="' + esc(img) + '" alt="' + esc(x.title) + '" loading="lazy" class="archive-media-image" role="button" tabindex="0" aria-label="فتح أفيش ' + esc(x.title) + ' في المعرض" data-archive-view-id="' + esc(x.id) + '">' : '');
       const deleteButton=adminSession?'<button type="button" class="btn" style="margin-top:10px" onclick="archiveDelete(\''+esc(x.id)+'\',this)">حذف المادة</button>':'';
-      return '<article class="feature archive-poster-card" data-content-impression-type="archive" data-content-impression-id="'+esc(x.id)+'">'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
+      const writtenArchive=x.extra_data?.media_kind==='article'&&String(x.description||'').trim();
+      return '<article class="feature archive-poster-card"'+(writtenArchive?' data-content-impression-type="archive" data-content-impression-id="'+esc(x.id)+'"':'')+'>'+mediaHtml+'<h3>' + esc(x.title) + '</h3>'+(x.description?'<p>'+esc(x.description)+'</p>':'')+deleteButton+'</article>';
     }).join('');
     observePublicContentImpressions(box);
     observeArchivePosterViews(box);
