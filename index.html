@@ -1001,7 +1001,7 @@ function renderLessonIndex(materials = []){
     const shortDescription=firstSentence.length>118
       ? firstSentence.slice(0,115).replace(/\s+\S*$/,"")+"…"
       : (firstSentence || "شرح عملي وأمثلة وتدريب تطبيقي.");
-    return `<article class="feature academy-lesson-card" style="padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
+    return `<article class="feature academy-lesson-card"${material?.id?' data-content-impression-type="academy" data-content-impression-id="'+escapeHTML(material.id)+'"':""} style="padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(201,164,92,.24);border-radius:14px;background:var(--panel,#171717)">
       <div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <span style="display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:30px;padding:0 8px;border-radius:7px;background:#302719;color:var(--gold);font-weight:800;font-size:14px">${String(index+1).padStart(2,"0")}</span>
@@ -1013,6 +1013,7 @@ function renderLessonIndex(materials = []){
       <button class="btn" type="button" style="align-self:flex-start" data-open-lesson="${index}">اقرأ المحاضرة</button>
     </article>`;
   }).join("");
+  observePublicContentImpressions(lessonsContainer);
 }
 
 let currentLessonUtterance = null;
@@ -1096,6 +1097,7 @@ function openLesson(index){
   const lesson=academyLessons[index];
   if(!lesson) return;
   const material=(publicContentRecords||[]).find(item=>item.content_type==="academy" && item.published && String(item.title||"").trim()===lesson);
+  if(material?.id)recordPublicContentEvent("academy",material.id,"open");
   const dialog=document.getElementById("lessonDialog");
   const listPanel=document.getElementById("academyLessonsPanel");
   const listHeading=document.getElementById("academyLessonsHeading");
