@@ -52,7 +52,7 @@ begin
     select exists (
       select 1 from public.scenario_scripts s
       where s.id::text = p_content_id and s.published = true
-        and s.rights_confirmed = true and s.rights_status <> 'unverified'
+        and s.rights_confirmed = true and coalesce(s.rights_status,'') <> 'unverified'
         and nullif(s.rights_holder,'') is not null
     ) into content_is_public;
   elsif p_content_type = 'director_video' then
