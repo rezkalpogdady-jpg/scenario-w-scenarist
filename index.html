@@ -692,8 +692,11 @@ target.classList.add('active');
 if(id==='films' && typeof renderFilms==='function') renderFilms();
 if(id==='radio'){
 if(typeof renderRadioStations==='function') renderRadioStations();
+if(typeof renderTvChannels==='function') renderTvChannels();
 if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
 }
+if(id==='news' && typeof renderNews==='function') renderNews();
+if(id==='production' && typeof renderProjects==='function') renderProjects();
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
@@ -5786,8 +5789,7 @@ function distributePublicContent(records){
     replaceArray(editorialData.projects,grouped.production || []);
 
     renderStories();
-    renderNews();
-    renderProjects();
+    /* الأخبار والمشروعات تُرسم عند فتح صفحاتها لتقليل العمل أثناء تحميل الموقع */
   }
 
   renderSponsors(grouped.sponsors || []);
