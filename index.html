@@ -689,6 +689,7 @@ window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
+if(id==='sponsors' && typeof renderSponsors==='function') renderSponsors(publicSponsorRecords);
 if(id==='academy' && typeof renderLessonIndex==='function'){
 const academyItems=(publicContentRecords||[]).filter(item=>item.content_type==="academy" && item.published);
 renderLessonIndex(academyItems);
@@ -696,6 +697,7 @@ renderLessonIndex(academyItems);
 if(id==='films' && typeof renderFilms==='function') renderFilms();
 if(id==='radio'){
 if(typeof renderRadioStations==='function') renderRadioStations();
+if(typeof renderTvChannels==='function') renderTvChannels(publicTvChannels);
 if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
 }
 if(id==='news' && typeof renderNews==='function') renderNews();
@@ -2132,6 +2134,7 @@ function renderNews(){
 }
 
 /* عرض شركات الإنتاج والجهات الراعية — عرض تعريفي فقط دون روابط أو وسائل تواصل */
+let publicSponsorRecords=[];
 function renderSponsors(items){
   const box=document.getElementById("sponsorsGrid");
   if(!box)return;
@@ -5714,6 +5717,7 @@ const DEFAULT_TV_CHANNELS = [
 ];
 
 /* عرض القنوات التلفزيونية في صفحة الإذاعة والتليفزيون */
+let publicTvChannels=[];
 function renderTvChannels(items){
   const box=document.getElementById("tvChannels");
   if(!box)return;
@@ -5792,7 +5796,8 @@ function distributePublicContent(records){
     /* الأخبار والمشروعات تُرسم عند فتح صفحاتها لتقليل العمل أثناء تحميل الموقع */
   }
 
-  renderSponsors(grouped.sponsors || []);
+  replaceArray(publicSponsorRecords,grouped.sponsors || []);
+  if(document.getElementById("sponsors")?.classList.contains("active")) renderSponsors(publicSponsorRecords);
   renderFooterSponsors(grouped.sponsors || []);
 
   if(typeof radioStations!=="undefined"){
@@ -5810,7 +5815,8 @@ function distributePublicContent(records){
     if(document.getElementById("radio")?.classList.contains("active")) renderRadioStations();
    }
 
-   if(typeof renderTvChannels==="function") renderTvChannels(grouped.television || []);
+   replaceArray(publicTvChannels,grouped.television || []);
+   if(document.getElementById("radio")?.classList.contains("active") && typeof renderTvChannels==="function") renderTvChannels(publicTvChannels);
 
    /* صفحة الأفلام محمية وتُعاد تهيئتها عند فتحها؛ لا نبنِ بطاقاتها وهي مخفية */
    if(document.getElementById("films")?.classList.contains("active")) renderFilms();
