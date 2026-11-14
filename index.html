@@ -689,6 +689,10 @@ window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
+if(id==='academy' && typeof renderLessonIndex==='function'){
+const academyItems=(publicContentRecords||[]).filter(item=>item.content_type==="academy" && item.published);
+renderLessonIndex(academyItems);
+}
 if(id==='films' && typeof renderFilms==='function') renderFilms();
 if(id==='radio'){
 if(typeof renderRadioStations==='function') renderRadioStations();
@@ -1161,8 +1165,7 @@ lessonsContainer?.addEventListener("click",event=>{
   }
 });
 
-/* تجهيز قائمة المحاضرات */
-renderLessonIndex();
+/* تُجهّز قائمة المحاضرات عند فتح الأكاديمية فقط */
 
 /* بيانات تجريبية للمكتبة */
 let scenarioLibrary = [];
@@ -5631,7 +5634,8 @@ function closeSeriesPlaylist(){
 
 /* عرض المحاضرات والفيديوهات التي تضيفها الإدارة */
 function renderAcademyContent(items){
-  if(typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
+  /* لا نبنِ بطاقات المحاضرات أثناء وجود الزائر في قسم آخر */
+  if(document.getElementById("academy")?.classList.contains("active") && typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
 }
 
 function safeHttpUrl(value){
