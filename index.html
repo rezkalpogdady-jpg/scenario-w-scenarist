@@ -4138,6 +4138,9 @@ async function adminLoadApprovalNotifications(){
   if(!adminSupabase||!adminSession)return;
   const summary=document.getElementById("adminApprovalSummary"),box=document.getElementById("adminApprovalItems");
   if(!summary||!box)return;
+  if(window.__scenarioApprovalLoadInProgress)return;
+  window.__scenarioApprovalLoadInProgress=true;
+  try{
   const queues=[
     {table:"member_profiles",key:"user_id",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
     {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
@@ -4178,6 +4181,9 @@ async function adminLoadApprovalNotifications(){
   box.style.display=adminApprovalNotificationsOpen?"grid":"none";
   const toggle=document.getElementById("adminApprovalToggle");
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
+  }finally{
+    window.__scenarioApprovalLoadInProgress=false;
+  }
 }
 
 let adminCanManageAdmins = false;
