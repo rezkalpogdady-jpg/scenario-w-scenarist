@@ -28,6 +28,8 @@
 }
 </script>
 
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://asmxyfkmojqzrbnrovmz.supabase.co" crossorigin>
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
 <link href=https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap rel="stylesheet">
@@ -79,7 +81,7 @@ Text-align:center;
 Padding:55px 15px;
 Background:
 Linear-gradient(90deg,rgba(0,0,0,.90),rgba(0,0,0,.55)),
-url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1800&q=85')
+url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1400&q=70')
 center/cover;
 border-bottom:2px solid var(--gold);
 }
@@ -473,153 +475,137 @@ Main{padding:17px 11px}
   </div>
 </div>
 
-<div class="section-heading">
-<h2>أقسام المنصة</h2>
-<p>كل ما يحتاجه صانع العمل الإبداعي في مكان واحد</p>
+<div class="section-heading" style="margin-top:26px">
+<h2>كل أقسام منصة سيناريو وسيناريست</h2>
+<p>اختَر القسم الذي تريد زيارته — التصفّح متاح للجميع، والتسجيل مطلوب فقط للخدمات التي تحتاج إلى حساب.</p>
 </div>
-
-<div class="grid">
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80" alt="أكاديمية السيناريو" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>أكاديمية السيناريو</h3>
-<p>محاضرات ودروس فيديو وتدريبات عملية لتعلم كتابة السيناريو.</p>
-<button class="btn" onclick="showPage('academy')">دخول الأكاديمية</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80" alt="مكتبة السيناريو" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>مكتبة السيناريوهات</h3>
-<p>مساحة لعرض وقراءة السيناريوهات والمشروعات المكتوبة.</p>
-<button class="btn" onclick="showPage('library')">استكشف المكتبة</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=800&q=80" alt="المواهب" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>دليل المواهب</h3>
-<p>الممثلون ومقدمو البرامج والمواهب الإذاعية وصناع المحتوى.</p>
-<button class="btn" onclick="showPage('talents')">اكتشف المواهب</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80" alt="الأفلام" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الأفلام والمسلسلات</h3>
-<p>تعريف بالأعمال وصناعها ومعلومات الإنتاج والمشاهدة.</p>
-<button class="btn" onclick="showPage('films')">مشاهدة الأعمال</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1514306191717-452ec28c7814?auto=format&fit=crop&w=800&q=80" alt="الأفلام القصيرة" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الأفلام القصيرة</h3>
-<p>منصة لعرض تجارب المخرجين الشباب والأفلام المستقلة.</p>
-<button class="btn" onclick="showPage('shorts')">اكتشف الأفلام</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="الجرائم والحكايات" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الجرائم والحكايات</h3>
-<p>حكايات وأحداث غامضة وملفات درامية ملهمة للكتابة.</p>
-<button class="btn" onclick="showPage('stories')">اكتشف الحكايات</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=800&q=80" alt="سوق الكتب" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>اعرض كتابك للبيع</h3>
-<p>روايات وقصص وكتب في مختلف المجالات؛ أضف الغلاف والسعر وتواصل مع القراء.</p>
-<button class="btn" onclick="showPage('books')">ادخل سوق الكتب</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80" alt="الإذاعة والتليفزيون" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الإذاعة والتليفزيون</h3>
-<p>إذاعات وبرامج صوتية ومحتوى ثقافي وفني.</p>
-<button class="btn" onclick="showPage('radio')">استمع الآن</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="ورشة الأفكار" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>ورشة الأفكار</h3>
-<p>مساحة لتطوير الأفكار وتحويلها إلى مشروعات درامية.</p>
-<button class="btn" onclick="showPage('ideas')">ابدأ فكرتك</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80" alt="الإنتاج" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الإنتاج والتعاون</h3>
-<p>التعريف بالمشروعات وفرص التعاون بين صناع الأعمال.</p>
-<button class="btn" onclick="showPage('production')">اكتشف المشروعات</button>
-</div>
-</article>
-
-<article class="feature">
-<img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="أخبار الفن" loading="lazy" decoding="async">
-<div class="feature-content">
-<h3>الأخبار الفنية</h3>
-<p>أخبار السينما والدراما والمهرجانات وصناعة المحتوى.</p>
-<button class="btn" onclick="showPage('news')">تابع الأخبار</button>
-</div>
-</article>
-
-</div>
-
-<div class="spotlight">
-<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1000&q=85" alt="صناعة السينما" loading="lazy" decoding="async">
-<div class="spotlight-content">
-<h2>كل موهبة تستحق أن تُكتشف</h2>
-<p>نؤمن بأن وراء كل فكرة عظيمة كاتباً يبحث عن فرصة، وممثلاً ينتظر دوره، ومخرجاً يريد أن يرى حلمه على الشاشة.</p>
-<button class="btn primary" onclick="showPage('talents')">انضم إلى مجتمع المبدعين</button>
-</div>
-</div>
-
-
-<div class="section-heading" style="margin-top:42px">
-  <h2>الأقسام الرئيسية للمنصة</h2>
-  <p>خدمات سيناريو وسيناريست الأساسية — اختر القسم الذي تريد الدخول إليه</p>
-</div>
-<div class="grid" id="homeMainSections" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-bottom:30px">
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=85" alt="محاضرات أكاديمية السيناريو" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>المحاضرات</h3><p>تعلم كتابة السيناريو من البداية حتى إعداد مشروع فيلم متكامل.</p><button class="btn primary" onclick="showPage('academy')">دخول المحاضرات</button></div>
-  </article>
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=900&q=85" alt="كتب وسوق الكتب" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>بيع الكتب</h3><p>اعرض كتابك بالغلاف والسعر والنبذة، وتواصل مباشرة مع القراء.</p><button class="btn primary" onclick="showPage('books')">دخول سوق الكتب</button></div>
-  </article>
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=85" alt="مؤلفو السيناريو والكتابة" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>مؤلفو السيناريو</h3><p>تعرّف على كتاب السيناريو وملفاتهم وأعمالهم.</p><button class="btn primary" onclick="showPage('writers')">دليل المؤلفين</button></div>
-  </article>
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=85" alt="المخرجون وصناعة الأفلام" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>المخرجون</h3><p>اكتشف المخرجين ونماذج أعمالهم ومشروعاتهم.</p><button class="btn primary" onclick="showPage('directors')">دليل المخرجين</button></div>
-  </article>
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=900&q=85" alt="المواهب والتمثيل" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>المواهب</h3><p>اكتشف الممثلين ومقدمي البرامج والمواهب الإذاعية.</p><button class="btn primary" onclick="showPage('talents')">اكتشف المواهب</button></div>
-  </article>
-  <article class="feature">
-    <img src="https://images.unsplash.com/photo-1514306191717-452ec28c7814?auto=format&fit=crop&w=900&q=85" alt="الأفلام القصيرة" loading="lazy" decoding="async">
-    <div class="feature-content"><h3>الأفلام القصيرة</h3><p>شاهد تجارب صناع الأفلام الشباب واعرض فيلمك القصير.</p><button class="btn primary" onclick="showPage('shorts')">دخول الأفلام القصيرة</button></div>
-  </article>
+<div class="home-directory" style="display:grid;gap:26px;margin:0 0 36px">
+<section class="home-directory-group" aria-label="التعلّم والكتابة">
+<h3 style="color:var(--gold);margin:0 0 12px;font-size:19px">التعلّم والكتابة</h3>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px">
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>أكاديمية السيناريو</h3><p style="line-height:1.8;flex:1">محاضرات ودروس وتدريبات عملية لتعلم كتابة السيناريو.</p>
+<button class="btn" type="button" onclick="showPage('academy')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>مكتبة السيناريو</h3><p style="line-height:1.8;flex:1">قراءة السيناريوهات والنصوص والمشروعات المكتوبة.</p>
+<button class="btn" type="button" onclick="showPage('library')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>دليل المؤلفين</h3><p style="line-height:1.8;flex:1">تعرّف على كتاب السيناريو وملفاتهم وأعمالهم.</p>
+<button class="btn" type="button" onclick="showPage('writers')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>سوق الكتب</h3><p style="line-height:1.8;flex:1">اعرض كتابك أو تصفح الكتب المعروضة.</p>
+<button class="btn" type="button" onclick="showPage('books')">دخول القسم</button>
+</div></article>
+</div></section>
+<section class="home-directory-group" aria-label="الأفلام والإعلام">
+<h3 style="color:var(--gold);margin:0 0 12px;font-size:19px">الأفلام والإعلام</h3>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px">
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الأفلام والمسلسلات</h3><p style="line-height:1.8;flex:1">تصفّح الأعمال السينمائية والدرامية.</p>
+<button class="btn" type="button" onclick="showPage('films')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الأفلام القصيرة</h3><p style="line-height:1.8;flex:1">شاهد الأفلام القصيرة واعرض عملك بعد المراجعة.</p>
+<button class="btn" type="button" onclick="showPage('shorts')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>أرشيف السينما زمان</h3><p style="line-height:1.8;flex:1">اكتشف ذاكرة السينما والأعمال الكلاسيكية.</p>
+<button class="btn" type="button" onclick="showPage('archive')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الأخبار الفنية</h3><p style="line-height:1.8;flex:1">تابع أخبار السينما والدراما وصناعة الفن.</p>
+<button class="btn" type="button" onclick="showPage('news')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الإذاعة والتليفزيون</h3><p style="line-height:1.8;flex:1">برامج ومحتوى إذاعي وتليفزيوني.</p>
+<button class="btn" type="button" onclick="showPage('radio')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الشطرنج</h3><p style="line-height:1.8;flex:1">مساحة لمحبي الشطرنج والتحدي.</p>
+<button class="btn" type="button" onclick="showPage('chess')">دخول القسم</button>
+</div></article>
+</div></section>
+<section class="home-directory-group" aria-label="المواهب وصناعة العمل">
+<h3 style="color:var(--gold);margin:0 0 12px;font-size:19px">المواهب وصناعة العمل</h3>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px">
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>دليل المخرجين</h3><p style="line-height:1.8;flex:1">تصفّح ملفات المخرجين ونماذج أعمالهم.</p>
+<button class="btn" type="button" onclick="showPage('directors')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>دليل المواهب</h3><p style="line-height:1.8;flex:1">اكتشف الممثلين ومقدمي البرامج والمواهب.</p>
+<button class="btn" type="button" onclick="showPage('talents')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>إنشاء ملف أو موهبة</h3><p style="line-height:1.8;flex:1">قدّم ملفك المهني وأعمالك للمراجعة.</p>
+<button class="btn" type="button" onclick="showPage('creatorProfile')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>ورشة الأفكار</h3><p style="line-height:1.8;flex:1">طوّر فكرتك وحوّلها إلى مشروع.</p>
+<button class="btn" type="button" onclick="showPage('ideas')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الإنتاج والتعاون</h3><p style="line-height:1.8;flex:1">تعرّف على المشروعات وفرص التعاون.</p>
+<button class="btn" type="button" onclick="showPage('production')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>شركات الإنتاج والرعاة</h3><p style="line-height:1.8;flex:1">اكتشف جهات الإنتاج والرعاية والشراكات.</p>
+<button class="btn" type="button" onclick="showPage('sponsors')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>مجتمع ونقاشات</h3><p style="line-height:1.8;flex:1">شارك الأفكار والنقاشات مع أعضاء المنصة.</p>
+<button class="btn" type="button" onclick="showPage('community')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الجرائم والحكايات</h3><p style="line-height:1.8;flex:1">اقرأ الحكايات والملفات الغامضة.</p>
+<button class="btn" type="button" onclick="showPage('stories')">دخول القسم</button>
+</div></article>
+</div></section>
+<section class="home-directory-group" aria-label="الحساب ومعلومات المنصة">
+<h3 style="color:var(--gold);margin:0 0 12px;font-size:19px">الحساب ومعلومات المنصة</h3>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px">
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>عضوية الموقع</h3><p style="line-height:1.8;flex:1">أنشئ عضويتك للدخول وإدارة مشاركاتك.</p>
+<button class="btn" type="button" onclick="showPage('account')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>تواصل مع الإدارة</h3><p style="line-height:1.8;flex:1">أرسل استفسارك أو تواصل مع فريق المنصة.</p>
+<button class="btn" type="button" onclick="showPage('contact')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>عن المنصة</h3><p style="line-height:1.8;flex:1">تعرّف على رؤية سيناريو وسيناريست وأهدافها.</p>
+<button class="btn" type="button" onclick="showPage('about')">دخول القسم</button>
+</div></article>
+<article class="feature" style="min-height:150px;display:flex">
+<div class="feature-content" style="padding:17px;display:flex;flex-direction:column;align-items:flex-start;flex:1">
+<h3>الإدارة</h3><p style="line-height:1.8;flex:1">دخول مخصص لإدارة المنصة والمشرفين.</p>
+<button class="btn" type="button" onclick="showPage('admin')">دخول القسم</button>
+</div></article>
+</div></section>
 </div>
 </section>
 
@@ -677,7 +663,7 @@ function saveReadingProgress(){
 function showPage(id, options={}){
 const target=document.getElementById(id);
 if(!target || !target.classList.contains('page')) return;
-if((id==='films'||id==='creatorProfile')&&!accountUser){if(id==='films'){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');}if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
+if((id==='stories'||id==='films'||id==='creatorProfile')&&!accountUser){pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
 saveReadingProgress();
 if(options.updateUrl!==false){
 try{
@@ -703,8 +689,25 @@ window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
+if(id==='sponsors' && typeof renderSponsors==='function') renderSponsors(publicSponsorRecords);
+if(id==='academy' && typeof renderLessonIndex==='function'){
+const academyItems=(publicContentRecords||[]).filter(item=>item.content_type==="academy" && item.published);
+renderLessonIndex(academyItems);
+}
 if(id==='films' && typeof renderFilms==='function') renderFilms();
-if(id==='radio' && typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+if(id==='radio'){
+if(typeof renderRadioStations==='function') renderRadioStations();
+if(typeof renderTvChannels==='function') renderTvChannels(publicTvChannels);
+if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+}
+if(id==='news' && typeof renderNews==='function') renderNews();
+if(id==='production' && typeof renderProjects==='function') renderProjects();
+if(id==='library' && typeof renderLibrary==='function') renderLibrary();
+if(id==='library' && typeof renderScenarioScriptCards==='function' && scenarioScriptRecords.length) renderScenarioScriptCards();
+if(id==='writers' && typeof renderWriters==='function') renderWriters();
+if(id==='directors' && typeof renderDirectors==='function') renderDirectors();
+if(id==='talents' && typeof renderTalents==='function') renderTalents();
+if(id==='shorts' && typeof renderShortFilms==='function') renderShortFilms();
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
@@ -1164,8 +1167,7 @@ lessonsContainer?.addEventListener("click",event=>{
   }
 });
 
-/* تجهيز قائمة المحاضرات */
-renderLessonIndex();
+/* تُجهّز قائمة المحاضرات عند فتح الأكاديمية فقط */
 
 /* بيانات تجريبية للمكتبة */
 let scenarioLibrary = [];
@@ -1214,7 +1216,7 @@ function escapeHTML(value){
 
 document.getElementById("librarySearch")?.addEventListener("input",renderLibrary);
 document.getElementById("libraryCategory")?.addEventListener("change",renderLibrary);
-renderLibrary();
+/* تُرسم بطاقات المكتبة عند فتح القسم فقط */
 </script>
 <!-- نهاية الجزء الثاني -->
 <!-- =========================
@@ -1715,10 +1717,7 @@ document.getElementById("talentCitySearch")?.addEventListener("input",renderTale
 document.getElementById("talentSpecialtySearch")?.addEventListener("input",renderTalents);
 document.getElementById("talentCategory")?.addEventListener("change",renderTalents);
 
-renderWriters();
-renderDirectors();
-renderTalents();
-renderShortFilms();
+/* تُرسم بطاقات ملفات المبدعين والأفلام القصيرة عند فتح أقسامها */
 </script>
 
 <!-- نهاية الجزء الثالث -->
@@ -2136,6 +2135,7 @@ function renderNews(){
 }
 
 /* عرض شركات الإنتاج والجهات الراعية — عرض تعريفي فقط دون روابط أو وسائل تواصل */
+let publicSponsorRecords=[];
 function renderSponsors(items){
   const box=document.getElementById("sponsorsGrid");
   if(!box)return;
@@ -2223,9 +2223,7 @@ document.getElementById("newsCategory")?.addEventListener("change",renderNews);
 document.getElementById("projectsSearch")?.addEventListener("input",renderProjects);
 document.getElementById("projectsCategory")?.addEventListener("change",renderProjects);
 
-renderStories();
-renderNews();
-renderProjects();
+/* الأخبار والمشروعات والحكايات تُرسم عند فتح أقسامها */
 </script>
 
 <!-- نهاية الجزء الرابع -->
@@ -2431,7 +2429,7 @@ function playRadioStation(id){
 /* البحث والتصفية */
 document.getElementById("radioSearch")?.addEventListener("input",renderRadioStations);
 
-renderRadioStations();
+/* تُبنى بطاقات الإذاعات عند فتح القسم بدلًا من وقت تحميل الموقع */
 </script>
 
 <!-- نهاية الجزء الخامس -->
@@ -3724,12 +3722,18 @@ async function adminLoadCommunitySubmissions(){
   const {data,error}=await adminSupabase.from("community_submissions").select("*").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد طلبات جديدة للمراجعة.</div>';return;}
-  const reviewRows=await Promise.all(data.map(async item=>{
+  const videoPaths=[...new Set(data.filter(item=>item.submission_type==="talent"&&String(item.work_url||"").startsWith("talent-video:")).map(item=>item.work_url.slice("talent-video:".length)))];
+  const reviewVideoUrls=new Map();
+  if(videoPaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrls(videoPaths,3600);
+    if(signedError)console.warn("تعذر تجهيز معاينات فيديوهات طلبات المجتمع",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewVideoUrls.set(item.path,item.signedUrl);});
+  }
+  const reviewRows=data.map(item=>{
     if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
     const path=item.work_url.slice("talent-video:".length);
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
-  }));
+    return {...item,reviewVideoUrl:reviewVideoUrls.get(path)||""};
+  });
   box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
@@ -3832,14 +3836,17 @@ async function adminLoadMemberWorks(){
   const {data,error}=await adminSupabase.from("member_works").select("id,user_id,title,category,summary,work_url,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل أعمال الأعضاء: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد أعمال جديدة للمراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    let reviewUrl=item.work_url||"";
-    if(item.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
-      if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
-    }
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,3600);
+    if(signedError)console.warn("تعذر تجهيز روابط أعمال الأعضاء",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=item.storage_path?(reviewUrls.get(item.storage_path)||""):(item.work_url||"");
     return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
-  }));
+  });
   box.innerHTML=cards.join("");
   observePublicContentImpressions(box);
 }
@@ -3875,11 +3882,17 @@ async function adminLoadWriterScripts(){
   const {data,error}=await adminSupabase.from("writer_scripts").select("id,user_id,title,category,summary,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل اسكريبتات الكُتّاب: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد سيناريوهات بانتظار المراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,1800);
-    const reviewUrl=!signedError?signed?.signedUrl:null;
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط سيناريوهات الكُتّاب",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=reviewUrls.get(item.storage_path)||null;
     return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.category)+' • الكاتب: '+adminEscape(item.member_profiles?.display_name||"كاتب")+'</p><p>'+adminEscape(item.summary||"")+'</p><p class="admin-status">إقرار الحقوق: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • مرات إعادة الإرسال: '+(Number(item.revision_count)||0)+'</p>'+(reviewUrl?'<p><a href="'+adminEscape(reviewUrl)+'" target="_blank" rel="noopener noreferrer">فتح PDF للمراجعة</a></p>':'<p>تعذر إنشاء رابط معاينة مؤقت.</p>')+'<div class="admin-actions"><button class="btn primary" '+(item.rights_confirmed&&reviewUrl?"":"disabled")+' onclick="adminReviewWriterScript(\''+item.id+'\',\'approved\')">اعتماد وإتاحة للزوار</button><button class="btn" onclick="adminReviewWriterScript(\''+item.id+'\',\'needs_revision\')">طلب تعديل</button></div></article>';
-  }));
+  });
   box.innerHTML=cards.join("");
 }
 async function adminReviewWriterScript(id,status){
@@ -4141,6 +4154,9 @@ async function adminLoadApprovalNotifications(){
   if(!adminSupabase||!adminSession)return;
   const summary=document.getElementById("adminApprovalSummary"),box=document.getElementById("adminApprovalItems");
   if(!summary||!box)return;
+  if(window.__scenarioApprovalLoadInProgress)return;
+  window.__scenarioApprovalLoadInProgress=true;
+  try{
   const queues=[
     {table:"member_profiles",key:"user_id",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
     {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
@@ -4181,6 +4197,9 @@ async function adminLoadApprovalNotifications(){
   box.style.display=adminApprovalNotificationsOpen?"grid":"none";
   const toggle=document.getElementById("adminApprovalToggle");
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
+  }finally{
+    window.__scenarioApprovalLoadInProgress=false;
+  }
 }
 
 let adminCanManageAdmins = false;
@@ -4462,28 +4481,37 @@ document.getElementById("adminContentType")?.addEventListener("change",()=>{
 });
 
 /* جلب المحتوى */
-async function adminLoadRecords(){
-  if(!adminSupabase || !adminSession) return;
+function adminLoadRecords(){
+  if(!adminSupabase || !adminSession) return Promise.resolve();
+  if(window.__scenarioAdminRecordsLoadPromise)return window.__scenarioAdminRecordsLoadPromise;
 
-  const box=document.getElementById("adminContentList");
-  if(!box)return;
-  box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
+  const request=(async()=>{
+    const box=document.getElementById("adminContentList");
+    if(!box)return;
+    box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
 
-  const {data,error}=await adminSupabase
-    .from("site_content")
-    .select("*")
-    .order("created_at",{ascending:false});
+    const {data,error}=await adminSupabase
+      .from("site_content")
+      .select("*")
+      .order("created_at",{ascending:false});
 
-  if(error){
-    box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
-      adminEscape(error.message)+"</div>";
-    return;
-  }
+    if(error){
+      box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
+        adminEscape(error.message)+"</div>";
+      return;
+    }
 
-  adminRecords=data || [];
-  adminRenderRecords();
-  if(typeof renderFilms==="function")renderFilms();
-  if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+    adminRecords=data || [];
+    adminRenderRecords();
+    if(typeof renderFilms==="function")renderFilms();
+    if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+  })();
+
+  window.__scenarioAdminRecordsLoadPromise=request;
+  return request.finally(()=>{
+    if(window.__scenarioAdminRecordsLoadPromise===request)
+      window.__scenarioAdminRecordsLoadPromise=null;
+  });
 }
 
 /* عرض السجلات */
@@ -5639,7 +5667,8 @@ function closeSeriesPlaylist(){
 
 /* عرض المحاضرات والفيديوهات التي تضيفها الإدارة */
 function renderAcademyContent(items){
-  if(typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
+  /* لا نبنِ بطاقات المحاضرات أثناء وجود الزائر في قسم آخر */
+  if(document.getElementById("academy")?.classList.contains("active") && typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
 }
 
 function safeHttpUrl(value){
@@ -5719,6 +5748,7 @@ const DEFAULT_TV_CHANNELS = [
 ];
 
 /* عرض القنوات التلفزيونية في صفحة الإذاعة والتليفزيون */
+let publicTvChannels=[];
 function renderTvChannels(items){
   const box=document.getElementById("tvChannels");
   if(!box)return;
@@ -5767,8 +5797,7 @@ function distributePublicContent(records){
         file:item.work
       }))
     );
-    renderLibrary();
-    if(typeof renderScenarioScriptCards==="function" && scenarioScriptRecords.length) renderScenarioScriptCards();
+    /* بيانات المكتبة تُجهّز هنا، أما بناء البطاقات فيتم عند فتح صفحة المكتبة */
   }
 
   if(typeof creativeProfiles!=="undefined"){
@@ -5786,10 +5815,7 @@ function distributePublicContent(records){
 
     replaceArray(creativeProfiles.shorts,grouped.shorts || []);
 
-    renderWriters();
-    renderDirectors();
-    renderTalents();
-    renderShortFilms();
+    /* بيانات المبدعين جاهزة؛ تأجيل بناء البطاقات حتى فتح كل قسم */
   }
 
   if(typeof editorialData!=="undefined"){
@@ -5798,11 +5824,11 @@ function distributePublicContent(records){
     replaceArray(editorialData.projects,grouped.production || []);
 
     renderStories();
-    renderNews();
-    renderProjects();
+    /* الأخبار والمشروعات تُرسم عند فتح صفحاتها لتقليل العمل أثناء تحميل الموقع */
   }
 
-  renderSponsors(grouped.sponsors || []);
+  replaceArray(publicSponsorRecords,grouped.sponsors || []);
+  if(document.getElementById("sponsors")?.classList.contains("active")) renderSponsors(publicSponsorRecords);
   renderFooterSponsors(grouped.sponsors || []);
 
   if(typeof radioStations!=="undefined"){
@@ -5817,25 +5843,44 @@ function distributePublicContent(records){
       const mergedRadio=[...radioStations,...publicRadioStations];
       replaceArray(radioStations,mergedRadio.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
     }
-    renderRadioStations();
+    if(document.getElementById("radio")?.classList.contains("active")) renderRadioStations();
    }
 
-   if(typeof renderTvChannels==="function") renderTvChannels(grouped.television || []);
+   replaceArray(publicTvChannels,grouped.television || []);
+   if(document.getElementById("radio")?.classList.contains("active") && typeof renderTvChannels==="function") renderTvChannels(publicTvChannels);
 
-   renderFilms();
+   /* صفحة الأفلام محمية وتُعاد تهيئتها عند فتحها؛ لا نبنِ بطاقاتها وهي مخفية */
+   if(document.getElementById("films")?.classList.contains("active")) renderFilms();
 }
 
 /* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
 async function loadApprovedTalentVideos(){
   if(!publicContentClient)return;
   const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:")&&!item.workVideoUrl);
-  for(const item of items){
-    const path=item.work.slice("talent-video:".length);
-    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    if(error){console.warn("تعذر تجهيز فيديو موهبة منشور",error.message);continue;}
-    item.workVideoUrl=data?.signedUrl||"";
-    item.workIsVideo=!!item.workVideoUrl;
+/* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
+async function loadApprovedTalentVideos(){
+  if(!publicContentClient)return;
+  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:")&&!item.workVideoUrl);
+  const paths=[...new Set(items.map(item=>item.work.slice("talent-video:".length)).filter(Boolean))];
+  const signedUrls=new Map();
+  if(paths.length){
+    const {data,error}=await publicContentClient.storage.from("talent-submission-videos").createSignedUrls(paths,3600);
+    if(error)console.warn("تعذر تجهيز روابط فيديوهات المواهب",error.message);
+    else (data||[]).forEach(item=>{if(item.path&&item.signedUrl)signedUrls.set(item.path,item.signedUrl);});
   }
+  items.forEach(item=>{
+    const path=item.work.slice("talent-video:".length);
+    item.workVideoUrl=signedUrls.get(path)||"";
+    item.workIsVideo=!!item.workVideoUrl;
+  });
+  renderTalents();
+}
+  }
+  items.forEach(item=>{
+    const path=item.work.slice("talent-video:".length);
+    item.work=signedUrls.get(path)||"";
+    item.workIsVideo=!!item.work;
+  });
   renderTalents();
 }
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
@@ -5870,13 +5915,17 @@ async function loadApprovedMemberProfiles(){
   (ideasResult.data||[]).forEach(idea=>{if(!ideasByUser.has(idea.user_id))ideasByUser.set(idea.user_id,[]);ideasByUser.get(idea.user_id).push(idea);});
   const contactsByUser=new Map((contactsResult.data||[]).map(contact=>[contact.user_id,contact.phone]));
   const scriptsByUser=new Map();
-  const signedScripts=await Promise.all((scriptsResult.data||[]).map(async script=>{
-    const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrl(script.published_storage_path,1800);
-    return {script,signedUrl:signedError?null:signed?.signedUrl||null};
-  }));
-  signedScripts.forEach(({script,signedUrl})=>{
+  const publishedScripts=scriptsResult.data||[];
+  const scriptPaths=[...new Set(publishedScripts.map(script=>script.published_storage_path).filter(Boolean))];
+  const signedScriptUrls=new Map();
+  if(scriptPaths.length){
+    const {data:signed,error:signedError}=await publicContentClient.storage.from("scenario-scripts").createSignedUrls(scriptPaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط السيناريوهات المنشورة",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedScriptUrls.set(item.path,item.signedUrl);});
+  }
+  publishedScripts.forEach(script=>{
     if(!scriptsByUser.has(script.user_id))scriptsByUser.set(script.user_id,[]);
-    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl});
+    scriptsByUser.get(script.user_id).push({title:script.title,category:script.category,signedUrl:signedScriptUrls.get(script.published_storage_path)||null});
   });
   if(scriptsResult.error)console.warn("تعذر تحميل سيناريوهات الكُتّاب المعتمدة",scriptsResult.error.message);
   creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";writer.scripts=scriptsByUser.get(writer.userId)||[];}});
@@ -5973,8 +6022,7 @@ function loadPublicContent(){
         return false;
       }
       distributePublicContent(data || []);
-      /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
-      renderStories();
+      /* تتولى distributePublicContent تحديث واجهات الأقسام مرة واحدة */
       publicContentMessage("تم تحميل المحتوى المنشور.");
       return true;
     }catch(error){
@@ -6454,8 +6502,8 @@ function ensureApprovedIdeas(){
       ['topic_replies','adminTopicReplies','رد','display_name','body','id,status,created_at,display_name,body,topic_id'],
       ['content_comments','adminContentComments','تعليق','display_name','body','id,status,created_at,display_name,body,content_id,crime_story_id']
     ];
-    for(const [table,boxId,label,headField,bodyField,selectFields] of configs){
-      const box=$(boxId);if(!box)continue;
+    await Promise.all(configs.map(async([table,boxId,label,headField,bodyField,selectFields])=>{
+      const box=$(boxId);if(!box)return;
       box.innerHTML='<div class="panel">جارٍ التحميل...</div>';
       try{
         const {data,error}=await adminSupabase.from(table).select(selectFields).order('created_at',{ascending:false}).limit(100);
@@ -6468,7 +6516,7 @@ function ensureApprovedIdeas(){
           return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${row.crime_story_id?'تعليق على حكاية #'+row.crime_story_id:row.content_id?'تعليق على محتوى #'+String(row.content_id).slice(0,8):'تعليق'} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
         }).join(''):`<div class="panel">لا توجد ${label}ات حتى الآن.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
-    }
+    }));
   }
   window.adminModerateCommunityItem=async function(table,id,status){
     const allowed=['community_topics','topic_replies','content_comments'];if(!allowed.includes(table)||typeof adminSupabase==="undefined"||!adminSupabase||!adminSession)return;
@@ -6773,22 +6821,40 @@ async function loadApprovedDirectorWorks(){
     .order("created_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
   const grouped=new Map();
-  const works=data||[];
-  for(let offset=0;offset<works.length;offset+=8){
-    const batch=await Promise.all(works.slice(offset,offset+8).map(async work=>{
-      let mediaUrl=work.external_url||"";
-      if(work.storage_path){
-        const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrl(work.storage_path,3600);
-        if(signedError){console.warn("تعذر تجهيز فيديو منشور",signedError.message);return null;}
-        mediaUrl=signed?.signedUrl||"";
-      }
-      return {...work,mediaUrl};
-    }));
-    batch.filter(Boolean).forEach(work=>{
-      if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
-      grouped.get(work.user_id).push(work);
-    });
+async function loadApprovedDirectorWorks(){
+  if(!publicContentClient)return;
+  const directorIds=[...new Set(creativeProfiles.directors
+    .filter(profile=>profile.memberProfileRow&&profile.userId)
+    .map(profile=>profile.userId))];
+  if(!directorIds.length){
+    creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=[];});
+    renderDirectors();
+    return;
   }
+  const {data,error}=await publicContentClient.from("director_work_submissions")
+    .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url")
+    .eq("status","approved").in("user_id",directorIds)
+    .order("created_at",{ascending:false}).limit(300);
+  if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
+  const grouped=new Map();
+  const works=data||[];
+  const storagePaths=[...new Set(works.map(work=>work.storage_path).filter(Boolean))];
+  const signedWorkUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await publicContentClient.storage.from("director-work-videos").createSignedUrls(storagePaths,3600);
+    if(signedError)console.warn("تعذر تجهيز روابط نماذج أعمال المخرجين",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedWorkUrls.set(item.path,item.signedUrl);});
+  }
+  works.forEach(work=>{
+    const mediaUrl=work.storage_path?(signedWorkUrls.get(work.storage_path)||""):(work.external_url||"");
+    if(!mediaUrl)return;
+    if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
+    grouped.get(work.user_id).push({...work,mediaUrl});
+  });
+  creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
+  renderDirectors();
+}
+  });
   creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
   renderDirectors();
 }
@@ -6833,13 +6899,17 @@ async function adminLoadDirectorWorks(){
   const {data:profiles,error:profilesError}=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",ids);
   if(profilesError){box.textContent="تعذر تحميل أسماء المخرجين: "+profilesError.message;return;}
   const names=new Map((profiles||[]).map(p=>[p.user_id,p.display_name]));
+  const storagePaths=[...new Set(data.map(w=>w.storage_path).filter(Boolean))];
+  const signedWorkUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط نماذج أعمال المخرجين للمراجعة",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedWorkUrls.set(item.path,item.signedUrl);});
+  }
   const cards=[];
   for(const w of data){
     let mediaUrl=w.external_url||"";
-    if(w.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrl(w.storage_path,1800);
-      if(!signedError)mediaUrl=signed?.signedUrl||"";
-    }
+    if(w.storage_path)mediaUrl=signedWorkUrls.get(w.storage_path)||"";
     const embed=directorEmbedUrl(mediaUrl);
     const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="none" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
     cards.push('<article class="admin-item"><h3>'+directorWorkEsc(w.title)+'</h3><p>المخرج: '+directorWorkEsc(names.get(w.user_id)||"عضو")+' • '+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+'</p><p>المدة: '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p>'+player+'<p>'+directorWorkEsc(w.description||"")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>');
@@ -7225,7 +7295,6 @@ function adminSetInlinePublishingVisible(visible){
   if(visible)crimeStoryRenderAdminRecords();
   else if(records)records.style.display='none';
  }
- if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
