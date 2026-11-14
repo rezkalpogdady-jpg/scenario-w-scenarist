@@ -5892,6 +5892,13 @@ async function loadApprovedMemberProfiles(){
       creativeProfiles.talents.push(item);
     }
   });
+  const activePage=document.querySelector(".page.active")?.id;
+  if(activePage==="writers")renderWriters();
+  if(activePage==="directors")renderDirectors();
+  if(activePage==="talents")renderTalents();
+}
+async function loadApprovedWriterDetails(){
+  if(!publicContentClient)return;
   const [ideasResult,contactsResult,scriptsResult]=await Promise.all([
     publicContentClient.from("writer_ideas_public").select("id,user_id,slot,title,format,genre,summary,duration_minutes,development_stage,collaboration_open").order("created_at",{ascending:false}),
     publicContentClient.from("writer_contact").select("user_id,phone").eq("is_public",true),
@@ -5917,19 +5924,22 @@ async function loadApprovedMemberProfiles(){
   });
   if(scriptsResult.error)console.warn("تعذر تحميل سيناريوهات الكُتّاب المعتمدة",scriptsResult.error.message);
   creativeProfiles.writers.forEach(writer=>{if(writer.memberProfileRow){writer.ideas=ideasByUser.get(writer.userId)||[];writer.contactPhone=contactsByUser.get(writer.userId)||"";writer.scripts=scriptsByUser.get(writer.userId)||[];}});
-
-  renderWriters();renderDirectors();renderTalents();
-  if(typeof loadApprovedDirectorWorks==="function") await loadApprovedDirectorWorks();
+  if(document.getElementById("writers")?.classList.contains("active"))renderWriters();
 }
 let approvedMemberProfilesPromise=null;
-let approvedTalentVideosPromise=null;
-function ensureApprovedTalentVideos(){
-  if(!approvedTalentVideosPromise) approvedTalentVideosPromise=loadApprovedTalentVideos().finally(()=>{approvedTalentVideosPromise=null;});
-  return approvedTalentVideosPromise;
+const approvedCreativeDetailsPromises={};
+function ensureCreativeDetails(key,loader){
+  if(!approvedCreativeDetailsPromises[key])approvedCreativeDetailsPromises[key]=loader().finally(()=>{approvedCreativeDetailsPromises[key]=null;});
+  return approvedCreativeDetailsPromises[key];
 }
 function ensureApprovedMemberProfiles(){
-  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
-  return approvedMemberProfilesPromise.then(()=>ensureApprovedTalentVideos());
+  if(!approvedMemberProfilesPromise)approvedMemberProfilesPromise=loadApprovedMemberProfiles().catch(error=>{console.warn("تعذر تحميل ملفات المواهب",error);}).finally(()=>{approvedMemberProfilesPromise=null;});
+  return approvedMemberProfilesPromise.then(()=>{
+    const activePage=document.querySelector(".page.active")?.id;
+    if(activePage==="writers")return ensureCreativeDetails("writers",loadApprovedWriterDetails);
+    if(activePage==="directors")return ensureCreativeDetails("directors",loadApprovedDirectorWorks);
+    if(activePage==="talents")return ensureCreativeDetails("talents",loadApprovedTalentVideos);
+  });
 }
 
 /* تحميل القصص المعتمدة من جدول crime_stories؛ لا تُعرض الطلبات المعلقة أو المرفوضة */
