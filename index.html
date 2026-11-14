@@ -402,7 +402,7 @@ Main{padding:17px 11px}
 </style>
 </head>
 
-<body data-platform-version="6.9.6">
+<body data-platform-version="6.9.8">
 
 <div class="topbar">
 <span><strong>سيناريو وسيناريست</strong> | منصة الإبداع العربي</span>
@@ -481,7 +481,7 @@ Main{padding:17px 11px}
 <div class="grid">
 
 <article class="feature">
-<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80" alt="أكاديمية السيناريو">
+<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80" alt="أكاديمية السيناريو" loading="lazy" decoding="async">
 <div class="feature-content">
 <h3>أكاديمية السيناريو</h3>
 <p>محاضرات ودروس فيديو وتدريبات عملية لتعلم كتابة السيناريو.</p>
@@ -582,7 +582,7 @@ Main{padding:17px 11px}
 </div>
 
 <div class="spotlight">
-<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1000&q=85" alt="صناعة السينما">
+<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1000&q=85" alt="صناعة السينما" loading="lazy" decoding="async">
 <div class="spotlight-content">
 <h2>كل موهبة تستحق أن تُكتشف</h2>
 <p>نؤمن بأن وراء كل فكرة عظيمة كاتباً يبحث عن فرصة، وممثلاً ينتظر دوره، ومخرجاً يريد أن يرى حلمه على الشاشة.</p>
@@ -1447,7 +1447,7 @@ function profileCard(item, type){
         <h3>${escapeHTML(item.name || item.title)}</h3>
         ${details}
         <p>${escapeHTML(cardBio)}</p>
-        ${item.work ? (item.workIsVideo ? `<video controls playsinline preload="none" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.work))}"></video>` : `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>`) : ""}
+        ${item.workIsVideo && item.workVideoUrl ? `<video controls playsinline preload="none" style="width:100%;max-height:300px;background:#000;border-radius:8px" src="${escapeHTML(safeHttpUrl(item.workVideoUrl))}"></video>` : (item.work && !String(item.work).startsWith("talent-video:") ? `<a class="btn" href="${escapeHTML(safeHttpUrl(item.work))}" target="_blank" rel="noopener">مشاهدة نموذج العمل</a>` : "")}
         ${talentAction}
       </div>
     </article>`;
@@ -1555,10 +1555,11 @@ function showTalentProfile(index){
   const portfolioLinks=bioText.split(/\r?\n/).map(line=>line.trim()).filter(line=>/^نموذج عمل [23]:/.test(line)).map(line=>({label:line.split(":")[0],url:line.slice(line.indexOf(":")+1).trim()})).filter(item=>safeHttpUrl(item.url));
   const biography=cleanBio?'<div style="white-space:pre-wrap;line-height:1.9">'+escapeHTML(cleanBio)+'</div>':'<p class="muted">لم تُضف نبذة تفصيلية بعد.</p>';
   let work="";
-  if(item.work){
+  const workUrl=item.workIsVideo?item.workVideoUrl:(String(item.work||"").startsWith("talent-video:")?"":item.work);
+  if(workUrl){
     work=item.workIsVideo
-      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="none" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(item.work))+'"></video></div>'
-      : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(item.work))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
+      ? '<div style="margin-top:18px"><h3 style="color:var(--gold)">نموذج الأداء</h3><video controls playsinline preload="none" style="width:100%;max-height:440px;background:#000;border-radius:10px" src="'+escapeHTML(safeHttpUrl(workUrl))+'"></video></div>'
+      : '<p style="margin-top:18px"><a class="btn" href="'+escapeHTML(safeHttpUrl(workUrl))+'" target="_blank" rel="noopener noreferrer">مشاهدة نموذج الأداء</a></p>';
   }
   const extraWorks=portfolioLinks.length?'<div style="margin-top:18px"><h4 style="color:var(--gold)">نماذج أعمال إضافية</h4>'+portfolioLinks.map(link=>'<p><a class="btn" href="'+escapeHTML(safeHttpUrl(link.url))+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(link.label)+'</a></p>').join("")+'</div>':"";
   box.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">'+
@@ -5827,7 +5828,7 @@ function distributePublicContent(records){
 /* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
 async function loadApprovedTalentVideos(){
   if(!publicContentClient)return;
-  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:"));
+  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:")&&!item.workVideoUrl);
   const paths=[...new Set(items.map(item=>item.work.slice("talent-video:".length)).filter(Boolean))];
   const signedUrls=new Map();
   if(paths.length){
@@ -5837,8 +5838,8 @@ async function loadApprovedTalentVideos(){
   }
   items.forEach(item=>{
     const path=item.work.slice("talent-video:".length);
-    item.work=signedUrls.get(path)||"";
-    item.workIsVideo=!!item.work;
+    item.workVideoUrl=signedUrls.get(path)||"";
+    item.workIsVideo=!!item.workVideoUrl;
   });
   renderTalents();
 }
@@ -5893,9 +5894,14 @@ async function loadApprovedMemberProfiles(){
   if(typeof loadApprovedDirectorWorks==="function") await loadApprovedDirectorWorks();
 }
 let approvedMemberProfilesPromise=null;
+let approvedTalentVideosPromise=null;
+function ensureApprovedTalentVideos(){
+  if(!approvedTalentVideosPromise) approvedTalentVideosPromise=loadApprovedTalentVideos().finally(()=>{approvedTalentVideosPromise=null;});
+  return approvedTalentVideosPromise;
+}
 function ensureApprovedMemberProfiles(){
-  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().then(()=>loadApprovedTalentVideos()).catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
-  return approvedMemberProfilesPromise;
+  if(!approvedMemberProfilesPromise) approvedMemberProfilesPromise=loadApprovedMemberProfiles().catch(error=>{approvedMemberProfilesPromise=null;console.warn("تعذر تحميل ملفات المواهب",error);});
+  return approvedMemberProfilesPromise.then(()=>ensureApprovedTalentVideos());
 }
 
 /* تحميل القصص المعتمدة من جدول crime_stories؛ لا تُعرض الطلبات المعلقة أو المرفوضة */
@@ -6372,7 +6378,7 @@ function ensureApprovedIdeas(){
     const box=$('communityTopics');if(!box)return false;
     try{
       const {data,error}=await client().from('community_topics').select('id,title,category,body,display_name,created_at').eq('status','approved').order('created_at',{ascending:false}).limit(30);if(error)throw error;
-      if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return;}
+      if(!data?.length){box.innerHTML='<div class="panel">لا توجد مناقشات منشورة حتى الآن. كن أول من يشارك.</div>';return true;}
       const user=await currentUser();
       let likeStatsAvailable=!!user,likeStats=[];
       if(user){
@@ -6762,9 +6768,18 @@ document.getElementById("directorWorkForm")?.addEventListener("submit",async fun
 });
 async function loadApprovedDirectorWorks(){
   if(!publicContentClient)return;
+  const directorIds=[...new Set(creativeProfiles.directors
+    .filter(profile=>profile.memberProfileRow&&profile.userId)
+    .map(profile=>profile.userId))];
+  if(!directorIds.length){
+    creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=[];});
+    renderDirectors();
+    return;
+  }
   const {data,error}=await publicContentClient.from("director_work_submissions")
     .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url")
-    .eq("status","approved").order("created_at",{ascending:false}).limit(300);
+    .eq("status","approved").in("user_id",directorIds)
+    .order("created_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
   const grouped=new Map();
   const works=data||[];
