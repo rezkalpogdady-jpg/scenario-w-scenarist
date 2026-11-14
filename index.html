@@ -5807,7 +5807,8 @@ function distributePublicContent(records){
 
    if(typeof renderTvChannels==="function") renderTvChannels(grouped.television || []);
 
-   renderFilms();
+   /* صفحة الأفلام محمية وتُعاد تهيئتها عند فتحها؛ لا نبنِ بطاقاتها وهي مخفية */
+   if(document.getElementById("films")?.classList.contains("active")) renderFilms();
 }
 
 /* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
