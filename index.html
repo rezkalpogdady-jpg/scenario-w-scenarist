@@ -6484,8 +6484,8 @@ function ensureApprovedIdeas(){
       ['topic_replies','adminTopicReplies','رد','display_name','body','id,status,created_at,display_name,body,topic_id'],
       ['content_comments','adminContentComments','تعليق','display_name','body','id,status,created_at,display_name,body,content_id,crime_story_id']
     ];
-    for(const [table,boxId,label,headField,bodyField,selectFields] of configs){
-      const box=$(boxId);if(!box)continue;
+    await Promise.all(configs.map(async([table,boxId,label,headField,bodyField,selectFields])=>{
+      const box=$(boxId);if(!box)return;
       box.innerHTML='<div class="panel">جارٍ التحميل...</div>';
       try{
         const {data,error}=await adminSupabase.from(table).select(selectFields).order('created_at',{ascending:false}).limit(100);
@@ -6498,7 +6498,7 @@ function ensureApprovedIdeas(){
           return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${row.crime_story_id?'تعليق على حكاية #'+row.crime_story_id:row.content_id?'تعليق على محتوى #'+String(row.content_id).slice(0,8):'تعليق'} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
         }).join(''):`<div class="panel">لا توجد ${label}ات حتى الآن.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
-    }
+    }));
   }
   window.adminModerateCommunityItem=async function(table,id,status){
     const allowed=['community_topics','topic_replies','content_comments'];if(!allowed.includes(table)||typeof adminSupabase==="undefined"||!adminSupabase||!adminSession)return;
