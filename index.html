@@ -710,7 +710,7 @@ if(id==='talents' && typeof renderTalents==='function') renderTalents();
 if(id==='shorts' && typeof renderShortFilms==='function') renderShortFilms();
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
-if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
+if(id==='stories'){Promise.all([loadPublicStories(),ensurePublishedCrimeStories()]).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
 if(id==='ideas') ensureApprovedIdeas();
 if(id==='archive' && typeof window.ensureArchiveLoaded==='function') window.ensureArchiveLoaded();
 if(id==='community' && typeof window.ensureCommunityLoaded==='function') window.ensureCommunityLoaded();
