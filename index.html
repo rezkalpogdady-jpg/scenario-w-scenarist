@@ -4186,13 +4186,22 @@ async function adminLoadApprovalNotifications(){
     {table:"book_marketplace_listings",column:"status",label:"إعلانات سوق الكتب",target:"adminBookListingsPanel",loader:"adminLoadBookListings"},
     {table:"idea_submissions",column:"status",label:"الأفكار والمشروعات المرسلة",target:"adminIdeasList",loader:"adminLoadIdeas"}
   ];
-  const results=await Promise.all(queues.map(async item=>{
-    try{
-      const {count,error}=await adminSupabase.from(item.table).select(item.key||"id",{count:"exact",head:true}).eq(item.column,"pending");
-      if(error)throw error;
-      return {...item,count:Number(count)||0};
-    }catch(error){return {...item,count:null,failed:true,errorMessage:error?.message||"تعذر الاتصال"};}
-  }));
+  const results=new Array(queues.length);
+  let nextQueueIndex=0;
+  const queueWorker=async()=>{
+    while(nextQueueIndex<queues.length){
+      const index=nextQueueIndex++;
+      const item=queues[index];
+      try{
+        const {count,error}=await adminSupabase.from(item.table).select(item.key||"id",{count:"exact",head:true}).eq(item.column,"pending");
+        if(error)throw error;
+        results[index]={...item,count:Number(count)||0};
+      }catch(error){
+        results[index]={...item,count:null,failed:true,errorMessage:error?.message||"تعذر الاتصال"};
+      }
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(3,queues.length)},()=>queueWorker()));
   const total=results.reduce((sum,item)=>sum+(item.failed?0:item.count),0);
   const active=results.filter(item=>!item.failed&&item.count>0);
   const failedItems=results.filter(item=>item.failed&&!item.optional);
@@ -4276,7 +4285,22 @@ async function adminVerifyAdmin(session){
     {label:"رسائل التواصل",run:()=>adminLoadContactMessages()},
     {label:"الموافقات المعلقة",run:()=>adminLoadApprovalNotifications()}
   ];
-  const initialAdminResults=await Promise.allSettled(initialAdminLoads.map(item=>Promise.resolve().then(item.run)));
+  /* تحميل لوحة الإدارة بثلاث عمليات كحد أقصى لتقليل الضغط على الاتصال وقاعدة البيانات. */
+  const initialAdminResults=new Array(initialAdminLoads.length);
+  let nextAdminLoadIndex=0;
+  const adminLoadWorker=async()=>{
+    while(nextAdminLoadIndex<initialAdminLoads.length){
+      const index=nextAdminLoadIndex++;
+      const item=initialAdminLoads[index];
+      try{
+        await item.run();
+        initialAdminResults[index]={status:"fulfilled",value:undefined};
+      }catch(reason){
+        initialAdminResults[index]={status:"rejected",reason};
+      }
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(3,initialAdminLoads.length)},()=>adminLoadWorker()));
   adminSetLoadHealth(initialAdminResults.map((result,index)=>({...result,label:initialAdminLoads[index].label})));
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
