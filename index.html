@@ -2911,7 +2911,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   <div class="panel" id="adminLoginPanel">
     <h3 style="color:var(--gold)">دخول المدير</h3>
     <form id="adminLoginForm">
-      <input id="adminEmail" type="email" required autocomplete="username" placeholder="البريد الإلكتروني">
+      <input id="adminEmail" type="text" required autocomplete="username" inputmode="text" placeholder="البريد الإلكتروني أو رقم العضوية (8 أرقام)">
       <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
       <button class="btn primary" type="submit">تسجيل الدخول</button>
     </form>
@@ -4330,22 +4330,30 @@ document.getElementById("adminLoginForm")?.addEventListener("submit",async funct
     return;
   }
 
-  const email=document.getElementById("adminEmail").value.trim();
+  const identity=document.getElementById("adminEmail").value.trim();
   const password=document.getElementById("adminPassword").value;
 
   adminSetMessage("adminLoginMessage","جارٍ التحقق من بيانات الدخول...");
 
-  const {data,error}=await adminSupabase.auth.signInWithPassword({
-    email,
-    password
-  });
+  try{
+    if(/^\d{8}$/.test(identity)){
+      /* المدير الذي أُنشئ من عضويات الموقع يدخل برقم عضويته المعتاد */
+      const result=await memberAuthRequest({action:"login",member_number:identity,password});
+      if(!result.session?.access_token||!result.session?.refresh_token)throw new Error("تعذر إنشاء جلسة الدخول.");
+      accountMemberNumber=identity;
+      const {data,error}=await adminSupabase.auth.setSession({access_token:result.session.access_token,refresh_token:result.session.refresh_token});
+      if(error)throw error;
+      accountSessionReady=true;
+      await adminVerifyAdmin(data.session||result.session);
+      return;
+    }
 
-  if(error){
-    adminSetMessage("adminLoginMessage","فشل تسجيل الدخول: "+error.message);
-    return;
+    const {data,error}=await adminSupabase.auth.signInWithPassword({email:identity,password});
+    if(error)throw error;
+    await adminVerifyAdmin(data.session);
+  }catch(error){
+    adminSetMessage("adminLoginMessage","فشل تسجيل الدخول: "+(error.message||"تحقق من البيانات وحاول مرة أخرى."));
   }
-
-  await adminVerifyAdmin(data.session);
 });
 
 document.getElementById("adminResetForm")?.addEventListener("submit",async function(event){
