@@ -5857,10 +5857,6 @@ function distributePublicContent(records){
 async function loadApprovedTalentVideos(){
   if(!publicContentClient)return;
   const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:")&&!item.workVideoUrl);
-/* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
-async function loadApprovedTalentVideos(){
-  if(!publicContentClient)return;
-  const items=creativeProfiles.talents.filter(item=>typeof item.work==="string"&&item.work.startsWith("talent-video:")&&!item.workVideoUrl);
   const paths=[...new Set(items.map(item=>item.work.slice("talent-video:".length)).filter(Boolean))];
   const signedUrls=new Map();
   if(paths.length){
@@ -5874,7 +5870,6 @@ async function loadApprovedTalentVideos(){
     item.workIsVideo=!!item.workVideoUrl;
   });
   renderTalents();
-}
 }
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
 async function loadApprovedMemberProfiles(){
