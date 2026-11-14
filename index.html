@@ -702,7 +702,7 @@ window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'
 }
 }catch(error){console.warn('تعذر تحديث سجل التنقل:',error);}
 }
-if(id!=="shorts") stopShortFilmPlayers();
+if(id!=="shorts"){try{stopShortFilmPlayers();}catch(error){console.warn("تعذر إيقاف مشغل الفيديو عند التنقل:",error);}}
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
 if(id==='sponsors' && typeof renderSponsors==='function') renderSponsors(publicSponsorRecords);
@@ -746,7 +746,20 @@ document.addEventListener("visibilitychange",()=>{
 });
 window.addEventListener("pagehide",()=>stopShortFilmPlayers(false));
 document.querySelectorAll('#mainNav button').forEach(button=>{
-button.addEventListener('click',()=>showPage(button.dataset.page));
+button.addEventListener('click',()=>{
+  const pageId=button.dataset.page;
+  try{showPage(pageId);}
+  catch(error){
+    console.error("تعذر فتح القسم:",pageId,error);
+    const target=document.getElementById(pageId);
+    if(target&&target.classList.contains("page")){
+      document.querySelectorAll("main .page").forEach(page=>page.classList.remove("active"));
+      target.classList.add("active");
+      document.querySelectorAll("#mainNav button").forEach(navButton=>navButton.classList.toggle("active",navButton===button));
+      window.scrollTo({top:0,behavior:"auto"});
+    }
+  }
+});
 });
 /* روابط مباشرة لكل صفحة رئيسية: ?section=pageId */
 document.addEventListener("DOMContentLoaded",()=>{
@@ -2925,312 +2938,58 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
 
   <!-- تسجيل الدخول -->
   <div class="panel" id="adminLoginPanel">
-    <h3 style="color:var(--gold)">دخول المدير</h3>
+    <h3 style="color:var(--gold)">دخول الإدارة</h3>
     <form id="adminLoginForm">
-      <input id="adminEmail" type="text" required autocomplete="username" inputmode="text" placeholder="البريد الإلكتروني أو رقم العضوية (8 أرقام)">
+      <input id="adminEmail" type="text" required autocomplete="username" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="رقم العضوية (8 أرقام)">
       <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
-      <button class="btn primary" type="submit">تسجيل الدخول</button>
+      <button class="btn primary" type="submit">دخول</button>
     </form>
-    <form id="adminResetForm" style="margin-top:12px">
-      <input id="adminResetEmail" type="email" required autocomplete="email" placeholder="بريد المدير لاستعادة كلمة المرور">
-      <button class="btn" type="submit">نسيت كلمة المرور؟ أرسل رابط الاستعادة</button>
-    </form>
-    <div class="panel" id="adminRecoveryPanel" style="display:none;margin-top:14px">
-      <h3 style="color:var(--gold)">تعيين كلمة مرور جديدة للمدير</h3>
-      <form id="adminNewPasswordForm">
-        <input id="adminNewPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)">
-        <input id="adminConfirmPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة">
-        <button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>
-      </form>
-    </div>
     <p id="adminLoginMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
   </div>
 
   <!-- واجهة الإدارة -->
   <div id="adminDashboard" style="display:none">
-
     <div class="panel">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <div>
-          <h3 style="color:var(--gold);margin:0">مرحبًا بك في الإدارة</h3>
-          <p id="adminUserEmail" style="color:var(--muted);font-size:13px"></p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn primary" type="button" onclick="document.getElementById('adminScenarioLibrarySection')?.scrollIntoView({behavior:'smooth',block:'start'})">فتح إدارة مكتبة السيناريوهات</button>
-          <button class="btn" id="adminLogout">تسجيل الخروج</button>
-        </div>
+        <div><h3 style="color:var(--gold);margin:0">لوحة الإدارة</h3><p id="adminUserEmail" class="admin-status"></p></div>
+        <button class="btn" id="adminLogout" type="button">تسجيل الخروج</button>
       </div>
     </div>
 
-    <div class="panel" id="adminDecisionCenter" style="margin-top:14px">
-      <h3 style="color:var(--gold);margin-top:0">مركز اتخاذ القرار</h3>
-      <p class="admin-status">متابعة سريعة للموافقات والرسائل والتقييمات ونمو المنصة. إدارة المحتوى وتعديله تظل من داخل كل صفحة.</p>
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminApprovalNotifications')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>القرارات والموافقات</strong><span id="adminDecisionPendingCount" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">تابع الطلبات المعلقة</span></button>
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="document.getElementById('adminContactMessagesHeading')?.scrollIntoView({behavior:'smooth',block:'start'})"><strong>رسائل الأعضاء والزوار</strong><span id="adminNewMessagesBadge" style="display:block;color:var(--gold);font-size:13px;margin-top:6px">جارٍ تحميل عدد الرسائل الجديدة</span></button>
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenRatings()"><strong>تقييمات المحتوى</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل الملخص عند الطلب</span></button>
-        <button class="admin-item" type="button" style="text-align:right;cursor:pointer" onclick="adminOpenGrowthStats()"><strong>إحصائيات ونمو المنصة</strong><span style="display:block;color:var(--muted);font-size:13px;margin-top:6px">تحميل عند الطلب: الأعضاء والتفاعل والزيارات</span></button>
-      </div>
-    </div>
-
-    <div class="panel" id="adminLoadHealth" role="status" aria-live="polite" style="margin-top:14px">
-      <strong style="color:var(--gold)">حالة تحميل لوحة الإدارة</strong>
-      <p id="adminLoadHealthSummary" class="admin-status" style="margin:8px 0 0">سيظهر هنا ملخص حالة تحميل الأقسام.</p>
-      <ul id="adminLoadHealthItems" style="margin:8px 0 0;padding-right:22px;display:none"></ul>
-    </div>
-
-    <div class="panel" id="adminUsersPanel" style="margin-top:14px;display:none">
-      <h3 style="color:var(--gold);margin-top:0">إدارة الأعضاء والمديرين</h3>
-      <p class="admin-status">اختر أي عضو من القائمة لترقيته إلى مدير بصلاحيات إدارة المنصة. يمكنك البحث بالاسم أو رقم العضوية. تعيين المديرين وإلغاء صلاحياتهم متاح لصاحب المنصة فقط.</p>
-      <input id="adminMemberSearch" type="search" placeholder="ابحث باسم العضو أو رقم العضوية" aria-label="بحث عن عضو" style="width:100%;margin:8px 0">
-      <p id="adminUsersMessage" role="status" aria-live="polite" style="color:var(--muted)"></p>
-      <div id="adminUsersList" style="display:grid;gap:8px;margin-top:10px">جارٍ تحميل الأعضاء...</div>
-    </div>
-
-    <div class="panel" id="adminApprovalNotifications" style="margin-top:14px;border:1px solid var(--gold)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><h3 style="color:var(--gold);margin:0">🔔 إشعارات الموافقات</h3><span id="adminApprovalBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:27px;padding:0 8px;border-radius:20px;background:var(--gold);color:#17130c;font-weight:800">0</span><p id="adminApprovalSummary" class="admin-status" style="margin:5px 0 0">جارٍ فحص الطلبات المنتظرة...</p></div>
-        <button class="btn primary" id="adminApprovalToggle" type="button" aria-expanded="true" onclick="adminToggleApprovalNotifications()">إخفاء الطلبات</button>
-        <button class="btn" type="button" onclick="adminLoadApprovalNotifications()">تحديث الإشعارات</button>
-      </div>
-      <div id="adminApprovalItems" class="grid" style="margin-top:14px"></div>
-    </div>
-
-    <div class="section-heading" id="adminContactMessagesHeading"><h2>رسائل الزوار إلى إدارة المنصة</h2><p>الرسائل الجديدة تظهر أولًا، ويمكن وضع علامة مقروء أو أرشفتها</p></div>
-    <div class="panel"><div id="adminContactMessages" class="grid"><p>سجّل الدخول لعرض رسائل الزوار.</p></div></div>
-
-    <div class="section-heading"><h2>مراجعة نماذج أعمال المخرجين</h2><p>شاهد الفيديو وتأكد من الحقوق والمدة قبل النشر</p></div>
-    <div class="panel"><div id="adminDirectorWorksList" class="grid">سجّل الدخول لتحميل نماذج الأعمال المعلقة.</div></div>
-    <div class="section-heading"><h2>إدارة المجتمع والتعليقات</h2><p>مراجعة المشاركات الجديدة أو حذف أي منشور أو رد أو تعليق مسيء</p></div>
-    <div class="panel">
-      <h3 style="color:var(--gold)">موضوعات النقاش</h3><div id="adminCommunityTopics" class="grid">سجّل الدخول لتحميل الطلبات.</div>
-      <h3 style="color:var(--gold);margin-top:20px">ردود النقاش</h3><div id="adminTopicReplies" class="grid"></div>
-      <h3 style="color:var(--gold);margin-top:20px">تعليقات المحتوى</h3><div id="adminContentComments" class="grid"></div>
-    </div>
-
-    
-    <div class="section-heading">
-      <h2>إدارة ورفع المحتوى حسب القسم</h2>
-      <p>افتح القسم المطلوب لتظهر لك أدوات رفع محتواه وسجلاته فقط</p>
-    </div>
-    <div class="panel">
-      <div id="adminSectionCards" class="grid">
-        <article class="admin-section-card"><h3>الأكاديمية والمحاضرات</h3><p>فيديوهات تعليمية ومواد المحاضرات والملفات المساندة.</p><button class="btn primary" type="button" onclick="adminOpenSection('academy')">إدارة القسم ورفع محتوى</button></article>
-        
-        <article class="admin-section-card"><h3>الكُتّاب</h3><p>إضافة نبذات وصور وأعمال تعريفية للكُتّاب.</p><button class="btn primary" type="button" onclick="adminOpenSection('writers')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>المخرجون</h3><p>إضافة نبذات وصور وروابط نماذج أعمال المخرجين.</p><button class="btn primary" type="button" onclick="adminOpenSection('directors')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>المواهب</h3><p>صور وملفات تعريفية وروابط نماذج الأداء.</p><button class="btn primary" type="button" onclick="adminOpenSection('talents')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الأفلام والمسلسلات</h3><p>ملصقات وصور وفيديوهات دعائية وروابط المشاهدة.</p><button class="btn primary" type="button" onclick="adminOpenSection('films')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الأفلام القصيرة</h3><p>رفع الفيلم أو رابطه وإضافة الملصق وبيانات صُنّاعه.</p><button class="btn primary" type="button" onclick="adminOpenSection('shorts')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الجرائم والحكايات</h3><p>نصوص القضايا والصور التوضيحية والمواد المصاحبة.</p><button class="btn primary" type="button" onclick="adminOpenSection('stories')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>الأخبار الفنية</h3><p>كتابة الخبر وإضافة صورته وتصنيفه ونشره.</p><button class="btn primary" type="button" onclick="adminOpenSection('news')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>أرشيف السينما</h3><p>صور وأفيشات ومواد أرشيفية مع وصف ومصدر.</p><button class="btn primary" type="button" onclick="adminOpenSection('archive')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>سوق الكتب</h3><p>مراجعة إعلانات الكتب الجديدة واعتمادها أو رفضها قبل ظهورها للجمهور.</p><button class="btn primary" type="button" onclick="adminLoadBookListings();document.getElementById('adminBookListingsPanel')?.scrollIntoView({behavior:'smooth',block:'start'})">مراجعة عروض الكتب</button></article>
-        <article class="admin-section-card"><h3>الراديو والتلفزيون</h3><p>إضافة محطات الإذاعة والقنوات التلفزيونية وروابط البث الرسمية.</p><button class="btn primary" type="button" onclick="adminOpenSection('radio')">إدارة الراديو والتلفزيون</button></article>
-        <article class="admin-section-card"><h3>الإنتاج والتعاون</h3><p>عرض المشروعات والفرص والصور والملفات التعريفية.</p><button class="btn primary" type="button" onclick="adminOpenSection('production')">إدارة القسم ورفع محتوى</button></article>
-        <article class="admin-section-card"><h3>شركات الإنتاج والرعاة</h3><p>إضافة الشركات والجهات الراعية وتعديل بياناتها أو حذفها والتحكم في نشرها.</p><button class="btn primary" type="button" onclick="adminOpenSection('sponsors')">إدارة الشركات والرعاة</button></article>
-      </div>
-    </div>
-
-    <div class="section-heading"><h2>سوق الكتب — مراجعة إعلانات البيع</h2><p>راجع الغلاف والبيانات والسعر ووسيلة التواصل قبل اعتماد الإعلان</p></div>
-    <div class="panel" id="adminBookListingsPanel">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="color:var(--gold)">إعلانات الكتب</h3><button class="btn" type="button" onclick="adminLoadBookListings()">تحديث القائمة</button></div>
-      <p id="adminBookListingsStats" class="admin-status">إحصاءات الإعلانات تظهر بعد تحميل القائمة.</p>
-      <div class="admin-book-stats" id="adminBookStatsGrid">
-        <div class="admin-book-stat"><strong id="adminBookTotal">—</strong><span>إجمالي المعروض في القائمة</span></div>
-        <div class="admin-book-stat"><strong id="adminBookPending">—</strong><span>بانتظار المراجعة</span></div>
-        <div class="admin-book-stat"><strong id="adminBookApproved">—</strong><span>معروض للبيع</span></div>
-        <div class="admin-book-stat"><strong id="adminBookRejected">—</strong><span>مرفوض / مخفي</span></div>
-      </div>
-      <div class="admin-book-filters">
-        <input id="adminBookSearch" placeholder="ابحث باسم الكتاب أو المؤلف أو البائع...">
-        <select id="adminBookStatusFilter">
-          <option value="">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معروض للبيع</option><option value="rejected">مرفوض / مخفي</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
-        <button class="btn primary" type="button" onclick="adminExportBookListingsCsv()">تصدير نتائج البحث CSV</button>
-        <span style="color:var(--muted);font-size:12px;align-self:center">يتم تصدير الإعلانات المحمّلة بعد تطبيق البحث والحالة المختارة.</span>
-      </div>
-      <div id="adminBookListingsList" class="grid">افتح مراجعة عروض الكتب لتحميل الإعلانات.</div>
-    </div>
-
-<div id="adminContentEditorWrap" style="display:none">
-<div class="section-heading" id="adminContentEditorHeading">
-      <h2 id="adminEditorSectionTitle">إضافة أو تعديل محتوى</h2>
-      <p id="adminEditorSectionHint">اختر قسمًا من البطاقات بالأعلى لبدء رفع المحتوى.</p>
-    </div>
-
-    <div class="panel">
-      <form id="adminContentForm">
-        <input type="hidden" id="adminRecordId">
-
-        <label>القسم</label>
-        <select id="adminContentType" required>
-          <option value="academy">الأكاديمية والمحاضرات</option>
-          <option value="writers">الكُتّاب</option>
-          <option value="directors">المخرجون</option>
-          <option value="talents">المواهب</option>
-          <option value="films">الأفلام والمسلسلات</option>
-          <option value="shorts">الأفلام القصيرة</option>
-          
-          <option value="news">الأخبار الفنية</option>
-          <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-                    <option value="radio">محطات الراديو</option>
-           <option value="television">القنوات التلفزيونية</option>
-          <option value="production">مشروعات الإنتاج</option>
-          <option value="sponsors">شركات الإنتاج والرعاة</option>
-        </select>
-
-        <label>نوع المحتوى الذي ستضيفه</label>
-        <select id="adminMediaKind" required>
-          <option value="article">محتوى مكتوب / خبر / وصف</option>
-          <option value="video">فيديو</option>
-          <option value="image">صورة أو أفيش</option>
-          <option value="audio">ملف صوتي</option>
-          <option value="document">ملف PDF أو Word</option>
-          <option value="link">رابط خارجي</option>
-        </select>
-        <p id="adminMediaKindHint" style="font-size:12px;color:var(--muted)">اختر نوع المحتوى؛ ستتغير أنواع الملفات المقبولة حسب اختيارك.</p>
-
-        <label>عنوان المحتوى</label>
-        <input id="adminTitle" required placeholder="اكتب العنوان">
-
-        <label>التصنيف</label>
-        <input id="adminCategory" placeholder="مثال: قضايا غامضة، جرائم قتل، اختفاء">
-
-        <div id="adminStoryFormatWrap" style="display:none">
-          <label for="adminStoryFormat">طريقة النشر في صفحة الجرائم والحكايات</label>
-          <select id="adminStoryFormat"><option value="story">جريمة وحكاية كاملة</option><option value="poster">أفيش جريمة / ملف مصوّر</option></select>
-          <p style="font-size:12px;color:var(--muted)">اختر «حكاية كاملة» لعرض النص عند فتح الأفيش، أو «أفيش جريمة» لعرض الصورة مع نبذة مختصرة.</p>
-        </div>
-
-        <label>الوصف أو تفاصيل الحكاية</label>
-        <textarea id="adminDescription" placeholder="اكتب التفاصيل هنا"></textarea>
-
-        <label>رابط الأفيش أو صورة المحتوى</label>
-        <input id="adminImage" type="url" placeholder="ضع رابط الأفيش إن كان مرفوعًا بالفعل">
-
-        <label>رابط الملف أو الفيديو أو البث (اختياري)</label>
-        <input id="adminContentUrl" type="url" placeholder="https://...">
-
-        <label>بيانات إضافية (JSON) — اختيارية</label>
-        <textarea id="adminExtraData" rows="3" dir="ltr" placeholder='{"author":"اسم الكاتب","director":"اسم المخرج","duration":"12 دقيقة","specialty":"دراما"}'></textarea>
-        <p style="font-size:12px;color:var(--muted)">تُستخدم لإظهار بيانات الكاتب والمخرج ومدة الفيلم والمدينة والتخصص في بطاقات الأقسام.</p>
-
-        <label>رفع الأفيش أو صورة الحكاية من جهازك</label>
-        <input id="adminFile" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="width:100%;padding:10px">
-        <p style="font-size:12px;color:var(--muted)">لأفيش المحاضرة: اختر نوع المحتوى «صورة أو أفيش»، ثم ارفع صورة رأسية بجودة جيدة. يفضل مقاس 1000 × 1500 بكسل.</p>
-        <p style="font-size:12px;color:var(--muted)">سيتم رفع الملف إلى مساحة site-media في Supabase بعد تنفيذ إعدادات قاعدة البيانات والتخزين.</p>
-
-        <label style="display:flex;align-items:center;gap:8px;margin:12px 0">
-          <input id="adminPublished" type="checkbox" style="width:auto">
-          نشر المحتوى للزوار
-        </label>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn primary" type="submit" id="adminSaveButton">حفظ المحتوى</button>
-          <button class="btn" type="button" id="adminCancelEdit">إلغاء التعديل</button>
-        </div>
-      </form>
-
-      <p id="adminSaveMessage" style="color:var(--muted)"></p>
-    </div>
-</div>
-
-    <div class="section-heading">
-      <h2>إدارة محتوى المنصة</h2>
-      <p>الأقسام الإدارية العامة فقط. السيناريوهات والجرائم والحكايات تُدار من صفحاتها مباشرة.</p>
-    </div>
-
-    <div class="panel">
-      <input id="adminSearch" placeholder="ابحث في محتوى الإدارة...">
-      <select id="adminFilter">
-        <option value="">كل الأقسام</option>
-        <option value="academy">الأكاديمية</option>
-
-        <option value="writers">الكُتّاب</option>
-        <option value="directors">المخرجون</option>
-        <option value="talents">المواهب</option>
-        <option value="films">الأفلام والمسلسلات</option>
-        <option value="shorts">الأفلام القصيرة</option>
-
-        <option value="news">الأخبار الفنية</option>
-          <option value="archive">أرشيف السينما – عبق الزمن الجميل</option>
-        <option value="radio">الراديو</option>
-         <option value="television">القنوات التلفزيونية</option>
-        <option value="production">الإنتاج</option>
-        <option value="sponsors">شركات الإنتاج والرعاة</option>
-      </select>
-    </div>
-
-    <div class="section-heading"><h2>مراجعة ورشة الأفكار</h2><p>الأفكار الجديدة لا تظهر للزوار قبل الموافقة</p></div>
-    <div id="adminIdeasList" class="grid"><div class="panel">تظهر الأفكار بعد تسجيل دخول المدير وإعداد قاعدة البيانات.</div></div>
-    <div class="section-heading"><h2>مراجعة طلبات المواهب والمشروعات</h2><p>لن يظهر أي طلب للزوار إلا بعد موافقة الإدارة</p></div>
-    <div id="adminCommunityList" class="grid"><div class="panel">تظهر الطلبات بعد تسجيل دخول المدير وإعداد قاعدة البيانات.</div></div>
-    <div class="section-heading"><h2>مراجعة الملفات الشخصية للأعضاء</h2><p>ملفات الكُتّاب والمخرجين والممثلين والمواهب لا تظهر للعامة إلا بعد اعتماد الإدارة</p></div>
-    <div id="adminMemberProfilesList" class="grid"><div class="panel">تظهر الملفات الشخصية الجديدة بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>مراجعة أعمال الأعضاء وملفاتهم</h2><p>الملفات المرفوعة من أصحاب الحسابات لا تظهر للجمهور قبل اعتماد الإدارة</p></div>
-    <div id="adminMemberWorksList" class="grid"><div class="panel">تظهر أعمال الأعضاء الجديدة هنا بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>مراجعة سيناريوهات الكُتّاب</h2><p>قسم مستقل عن مكتبة السيناريوهات؛ لا يُتاح ملف الكاتب إلا بعد الاعتماد</p></div>
-    <div id="adminWriterScriptsList" class="grid"><div class="panel">تظهر ملفات PDF المرسلة من الكُتّاب هنا بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading"><h2>مراجعة أفكار مؤلفي السيناريو</h2><p>كل فكرة تُراجع بشكل مستقل ولا تظهر للجمهور إلا بعد موافقة المدير</p></div>
-    <div id="adminWriterIdeasList" class="grid"><div class="panel">تظهر الأفكار المرسلة بعد تسجيل دخول المدير.</div></div>
-    <div class="section-heading" id="adminGrowthStatsHeading">
-      <h2>إحصائيات الموقع</h2>
-      <p>عدد زوار الموقع، ومشاهدات وقراءات المحتوى المكتوب فقط.</p>
-    </div>
-    <div class="panel" id="adminGrowthStatsPanel">
+    <section class="panel" id="adminContactMessagesHeading" style="margin-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <p id="adminGrowthStatsStatus" class="admin-status" role="status" style="margin:0">يتم تحميل الإحصائيات بعد التحقق من صلاحية المدير.</p>
-        <button class="btn" id="adminGrowthStatsRefresh" type="button" onclick="adminLoadPlatformGrowthStats()">تحديث</button>
+        <h3 style="color:var(--gold);margin:0">رسائل الأعضاء والزوار</h3>
+        <span id="adminNewMessagesBadge" class="admin-status">جارٍ تحميل الرسائل</span>
+      </div>
+      <div id="adminContactMessages" style="display:grid;gap:10px;margin-top:14px">جارٍ تحميل الرسائل...</div>
+    </section>
+
+    <section class="panel" style="margin-top:14px">
+      <div id="adminGrowthStatsHeading" class="section-heading" style="margin-top:0">
+        <h2>إحصاءات الموقع والأعضاء</h2>
+        <button class="btn" id="adminGrowthStatsRefresh" type="button" onclick="adminLoadPlatformGrowthStats()">تحديث الإحصاءات</button>
+      </div>
+      <p id="adminGrowthStatsStatus" class="admin-status" role="status">جارٍ تحميل الإحصاءات...</p>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px">
+        <div class="admin-item"><span>إجمالي الأعضاء</span><strong id="growthTotalMembers" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>أعضاء جدد خلال 7 أيام</span><strong id="growthNewMembers7d" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>أعضاء جدد خلال 30 يومًا</span><strong id="growthNewMembers30d" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>أعضاء نشطون خلال 30 يومًا</span><strong id="growthActiveMembers30d" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>إجمالي الزيارات</span><strong id="growthVisitsTotal" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>زوار مميزون</span><strong id="growthUniqueVisitors" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
+        <div class="admin-item"><span>الزيارات خلال 30 يومًا</span><strong id="growthVisits30d" style="display:block;color:var(--gold);font-size:26px">—</strong></div>
       </div>
       <div class="admin-item" style="margin-top:14px">
-        <div>زوار الموقع</div>
-        <strong id="growthUniqueVisitors" style="display:block;color:var(--gold);font-size:30px">—</strong>
-      </div>
-      <div class="admin-item" style="margin-top:14px">
-        <h3 style="margin-top:0">مشاهدات المنشورات وقراءات الدروس</h3>
+        <h3 style="margin-top:0">مشاهدات المحتوى المكتوب وقراءاته</h3>
         <div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;min-width:420px">
-            <thead><tr>
-              <th style="text-align:right;padding:8px">المحتوى المكتوب</th>
-              <th style="text-align:right;padding:8px">شافوه</th>
-              <th style="text-align:right;padding:8px">فتحوه للقراءة</th>
-            </tr></thead>
+            <thead><tr><th style="text-align:right;padding:8px">المحتوى المكتوب</th><th style="text-align:right;padding:8px">شافوه</th><th style="text-align:right;padding:8px">فتحوه للقراءة</th></tr></thead>
             <tbody id="growthContentEngagement"><tr><td colspan="3">جارٍ تحميل البيانات...</td></tr></tbody>
           </table>
         </div>
-        <p class="admin-status">يُحسب الشخص مرة واحدة لكل محتوى من خلال معرّف متصفح عشوائي. لا تُحسب الفيديوهات أو الصور.</p>
+        <p class="admin-status">لا تُحسب مشاهدات الفيديوهات أو الصور.</p>
       </div>
-    </div>
-
-    <div id="adminContentList" class="grid"></div>
-
-    <div class="section-heading" id="adminRatingsHeading">
-      <h2>تقييمات المحتوى وآراء الأعضاء</h2>
-      <p>ملخص التقييمات المسجلة على المحتوى، مع تحميل التفاصيل عند الطلب فقط.</p>
-    </div>
-    <div class="panel" id="adminRatingsPanel">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <p id="adminRatingsStatus" class="admin-status" role="status" style="margin:0">لم يتم تحميل التقييمات بعد.</p>
-        <button class="btn" id="adminRatingsRefresh" type="button" onclick="adminLoadContentRatings()">تحميل / تحديث التقييمات</button>
-      </div>
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px">
-        <div class="admin-item">إجمالي التقييمات<strong id="adminRatingsTotal" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
-        <div class="admin-item">متوسط التقييم<strong id="adminRatingsAverage" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
-        <div class="admin-item">التقييمات المعروضة<strong id="adminRatingsSample" style="display:block;color:var(--gold);font-size:24px">—</strong></div>
-      </div>
-      <div style="overflow-x:auto;margin-top:14px">
-        <table style="width:100%;border-collapse:collapse;min-width:420px">
-          <thead><tr><th style="text-align:right;padding:8px">المحتوى</th><th style="text-align:right;padding:8px">عدد التقييمات</th><th style="text-align:right;padding:8px">المتوسط من 5</th></tr></thead>
-          <tbody id="adminRatingsRows"><tr><td colspan="3">اضغط تحميل التقييمات لعرض الملخص.</td></tr></tbody>
-        </table>
-      </div>
-      <p id="adminRatingsFootnote" class="admin-status">لا يتم تحميل بيانات التقييمات تلقائيًا؛ لتقليل الطلبات على قاعدة البيانات.</p>
-    </div>
-
-
+    </section>
   </div>
 </section>
 
@@ -3973,6 +3732,18 @@ async function adminLoadPlatformGrowthStats(){
     if(!stats)throw new Error("لم تصل بيانات الإحصائيات.");
     const visitors=document.getElementById("growthUniqueVisitors");
     if(visitors)visitors.textContent=growthFormatNumber(stats.unique_visitors);
+    const statNodes={
+      growthTotalMembers:stats.total_members,
+      growthNewMembers7d:stats.new_members_7d,
+      growthNewMembers30d:stats.new_members_30d,
+      growthActiveMembers30d:stats.active_members_30d,
+      growthVisitsTotal:stats.visits_total,
+      growthVisits30d:stats.visits_30d
+    };
+    for(const [id,value] of Object.entries(statNodes)){
+      const node=document.getElementById(id);
+      if(node)node.textContent=growthFormatNumber(value);
+    }
     if(status)status.textContent="آخر تحديث: "+new Date().toLocaleString("ar-EG");
   }catch(error){
     if(status)status.textContent="تعذر تحميل إحصائيات زوار الموقع: "+(error.message||"تحقق من إعداد قاعدة البيانات.");
@@ -4261,53 +4032,11 @@ async function adminVerifyAdmin(session){
 
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
-  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(true);
-  adminCanManageAdmins = data.user.id === "0ecade12-50a9-4b30-ba90-4fab3393c7b3";
-  const adminUsersPanel = document.getElementById("adminUsersPanel");
-  if (adminUsersPanel) adminUsersPanel.style.display = adminCanManageAdmins ? "block" : "none";
-  const adminIdentity = document.getElementById("adminUserEmail");
-  if (adminIdentity) adminIdentity.textContent = (data.user.user_metadata?.display_name || "مدير المنصة") + (data.user.app_metadata?.member_number ? " • عضوية " + data.user.app_metadata.member_number : "");
-
-  /* تحميل أقسام الإدارة المستقلة بالتوازي لتقليل زمن فتح اللوحة.
-     الإحصائيات التفصيلية تُحمّل عند طلبها من بطاقة التقارير فقط. */
-  const initialAdminLoads = [
-    ...(adminCanManageAdmins ? [{label:"إدارة الأعضاء والمديرين",run:()=>adminLoadAdminUsers()}] : []),
-    {label:"محتوى المنصة",run:()=>adminLoadRecords()},
-    {label:"مكتبة السيناريوهات",run:()=>adminLoadScenarioScripts()},
-    {label:"الأفكار والمشروعات",run:()=>adminLoadIdeas()},
-    {label:"طلبات المجتمع",run:()=>adminLoadCommunitySubmissions()},
-    {label:"ملفات الأعضاء",run:()=>adminLoadMemberProfiles()},
-    {label:"أعمال الأعضاء",run:()=>adminLoadMemberWorks()},
-    {label:"سيناريوهات الكُتّاب",run:()=>adminLoadWriterScripts()},
-    {label:"أعمال المخرجين",run:()=>typeof adminLoadDirectorWorks==="function"?adminLoadDirectorWorks():Promise.resolve()},
-    {label:"أفكار الكُتّاب",run:()=>typeof adminLoadWriterIdeas==="function"?adminLoadWriterIdeas():Promise.resolve()},
-    {label:"إشراف المجتمع",run:()=>typeof adminLoadCommunityModeration==="function"?adminLoadCommunityModeration():Promise.resolve()},
-    {label:"رسائل التواصل",run:()=>adminLoadContactMessages()},
-    {label:"الموافقات المعلقة",run:()=>adminLoadApprovalNotifications()}
-  ];
-  /* تحميل لوحة الإدارة بثلاث عمليات كحد أقصى لتقليل الضغط على الاتصال وقاعدة البيانات. */
-  const initialAdminResults=new Array(initialAdminLoads.length);
-  let nextAdminLoadIndex=0;
-  const adminLoadWorker=async()=>{
-    while(nextAdminLoadIndex<initialAdminLoads.length){
-      const index=nextAdminLoadIndex++;
-      const item=initialAdminLoads[index];
-      try{
-        await item.run();
-        initialAdminResults[index]={status:"fulfilled",value:undefined};
-      }catch(reason){
-        initialAdminResults[index]={status:"rejected",reason};
-      }
-    }
-  };
-  await Promise.all(Array.from({length:Math.min(3,initialAdminLoads.length)},()=>adminLoadWorker()));
-  adminSetLoadHealth(initialAdminResults.map((result,index)=>({...result,label:initialAdminLoads[index].label})));
-  if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
-  window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
-  if(!window.adminApprovalFocusListener){
-    window.adminApprovalFocusListener=()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();};
-    document.addEventListener("visibilitychange",window.adminApprovalFocusListener);
-  }
+  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
+  adminCanManageAdmins = false;
+  const adminIdentity=document.getElementById("adminUserEmail");
+  if(adminIdentity) adminIdentity.textContent=(data.user.user_metadata?.display_name||"مدير المنصة")+(data.user.app_metadata?.member_number?" • عضوية "+data.user.app_metadata.member_number:"");
+  await Promise.allSettled([adminLoadContactMessages(),adminLoadPlatformGrowthStats()]);
 }
 
 /* إدارة حسابات الأدمن عبر Edge Function آمنة؛ لا يُكشف مفتاح الخدمة للمتصفح */
