@@ -7220,7 +7220,6 @@ function adminSetInlinePublishingVisible(visible){
   if(visible)crimeStoryRenderAdminRecords();
   else if(records)records.style.display='none';
  }
- if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
