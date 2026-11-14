@@ -4260,7 +4260,22 @@ async function adminVerifyAdmin(session){
     {label:"رسائل التواصل",run:()=>adminLoadContactMessages()},
     {label:"الموافقات المعلقة",run:()=>adminLoadApprovalNotifications()}
   ];
-  const initialAdminResults=await Promise.allSettled(initialAdminLoads.map(item=>Promise.resolve().then(item.run)));
+  /* حدّ أقصى لثلاث عمليات تحميل إدارية متزامنة لتجنب إغراق اتصال قاعدة البيانات عند فتح اللوحة. */
+  const initialAdminResults=new Array(initialAdminLoads.length);
+  let nextAdminLoadIndex=0;
+  const adminLoadWorker=async()=>{
+    while(nextAdminLoadIndex<initialAdminLoads.length){
+      const index=nextAdminLoadIndex++;
+      const item=initialAdminLoads[index];
+      try{
+        await item.run();
+        initialAdminResults[index]={status:"fulfilled",value:undefined};
+      }catch(reason){
+        initialAdminResults[index]={status:"rejected",reason};
+      }
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(3,initialAdminLoads.length)},()=>adminLoadWorker()));
   adminSetLoadHealth(initialAdminResults.map((result,index)=>({...result,label:initialAdminLoads[index].label})));
   if(window.adminApprovalRefreshTimer)clearInterval(window.adminApprovalRefreshTimer);
   window.adminApprovalRefreshTimer=setInterval(()=>{if(adminSession&&document.visibilityState==="visible")adminLoadApprovalNotifications();},45000);
@@ -4500,7 +4515,7 @@ function adminLoadRecords(){
 
     const {data,error}=await adminSupabase
       .from("site_content")
-      .select("*")
+      .select("id,content_type,title,category,description,image_url,content_url,extra_data,published,created_at")
       .order("created_at",{ascending:false});
 
     if(error){
