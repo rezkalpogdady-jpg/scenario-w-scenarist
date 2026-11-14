@@ -6828,13 +6828,17 @@ async function adminLoadDirectorWorks(){
   const {data:profiles,error:profilesError}=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",ids);
   if(profilesError){box.textContent="تعذر تحميل أسماء المخرجين: "+profilesError.message;return;}
   const names=new Map((profiles||[]).map(p=>[p.user_id,p.display_name]));
+  const storagePaths=[...new Set(data.map(w=>w.storage_path).filter(Boolean))];
+  const signedWorkUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط نماذج أعمال المخرجين للمراجعة",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedWorkUrls.set(item.path,item.signedUrl);});
+  }
   const cards=[];
   for(const w of data){
     let mediaUrl=w.external_url||"";
-    if(w.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrl(w.storage_path,1800);
-      if(!signedError)mediaUrl=signed?.signedUrl||"";
-    }
+    if(w.storage_path)mediaUrl=signedWorkUrls.get(w.storage_path)||"";
     const embed=directorEmbedUrl(mediaUrl);
     const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="none" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
     cards.push('<article class="admin-item"><h3>'+directorWorkEsc(w.title)+'</h3><p>المخرج: '+directorWorkEsc(names.get(w.user_id)||"عضو")+' • '+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+'</p><p>المدة: '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p>'+player+'<p>'+directorWorkEsc(w.description||"")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>');
