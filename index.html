@@ -1211,7 +1211,7 @@ function escapeHTML(value){
 
 document.getElementById("librarySearch")?.addEventListener("input",renderLibrary);
 document.getElementById("libraryCategory")?.addEventListener("change",renderLibrary);
-renderLibrary();
+/* تُرسم بطاقات المكتبة عند فتح القسم فقط */
 </script>
 <!-- نهاية الجزء الثاني -->
 <!-- =========================
@@ -2217,8 +2217,7 @@ document.getElementById("projectsSearch")?.addEventListener("input",renderProjec
 document.getElementById("projectsCategory")?.addEventListener("change",renderProjects);
 
 renderStories();
-renderNews();
-renderProjects();
+/* الأخبار والمشروعات تُرسم عند فتح كل قسم عبر showPage */
 </script>
 
 <!-- نهاية الجزء الرابع -->
