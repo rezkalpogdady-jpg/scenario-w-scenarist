@@ -690,7 +690,10 @@ if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
 if(id==='films' && typeof renderFilms==='function') renderFilms();
-if(id==='radio' && typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+if(id==='radio'){
+if(typeof renderRadioStations==='function') renderRadioStations();
+if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+}
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
@@ -2416,7 +2419,7 @@ function playRadioStation(id){
 /* البحث والتصفية */
 document.getElementById("radioSearch")?.addEventListener("input",renderRadioStations);
 
-renderRadioStations();
+/* تُبنى بطاقات الإذاعات عند فتح القسم بدلًا من وقت تحميل الموقع */
 </script>
 
 <!-- نهاية الجزء الخامس -->
@@ -5802,7 +5805,7 @@ function distributePublicContent(records){
       const mergedRadio=[...radioStations,...publicRadioStations];
       replaceArray(radioStations,mergedRadio.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
     }
-    renderRadioStations();
+    if(document.getElementById("radio")?.classList.contains("active")) renderRadioStations();
    }
 
    if(typeof renderTvChannels==="function") renderTvChannels(grouped.television || []);
