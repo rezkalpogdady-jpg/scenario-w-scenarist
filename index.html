@@ -5875,13 +5875,6 @@ async function loadApprovedTalentVideos(){
   });
   renderTalents();
 }
-  }
-  items.forEach(item=>{
-    const path=item.work.slice("talent-video:".length);
-    item.work=signedUrls.get(path)||"";
-    item.workIsVideo=!!item.work;
-  });
-  renderTalents();
 }
 /* تحميل الملفات الشخصية التي اعتمدتها الإدارة فقط */
 async function loadApprovedMemberProfiles(){
@@ -6850,10 +6843,6 @@ async function loadApprovedDirectorWorks(){
     if(!mediaUrl)return;
     if(!grouped.has(work.user_id))grouped.set(work.user_id,[]);
     grouped.get(work.user_id).push({...work,mediaUrl});
-  });
-  creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
-  renderDirectors();
-}
   });
   creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=grouped.get(profile.userId)||[];});
   renderDirectors();
