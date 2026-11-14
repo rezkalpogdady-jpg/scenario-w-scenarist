@@ -696,6 +696,10 @@ if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(docu
 }
 if(id==='news' && typeof renderNews==='function') renderNews();
 if(id==='production' && typeof renderProjects==='function') renderProjects();
+if(id==='writers' && typeof renderWriters==='function') renderWriters();
+if(id==='directors' && typeof renderDirectors==='function') renderDirectors();
+if(id==='talents' && typeof renderTalents==='function') renderTalents();
+if(id==='shorts' && typeof renderShortFilms==='function') renderShortFilms();
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
@@ -1705,10 +1709,7 @@ document.getElementById("talentCitySearch")?.addEventListener("input",renderTale
 document.getElementById("talentSpecialtySearch")?.addEventListener("input",renderTalents);
 document.getElementById("talentCategory")?.addEventListener("change",renderTalents);
 
-renderWriters();
-renderDirectors();
-renderTalents();
-renderShortFilms();
+/* تُرسم بطاقات ملفات المبدعين والأفلام القصيرة عند فتح أقسامها */
 </script>
 
 <!-- نهاية الجزء الثالث -->
@@ -5776,10 +5777,7 @@ function distributePublicContent(records){
 
     replaceArray(creativeProfiles.shorts,grouped.shorts || []);
 
-    renderWriters();
-    renderDirectors();
-    renderTalents();
-    renderShortFilms();
+    /* بيانات المبدعين جاهزة؛ تأجيل بناء البطاقات حتى فتح كل قسم */
   }
 
   if(typeof editorialData!=="undefined"){
