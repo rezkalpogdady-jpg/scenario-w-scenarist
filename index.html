@@ -5962,8 +5962,7 @@ function loadPublicContent(){
         return false;
       }
       distributePublicContent(data || []);
-      /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
-      renderStories();
+      /* تتولى distributePublicContent تحديث واجهات الأقسام مرة واحدة */
       publicContentMessage("تم تحميل المحتوى المنشور.");
       return true;
     }catch(error){
