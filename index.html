@@ -696,6 +696,8 @@ if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(docu
 }
 if(id==='news' && typeof renderNews==='function') renderNews();
 if(id==='production' && typeof renderProjects==='function') renderProjects();
+if(id==='library' && typeof renderLibrary==='function') renderLibrary();
+if(id==='library' && typeof renderScenarioScriptCards==='function' && scenarioScriptRecords.length) renderScenarioScriptCards();
 if(id==='writers' && typeof renderWriters==='function') renderWriters();
 if(id==='directors' && typeof renderDirectors==='function') renderDirectors();
 if(id==='talents' && typeof renderTalents==='function') renderTalents();
@@ -5758,8 +5760,7 @@ function distributePublicContent(records){
         file:item.work
       }))
     );
-    renderLibrary();
-    if(typeof renderScenarioScriptCards==="function" && scenarioScriptRecords.length) renderScenarioScriptCards();
+    /* بيانات المكتبة تُجهّز هنا، أما بناء البطاقات فيتم عند فتح صفحة المكتبة */
   }
 
   if(typeof creativeProfiles!=="undefined"){
