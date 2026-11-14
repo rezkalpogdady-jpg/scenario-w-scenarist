@@ -6814,22 +6814,6 @@ async function loadApprovedDirectorWorks(){
     .order("created_at",{ascending:false}).limit(300);
   if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
   const grouped=new Map();
-async function loadApprovedDirectorWorks(){
-  if(!publicContentClient)return;
-  const directorIds=[...new Set(creativeProfiles.directors
-    .filter(profile=>profile.memberProfileRow&&profile.userId)
-    .map(profile=>profile.userId))];
-  if(!directorIds.length){
-    creativeProfiles.directors.forEach(profile=>{if(profile.memberProfileRow)profile.works=[];});
-    renderDirectors();
-    return;
-  }
-  const {data,error}=await publicContentClient.from("director_work_submissions")
-    .select("id,user_id,title,work_type,description,duration_seconds,production_year,storage_path,external_url")
-    .eq("status","approved").in("user_id",directorIds)
-    .order("created_at",{ascending:false}).limit(300);
-  if(error){console.warn("تعذر تحميل نماذج أعمال المخرجين",error.message);return;}
-  const grouped=new Map();
   const works=data||[];
   const storagePaths=[...new Set(works.map(work=>work.storage_path).filter(Boolean))];
   const signedWorkUrls=new Map();
