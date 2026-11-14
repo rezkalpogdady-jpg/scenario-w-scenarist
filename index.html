@@ -28,6 +28,8 @@
 }
 </script>
 
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://asmxyfkmojqzrbnrovmz.supabase.co" crossorigin>
 <link rel="preconnect" href=https://fonts.googleapis.com>
 <link rel="preconnect" href=https://fonts.gstatic.com crossorigin>
 <link href=https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap rel="stylesheet">
@@ -79,7 +81,7 @@ Text-align:center;
 Padding:55px 15px;
 Background:
 Linear-gradient(90deg,rgba(0,0,0,.90),rgba(0,0,0,.55)),
-url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1800&q=85')
+url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1400&q=70')
 center/cover;
 border-bottom:2px solid var(--gold);
 }
@@ -677,7 +679,7 @@ function saveReadingProgress(){
 function showPage(id, options={}){
 const target=document.getElementById(id);
 if(!target || !target.classList.contains('page')) return;
-if((id==='films'||id==='creatorProfile')&&!accountUser){if(id==='films'){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');}if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
+if((id==='stories'||id==='films'||id==='creatorProfile')&&!accountUser){pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
 saveReadingProgress();
 if(options.updateUrl!==false){
 try{
@@ -703,8 +705,25 @@ window.history.replaceState({...currentState,scenarioPlatform:true,section:id},'
 if(id!=="shorts") stopShortFilmPlayers();
 document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
 target.classList.add('active');
+if(id==='sponsors' && typeof renderSponsors==='function') renderSponsors(publicSponsorRecords);
+if(id==='academy' && typeof renderLessonIndex==='function'){
+const academyItems=(publicContentRecords||[]).filter(item=>item.content_type==="academy" && item.published);
+renderLessonIndex(academyItems);
+}
 if(id==='films' && typeof renderFilms==='function') renderFilms();
-if(id==='radio' && typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+if(id==='radio'){
+if(typeof renderRadioStations==='function') renderRadioStations();
+if(typeof renderTvChannels==='function') renderTvChannels(publicTvChannels);
+if(typeof initializeInlineHlsVideos==='function') initializeInlineHlsVideos(document.getElementById('radio'));
+}
+if(id==='news' && typeof renderNews==='function') renderNews();
+if(id==='production' && typeof renderProjects==='function') renderProjects();
+if(id==='library' && typeof renderLibrary==='function') renderLibrary();
+if(id==='library' && typeof renderScenarioScriptCards==='function' && scenarioScriptRecords.length) renderScenarioScriptCards();
+if(id==='writers' && typeof renderWriters==='function') renderWriters();
+if(id==='directors' && typeof renderDirectors==='function') renderDirectors();
+if(id==='talents' && typeof renderTalents==='function') renderTalents();
+if(id==='shorts' && typeof renderShortFilms==='function') renderShortFilms();
 /* تحميل بيانات الأقسام الثقيلة عند دخولها فقط */
 if(['writers','directors','talents'].includes(id)) ensureApprovedMemberProfiles();
 if(id==='stories'){loadPublicStories().then(()=>ensurePublishedCrimeStories()).catch(error=>console.warn('تعذر تحديث حكايات القسم عند فتحه',error));}
@@ -1164,8 +1183,7 @@ lessonsContainer?.addEventListener("click",event=>{
   }
 });
 
-/* تجهيز قائمة المحاضرات */
-renderLessonIndex();
+/* تُجهّز قائمة المحاضرات عند فتح الأكاديمية فقط */
 
 /* بيانات تجريبية للمكتبة */
 let scenarioLibrary = [];
@@ -1214,7 +1232,7 @@ function escapeHTML(value){
 
 document.getElementById("librarySearch")?.addEventListener("input",renderLibrary);
 document.getElementById("libraryCategory")?.addEventListener("change",renderLibrary);
-renderLibrary();
+/* تُرسم بطاقات المكتبة عند فتح القسم فقط */
 </script>
 <!-- نهاية الجزء الثاني -->
 <!-- =========================
@@ -1715,10 +1733,7 @@ document.getElementById("talentCitySearch")?.addEventListener("input",renderTale
 document.getElementById("talentSpecialtySearch")?.addEventListener("input",renderTalents);
 document.getElementById("talentCategory")?.addEventListener("change",renderTalents);
 
-renderWriters();
-renderDirectors();
-renderTalents();
-renderShortFilms();
+/* تُرسم بطاقات ملفات المبدعين والأفلام القصيرة عند فتح أقسامها */
 </script>
 
 <!-- نهاية الجزء الثالث -->
@@ -2136,6 +2151,7 @@ function renderNews(){
 }
 
 /* عرض شركات الإنتاج والجهات الراعية — عرض تعريفي فقط دون روابط أو وسائل تواصل */
+let publicSponsorRecords=[];
 function renderSponsors(items){
   const box=document.getElementById("sponsorsGrid");
   if(!box)return;
@@ -2223,9 +2239,7 @@ document.getElementById("newsCategory")?.addEventListener("change",renderNews);
 document.getElementById("projectsSearch")?.addEventListener("input",renderProjects);
 document.getElementById("projectsCategory")?.addEventListener("change",renderProjects);
 
-renderStories();
-renderNews();
-renderProjects();
+/* الأخبار والمشروعات والحكايات تُرسم عند فتح أقسامها */
 </script>
 
 <!-- نهاية الجزء الرابع -->
@@ -2431,7 +2445,7 @@ function playRadioStation(id){
 /* البحث والتصفية */
 document.getElementById("radioSearch")?.addEventListener("input",renderRadioStations);
 
-renderRadioStations();
+/* تُبنى بطاقات الإذاعات عند فتح القسم بدلًا من وقت تحميل الموقع */
 </script>
 
 <!-- نهاية الجزء الخامس -->
@@ -3724,12 +3738,18 @@ async function adminLoadCommunitySubmissions(){
   const {data,error}=await adminSupabase.from("community_submissions").select("*").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد طلبات جديدة للمراجعة.</div>';return;}
-  const reviewRows=await Promise.all(data.map(async item=>{
+  const videoPaths=[...new Set(data.filter(item=>item.submission_type==="talent"&&String(item.work_url||"").startsWith("talent-video:")).map(item=>item.work_url.slice("talent-video:".length)))];
+  const reviewVideoUrls=new Map();
+  if(videoPaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrls(videoPaths,3600);
+    if(signedError)console.warn("تعذر تجهيز معاينات فيديوهات طلبات المجتمع",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewVideoUrls.set(item.path,item.signedUrl);});
+  }
+  const reviewRows=data.map(item=>{
     if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
     const path=item.work_url.slice("talent-video:".length);
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
-  }));
+    return {...item,reviewVideoUrl:reviewVideoUrls.get(path)||""};
+  });
   box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
@@ -3832,14 +3852,17 @@ async function adminLoadMemberWorks(){
   const {data,error}=await adminSupabase.from("member_works").select("id,user_id,title,category,summary,work_url,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل أعمال الأعضاء: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد أعمال جديدة للمراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    let reviewUrl=item.work_url||"";
-    if(item.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
-      if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
-    }
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,3600);
+    if(signedError)console.warn("تعذر تجهيز روابط أعمال الأعضاء",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=item.storage_path?(reviewUrls.get(item.storage_path)||""):(item.work_url||"");
     return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
-  }));
+  });
   box.innerHTML=cards.join("");
   observePublicContentImpressions(box);
 }
@@ -3875,11 +3898,17 @@ async function adminLoadWriterScripts(){
   const {data,error}=await adminSupabase.from("writer_scripts").select("id,user_id,title,category,summary,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل اسكريبتات الكُتّاب: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد سيناريوهات بانتظار المراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,1800);
-    const reviewUrl=!signedError?signed?.signedUrl:null;
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط سيناريوهات الكُتّاب",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=reviewUrls.get(item.storage_path)||null;
     return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.category)+' • الكاتب: '+adminEscape(item.member_profiles?.display_name||"كاتب")+'</p><p>'+adminEscape(item.summary||"")+'</p><p class="admin-status">إقرار الحقوق: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • مرات إعادة الإرسال: '+(Number(item.revision_count)||0)+'</p>'+(reviewUrl?'<p><a href="'+adminEscape(reviewUrl)+'" target="_blank" rel="noopener noreferrer">فتح PDF للمراجعة</a></p>':'<p>تعذر إنشاء رابط معاينة مؤقت.</p>')+'<div class="admin-actions"><button class="btn primary" '+(item.rights_confirmed&&reviewUrl?"":"disabled")+' onclick="adminReviewWriterScript(\''+item.id+'\',\'approved\')">اعتماد وإتاحة للزوار</button><button class="btn" onclick="adminReviewWriterScript(\''+item.id+'\',\'needs_revision\')">طلب تعديل</button></div></article>';
-  }));
+  });
   box.innerHTML=cards.join("");
 }
 async function adminReviewWriterScript(id,status){
@@ -4141,6 +4170,9 @@ async function adminLoadApprovalNotifications(){
   if(!adminSupabase||!adminSession)return;
   const summary=document.getElementById("adminApprovalSummary"),box=document.getElementById("adminApprovalItems");
   if(!summary||!box)return;
+  if(window.__scenarioApprovalLoadInProgress)return;
+  window.__scenarioApprovalLoadInProgress=true;
+  try{
   const queues=[
     {table:"member_profiles",key:"user_id",column:"profile_status",label:"ملفات شخصية للأعضاء",target:"adminMemberProfilesList",loader:"adminLoadMemberProfiles"},
     {table:"member_works",column:"status",label:"ملفات وأعمال الأعضاء",target:"adminMemberWorksList",loader:"adminLoadMemberWorks"},
@@ -4181,6 +4213,9 @@ async function adminLoadApprovalNotifications(){
   box.style.display=adminApprovalNotificationsOpen?"grid":"none";
   const toggle=document.getElementById("adminApprovalToggle");
   if(toggle){toggle.textContent=adminApprovalNotificationsOpen?"إخفاء الطلبات":"عرض الطلبات";toggle.setAttribute("aria-expanded",String(adminApprovalNotificationsOpen));}
+  }finally{
+    window.__scenarioApprovalLoadInProgress=false;
+  }
 }
 
 let adminCanManageAdmins = false;
@@ -4462,28 +4497,37 @@ document.getElementById("adminContentType")?.addEventListener("change",()=>{
 });
 
 /* جلب المحتوى */
-async function adminLoadRecords(){
-  if(!adminSupabase || !adminSession) return;
+function adminLoadRecords(){
+  if(!adminSupabase || !adminSession) return Promise.resolve();
+  if(window.__scenarioAdminRecordsLoadPromise)return window.__scenarioAdminRecordsLoadPromise;
 
-  const box=document.getElementById("adminContentList");
-  if(!box)return;
-  box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
+  const request=(async()=>{
+    const box=document.getElementById("adminContentList");
+    if(!box)return;
+    box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
 
-  const {data,error}=await adminSupabase
-    .from("site_content")
-    .select("*")
-    .order("created_at",{ascending:false});
+    const {data,error}=await adminSupabase
+      .from("site_content")
+      .select("*")
+      .order("created_at",{ascending:false});
 
-  if(error){
-    box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
-      adminEscape(error.message)+"</div>";
-    return;
-  }
+    if(error){
+      box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
+        adminEscape(error.message)+"</div>";
+      return;
+    }
 
-  adminRecords=data || [];
-  adminRenderRecords();
-  if(typeof renderFilms==="function")renderFilms();
-  if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+    adminRecords=data || [];
+    adminRenderRecords();
+    if(typeof renderFilms==="function")renderFilms();
+    if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+  })();
+
+  window.__scenarioAdminRecordsLoadPromise=request;
+  return request.finally(()=>{
+    if(window.__scenarioAdminRecordsLoadPromise===request)
+      window.__scenarioAdminRecordsLoadPromise=null;
+  });
 }
 
 /* عرض السجلات */
@@ -5639,7 +5683,8 @@ function closeSeriesPlaylist(){
 
 /* عرض المحاضرات والفيديوهات التي تضيفها الإدارة */
 function renderAcademyContent(items){
-  if(typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
+  /* لا نبنِ بطاقات المحاضرات أثناء وجود الزائر في قسم آخر */
+  if(document.getElementById("academy")?.classList.contains("active") && typeof renderLessonIndex==="function") renderLessonIndex(items||[]);
 }
 
 function safeHttpUrl(value){
@@ -5719,6 +5764,7 @@ const DEFAULT_TV_CHANNELS = [
 ];
 
 /* عرض القنوات التلفزيونية في صفحة الإذاعة والتليفزيون */
+let publicTvChannels=[];
 function renderTvChannels(items){
   const box=document.getElementById("tvChannels");
   if(!box)return;
@@ -5767,8 +5813,7 @@ function distributePublicContent(records){
         file:item.work
       }))
     );
-    renderLibrary();
-    if(typeof renderScenarioScriptCards==="function" && scenarioScriptRecords.length) renderScenarioScriptCards();
+    /* بيانات المكتبة تُجهّز هنا، أما بناء البطاقات فيتم عند فتح صفحة المكتبة */
   }
 
   if(typeof creativeProfiles!=="undefined"){
@@ -5786,10 +5831,7 @@ function distributePublicContent(records){
 
     replaceArray(creativeProfiles.shorts,grouped.shorts || []);
 
-    renderWriters();
-    renderDirectors();
-    renderTalents();
-    renderShortFilms();
+    /* بيانات المبدعين جاهزة؛ تأجيل بناء البطاقات حتى فتح كل قسم */
   }
 
   if(typeof editorialData!=="undefined"){
@@ -5798,11 +5840,11 @@ function distributePublicContent(records){
     replaceArray(editorialData.projects,grouped.production || []);
 
     renderStories();
-    renderNews();
-    renderProjects();
+    /* الأخبار والمشروعات تُرسم عند فتح صفحاتها لتقليل العمل أثناء تحميل الموقع */
   }
 
-  renderSponsors(grouped.sponsors || []);
+  replaceArray(publicSponsorRecords,grouped.sponsors || []);
+  if(document.getElementById("sponsors")?.classList.contains("active")) renderSponsors(publicSponsorRecords);
   renderFooterSponsors(grouped.sponsors || []);
 
   if(typeof radioStations!=="undefined"){
@@ -5817,12 +5859,14 @@ function distributePublicContent(records){
       const mergedRadio=[...radioStations,...publicRadioStations];
       replaceArray(radioStations,mergedRadio.filter((item,index,self)=>self.findIndex(x=>String(x.id)===String(item.id))===index));
     }
-    renderRadioStations();
+    if(document.getElementById("radio")?.classList.contains("active")) renderRadioStations();
    }
 
-   if(typeof renderTvChannels==="function") renderTvChannels(grouped.television || []);
+   replaceArray(publicTvChannels,grouped.television || []);
+   if(document.getElementById("radio")?.classList.contains("active") && typeof renderTvChannels==="function") renderTvChannels(publicTvChannels);
 
-   renderFilms();
+   /* صفحة الأفلام محمية وتُعاد تهيئتها عند فتحها؛ لا نبنِ بطاقاتها وهي مخفية */
+   if(document.getElementById("films")?.classList.contains("active")) renderFilms();
 }
 
 /* تجهيز روابط مشاهدة مؤقتة لفيديوهات المواهب التي اعتمدتها الإدارة */
@@ -5982,8 +6026,7 @@ function loadPublicContent(){
         return false;
       }
       distributePublicContent(data || []);
-      /* بيانات المواهب والجرائم تُحمّل عند دخول أقسامها فقط */
-      renderStories();
+      /* تتولى distributePublicContent تحديث واجهات الأقسام مرة واحدة */
       publicContentMessage("تم تحميل المحتوى المنشور.");
       return true;
     }catch(error){
@@ -6463,8 +6506,8 @@ function ensureApprovedIdeas(){
       ['topic_replies','adminTopicReplies','رد','display_name','body','id,status,created_at,display_name,body,topic_id'],
       ['content_comments','adminContentComments','تعليق','display_name','body','id,status,created_at,display_name,body,content_id,crime_story_id']
     ];
-    for(const [table,boxId,label,headField,bodyField,selectFields] of configs){
-      const box=$(boxId);if(!box)continue;
+    await Promise.all(configs.map(async([table,boxId,label,headField,bodyField,selectFields])=>{
+      const box=$(boxId);if(!box)return;
       box.innerHTML='<div class="panel">جارٍ التحميل...</div>';
       try{
         const {data,error}=await adminSupabase.from(table).select(selectFields).order('created_at',{ascending:false}).limit(100);
@@ -6477,7 +6520,7 @@ function ensureApprovedIdeas(){
           return `<article class="admin-item"><h3>${esc(row[headField]||label)}</h3><p>${esc(row[bodyField]||'')}</p><small>${esc(row.display_name||'')} • ${row.crime_story_id?'تعليق على حكاية #'+row.crime_story_id:row.content_id?'تعليق على محتوى #'+String(row.content_id).slice(0,8):'تعليق'} • ${statusLabels[row.status]||row.status} • ${new Date(row.created_at).toLocaleString('ar-EG')}</small><div class="admin-actions">${reviewActions}<button class="btn" type="button" onclick="adminModerateCommunityItem('${table}','${row.id}','delete')">حذف</button></div></article>`;
         }).join(''):`<div class="panel">لا توجد ${label}ات حتى الآن.</div>`;
       }catch(err){box.innerHTML=`<div class="panel">تعذر تحميل ${label}ات: ${esc(err.message)}</div>`;}
-    }
+    }));
   }
   window.adminModerateCommunityItem=async function(table,id,status){
     const allowed=['community_topics','topic_replies','content_comments'];if(!allowed.includes(table)||typeof adminSupabase==="undefined"||!adminSupabase||!adminSession)return;
@@ -6840,13 +6883,17 @@ async function adminLoadDirectorWorks(){
   const {data:profiles,error:profilesError}=await adminSupabase.from("member_profiles").select("user_id,display_name").in("user_id",ids);
   if(profilesError){box.textContent="تعذر تحميل أسماء المخرجين: "+profilesError.message;return;}
   const names=new Map((profiles||[]).map(p=>[p.user_id,p.display_name]));
+  const storagePaths=[...new Set(data.map(w=>w.storage_path).filter(Boolean))];
+  const signedWorkUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط نماذج أعمال المخرجين للمراجعة",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)signedWorkUrls.set(item.path,item.signedUrl);});
+  }
   const cards=[];
   for(const w of data){
     let mediaUrl=w.external_url||"";
-    if(w.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("director-work-videos").createSignedUrl(w.storage_path,1800);
-      if(!signedError)mediaUrl=signed?.signedUrl||"";
-    }
+    if(w.storage_path)mediaUrl=signedWorkUrls.get(w.storage_path)||"";
     const embed=directorEmbedUrl(mediaUrl);
     const player=w.storage_path&&mediaUrl?'<video controls playsinline preload="none" style="width:100%;max-height:280px;background:#000" src="'+directorWorkEsc(mediaUrl)+'"></video>':embed?'<iframe src="'+directorWorkEsc(embed)+'" title="'+directorWorkEsc(w.title)+'" loading="lazy" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0"></iframe>':'<a href="'+directorWorkEsc(mediaUrl)+'" target="_blank" rel="noopener">فتح رابط العمل</a>';
     cards.push('<article class="admin-item"><h3>'+directorWorkEsc(w.title)+'</h3><p>المخرج: '+directorWorkEsc(names.get(w.user_id)||"عضو")+' • '+directorWorkEsc(directorWorkLabels[w.work_type]||"عمل مرئي")+'</p><p>المدة: '+(Number(w.duration_seconds)/60).toFixed(1)+' دقيقة'+(w.production_year?' • '+w.production_year:"")+'</p>'+player+'<p>'+directorWorkEsc(w.description||"")+'</p><div class="admin-actions"><button class="btn primary" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'approved\')">اعتماد ونشر</button><button class="btn" type="button" onclick="adminReviewDirectorWork(\''+w.id+'\',\'rejected\')">طلب تعديل / رفض</button></div></article>');
@@ -7232,7 +7279,6 @@ function adminSetInlinePublishingVisible(visible){
   if(visible)crimeStoryRenderAdminRecords();
   else if(records)records.style.display='none';
  }
- if(visible&&typeof adminLoadScenarioScripts==='function')adminLoadScenarioScripts();
 }
 function adminToggleInlinePublish(id){
  if(!adminSession||!adminSupabase){alert('سجّل الدخول بحساب مدير المنصة أولاً.');return;}
