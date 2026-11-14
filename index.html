@@ -3721,12 +3721,18 @@ async function adminLoadCommunitySubmissions(){
   const {data,error}=await adminSupabase.from("community_submissions").select("*").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد طلبات جديدة للمراجعة.</div>';return;}
-  const reviewRows=await Promise.all(data.map(async item=>{
+  const videoPaths=[...new Set(data.filter(item=>item.submission_type==="talent"&&String(item.work_url||"").startsWith("talent-video:")).map(item=>item.work_url.slice("talent-video:".length)))];
+  const reviewVideoUrls=new Map();
+  if(videoPaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrls(videoPaths,3600);
+    if(signedError)console.warn("تعذر تجهيز معاينات فيديوهات طلبات المجتمع",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewVideoUrls.set(item.path,item.signedUrl);});
+  }
+  const reviewRows=data.map(item=>{
     if(item.submission_type!=="talent"||!String(item.work_url||"").startsWith("talent-video:"))return item;
     const path=item.work_url.slice("talent-video:".length);
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("talent-submission-videos").createSignedUrl(path,3600);
-    return {...item,reviewVideoUrl:signedError?"":(signed?.signedUrl||"")};
-  }));
+    return {...item,reviewVideoUrl:reviewVideoUrls.get(path)||""};
+  });
   box.innerHTML=reviewRows.map(item=>{
     const isTalent=item.submission_type==="talent";
     const heading=isTalent?item.name:item.title;
@@ -3829,14 +3835,17 @@ async function adminLoadMemberWorks(){
   const {data,error}=await adminSupabase.from("member_works").select("id,user_id,title,category,summary,work_url,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل أعمال الأعضاء: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد أعمال جديدة للمراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    let reviewUrl=item.work_url||"";
-    if(item.storage_path){
-      const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,3600);
-      if(!signedError)reviewUrl=signed?.signedUrl||reviewUrl;
-    }
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,3600);
+    if(signedError)console.warn("تعذر تجهيز روابط أعمال الأعضاء",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=item.storage_path?(reviewUrls.get(item.storage_path)||""):(item.work_url||"");
     return `<article class="admin-item"><h3>${adminEscape(item.title)}</h3><p>${adminEscape(item.category)} • الكاتب: ${adminEscape(item.member_profiles?.display_name||"عضو")}</p><p>${adminEscape(item.summary||"")}</p><p>إقرار الحقوق: ${item.rights_confirmed?"مؤكد من العضو":"غير مؤكد — لا يمكن الاعتماد"} • مرات إعادة الإرسال: ${Number(item.revision_count)||0}</p>${reviewUrl?`<p><a href="${adminEscape(reviewUrl)}" target="_blank" rel="noopener noreferrer">فتح ملف العمل للمراجعة</a></p>`:"<p>تعذر إنشاء رابط معاينة مؤقت للملف.</p>"}<div class="admin-actions"><button class="btn primary" ${item.rights_confirmed?"":"disabled"} onclick="adminReviewMemberWork('${item.id}','approved')">موافقة وإضافة للمكتبة</button><button class="btn" onclick="adminReviewMemberWork('${item.id}','rejected')">رفض</button></div></article>`;
-  }));
+  });
   box.innerHTML=cards.join("");
   observePublicContentImpressions(box);
 }
@@ -3872,11 +3881,17 @@ async function adminLoadWriterScripts(){
   const {data,error}=await adminSupabase.from("writer_scripts").select("id,user_id,title,category,summary,storage_path,rights_confirmed,created_at,revision_count,member_profiles(display_name)").eq("status","pending").order("created_at",{ascending:false}).limit(100);
   if(error){box.textContent="تعذر تحميل اسكريبتات الكُتّاب: "+error.message;return;}
   if(!data?.length){box.innerHTML='<div class="panel">لا توجد سيناريوهات بانتظار المراجعة.</div>';return;}
-  const cards=await Promise.all(data.map(async item=>{
-    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrl(item.storage_path,1800);
-    const reviewUrl=!signedError?signed?.signedUrl:null;
+  const storagePaths=[...new Set(data.map(item=>item.storage_path).filter(Boolean))];
+  const reviewUrls=new Map();
+  if(storagePaths.length){
+    const {data:signed,error:signedError}=await adminSupabase.storage.from("member-submissions").createSignedUrls(storagePaths,1800);
+    if(signedError)console.warn("تعذر تجهيز روابط سيناريوهات الكُتّاب",signedError.message);
+    else (signed||[]).forEach(item=>{if(item.path&&item.signedUrl)reviewUrls.set(item.path,item.signedUrl);});
+  }
+  const cards=data.map(item=>{
+    const reviewUrl=reviewUrls.get(item.storage_path)||null;
     return '<article class="admin-item"><h3>'+adminEscape(item.title)+'</h3><p>'+adminEscape(item.category)+' • الكاتب: '+adminEscape(item.member_profiles?.display_name||"كاتب")+'</p><p>'+adminEscape(item.summary||"")+'</p><p class="admin-status">إقرار الحقوق: '+(item.rights_confirmed?"مؤكد":"غير مؤكد")+' • مرات إعادة الإرسال: '+(Number(item.revision_count)||0)+'</p>'+(reviewUrl?'<p><a href="'+adminEscape(reviewUrl)+'" target="_blank" rel="noopener noreferrer">فتح PDF للمراجعة</a></p>':'<p>تعذر إنشاء رابط معاينة مؤقت.</p>')+'<div class="admin-actions"><button class="btn primary" '+(item.rights_confirmed&&reviewUrl?"":"disabled")+' onclick="adminReviewWriterScript(\''+item.id+'\',\'approved\')">اعتماد وإتاحة للزوار</button><button class="btn" onclick="adminReviewWriterScript(\''+item.id+'\',\'needs_revision\')">طلب تعديل</button></div></article>';
-  }));
+  });
   box.innerHTML=cards.join("");
 }
 async function adminReviewWriterScript(id,status){
