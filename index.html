@@ -663,7 +663,7 @@ function saveReadingProgress(){
 function showPage(id, options={}){
 const target=document.getElementById(id);
 if(!target || !target.classList.contains('page')) return;
-if((id==='films'||id==='creatorProfile')&&!accountUser){if(id==='films'){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');}if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
+if((id==='stories'||id==='films'||id==='creatorProfile')&&!accountUser){if(id!=='creatorProfile'&&!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
 saveReadingProgress();
 if(options.updateUrl!==false){
 try{
