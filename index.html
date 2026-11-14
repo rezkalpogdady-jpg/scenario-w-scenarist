@@ -4480,28 +4480,37 @@ document.getElementById("adminContentType")?.addEventListener("change",()=>{
 });
 
 /* جلب المحتوى */
-async function adminLoadRecords(){
-  if(!adminSupabase || !adminSession) return;
+function adminLoadRecords(){
+  if(!adminSupabase || !adminSession) return Promise.resolve();
+  if(window.__scenarioAdminRecordsLoadPromise)return window.__scenarioAdminRecordsLoadPromise;
 
-  const box=document.getElementById("adminContentList");
-  if(!box)return;
-  box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
+  const request=(async()=>{
+    const box=document.getElementById("adminContentList");
+    if(!box)return;
+    box.innerHTML="<div class='panel'>جارٍ تحميل المحتوى...</div>";
 
-  const {data,error}=await adminSupabase
-    .from("site_content")
-    .select("*")
-    .order("created_at",{ascending:false});
+    const {data,error}=await adminSupabase
+      .from("site_content")
+      .select("*")
+      .order("created_at",{ascending:false});
 
-  if(error){
-    box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
-      adminEscape(error.message)+"</div>";
-    return;
-  }
+    if(error){
+      box.innerHTML="<div class='panel'>تعذر تحميل المحتوى: "+
+        adminEscape(error.message)+"</div>";
+      return;
+    }
 
-  adminRecords=data || [];
-  adminRenderRecords();
-  if(typeof renderFilms==="function")renderFilms();
-  if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+    adminRecords=data || [];
+    adminRenderRecords();
+    if(typeof renderFilms==="function")renderFilms();
+    if(typeof crimeStoryRenderAdminRecords==="function")crimeStoryRenderAdminRecords();
+  })();
+
+  window.__scenarioAdminRecordsLoadPromise=request;
+  return request.finally(()=>{
+    if(window.__scenarioAdminRecordsLoadPromise===request)
+      window.__scenarioAdminRecordsLoadPromise=null;
+  });
 }
 
 /* عرض السجلات */
