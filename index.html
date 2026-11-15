@@ -435,7 +435,7 @@ Main{padding:17px 11px}
 <button data-page="films">الأفلام والمسلسلات</button>
 <button data-page="shorts">الأفلام القصيرة</button>
 <button data-page="news">الأخبار الفنية</button>
-<button data-page="archive">أرشيف السينما زمان</button>
+
 <button data-page="community">مجتمع ونقاشات</button>
 <button data-page="radio">الإذاعة والتليفزيون</button>
 <button data-page="chess">الشطرنج</button>
@@ -5909,46 +5909,6 @@ function ensureApprovedIdeas(){
 </script>
 
 <!-- نهاية الجزء الثامن -->
-<section id="archive" class="page">
-  <div class="intro">
-    <h2>أرشيف السينما – عبق الزمن الجميل</h2>
-    <p>رحلة في ذاكرة السينما المصرية والعربية: أفيشات، صور نادرة، أخبار قديمة، وجوه صنعت تاريخًا، وحكايات من الكواليس.</p>
-  </div>
-  <div class="panel">
-    <h3 style="color:var(--gold)">ابحث في ذاكرة السينما</h3>
-    <input id="archiveSearch" type="search" placeholder="ابحث باسم الفنان أو الفيلم أو السنة...">
-    <select id="archiveCategory">
-      <option value="">كل مواد الأرشيف</option>
-      <option value="أفيشات زمان">أفيشات زمان</option>
-      <option value="إعلانات أفلام">إعلانات أفلام</option>
-      <option value="مشاهد سينمائية">مشاهد سينمائية</option>
-      <option value="وجوه من الزمن الجميل">وجوه من الزمن الجميل</option>
-      <option value="أخبار وحكايات زمان">أخبار وحكايات زمان</option>
-      <option value="مصر زمان">مصر زمان</option>
-      <option value="كواليس لا تنسى">كواليس لا تنسى</option>
-    </select>
-    <p class="muted" style="font-size:12px">المواد المنشورة فقط تظهر هنا. يجب أن تكون الصور والقصاصات مملوكة أو مرخصة أو متاحة للاستخدام وفق شروط مصدرها.</p>
-  </div>
-  <div class="admin-inline-entry" data-admin-inline="1" style="display:none;margin:14px 0"><button class="btn primary" type="button" onclick="adminToggleInlinePublish('archive')">＋ إضافة مادة (صورة أو فيديو)</button></div><div id="archiveAdminPublish" class="panel" style="display:none;margin:16px 0"><h3 style="color:var(--gold)">إضافة مادة إلى أرشيف السينما</h3><p>أضف صورًا وأفيشات متعددة، أو ارفع إعلان فيلم أو مشهد فيديو واحدًا. لا تنشر إلا مادة تملك حق استخدامها أو لديك تصريح بإتاحتها.</p><form id="archiveAdminForm">
-<label>نوع المادة</label><select name="media_kind" id="archiveMediaKind"><option value="image">صور وأفيشات (يمكن اختيار عدة صور)</option><option value="video">إعلان فيلم أو مشهد فيديو</option></select>
-<label>العنوان (اختياري للصور، مطلوب للفيديو)</label><input name="title" maxlength="200" placeholder="عنوان الأفيش أو اسم الفيلم/المشهد">
-<label>التصنيف</label><select name="category"><option>أفيشات زمان</option><option>إعلانات أفلام</option><option>مشاهد سينمائية</option><option>وجوه من الزمن الجميل</option><option>أخبار وحكايات زمان</option><option>مصر زمان</option><option>كواليس لا تنسى</option></select>
-<label>الوصف (اختياري)</label><textarea name="description" rows="3" maxlength="5000"></textarea>
-<div id="archiveImageFields">
-<label>اختيار صور متعددة من معرض الهاتف أو الملفات</label><input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-<p class="muted" style="font-size:12px">كل صورة تُحفظ كمادة مستقلة. الصيغ JPG وPNG وWEBP، بحد أقصى 20 ميجابايت للصورة.</p>
-</div>
-<div id="archiveVideoFields" style="display:none">
-<label>اختيار ملف الفيديو من الهاتف أو الكمبيوتر</label><input name="video" type="file" accept="video/mp4,video/webm">
-<label>صورة غلاف للفيديو (اختياري)</label><input name="poster" type="file" accept="image/jpeg,image/png,image/webp">
-<p class="muted" style="font-size:12px">الفيديو MP4 أو WebM بحد أقصى 50 ميجابايت. الرفع يدعم استكمال الاتصال وعرض نسبة التقدم.</p>
-</div>
-<label style="display:flex;gap:8px;align-items:flex-start"><input name="rights_confirmed" type="checkbox" required style="width:auto;margin-top:7px"> أؤكد أن لدي حق استخدام هذه المادة أو تصريحًا يسمح بعرضها على المنصة.</label>
-<label style="display:flex;gap:8px;align-items:center"><input name="published" type="checkbox" checked style="width:auto"> نشر مباشرة للزوار</label>
-<button class="btn primary" type="submit">رفع المادة وحفظها</button><button class="btn" type="button" onclick="document.getElementById('archiveAdminPublish').style.display='none'">إغلاق</button>
-<progress id="archiveBulkProgress" max="100" value="0" style="display:none;width:100%;height:12px;margin-top:12px"></progress><p id="archiveAdminMessage" aria-live="polite"></p></form></div><div id="archiveItems" class="grid"><div class="panel">جارٍ تحميل الأرشيف...</div></div>
-</section>
-
 <section id="community" class="page community-page">
   <div class="intro">
     <h2>مجتمع سيناريو وسيناريست</h2>
