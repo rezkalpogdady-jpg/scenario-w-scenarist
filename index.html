@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- سيناريو وسيناريست | تحديث 6.8.101: إصلاح صلاحيات مالك المنصة وإدارة المديرين، وتقييد قسم الجرائم للأعضاء، وتحسين البحث دون تحميل دليل العضوية بالكامل. -->
 <!-- سيناريو وسيناريست | تحديث 6.8.100: اختيار العضو من قائمة أرقام العضوية وترقية المدير بصلاحيات كاملة مع تحكم المالك فقط. 6.8.99: ملفات الأعضاء والتعليقات الفورية دون انتظار موافقة الإدارة مع حماية من الإساءة | تحديث 6.8.96: دمج استكمال القراءة محليًا مع الروابط المستقلة لكل قسم ودعم الرجوع والتقدم دون طلبات قاعدة بيانات: تعليقات حكايات الجرائم بمراجعة الإدارة وحدود إرسال آمنة. تحديث 6.8.82: مكتبة الدراسة السينمائية وأفلام الكارتون المرشحة وفتح القصة وإدارة المدير من داخلها. تحديث 6.8.80: إصلاح دوال إدارة الجرائم. تحديث 6.8.78: قائمة موحدة للجرائم والحكايات وإدارة القصة من صفحة القراءة. تحديث 6.8.77: SEO وفهرسة جوجل، استعادة كلمة مرور المدير، وإدارة الأدمنز بأمان. تحديث 6.8.72: معرض أفيشات الأرشيف والتنقل بالسحب والأسهم. تحديث 6.8.71: تحسين حجم وعرض صور أرشيف السينما. | تحديث 6.8.70: إدارة أفيش القصص القادمة من crime_stories. 6.8.68: اختيار حلقات البشاير من 26 رابطًا مستقلًا عند الطلب مع الحفاظ على الأداء. | 6.8.66: تجربة مشاهدة مسلسل البشاير داخل المنصة عند الطلب. | 6.8.55: إدارة بسيطة للمجتمع وحظر النشر وحذف التعليقات. | 6.8.51: اسكريبتاتي الخاصة بالكاتب مع مراجعة مستقلة وآمنة. -->
 
 <html lang="ar" dir="rtl">
@@ -679,7 +680,7 @@ function saveReadingProgress(){
 function showPage(id, options={}){
 const target=document.getElementById(id);
 if(!target || !target.classList.contains('page')) return;
-if((id==='films'||id==='creatorProfile')&&!accountUser){if(id==='films'){if(!accountSessionReady)pendingProtectedPage=id;accountMessage('هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');}if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
+if((id==='films'||id==='stories'||id==='creatorProfile')&&!accountUser){if(!accountSessionReady)pendingProtectedPage=id;accountMessage(id==='stories'?'قسم الجرائم والحكايات مخصص للأعضاء. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.':'هذا القسم للأعضاء فقط. سجّل الدخول برقم العضوية أو أنشئ عضوية جديدة.');if(id!=='account')showPage('account',{updateUrl:options.updateUrl});return;}
 saveReadingProgress();
 if(options.updateUrl!==false){
 try{
@@ -2990,6 +2991,18 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
         <p class="admin-status">لا تُحسب مشاهدات الفيديوهات أو الصور.</p>
       </div>
     </section>
+      <section class="panel" id="adminManageAdminsPanel" style="display:none;margin-top:14px">
+        <h3 style="color:var(--gold);margin-top:0">إدارة مديري المنصة</h3>
+        <p class="admin-status">هذه الصلاحية لمالك المنصة فقط. ابحث برقم العضوية أو الاسم، ثم أضف المدير أو ألغِ صلاحيته.</p>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center">
+          <input id="adminMemberSearch" type="search" maxlength="120" placeholder="ابحث باسم العضو أو رقم العضوية" autocomplete="off">
+          <button class="btn primary" id="adminMemberSearchButton" type="button">بحث</button>
+        </div>
+        <p id="adminUsersMessage" class="admin-status" role="status" aria-live="polite"></p>
+        <div id="adminMemberSearchResults" style="display:grid;gap:8px;margin-top:10px"></div>
+        <h4 style="color:var(--gold);margin:18px 0 8px">المديرون الحاليون</h4>
+        <div id="adminAdminsList" style="display:grid;gap:8px">جارٍ تحميل المديرين...</div>
+      </section>
   </div>
 </section>
 
@@ -3998,98 +4011,89 @@ async function adminLoadApprovalNotifications(){
   }
 }
 
+const PLATFORM_OWNER_ID = "0ecade12-50a9-4b30-ba90-4fab3393c7b3";
 let adminCanManageAdmins = false;
 async function adminVerifyAdmin(session){
   adminSession=session;
-  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
-
+  if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
   let data,error;
-  try{
-    ({data,error}=await adminSupabase.auth.getUser());
-  }catch(authError){
-    error=authError;
-  }
-
-  if(error || !data?.user){
-    adminSession=null;
+  try{({data,error}=await adminSupabase.auth.getUser());}catch(authError){error=authError;}
+  if(error||!data?.user){
+    adminSession=null;adminCanManageAdmins=false;
     document.getElementById("adminDashboard").style.display="none";
     document.getElementById("adminLoginPanel").style.display="block";
-    adminSetMessage("adminLoginMessage","تعذر التحقق من الحساب. سجّل الدخول بحساب المدير.");
-    return;
+    adminSetMessage("adminLoginMessage","تعذر التحقق من الحساب. سجّل الدخول بحساب المدير.");return;
   }
-
+  const isOwner=data.user.id===PLATFORM_OWNER_ID;
   const role=data.user.app_metadata?.role;
-
-  if(role!=="admin"){
-    /* لا تسجّل خروج العضو العادي؛ عميل الحسابات ولوحة الإدارة مشترك */
-    adminSession=null;
+  if(role!=="admin"&&!isOwner){
+    adminSession=null;adminCanManageAdmins=false;
     document.getElementById("adminDashboard").style.display="none";
     document.getElementById("adminLoginPanel").style.display="block";
-    adminSetMessage("adminLoginMessage",
-      "هذا الحساب ليس لديه صلاحية مدير. ظل حسابك كعضو مسجلًا؛ استخدم حساب المدير للدخول إلى اللوحة.");
-    return;
+    adminSetMessage("adminLoginMessage","هذا الحساب ليس لديه صلاحية مدير. ظل حسابك كعضو مسجلًا؛ استخدم حساب المدير للدخول إلى اللوحة.");return;
   }
-
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
-  if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
-  adminCanManageAdmins = false;
+  if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
+  adminCanManageAdmins=isOwner;
+  const ownerPanel=document.getElementById("adminManageAdminsPanel");
+  if(ownerPanel)ownerPanel.style.display=isOwner?"block":"none";
   const adminIdentity=document.getElementById("adminUserEmail");
-  if(adminIdentity) adminIdentity.textContent=(data.user.user_metadata?.display_name||"مدير المنصة")+(data.user.app_metadata?.member_number?" • عضوية "+data.user.app_metadata.member_number:"");
-  await Promise.allSettled([adminLoadContactMessages(),adminLoadPlatformGrowthStats()]);
+  if(adminIdentity)adminIdentity.textContent=(data.user.user_metadata?.display_name||"مدير المنصة")+(data.user.app_metadata?.member_number?" • عضوية "+data.user.app_metadata.member_number:"");
+  const tasks=[adminLoadContactMessages(),adminLoadPlatformGrowthStats()];
+  if(isOwner)tasks.push(adminLoadAdminUsers());
+  await Promise.allSettled(tasks);
 }
-
-/* إدارة حسابات الأدمن عبر Edge Function آمنة؛ لا يُكشف مفتاح الخدمة للمتصفح */
 async function adminManageUsers(action,payload={}){
-  if(!adminSupabase || !adminSession) throw new Error("سجّل الدخول كمدير أولاً.");
+  if(!adminSupabase||!adminSession)throw new Error("سجّل الدخول كمدير أولاً.");
   const {data,error}=await adminSupabase.functions.invoke("manage-platform-admins",{body:{action,...payload}});
-  if(error) throw error;
-  if(data?.error) throw new Error(data.error);
-  return data;
+  if(error)throw error;if(data?.error)throw new Error(data.error);return data;
 }
-let adminMemberRows = [];
+let adminMemberRows=[];
+let adminAdminRows=[];
 function adminRenderMemberRows(){
-  const box=document.getElementById("adminUsersList");
-  const search=(document.getElementById("adminMemberSearch")?.value||"").trim().toLowerCase();
-  if(!box)return;
-  const rows=adminMemberRows.filter(item =>
-    !search || String(item.display_name||"").toLowerCase().includes(search) || String(item.member_number||"").includes(search)
-  );
-  box.innerHTML=rows.length?rows.map(item=>{
-    const status=item.is_owner?'<strong style="color:var(--gold)">مالك المنصة</strong>':item.is_admin?'<strong style="color:var(--gold)">مدير</strong>':'<span class="admin-status">عضو</span>';
-    const action=item.is_owner?'':item.is_admin
-      ?'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.user_id)+'">إلغاء صلاحية المدير</button>'
-      :'<button class="btn primary" type="button" data-promote-member="'+adminEscape(item.member_number)+'">ترقية إلى مدير</button>';
-    return '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><div><strong>'+adminEscape(item.display_name||"عضو بدون اسم")+'</strong><div class="admin-status" style="margin-top:4px">رقم العضوية: '+adminEscape(item.member_number)+' • '+status+'</div></div>'+action+'</div>';
+  const box=document.getElementById("adminMemberSearchResults");if(!box)return;
+  box.innerHTML=adminMemberRows.length?adminMemberRows.map(item=>{
+    const status=item.is_owner?'<strong style="color:var(--gold)">مالك المنصة</strong>':item.is_admin?'<strong style="color:var(--gold)">مدير حالي</strong>':'<span class="admin-status">عضو</span>';
+    const action=item.is_owner?"":item.is_admin?'<span class="admin-status">له صلاحية إدارة بالفعل</span>':'<button class="btn primary" type="button" data-promote-member="'+adminEscape(item.member_number)+'">ترقية إلى مدير</button>';
+    return '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><div><strong>'+adminEscape(item.display_name||"عضو بدون اسم")+'</strong><div class="admin-status" style="margin-top:4px">رقم العضوية: '+adminEscape(item.member_number||"—")+' • '+status+'</div></div>'+action+'</div>';
   }).join(""):'<div class="panel">لا توجد نتائج مطابقة.</div>';
   box.querySelectorAll("[data-promote-member]").forEach(button=>button.addEventListener("click",async()=>{
-    const number=button.getAttribute("data-promote-member");
-    if(!confirm("هل تريد منح هذا العضو صلاحيات مدير المنصة كاملة؟"))return;
-    button.disabled=true;
-    try{const result=await adminManageUsers("add",{member_number:number});adminSetMessage("adminUsersMessage",result.message||"تمت ترقية العضو.");await adminLoadAdminUsers();}
+    if(!adminCanManageAdmins)return;const number=button.getAttribute("data-promote-member");
+    if(!confirm("هل تريد منح هذا العضو صلاحيات مدير المنصة كاملة؟"))return;button.disabled=true;
+    try{const result=await adminManageUsers("add",{member_number:number});adminSetMessage("adminUsersMessage",result.message||"تمت ترقية العضو.");await Promise.all([adminLoadAdminUsers(),adminSearchMembers()]);}
     catch(error){adminSetMessage("adminUsersMessage","تعذرت الترقية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
   }));
+}
+function adminRenderAdminRows(){
+  const box=document.getElementById("adminAdminsList");if(!box)return;
+  box.innerHTML=adminAdminRows.length?adminAdminRows.map(item=>{
+    const action=item.is_owner?"":'<button class="btn" type="button" data-remove-admin="'+adminEscape(item.user_id)+'">إلغاء صلاحية المدير</button>';
+    return '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px"><div><strong>'+adminEscape(item.display_name||"مدير المنصة")+'</strong><div class="admin-status" style="margin-top:4px">رقم العضوية: '+adminEscape(item.member_number||"—")+(item.is_owner?" • مالك المنصة":" • مدير")+'</div></div>'+action+'</div>';
+  }).join(""):'<div class="panel">لا يوجد مديرون مسجلون.</div>';
   box.querySelectorAll("[data-remove-admin]").forEach(button=>button.addEventListener("click",async()=>{
-    const id=button.getAttribute("data-remove-admin");
-    if(!confirm("هل تريد إلغاء صلاحيات المدير من هذا العضو؟"))return;
-    button.disabled=true;
-    try{const result=await adminManageUsers("remove",{user_id:id});adminSetMessage("adminUsersMessage",result.message||"تم إلغاء الصلاحية.");await adminLoadAdminUsers();}
+    if(!adminCanManageAdmins)return;const id=button.getAttribute("data-remove-admin");
+    if(!confirm("هل تريد إلغاء صلاحيات هذا المدير؟"))return;button.disabled=true;
+    try{const result=await adminManageUsers("remove",{user_id:id});adminSetMessage("adminUsersMessage",result.message||"تم إلغاء صلاحية المدير.");await Promise.all([adminLoadAdminUsers(),adminSearchMembers()]);}
     catch(error){adminSetMessage("adminUsersMessage","تعذر إلغاء الصلاحية: "+(error.message||"حاول مرة أخرى."));button.disabled=false;}
   }));
 }
-async function adminLoadAdminUsers(){
-  const box=document.getElementById("adminUsersList");
-  if(!box || !adminSession || !adminCanManageAdmins)return;
-  box.textContent="جارٍ تحميل قائمة الأعضاء...";
-  try{
-    const data=await adminManageUsers("list");
-    adminMemberRows=data.members||[];
-    adminRenderMemberRows();
-  }catch(error){box.textContent="تعذر تحميل قائمة الأعضاء: "+(error.message||"");}
+async function adminSearchMembers(){
+  if(!adminCanManageAdmins)return;
+  const input=document.getElementById("adminMemberSearch"),box=document.getElementById("adminMemberSearchResults"),query=(input?.value||"").trim();
+  if(query.length<2){adminSetMessage("adminUsersMessage","اكتب حرفين على الأقل أو رقم العضوية.");return;}
+  const button=document.getElementById("adminMemberSearchButton");if(button)button.disabled=true;if(box)box.textContent="جارٍ البحث عن العضو...";
+  try{const data=await adminManageUsers("search",{query});adminMemberRows=data.members||[];adminRenderMemberRows();adminSetMessage("adminUsersMessage",adminMemberRows.length?"نتائج البحث: "+adminMemberRows.length:"لم نعثر على عضو مطابق.");}
+  catch(error){if(box)box.textContent="تعذر البحث عن العضو.";adminSetMessage("adminUsersMessage","تعذر البحث: "+(error.message||"حاول مرة أخرى."));}
+  finally{if(button)button.disabled=false;}
 }
-document.getElementById("adminMemberSearch")?.addEventListener("input",adminRenderMemberRows);
-
-
+async function adminLoadAdminUsers(){
+  const box=document.getElementById("adminAdminsList");if(!box||!adminSession||!adminCanManageAdmins)return;box.textContent="جارٍ تحميل المديرين...";
+  try{const data=await adminManageUsers("list");adminAdminRows=data.members||[];adminRenderAdminRows();}
+  catch(error){box.textContent="تعذر تحميل المديرين: "+(error.message||"");}
+}
+document.getElementById("adminMemberSearchButton")?.addEventListener("click",adminSearchMembers);
+document.getElementById("adminMemberSearch")?.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();adminSearchMembers();}});
 /* تسجيل الدخول */
 document.getElementById("adminLoginForm")?.addEventListener("submit",async function(event){
   event.preventDefault();
@@ -4579,6 +4583,10 @@ document.getElementById("adminLogout")?.addEventListener("click",async()=>{
   if(adminSupabase) await adminSupabase.auth.signOut();
 
   adminSession=null;
+  adminCanManageAdmins=false;
+  adminMemberRows=[];
+  adminAdminRows=[];
+  const ownerPanel=document.getElementById("adminManageAdminsPanel");if(ownerPanel)ownerPanel.style.display="none";
   adminRecords=[];
   const editor=document.getElementById("adminContentEditorWrap");if(editor)editor.style.display="none";
   if(typeof adminSetInlinePublishingVisible==="function")adminSetInlinePublishingVisible(false);
