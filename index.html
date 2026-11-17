@@ -4039,7 +4039,7 @@ async function adminVerifyAdmin(session){
   adminCanManageAdmins=isOwner;
   const ownerPanel=document.getElementById("adminManageAdminsPanel");
   if(ownerPanel)ownerPanel.style.display=isOwner?"block":"none";
-  if(isOwner){adminAdminRows=ownerAdminList.members||[];adminRenderAdminRows();}
+  if(isOwner){adminAdminRows=(ownerAdminList.members||[]).filter(item=>item.is_admin||item.is_owner);adminRenderAdminRows();}
   else if(ownerCheckError && ownerCheckError.status!==403 && ownerCheckError.context?.status!==403)
     adminSetMessage("adminUsersMessage","تعذر التحقق من صلاحية إدارة المديرين مؤقتًا.");
   const adminIdentity=document.getElementById("adminUserEmail");
@@ -4091,7 +4091,7 @@ async function adminSearchMembers(){
 }
 async function adminLoadAdminUsers(){
   const box=document.getElementById("adminAdminsList");if(!box||!adminSession||!adminCanManageAdmins)return;box.textContent="جارٍ تحميل المديرين...";
-  try{const data=await adminManageUsers("list");adminAdminRows=data.members||[];adminRenderAdminRows();}
+  try{const data=await adminManageUsers("list");adminAdminRows=(data.members||[]).filter(item=>item.is_admin||item.is_owner);adminRenderAdminRows();}
   catch(error){box.textContent="تعذر تحميل المديرين: "+(error.message||"");}
 }
 document.getElementById("adminMemberSearchButton")?.addEventListener("click",adminSearchMembers);
