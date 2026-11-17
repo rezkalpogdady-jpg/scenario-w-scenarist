@@ -4044,7 +4044,7 @@ async function adminVerifyAdmin(session){
     adminSetMessage("adminUsersMessage","تعذر التحقق من صلاحية إدارة المديرين مؤقتًا.");
   const adminIdentity=document.getElementById("adminUserEmail");
   if(adminIdentity)adminIdentity.textContent=(data.user.user_metadata?.display_name||"مدير المنصة")+(data.user.app_metadata?.member_number?" • عضوية "+data.user.app_metadata.member_number:"");
-  await Promise.allSettled([adminLoadContactMessages(),adminLoadPlatformGrowthStats()]);
+  await Promise.allSettled([adminLoadRecords(),adminLoadContactMessages(),adminLoadPlatformGrowthStats()]);
 }
 async function adminManageUsers(action,payload={}){
   if(!adminSupabase||!adminSession)throw new Error("سجّل الدخول كمدير أولاً.");
