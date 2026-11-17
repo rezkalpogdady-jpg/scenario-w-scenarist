@@ -30,57 +30,64 @@ Deno.serve(async (req: Request) => {
     .from("admin_users").select("user_id").eq("user_id", OWNER_ID).maybeSingle();
   if (ownerMembershipError || !ownerMembership) return json({ error: "تعذر التحقق من صلاحية مالك المنصة." }, 403);
 
-  let body: { action?: string; member_number?: string; user_id?: string };
+  let body: { action?: string; member_number?: string; user_id?: string; query?: string };
   try { body = await req.json(); } catch { return json({ error: "بيانات الطلب غير صحيحة." }, 400); }
 
   if (body.action === "list") {
-    const directory: any[] = [];
-    for (let offset = 0; offset < 100000; offset += 1000) {
-      const { data, error } = await adminClient.from("member_login_directory")
-        .select("member_number,user_id,created_at").order("created_at", { ascending: false })
-        .range(offset, offset + 999);
-      if (error) return json({ error: "تعذر تحميل قائمة الأعضاء." }, 500);
-      directory.push(...(data || []));
-      if (!data || data.length < 1000) break;
-    }
-
-    const userIds = directory.map(row => row.user_id);
-    const profiles = new Map<string, string>();
-    for (let offset = 0; offset < userIds.length; offset += 500) {
-      const chunk = userIds.slice(offset, offset + 500);
-      if (!chunk.length) continue;
-      const { data, error } = await adminClient.from("member_profiles")
-        .select("user_id,display_name").in("user_id", chunk);
-      if (error) return json({ error: "تعذر تحميل أسماء الأعضاء." }, 500);
-      for (const profile of data || []) profiles.set(profile.user_id, profile.display_name || "");
-    }
-
-    const authUsers = new Map<string, any>();
-    const wanted = new Set(userIds);
-    for (let page = 1; page <= 1000 && wanted.size > authUsers.size; page++) {
-      const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 });
-      if (error) return json({ error: "تعذر قراءة بيانات حسابات الأعضاء." }, 500);
-      for (const user of data.users || []) {
-        if (wanted.has(user.id)) authUsers.set(user.id, user);
-      }
-      if (!data.users || data.users.length < 1000) break;
-    }
-
     const { data: admins, error: adminsError } = await adminClient.from("admin_users").select("user_id");
     if (adminsError) return json({ error: "تعذر قراءة صلاحيات المديرين." }, 500);
-    const adminIds = new Set((admins || []).map(row => row.user_id));
-    const members = directory.map(row => {
-      const authUser = authUsers.get(row.user_id);
-      return {
-        user_id: row.user_id,
-        member_number: row.member_number,
-        display_name: profiles.get(row.user_id) || authUser?.user_metadata?.display_name || "عضو بدون اسم",
-        created_at: row.created_at,
-        is_admin: adminIds.has(row.user_id),
-        is_owner: row.user_id === OWNER_ID,
-      };
-    });
-    return json({ members });
+    const adminIds = [...new Set((admins || []).map((row: any) => row.user_id))];
+    if (!adminIds.length) return json({ members: [] });
+    const [{ data: directory, error: directoryError }, { data: profileRows, error: profileError }] = await Promise.all([
+      adminClient.from("member_login_directory").select("member_number,user_id").in("user_id", adminIds),
+      adminClient.from("member_profiles").select("user_id,display_name").in("user_id", adminIds),
+    ]);
+    if (directoryError || profileError) return json({ error: "تعذر تحميل بيانات المديرين." }, 500);
+    const profiles = new Map<string, string>((profileRows || []).map((row: any) => [row.user_id, row.display_name || ""]));
+    const numbers = new Map<string, string>((directory || []).map((row: any) => [row.user_id, row.member_number]));
+    return json({ members: adminIds.map((userId: string) => ({
+      user_id: userId, member_number: numbers.get(userId) || "",
+      display_name: profiles.get(userId) || "مدير بدون اسم",
+      is_admin: true, is_owner: userId === OWNER_ID,
+    })) });
+  }
+
+  if (body.action === "search") {
+    const rawQuery = String(body.query || "").trim();
+    if (rawQuery.length < 2 || rawQuery.length > 120) return json({ error: "اكتب حرفين على الأقل للبحث." }, 400);
+    const safeQuery = rawQuery.replace(/[%_(),.*\\]/g, " ").replace(/\s+/g, " ").trim();
+    const found = new Map<string, { user_id: string; member_number: string; display_name: string }>();
+    if (/^\d{2,8}$/.test(rawQuery)) {
+      const { data: numberRows, error: numberError } = await adminClient.from("member_login_directory")
+        .select("user_id,member_number").like("member_number", rawQuery + "%").limit(20);
+      if (numberError) return json({ error: "تعذر البحث برقم العضوية." }, 500);
+      for (const row of numberRows || []) found.set(row.user_id, { user_id: row.user_id, member_number: row.member_number, display_name: "" });
+    }
+    if (safeQuery.length >= 2) {
+      const { data: profileRows, error: profileError } = await adminClient.from("member_profiles")
+        .select("user_id,display_name").ilike("display_name", "%" + safeQuery + "%").limit(20);
+      if (profileError) return json({ error: "تعذر البحث باسم العضو." }, 500);
+      const profileIds = (profileRows || []).map((row: any) => row.user_id);
+      const profileNames = new Map<string, string>((profileRows || []).map((row: any) => [row.user_id, row.display_name || ""]));
+      if (profileIds.length) {
+        const { data: directoryRows, error: directoryError } = await adminClient.from("member_login_directory")
+          .select("user_id,member_number").in("user_id", profileIds);
+        if (directoryError) return json({ error: "تعذر تحميل أرقام عضويات نتائج البحث." }, 500);
+        for (const row of directoryRows || []) found.set(row.user_id, {
+          user_id: row.user_id, member_number: row.member_number,
+          display_name: profileNames.get(row.user_id) || "",
+        });
+      }
+    }
+    const userIds = [...found.keys()];
+    if (!userIds.length) return json({ members: [] });
+    const { data: adminRows, error: adminRowsError } = await adminClient.from("admin_users").select("user_id").in("user_id", userIds);
+    if (adminRowsError) return json({ error: "تعذر التحقق من صلاحيات الأعضاء." }, 500);
+    const adminIds = new Set((adminRows || []).map((row: any) => row.user_id));
+    return json({ members: [...found.values()].map((row) => ({
+      ...row, display_name: row.display_name || "عضو بدون اسم",
+      is_admin: adminIds.has(row.user_id), is_owner: row.user_id === OWNER_ID,
+    })) });
   }
 
   if (body.action === "add") {
