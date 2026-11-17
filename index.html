@@ -5091,9 +5091,19 @@ function filmSourceLinkMarkup(value,id){
  return '<a class="btn" href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer" onclick="recordPublicContentView(\'film\',\''+escapeHTML(id)+'\');recordPublicContentEvent(\'film\',\''+escapeHTML(id)+'\',\'open\')">زيارة المصدر الأصلي ومشاهدة العمل</a>';
 }
 
+function getFilmContentRecords(){
+ const merged=new Map();
+ (Array.isArray(publicContentRecords)?publicContentRecords:[]).forEach(item=>{
+  if(item&&item.content_type==="films"&&item.id!=null)merged.set(String(item.id),item);
+ });
+ (adminSession&&Array.isArray(adminRecords)?adminRecords:[]).forEach(item=>{
+  if(item&&item.content_type==="films"&&item.id!=null)merged.set(String(item.id),item);
+ });
+ return [...merged.values()];
+}
 function getAllSeriesPlaylists(){
- const dynamic=(adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords)
-  .filter(item=>item.content_type==="films"&&item.category==="مسلسل"&&(
+ const dynamic=getFilmContentRecords()
+  .filter(item=>item.category==="مسلسل"&&(
     (Array.isArray(item.extra_data?.episodes)&&item.extra_data.episodes.length)||
     (Array.isArray(item.extra_data?.external_episodes)&&item.extra_data.external_episodes.length)
   ))
@@ -5164,7 +5174,7 @@ function renderFilms(){
     .trim().toLowerCase();
   const category=document.getElementById("filmsCategory")?.value || "";
 
-  const filmSource=adminSession&&Array.isArray(adminRecords)?adminRecords:publicContentRecords;
+  const filmSource=getFilmContentRecords();
   const items=filmSource.filter(item=>
     item.content_type==="films" &&
     (!category || item.category===category) &&
