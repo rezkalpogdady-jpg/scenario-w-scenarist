@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
     .from("admin_users").select("user_id").eq("user_id", OWNER_ID).maybeSingle();
   if (ownerMembershipError || !ownerMembership) return json({ error: "تعذر التحقق من صلاحية مالك المنصة." }, 403);
 
-  let body: { action?: string; member_number?: string; user_id?: string };
+  let body: { action?: string; member_number?: string; user_id?: string; query?: string };
   try { body = await req.json(); } catch { return json({ error: "بيانات الطلب غير صحيحة." }, 400); }
 
   if (body.action === "list") {
@@ -55,9 +55,9 @@ Deno.serve(async (req: Request) => {
   if (body.action === "search") {
     const rawQuery = String(body.query || "").trim();
     if (rawQuery.length < 2 || rawQuery.length > 120) return json({ error: "اكتب حرفين على الأقل للبحث." }, 400);
-    const safeQuery = rawQuery.replace(/[%_(),.*\\]/g, " ").replace(/\s+/g, " ").trim();
+    const safeQuery = rawQuery.replace(/[%_(),.*\\]/g, " ").replace(/\\s+/g, " ").trim();
     const found = new Map<string, { user_id: string; member_number: string; display_name: string }>();
-    if (/^\d{2,8}$/.test(rawQuery)) {
+    if (/^\\d{2,8}$/.test(rawQuery)) {
       const { data: numberRows, error: numberError } = await adminClient.from("member_login_directory")
         .select("user_id,member_number").like("member_number", rawQuery + "%").limit(20);
       if (numberError) return json({ error: "تعذر البحث برقم العضوية." }, 500);
@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
 
   if (body.action === "add") {
     const memberNumber = String(body.member_number || "").trim();
-    if (!/^\d{8}$/.test(memberNumber)) return json({ error: "رقم العضوية يجب أن يتكون من 8 أرقام." }, 400);
+    if (!/^\\d{8}$/.test(memberNumber)) return json({ error: "رقم العضوية يجب أن يتكون من 8 أرقام." }, 400);
     const { data: directoryRow, error: directoryError } = await adminClient
       .from("member_login_directory").select("user_id").eq("member_number", memberNumber).maybeSingle();
     if (directoryError) return json({ error: "تعذر البحث عن العضو." }, 500);
