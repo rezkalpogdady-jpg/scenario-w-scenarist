@@ -4355,7 +4355,7 @@ async function adminToggleTalentPublished(id){
 
 /* ضغط الصور قبل رفعها مع الحفاظ على الملف الأصلي عند تعذر التحويل */
 async function adminPrepareImageForUpload(file){
-  if(!file || !/^image\\/(jpeg|png|webp|avif)$/i.test(file.type) || file.size<=180*1024) return file;
+  if(!file || !/^image\/(jpeg|png|webp|avif)$/i.test(file.type) || file.size<=180*1024) return file;
   if(typeof createImageBitmap!=="function") return file;
   let bitmap=null;
   try{
@@ -4371,7 +4371,7 @@ async function adminPrepareImageForUpload(file){
     context.drawImage(bitmap,0,0,width,height);
     const optimized=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.82));
     if(!optimized || optimized.type!=="image/webp" || optimized.size>=file.size) return file;
-    const baseName=file.name.replace(/\\.[^.]+$/,"").normalize("NFKC").replace(/[^\\p{L}\\p{N}._-]+/gu,"-").slice(-90)||"image";
+    const baseName=file.name.replace(/\.[^.]+$/,"").normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-90)||"image";
     return new File([optimized],baseName+".webp",{type:"image/webp",lastModified:Date.now()});
   }catch(error){
     console.warn("تعذر ضغط الصورة؛ سيتم رفع الأصل كما هو.",error);
@@ -4394,13 +4394,13 @@ async function adminUploadSelectedFile(){
     video:selectedFile.type.startsWith("video/"),
     image:selectedFile.type.startsWith("image/"),
     audio:selectedFile.type.startsWith("audio/"),
-    document:/\\.(pdf|doc|docx)$/i.test(selectedFile.name),
-    article:selectedFile.type.startsWith("image/")||selectedFile.type.startsWith("video/")||selectedFile.type.startsWith("audio/")||/\\.(pdf|doc|docx)$/i.test(selectedFile.name),
+    document:/\.(pdf|doc|docx)$/i.test(selectedFile.name),
+    article:selectedFile.type.startsWith("image/")||selectedFile.type.startsWith("video/")||selectedFile.type.startsWith("audio/")||/\.(pdf|doc|docx)$/i.test(selectedFile.name),
     link:selectedFile.type.startsWith("image/")
   };
   if(!allowedByKind[kind]) throw new Error("الملف لا يطابق نوع المحتوى الذي اخترته. غيّر نوع المحتوى أو اختر ملفًا مناسبًا.");
   const file=selectedFile.type.startsWith("image/")?await adminPrepareImageForUpload(selectedFile):selectedFile;
-  const cleanName=file.name.normalize("NFKC").replace(/[^\\p{L}\\p{N}._-]+/gu,"-").slice(-100) || "upload";
+  const cleanName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-100) || "upload";
   const path=`${document.getElementById("adminContentType").value}/${crypto.randomUUID()}-${cleanName}`;
   const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"31536000",upsert:false,contentType:file.type || undefined});
   if(error) throw error;
