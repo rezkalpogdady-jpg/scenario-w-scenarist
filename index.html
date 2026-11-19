@@ -2940,7 +2940,7 @@ document.getElementById("ideasFilter")?.addEventListener("change",renderIdeas);
   <div class="panel" id="adminLoginPanel">
     <h3 style="color:var(--gold)">دخول الإدارة</h3>
     <form id="adminLoginForm">
-      <input id="adminEmail" type="text" required autocomplete="username" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="رقم العضوية (8 أرقام)">
+      <input id="adminEmail" type="text" required autocomplete="username" inputmode="text" maxlength="120" placeholder="رقم العضوية (أو بريد حساب المالك)">
       <input id="adminPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور">
       <button class="btn primary" type="submit">دخول</button>
     </form>
@@ -3998,6 +3998,7 @@ async function adminLoadApprovalNotifications(){
   }
 }
 
+const PLATFORM_OWNER_USER_ID = "0ecade12-50a9-4b30-ba90-4fab3393c7b3";
 let adminCanManageAdmins = false;
 async function adminVerifyAdmin(session){
   adminSession=session;
@@ -4019,8 +4020,9 @@ async function adminVerifyAdmin(session){
   }
 
   const role=data.user.app_metadata?.role;
+  const isPlatformOwner=data.user.id===PLATFORM_OWNER_USER_ID;
 
-  if(role!=="admin"){
+  if(role!=="admin"&&!isPlatformOwner){
     /* لا تسجّل خروج العضو العادي؛ عميل الحسابات ولوحة الإدارة مشترك */
     adminSession=null;
     document.getElementById("adminDashboard").style.display="none";
@@ -4033,7 +4035,7 @@ async function adminVerifyAdmin(session){
   document.getElementById("adminLoginPanel").style.display="none";
   document.getElementById("adminDashboard").style.display="block";
   if(typeof adminSetInlinePublishingVisible==="function") adminSetInlinePublishingVisible(false);
-  adminCanManageAdmins = false;
+  adminCanManageAdmins = isPlatformOwner;
   const adminIdentity=document.getElementById("adminUserEmail");
   if(adminIdentity) adminIdentity.textContent=(data.user.user_metadata?.display_name||"مدير المنصة")+(data.user.app_metadata?.member_number?" • عضوية "+data.user.app_metadata.member_number:"");
   await Promise.allSettled([adminLoadContactMessages(),adminLoadPlatformGrowthStats()]);
