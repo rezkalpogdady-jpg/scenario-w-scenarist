@@ -1153,7 +1153,7 @@ function openLesson(index){
     .filter(Boolean)
     .map(part=>`<p style="white-space:pre-wrap;margin:0 0 18px">${escapeHTML(part)}</p>`)
     .join("");
-  body.innerHTML=`${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش ${escapeHTML(lesson)}" style="display:block;width:min(100%,380px);max-height:560px;object-fit:contain;margin:0 auto 26px;border-radius:10px;box-shadow:0 10px 30px #0008">` : ""}
+  body.innerHTML=`${poster ? `<img src="${escapeHTML(poster)}" alt="أفيش ${escapeHTML(lesson)}" loading="lazy" decoding="async" style="display:block;width:min(100%,380px);max-height:560px;object-fit:contain;margin:0 auto 26px;border-radius:10px;box-shadow:0 10px 30px #0008">` : ""}
     <div class="lesson-reading-text">${paragraphs || "<p style='color:var(--muted);text-align:center;padding:35px 10px'>سيتم نشر نص هذه المحاضرة قريبًا.</p>"}</div>`;
   currentLessonText=(lessonText || description || "").trim();
   const audioStatus=document.getElementById("lessonAudioStatus");
@@ -4353,27 +4353,56 @@ async function adminToggleTalentPublished(id){
   await adminUpdateTalentRecord(id,{published:next});
 }
 
+/* ضغط الصور قبل رفعها مع الحفاظ على الملف الأصلي عند تعذر التحويل */
+async function adminPrepareImageForUpload(file){
+  if(!file || !/^image\/(jpeg|png|webp|avif)$/i.test(file.type) || file.size<=180*1024) return file;
+  if(typeof createImageBitmap!=="function") return file;
+  let bitmap=null;
+  try{
+    bitmap=await createImageBitmap(file);
+    const maxDimension=1800;
+    const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
+    const width=Math.max(1,Math.round(bitmap.width*scale));
+    const height=Math.max(1,Math.round(bitmap.height*scale));
+    const canvas=document.createElement("canvas");
+    canvas.width=width;canvas.height=height;
+    const context=canvas.getContext("2d",{alpha:true});
+    if(!context)return file;
+    context.drawImage(bitmap,0,0,width,height);
+    const optimized=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.82));
+    if(!optimized || optimized.type!=="image/webp" || optimized.size>=file.size) return file;
+    const baseName=file.name.replace(/\.[^.]+$/,"").normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-90)||"image";
+    return new File([optimized],baseName+".webp",{type:"image/webp",lastModified:Date.now()});
+  }catch(error){
+    console.warn("تعذر ضغط الصورة؛ سيتم رفع الأصل كما هو.",error);
+    return file;
+  }finally{
+    if(bitmap && typeof bitmap.close==="function")bitmap.close();
+  }
+}
+
 /* رفع ملف إلى Supabase Storage باسم آمن */
 async function adminUploadSelectedFile(){
   const input=document.getElementById("adminFile");
-  const file=input?.files?.[0];
-  if(!file) return null;
+  const selectedFile=input?.files?.[0];
+  if(!selectedFile) return null;
   if(!adminSupabase || !adminSession) throw new Error("سجل دخول المدير أولاً.");
   const maxBytes=50*1024*1024;
-  if(file.size>maxBytes) throw new Error("حجم الملف أكبر من 50 ميجابايت؛ هذا هو الحد الأقصى المتاح في الخطة المجانية.");
+  if(selectedFile.size>maxBytes) throw new Error("حجم الملف أكبر من 50 ميجابايت؛ هذا هو الحد الأقصى المتاح في الخطة المجانية.");
   const kind=document.getElementById("adminMediaKind")?.value||"article";
   const allowedByKind={
-    video:file.type.startsWith("video/"),
-    image:file.type.startsWith("image/"),
-    audio:file.type.startsWith("audio/"),
-    document:/\.(pdf|doc|docx)$/i.test(file.name),
-    article:file.type.startsWith("image/")||file.type.startsWith("video/")||file.type.startsWith("audio/")||/\.(pdf|doc|docx)$/i.test(file.name),
-    link:file.type.startsWith("image/")
+    video:selectedFile.type.startsWith("video/"),
+    image:selectedFile.type.startsWith("image/"),
+    audio:selectedFile.type.startsWith("audio/"),
+    document:/\.(pdf|doc|docx)$/i.test(selectedFile.name),
+    article:selectedFile.type.startsWith("image/")||selectedFile.type.startsWith("video/")||selectedFile.type.startsWith("audio/")||/\.(pdf|doc|docx)$/i.test(selectedFile.name),
+    link:selectedFile.type.startsWith("image/")
   };
   if(!allowedByKind[kind]) throw new Error("الملف لا يطابق نوع المحتوى الذي اخترته. غيّر نوع المحتوى أو اختر ملفًا مناسبًا.");
+  const file=selectedFile.type.startsWith("image/")?await adminPrepareImageForUpload(selectedFile):selectedFile;
   const cleanName=file.name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").slice(-100) || "upload";
   const path=`${document.getElementById("adminContentType").value}/${crypto.randomUUID()}-${cleanName}`;
-  const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type || undefined});
+  const {data,error}=await adminSupabase.storage.from("site-media").upload(path,file,{cacheControl:"31536000",upsert:false,contentType:file.type || undefined});
   if(error) throw error;
   const {data:publicData}=adminSupabase.storage.from("site-media").getPublicUrl(data.path);
   return {url:publicData.publicUrl,type:file.type || ""};
